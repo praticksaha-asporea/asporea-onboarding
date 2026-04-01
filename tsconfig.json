@@ -19,7 +19,13 @@
       }
     ],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@core/*": [
+        "./src/@core/*"
+      ],
+      "@assets/*": [
+        "./src/assets/*"
+      ],
     }
   },
   "include": [
@@ -28,6 +34,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
+    "tailwind.config.ts",
     "**/*.mts"
   ],
   "exclude": ["node_modules"]
