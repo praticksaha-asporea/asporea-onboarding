@@ -58,7 +58,7 @@ const Login = ({ mode }: { mode: Mode }) => {
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    router.push('/')
+    router.push('/inquiry')
   }
 
   const [authMode, setAuthMode] = useState<'password' | 'otp'>('password');
@@ -139,7 +139,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   {sendOtp && (
                     <>
                       <MuiOtpInput value={otp} onChange={handleChange} length={6} />
-                      <Button variant='contained' size='small' color='success' disabled={!enableVerfifyOTP} onClick={()=>router.push('/')}>
+                      <Button variant='contained' size='small' color='success' disabled={!enableVerfifyOTP} onClick={()=>router.push('/inquiry')}>
                         Verify
                       </Button>
                     </>
