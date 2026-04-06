@@ -6,7 +6,6 @@ import type { ChangeEvent } from "react";
 
 // MUI Imports
 import { Dialog, DialogContent, IconButton, Divider } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -518,7 +517,8 @@ West Bengal,
           onClick={() => setShowInquiryPopup(false)}
           sx={{ position: "absolute", right: 20, top: 20, color: "grey.500" }}
         >
-          <CloseIcon />
+          <i className="material-symbols--close-rounded" />
+
         </IconButton>
 
         <DialogContent sx={{ textAlign: "center", p: 4 }}>

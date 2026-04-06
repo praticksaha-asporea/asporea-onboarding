@@ -10,8 +10,6 @@ import { useRouter } from "next/navigation";
 
 // MUI Imports
 import { Dialog, DialogContent, Box } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import VpnKeyOutlinedIcon from "@mui/icons-material/VpnKeyOutlined";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -227,7 +225,8 @@ const Login = ({ mode }: { mode: Mode }) => {
           onClick={() => setShowSetupPassword(false)}
           sx={{ position: "absolute", right: 20, top: 20, color: "grey.500" }}
         >
-          <CloseIcon />
+          
+          <i className="material-symbols--close-rounded" />
         </IconButton>
 
         <DialogContent
@@ -252,13 +251,8 @@ const Login = ({ mode }: { mode: Mode }) => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <VpnKeyOutlinedIcon
-                      sx={{
-                        fontSize: "18px",
-                        opacity: 0.7,
-                        color: "grey.500",
-                      }}
-                    />
+                    
+                    <i className="material-symbols--lock"/>
                   </InputAdornment>
                 ),
               }}
@@ -277,13 +271,7 @@ const Login = ({ mode }: { mode: Mode }) => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <VpnKeyOutlinedIcon
-                      sx={{
-                        fontSize: "30px",
-                        opacity: 0.7,
-                        color: "grey.500",
-                      }}
-                    />
+                    <i className="material-symbols--lock"/>
                   </InputAdornment>
                 ),
               }}
