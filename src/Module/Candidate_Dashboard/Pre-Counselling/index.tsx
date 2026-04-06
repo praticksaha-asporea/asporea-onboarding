@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+ 
+import type { ChangeEvent } from "react";
 
 import {
   Dialog,
@@ -11,15 +13,44 @@ import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Button from "@mui/material/Button";
 import Typography from "@mui/material/Typography";
+import FormControl from "@mui/material/FormControl";
 import TextField from "@mui/material/TextField";
 import Checkbox from "@mui/material/Checkbox";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
+import Switch from "@mui/material/Switch";
+import {
+  
+  FormGroup,
+  FormHelperText,
+  
+} from "@mui/material"
+
+type StateType = {
+  [key: string]: boolean;
+};
 
 const PreCounselling = () => {
   const [selectedSlot, setSelectedSlot] = useState("2:00-2:30");
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+
+  const [isEditingChannels , setIsEditingChannels] = useState(false)
+
+   const [state, setState] = useState<StateType>({
+      gilad: true,
+      jason: false,
+      antoine: false,
+    });
+
+      
+    const { gilad, jason, antoine } = state;
+    const error = [gilad, jason, antoine].filter((v) => v).length !== 2;
+  
+    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+      setState({ ...state, [event.target.name]: event.target.checked });
+    };
+     
 
   // Demo slots array
   const slots = [
@@ -50,7 +81,7 @@ const PreCounselling = () => {
             boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
           }}
         >
-          <Typography variant="h4" fontWeight="bold" sx={{ mb: 2 }}>
+          <Typography variant="h4">
             Confirm Your Pre-Counselling Readiness
           </Typography>
           <Typography variant="body1" sx={{ color: "text.secondary", mb: 6 }}>
@@ -274,9 +305,7 @@ const PreCounselling = () => {
               }}
             />
             <Typography
-              variant="caption"
-              color="primary"
-              sx={{ fontWeight: "600" }}
+               variant='caption' sx={{ color: '#1976d2', fontWeight: 700 }}
             >
               You're almost there! Just few steps left.
             </Typography>
@@ -291,43 +320,82 @@ const PreCounselling = () => {
           }}
         >
           <CardContent sx={{ p: 6 }}>
-            <Typography variant="h6" fontWeight="bold" sx={{ mb: 4 }}>
-              Notification Channels
-            </Typography>
-            <Box
-              sx={{ display: "flex", gap: 2, mb: 4, alignItems: "flex-start" }}
-            >
-              <i
-                className="ri-whatsapp-line"
-                style={{ fontSize: "24px", color: "#25D366", marginTop: "2px" }}
-              ></i>
-              <Typography
-                variant="body2"
-                sx={{ color: "text.secondary", lineHeight: 1.5 }}
-              >
-                <span style={{ fontWeight: "bold", color: "#000" }}>
-                  WhatsApp:
-                </span>{" "}
-                Enabled for timely updates and session reminders.
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
-              <i
-                className="ri-mail-line"
-                style={{ fontSize: "24px", color: "#1976d2", marginTop: "2px" }}
-              ></i>
-              <Typography
-                variant="body2"
-                sx={{ color: "text.secondary", lineHeight: 1.5 }}
-              >
-                <span style={{ fontWeight: "bold", color: "#000" }}>
-                  Email:
-                </span>{" "}
-                Enabled for detailed session information and important
-                documents.
-              </Typography>
-            </Box>
-          </CardContent>
+     
+    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
+      <Typography variant="h6" fontWeight="bold">
+        Notification Channels
+      </Typography>
+      <FormControlLabel
+        control={
+          <Switch 
+            checked={isEditingChannels} 
+            onChange={(e) => setIsEditingChannels(e.target.checked)} 
+            color="primary"
+          />
+        }
+        label="Edit"
+        labelPlacement="start"
+      />
+    </Box>
+
+   
+    {!isEditingChannels ? (
+      <Box>
+        <Box sx={{ display: "flex", gap: 2, mb: 4, alignItems: "flex-start" }}>
+          <i className="ri-whatsapp-line" style={{ fontSize: "24px", color: "#25D366", marginTop: "2px" }}></i>
+          <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.5 }}>
+            <span style={{ fontWeight: "bold", color: "#000" }}>WhatsApp:</span> Enabled for timely updates and session reminders.
+          </Typography>
+        </Box>
+        <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
+          <i className="ri-mail-line" style={{ fontSize: "24px", color: "#1976d2", marginTop: "2px" }}></i>
+          <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.5 }}>
+            <span style={{ fontWeight: "bold", color: "#000" }}>Email:</span> Enabled for detailed session information and important documents.
+          </Typography>
+        </Box>
+      </Box>
+    ) : (
+      <Box>
+        <FormControl fullWidth>
+          <FormGroup>
+            <FormControlLabel
+              label="Receive updates via Email"
+              control={<Checkbox checked={gilad} onChange={handleChange} name="gilad" />}
+            />
+            <FormControlLabel
+              label="Receive updates via WhatsApp"
+              control={<Checkbox checked={jason} onChange={handleChange} name="jason" />}
+            />
+            <FormControlLabel
+              label="Receive updates via SMS"
+              control={<Checkbox checked={antoine} onChange={handleChange} name="antoine" />}
+            />
+          </FormGroup>
+          <FormHelperText>At least One</FormHelperText>
+        </FormControl>
+
+     
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
+          <Button 
+          
+            variant="contained" 
+            size="small"
+            onClick={() => setIsEditingChannels(false)}  
+            sx={{ 
+              borderRadius: '8px', 
+              textTransform: 'none', 
+              fontWeight: 'bold',
+              px: 3,
+              backgroundColor: '#1976d2',
+              boxShadow: 'none'
+            }}
+          >
+            Save
+          </Button>
+        </Box>
+      </Box>
+    )}
+  </CardContent>
         </Card>
       </Grid>
       <Dialog
