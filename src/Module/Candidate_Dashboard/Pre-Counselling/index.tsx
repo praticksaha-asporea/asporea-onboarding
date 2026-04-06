@@ -5,11 +5,7 @@ import { useState } from "react";
 import {
   Dialog,
   DialogContent,
-  DialogActions,
-  Divider,
-  IconButton,
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -30,17 +26,17 @@ const PreCounselling = () => {
     { time: "11:00-11:30", available: false },
     { time: "11:30-12:00", available: true },
     { time: "12:00-12:30", available: true },
-    { time: "12:30-1:00", available: true },
-    { time: "1:00-1:30", available: false },
-    { time: "1:30-2:00", available: true },
-    { time: "2:00-2:30", available: true },
-    { time: "2:30-3:00", available: true },
-    { time: "3:00-3:30", available: true },
-    { time: "3:30-4:00", available: true },
-    { time: "4:00-4:30", available: true },
-    { time: "4:30-5:00", available: true },
-    { time: "5:00-5:30", available: true },
-    { time: "5:30-6:00", available: true },
+    { time: "12:30-01:00", available: true },
+    { time: "01:00-01:30", available: false },
+    { time: "01:30-02:00", available: true },
+    { time: "02:00-02:30", available: true },
+    { time: "02:30-03:00", available: true },
+    { time: "03:00-03:30", available: true },
+    { time: "03:30-04:00", available: true },
+    { time: "04:00-04:30", available: true },
+    { time: "04:30-05:00", available: true },
+    { time: "05:00-05:30", available: true },
+    { time: "05:30-06:00", available: true },
   ];
 
   return (

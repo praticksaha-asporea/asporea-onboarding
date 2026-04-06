@@ -24,7 +24,6 @@ import {
   FormGroup,
   FormHelperText,
   FormLabel,
-  Paper,
   Radio,
   RadioGroup,
   Step,
