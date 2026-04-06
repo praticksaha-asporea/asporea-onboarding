@@ -64,10 +64,10 @@ const CandidateMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectS
           <MenuItem href='/inquiry' icon={<i className='material-symbols--help-outline' />}>
             Generate Inquiry
           </MenuItem>
-          <MenuItem href='/account-settings' icon={<i className='material-symbols--check-circle-outline' />}>
+          <MenuItem href='/pre-counselling' icon={<i className='material-symbols--check-circle-outline' />}>
             Pre-Counselling
           </MenuItem>
-          <MenuItem href='/account-settings' icon={<i className='material-symbols--file-upload' />}>
+          <MenuItem href='/document-upload' icon={<i className='material-symbols--file-upload' />}>
             Document Upload
           </MenuItem>
           <MenuItem href='/account-settings' icon={<i className='material-symbols--work-outline' />}>
