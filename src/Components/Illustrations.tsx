@@ -1,7 +1,7 @@
 'use client'
 
 // React Imports
-import type { ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 
 // MUI Components
 import useMediaQuery from '@mui/material/useMediaQuery'
@@ -48,11 +48,17 @@ const Illustrations = (props: IllustrationsProp) => {
   const theme = useTheme()
   const hidden = useMediaQuery(theme.breakpoints.down('md'))
   const maskBackground = useImageVariant(mode as Mode, lightImg, darkImg)
+  const [mounted, setMounted] = useState(false)
 
   function isImageObj(obj: any): obj is ImageObj {
     return obj && typeof obj === 'object' && 'src' in obj
   }
 
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
   if (!hidden) {
     return (
       <>

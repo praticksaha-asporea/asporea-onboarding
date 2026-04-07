@@ -43,7 +43,7 @@ type Data = {
   fullAddress: string;
   referedFrom: string;
   referedType: string;
-  referedBy: string | null;
+  referedBy: number;
   otherReferedBy: string | null;
 };
 
@@ -59,7 +59,7 @@ const initialData: Data = {
   fullAddress: "",
   referedFrom: "web-app",
   referedType: "pcra",
-  referedBy: "pcra",
+  referedBy: 1,
   otherReferedBy: "",
 };
 type StateType = {
@@ -74,7 +74,7 @@ const AccountDetails = () => {
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
     setFormData({ ...formData, [field]: value });
   };
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep, ] = useState(0);
   const [state, setState] = useState<StateType>({
     gilad: true,
     jason: false,
