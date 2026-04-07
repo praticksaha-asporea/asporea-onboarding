@@ -1,4 +1,4 @@
- 'use client'
+'use client'
 
 import React, { useState, useRef } from 'react'
 
@@ -24,46 +24,66 @@ const Stepper = () => {
   ]
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 6, overflowX: 'auto', pb: 1 }}>
-      {steps.map((step, index) => (
-        <React.Fragment key={index}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
-            <Box
-              sx={{
-                width: 28,
-                height: 28,
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: 'bold',
-                transition: 'all 0.3s',
-                backgroundColor: step.status === 'completed' ? '#dcfce7' : step.status === 'active' ? '#1976d2' : '#f3f4f6',
-                color: step.status === 'completed' ? '#16a34a' : step.status === 'active' ? '#fff' : '#9ca3af',
-                boxShadow: step.status === 'active' ? '0 4px 10px rgba(25, 118, 210, 0.3)' : 'none'
-              }}
-            >
-              {step.status === 'completed' ? <i className="ri-check-line" style={{ fontSize: '16px', fontWeight: 'bold' }} /> : index + 1}
-            </Box>
-            <Typography
-              sx={{
-                fontSize: '14px',
-                fontWeight: 800,
-                color: step.status === 'active' ? '#1976d2' : step.status === 'completed' ? '#1f2937' : '#9ca3af'
-              }}
-            >
-              {step.label}
-            </Typography>
-          </Box>
-          {index < steps.length - 1 && (
-            <Box sx={{ flex: 1, height: 2, mx: 2, minWidth: 40, backgroundColor: '#e5e7eb', position: 'relative' }}>
-              {step.status === 'completed' && <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '100%', backgroundColor: '#4ade80' }} />}
-            </Box>
-          )}
-        </React.Fragment>
-      ))}
-    </Box>
+    <Grid container spacing={6}>
+      {/* Left Section   */}
+      <Grid size={{ xs: 12, md: 12 }}>
+          <Typography variant="h4">
+            Document Upload & Verification
+          </Typography>
+          
+          <Typography variant="body1" sx={{ color: "text.secondary", mb: 6 }}>
+            Please upload the required documents for verification. Ensure all documents are clear and valid to avoid delays.
+          </Typography>
+          
+                  <Card
+                    sx={{
+                      p: { xs: 2, sm: 6 },
+                      borderRadius: "15px",
+                      boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
+                    }}
+                  >
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 6, overflowX: 'auto', pb: 1 }}>
+            {steps.map((step, index) => (
+              <React.Fragment key={index}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
+                  <Box
+                    sx={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '12px',
+                      fontWeight: 'bold',
+                      transition: 'all 0.3s',
+                      backgroundColor: step.status === 'completed' ? '#dcfce7' : step.status === 'active' ? '#1976d2' : '#f3f4f6',
+                      color: step.status === 'completed' ? '#16a34a' : step.status === 'active' ? '#fff' : '#9ca3af',
+                      boxShadow: step.status === 'active' ? '0 4px 10px rgba(25, 118, 210, 0.3)' : 'none'
+                    }}
+                  >
+                    {step.status === 'completed' ? <i className="ri-check-line" style={{ fontSize: '16px', fontWeight: 'bold' }} /> : index + 1}
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontSize: '14px',
+                      fontWeight: 800,
+                      color: step.status === 'active' ? '#1976d2' : step.status === 'completed' ? '#1f2937' : '#9ca3af'
+                    }}
+                  >
+                    {step.label}
+                  </Typography>
+                </Box>
+                {index < steps.length - 1 && (
+                  <Box sx={{ flex: 1, height: 2, mx: 2, minWidth: 40, backgroundColor: '#e5e7eb', position: 'relative' }}>
+                    {step.status === 'completed' && <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '100%', backgroundColor: '#4ade80' }} />}
+                  </Box>
+                )}
+              </React.Fragment>
+            ))}
+          </Box></Card>
+      </Grid>
+    </Grid>
   )
 }
 
@@ -144,7 +164,7 @@ const UploadCard = ({ title, subtitle }: { title: string, subtitle?: string }) =
         <Typography sx={{ fontWeight: 800, fontSize: '13px', color: '#1f2937', lineHeight: 1.2 }}>{title}</Typography>
         {subtitle && <Typography sx={{ fontSize: '11px', color: '#6b7280', mt: 0.5, fontWeight: 600 }}>{subtitle}</Typography>}
       </Box>
-      <Box 
+      <Box
         sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
@@ -171,7 +191,7 @@ const UploadCard = ({ title, subtitle }: { title: string, subtitle?: string }) =
           }}
         >
           <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} style={{ display: 'none' }} />
-          
+
           {file ? (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <i className="ri-file-text-fill" style={{ fontSize: '32px', color: '#1976d2', marginBottom: '8px' }}></i>
@@ -199,7 +219,7 @@ const UploadCard = ({ title, subtitle }: { title: string, subtitle?: string }) =
 // 4. ACCORDION WRAPPER COMPONENT
 const SectionAccordion = ({ title, status, defaultExpanded = false, children }: { title: string, status?: string, defaultExpanded?: boolean, children: React.ReactNode }) => {
   return (
-    <Accordion 
+    <Accordion
       defaultExpanded={defaultExpanded}
       disableGutters
       elevation={0}
@@ -228,19 +248,19 @@ const SectionAccordion = ({ title, status, defaultExpanded = false, children }: 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Typography sx={{ fontSize: '16px', fontWeight: 800, color: '#111' }}>{title}</Typography>
           {status === 'uploaded' && (
-            <Chip 
-              icon={<i className="ri-check-line" style={{ fontSize: '14px', color: '#16a34a', marginLeft: '4px' }} />} 
-              label="Uploaded" 
+            <Chip
+              icon={<i className="ri-check-line" style={{ fontSize: '14px', color: '#16a34a', marginLeft: '4px' }} />}
+              label="Uploaded"
               size="small"
-              sx={{ 
-                backgroundColor: '#dcfce7', 
-                color: '#16a34a', 
-                fontWeight: 800, 
+              sx={{
+                backgroundColor: '#dcfce7',
+                color: '#16a34a',
+                fontWeight: 800,
                 fontSize: '11px',
                 height: '24px',
                 borderRadius: '6px',
                 border: '1px solid #bbf7d0'
-              }} 
+              }}
             />
           )}
         </Box>
@@ -257,10 +277,10 @@ const DocumentUploadPage = () => {
   return (
     <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
       <Card sx={{ width: '100%', p: { xs: 3, md: 6 }, borderRadius: '24px', boxShadow: '0px 4px 24px rgba(0,0,0,0.04)', border: '1px solid #f3f4f6' }}>
-        
+
         {/* Top Stepper */}
         <Stepper />
-        
+
         {/* Position Selector */}
         <PositionSelector />
 
@@ -325,16 +345,16 @@ const DocumentUploadPage = () => {
 
         {/* Bottom Save Button */}
         <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 6, pt: 4, borderTop: '1px solid #f3f4f6' }}>
-          <Button 
-            variant="contained" 
-            sx={{ 
-              borderRadius: '12px', 
-              px: 6, 
-              py: 1.8, 
-              textTransform: 'none', 
-              fontWeight: 800, 
+          <Button
+            variant="contained"
+            sx={{
+              borderRadius: '12px',
+              px: 6,
+              py: 1.8,
+              textTransform: 'none',
+              fontWeight: 800,
               fontSize: '15px',
-              backgroundColor: '#1976d2', 
+              backgroundColor: '#1976d2',
               boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)',
               '&:hover': { backgroundColor: '#1565c0', boxShadow: '0 6px 16px rgba(25, 118, 210, 0.3)' }
             }}

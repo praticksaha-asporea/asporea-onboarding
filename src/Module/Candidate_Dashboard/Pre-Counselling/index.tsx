@@ -84,7 +84,7 @@ const PreCounselling = () => {
           <Typography variant="h4">
             Confirm Your Pre-Counselling Readiness
           </Typography>
-          <Typography variant="body1" sx={{ color: "text.secondary", mb: 6 }}>
+          <Typography variant="subtitle1" className="pb-5">
             Please review the details below and confirm your availability and
             preparedness for the upcoming session via phone call.
           </Typography>
