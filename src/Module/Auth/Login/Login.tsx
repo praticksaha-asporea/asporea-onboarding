@@ -236,7 +236,7 @@ const Login = ({ mode }: { mode: Mode }) => {
             alignItems: "center",
           }}
         >
-          <Typography variant="h4" fontWeight="800" sx={{ mb: 4, mt: 2 }}>
+          <Typography variant="h4" sx={{ mb: 4, mt: 2 }}>
             Setup Password
           </Typography>
 

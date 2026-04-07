@@ -6,7 +6,7 @@ import { useMemo } from 'react'
 // MUI Imports
 import { deepmerge } from '@mui/utils'
 import {
-  Experimental_CssVarsProvider as CssVarsProvider,
+  ThemeProvider as CssVarsProvider,
   extendTheme,
   lighten,
   darken
