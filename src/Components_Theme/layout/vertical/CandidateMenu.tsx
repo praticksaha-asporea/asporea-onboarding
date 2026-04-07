@@ -70,7 +70,7 @@ const CandidateMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectS
           <MenuItem href='/document-upload' icon={<i className='material-symbols--file-upload' />}>
             Document Upload
           </MenuItem>
-          <MenuItem href='/account-settings' icon={<i className='material-symbols--work-outline' />}>
+          <MenuItem href='/experience' icon={<i className='material-symbols--work-outline' />}>
             Experience
           </MenuItem>
           <MenuItem href='/account-settings' icon={<i className='material-symbols--emoji-events' />}>
