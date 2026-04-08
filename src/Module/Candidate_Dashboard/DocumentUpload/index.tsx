@@ -12,119 +12,243 @@ import Accordion from '@mui/material/Accordion'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Chip from '@mui/material/Chip'
+import Stepper from '@mui/material/Stepper';
+import { Checkbox, Stack, Step, StepConnector, stepConnectorClasses, StepIconProps, StepLabel } from '@mui/material'
+import { lighten, styled } from '@mui/material/styles'
 
 // 1. TOP STEPPER COMPONENT
-const Stepper = () => {
+const Stepper_Steps = () => {
   const steps = [
     { label: 'Inquiry', status: 'completed' },
     { label: 'Counselling', status: 'completed' },
     { label: 'Documents', status: 'active' },
     { label: 'Experience', status: 'pending' },
     { label: 'Assessment', status: 'pending' },
-  ]
+  ];
+
+
+  const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
+    [`&.${stepConnectorClasses.alternativeLabel}`]: {
+      top: 22,
+    },
+    [`&.${stepConnectorClasses.active}`]: {
+      [`& .${stepConnectorClasses.line}`]: {
+        backgroundImage:
+          `linear-gradient(270deg, ${lighten(
+            theme.palette.primary.main,
+            0.5
+          )}, var(--mui-palette-primary-main) 100%)`
+      },
+    },
+    [`&.${stepConnectorClasses.completed}`]: {
+      [`& .${stepConnectorClasses.line}`]: {
+        backgroundImage:
+          `linear-gradient(270deg, ${lighten(
+            theme.palette.primary.main,
+            0.5
+          )}, var(--mui-palette-primary-main) 100%)`,
+      },
+    },
+    [`& .${stepConnectorClasses.line}`]: {
+      height: 3,
+      border: 0,
+      backgroundColor: '#eaeaf0',
+      borderRadius: 1,
+      ...theme.applyStyles('dark', {
+        backgroundColor: theme.palette.grey[800],
+      }),
+    },
+  }));
+
+  const ColorlibStepIconRoot = styled('div')<{
+    ownerState: { completed?: boolean; active?: boolean };
+  }>(({ theme }) => ({
+    backgroundColor: '#ccc',
+    zIndex: 1,
+    color: '#fff',
+    width: 50,
+    height: 50,
+    display: 'flex',
+    borderRadius: '50%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.applyStyles('dark', {
+      backgroundColor: theme.palette.grey[700],
+    }),
+    variants: [
+      {
+        props: ({ ownerState }) => ownerState.active,
+        style: {
+          backgroundImage:
+            `linear-gradient(270deg, ${lighten(
+              theme.palette.primary.main,
+              0.5
+            )}, var(--mui-palette-primary-main) 100%)`,
+          boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+        },
+      },
+      {
+        props: ({ ownerState }) => ownerState.completed,
+        style: {
+          backgroundImage:
+            `linear-gradient(270deg, ${lighten(
+              theme.palette.primary.main,
+              0.5
+            )}, var(--mui-palette-primary-main) 100%)`,
+        },
+      },
+    ],
+  }));
+
+  function ColorlibStepIcon(props: StepIconProps) {
+    const { active, completed, className } = props;
+
+    const icons: { [index: string]: React.ReactElement<unknown> } = {
+      1: <i className="material-symbols--help-outline" />,
+      2: <i className="material-symbols--check-circle-outline" />,
+      3: <i className="material-symbols--file-upload" />,
+      4: <i className="material-symbols--work-outline" />,
+      5: <i className="material-symbols--emoji-events" />,
+    };
+
+    return (
+      <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
+        {icons[String(props.icon)]}
+      </ColorlibStepIconRoot>
+    );
+  }
 
   return (
     <Grid container spacing={6}>
       {/* Left Section   */}
       <Grid size={{ xs: 12, md: 12 }}>
-          <Typography variant="h4">
-            Document Upload & Verification
-          </Typography>
-          
-          <Typography variant="body1" sx={{ color: "text.secondary", mb: 6 }}>
-            Please upload the required documents for verification. Ensure all documents are clear and valid to avoid delays.
-          </Typography>
-          
-                  <Card
-                    sx={{
-                      p: { xs: 2, sm: 6 },
-                      borderRadius: "15px",
-                      boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
-                    }}
-                  >
-          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', mb: 6, overflowX: 'auto', pb: 1 }}>
-            {steps.map((step, index) => (
-              <React.Fragment key={index}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, flexShrink: 0 }}>
-                  <Box
-                    sx={{
-                      width: 28,
-                      height: 28,
-                      borderRadius: '50%',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '12px',
-                      fontWeight: 'bold',
-                      transition: 'all 0.3s',
-                      backgroundColor: step.status === 'completed' ? '#dcfce7' : step.status === 'active' ? '#1976d2' : '#f3f4f6',
-                      color: step.status === 'completed' ? '#16a34a' : step.status === 'active' ? '#fff' : '#9ca3af',
-                      boxShadow: step.status === 'active' ? '0 4px 10px rgba(25, 118, 210, 0.3)' : 'none'
-                    }}
-                  >
-                    {step.status === 'completed' ? <i className="ri-check-line" style={{ fontSize: '16px', fontWeight: 'bold' }} /> : index + 1}
-                  </Box>
-                  <Typography
-                    sx={{
-                      fontSize: '14px',
-                      fontWeight: 800,
-                      color: step.status === 'active' ? '#1976d2' : step.status === 'completed' ? '#1f2937' : '#9ca3af'
-                    }}
-                  >
-                    {step.label}
-                  </Typography>
-                </Box>
-                {index < steps.length - 1 && (
-                  <Box sx={{ flex: 1, height: 2, mx: 2, minWidth: 40, backgroundColor: '#e5e7eb', position: 'relative' }}>
-                    {step.status === 'completed' && <Box sx={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: '100%', backgroundColor: '#4ade80' }} />}
-                  </Box>
-                )}
-              </React.Fragment>
-            ))}
-          </Box></Card>
+        <Typography variant="h4">
+          Document Upload & Verification
+        </Typography>
+
+        <Typography variant="body1" sx={{ color: "text.secondary", mb: 6 }}>
+          Please upload the required documents for verification. Ensure all documents are clear and valid to avoid delays.
+        </Typography>
+
+        <Card
+          sx={{
+            p: { xs: 2, sm: 6 },
+            borderRadius: "15px",
+            boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
+          }}
+        >
+          <Stack sx={{ width: '100%' }} spacing={4}>
+            <Stepper alternativeLabel activeStep={2} connector={<ColorlibConnector />}>
+              {steps.map(({ label, status }) => (
+                <Step key={label}>
+                  <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Stack>
+        </Card>
       </Grid>
     </Grid>
   )
 }
 
-// 2. POSITION SELECTOR COMPONENT
 const PositionSelector = () => {
-  const positions = ['Nurse', 'Receptionist', 'Security Guard']
+const positions = [
+    'Nurse',
+    'Caregiver',
+    'Cashier',
+    'Sales Associate',
+    'Sales Merchandiser',
+    'Storekeeper',
+    'CNC Operator & Programmer',
+    'Warehouse Helper',
+    'Order Picker',
+    'Checker / Receiver',
+    'F&B Service',
+    'F&B Production',
+    'Front Office',
+    'Housekeeping',
+    'General Worker',
+    'Forklift Operator',
+    'Trailer Driver',
+    'CNC Operator',
+    'Data Entry Operator'
+  ];
   const [selected, setSelected] = useState('Nurse')
 
   return (
+    <Card sx={{
+            p: { xs: 2, sm: 6 },
+            borderRadius: "15px",
+            boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
+            mt:6
+          }}>
     <Box sx={{ mb: 6 }}>
-      <Typography variant="caption" sx={{ fontWeight: 800, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.5px', display: 'block', mb: 2 }}>
+      <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: '0.5px', display: 'block', mb: 5 }}>
         Position applying for
       </Typography>
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5 }}>
-        {positions.map(pos => (
+      
+      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 4 }}>
+        {positions.map((pos) => (
           <Button
             key={pos}
+            variant={
+              selected === pos ? "contained" : "outlined"
+            }
             onClick={() => setSelected(pos)}
-            variant="outlined"
             sx={{
-              borderRadius: '50px',
+              borderRadius: "20px",
+              textTransform: "none",
               px: 3,
-              py: 1,
-              textTransform: 'none',
-              fontWeight: 800,
-              fontSize: '13px',
-              borderWidth: '1px',
-              borderColor: selected === pos ? '#1976d2' : '#e5e7eb',
-              backgroundColor: selected === pos ? '#f0f7ff' : '#fff',
-              color: selected === pos ? '#1976d2' : '#6b7280',
-              '&:hover': {
-                backgroundColor: selected === pos ? '#f0f7ff' : '#f9fafb',
-                borderColor: selected === pos ? '#1976d2' : '#d1d5db'
-              }
+              borderColor:
+                selected===pos ? "primary.main" : "#e0e0e0",
+              backgroundColor:
+                selected===pos
+                  ? "primary.main"
+                  : "var(--variant-outlinedBg)",
+              color:
+                selected===pos
+                  ? "white"
+                  : "#6b7280",
+              "&:hover": {
+                borderColor: selected===pos
+                  ? "primary.main"
+                  : "#e0e0e0",
+              },
+              "&.Mui-disabled": {
+                backgroundColor: "#f5f5f5",
+                color: "#bdbdbd",
+                borderColor: "#e0e0e0",
+              },
             }}
           >
             {pos}
           </Button>
         ))}
       </Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box
+          sx={{
+            width: 16,
+            height: 16,
+            borderRadius: "4px",
+            backgroundColor: "#1976d2",
+          }}
+        />
+        <Typography variant="body2">Selected</Typography>
+        <Box
+          sx={{
+            width: 16,
+            height: 16,
+            borderRadius: "4px",
+            border: "1px solid #ccc",
+            backgroundColor: "transparent",
+          }}
+        />
+        <Typography variant="body2">Available</Typography>
+      </Box>
     </Box>
+    </Card>
   )
 }
 
@@ -249,12 +373,11 @@ const SectionAccordion = ({ title, status, defaultExpanded = false, children }: 
           <Typography sx={{ fontSize: '16px', fontWeight: 800, color: '#111' }}>{title}</Typography>
           {status === 'uploaded' && (
             <Chip
-              icon={<i className="ri-check-line" style={{ fontSize: '14px', color: '#16a34a', marginLeft: '4px' }} />}
               label="Uploaded"
               size="small"
               sx={{
-                backgroundColor: '#dcfce7',
-                color: '#16a34a',
+                backgroundColor: '#e6f2fe',
+                color: 'var(--mui-palette-primary-main)',
                 fontWeight: 800,
                 fontSize: '11px',
                 height: '24px',
@@ -279,7 +402,7 @@ const DocumentUploadPage = () => {
       <Card sx={{ width: '100%', p: { xs: 3, md: 6 }, borderRadius: '24px', boxShadow: '0px 4px 24px rgba(0,0,0,0.04)', border: '1px solid #f3f4f6' }}>
 
         {/* Top Stepper */}
-        <Stepper />
+        <Stepper_Steps />
 
         {/* Position Selector */}
         <PositionSelector />

@@ -98,7 +98,7 @@ const PreCounselling = () => {
             }}
           >
             <CardContent sx={{ p: 6 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 4 }}>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 4 }}>
                 Readiness Checklist
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -126,7 +126,7 @@ const PreCounselling = () => {
             }}
           >
             <CardContent sx={{ p: 6 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 4 }}>
+              <Typography variant="h5" fontWeight="bold" sx={{ mb: 4 }}>
                 Your Scheduled Session
               </Typography>
 
