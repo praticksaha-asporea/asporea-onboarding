@@ -13,8 +13,9 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import Chip from '@mui/material/Chip'
 import Stepper from '@mui/material/Stepper';
-import { Checkbox, Stack, Step, StepConnector, stepConnectorClasses, StepIconProps, StepLabel } from '@mui/material'
+import { Stack, Step, StepConnector, stepConnectorClasses, StepIconProps, StepLabel } from '@mui/material'
 import { lighten, styled } from '@mui/material/styles'
+
 
 // 1. TOP STEPPER COMPONENT
 const Stepper_Steps = () => {
@@ -25,6 +26,7 @@ const Stepper_Steps = () => {
     { label: 'Experience', status: 'pending' },
     { label: 'Assessment', status: 'pending' },
   ];
+
 
 
   const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
@@ -126,20 +128,16 @@ const Stepper_Steps = () => {
           Document Upload & Verification
         </Typography>
 
-        <Typography variant="body1" sx={{ color: "text.secondary", mb: 6 }}>
+        <Typography variant="body1" className="text.secondary mb-6">
           Please upload the required documents for verification. Ensure all documents are clear and valid to avoid delays.
         </Typography>
 
         <Card
-          sx={{
-            p: { xs: 2, sm: 6 },
-            borderRadius: "15px",
-            boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
-          }}
+          className="p-2 sm:p-6 rounded-xl shadow-md"
         >
-          <Stack sx={{ width: '100%' }} spacing={4}>
+          <Stack className="w-full" spacing={4}>
             <Stepper alternativeLabel activeStep={2} connector={<ColorlibConnector />}>
-              {steps.map(({ label, status }) => (
+              {steps.map(({ label }) => (
                 <Step key={label}>
                   <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
                 </Step>
@@ -153,7 +151,7 @@ const Stepper_Steps = () => {
 }
 
 const PositionSelector = () => {
-const positions = [
+  const positions = [
     'Nurse',
     'Caregiver',
     'Cashier',
@@ -177,87 +175,57 @@ const positions = [
   const [selected, setSelected] = useState('Nurse')
 
   return (
-    <Card sx={{
-            p: { xs: 2, sm: 6 },
-            borderRadius: "15px",
-            boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
-            mt:6
-          }}>
-    <Box sx={{ mb: 6 }}>
-      <Typography variant="h5" sx={{ fontWeight: 'bold', letterSpacing: '0.5px', display: 'block', mb: 5 }}>
-        Position applying for
-      </Typography>
-      
-      <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 4 }}>
-        {positions.map((pos) => (
-          <Button
-            key={pos}
-            variant={
-              selected === pos ? "contained" : "outlined"
-            }
-            onClick={() => setSelected(pos)}
-            sx={{
-              borderRadius: "20px",
-              textTransform: "none",
-              px: 3,
-              borderColor:
-                selected===pos ? "primary.main" : "#e0e0e0",
-              backgroundColor:
-                selected===pos
-                  ? "primary.main"
-                  : "var(--variant-outlinedBg)",
-              color:
-                selected===pos
-                  ? "white"
-                  : "#6b7280",
-              "&:hover": {
-                borderColor: selected===pos
-                  ? "primary.main"
-                  : "#e0e0e0",
-              },
-              "&.Mui-disabled": {
-                backgroundColor: "#f5f5f5",
-                color: "#bdbdbd",
-                borderColor: "#e0e0e0",
-              },
-            }}
-          >
-            {pos}
-          </Button>
-        ))}
+    <Card className="p-2 sm:p-6 rounded-xl shadow-md mt-6">
+      <Box className="mb-6">
+        <Typography variant="h5" className="font-bold tracking-wide block mb-5">
+          Position applying for
+        </Typography>
+
+        <Box className="flex flex-wrap gap-1.5 mb-4">
+          {positions.map((pos) => (
+            <Button
+              key={pos}
+              variant={
+                selected === pos ? "contained" : "outlined"
+              }
+              onClick={() => setSelected(pos)}
+              className={`rounded-full normal-case px-3 border
+              ${selected === pos
+                  ? ' border-[var(--mui-palette-primary-main)] text-white hover:border-[var(--mui-palette-primary-main)]'
+                  : 'bg-[var(--variant-outlinedBg)] border-[#e0e0e0] text-[var(--mui-palette-text-primary)] hover:border-[#e0e0e0]'}
+              disabled:bg-[#f5f5f5] disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
+            `}
+            >
+              {pos}
+            </Button>
+          ))}
+        </Box>
+        <Box className="flex items-center gap-1">
+          <Box
+            className="w-4 h-4 rounded bg-blue-600"
+          />
+          <Typography variant="body2">Selected</Typography>
+          <Box
+            className="w-4 h-4 rounded border border-gray-300 bg-transparent"
+          />
+          <Typography variant="body2">Available</Typography>
+        </Box>
       </Box>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Box
-          sx={{
-            width: 16,
-            height: 16,
-            borderRadius: "4px",
-            backgroundColor: "#1976d2",
-          }}
-        />
-        <Typography variant="body2">Selected</Typography>
-        <Box
-          sx={{
-            width: 16,
-            height: 16,
-            borderRadius: "4px",
-            border: "1px solid #ccc",
-            backgroundColor: "transparent",
-          }}
-        />
-        <Typography variant="body2">Available</Typography>
-      </Box>
-    </Box>
     </Card>
   )
 }
 
 // 3. UPLOAD CARD COMPONENT
-const UploadCard = ({ title, subtitle }: { title: string, subtitle?: string }) => {
+const UploadCard = ({ title, subtitle, allowedFormats }: { title: string, subtitle?: string, allowedFormats?: string[] }) => {
+
   const [file, setFile] = useState<File | null>(null)
   const [isDragging, setIsDragging] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const isValidFile = (file: File, allowedFormats: string[]) => {
+    const fileExtension = file.name.split('.').pop()?.toLowerCase()
+    return fileExtension && allowedFormats.includes(fileExtension)
+  }
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(true)
@@ -271,70 +239,84 @@ const UploadCard = ({ title, subtitle }: { title: string, subtitle?: string }) =
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault()
     setIsDragging(false)
-    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      setFile(e.dataTransfer.files[0])
+
+    const files = e.dataTransfer.files
+    if (files && files.length > 0) {
+      const selectedFile = files[0]
+
+      if (allowedFormats && !isValidFile(selectedFile, allowedFormats)) {
+        alert('Invalid file type')
+        return
+      }
+
+      setFile(selectedFile)
     }
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setFile(e.target.files[0])
+    const files = e.target.files
+
+    if (files && files.length > 0) {
+      const selectedFile = files[0]
+
+      if (allowedFormats && !isValidFile(selectedFile, allowedFormats)) {
+        alert('Invalid file type')
+        return
+      }
+
+      setFile(selectedFile)
     }
   }
 
   return (
-    <Card variant="outlined" sx={{ borderRadius: '16px', display: 'flex', flexDirection: 'column', height: '100%', borderColor: '#e5e7eb', boxShadow: 'none', '&:hover': { boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }, transition: 'all 0.2s' }}>
-      <Box sx={{ p: 2.5, borderBottom: '1px solid #f3f4f6', backgroundColor: '#f9fafb' }}>
-        <Typography sx={{ fontWeight: 800, fontSize: '13px', color: '#1f2937', lineHeight: 1.2 }}>{title}</Typography>
-        {subtitle && <Typography sx={{ fontSize: '11px', color: '#6b7280', mt: 0.5, fontWeight: 600 }}>{subtitle}</Typography>}
+    <Card variant="outlined" className="rounded-[16px] flex flex-col h-full shadow-none hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all duration-200">
+      <Box className="p-2.5 h-[2.4em] flex items-center justify-center">
+        <Typography className="font-extrabold text-[13px] leading-[1.2] text-center overflow-hidden">
+          {title}
+        </Typography>
       </Box>
       <Box
-        sx={{ p: 2.5, flexGrow: 1, display: 'flex', flexDirection: 'column', backgroundColor: '#fff' }}
+        className="p-2.5 flex flex-col flex-grow bg-[var(--mui-overlays-1)]"
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
       >
         <Box
           onClick={() => fileInputRef.current?.click()}
-          sx={{
-            width: '100%',
-            height: '100%',
-            minHeight: '140px',
-            border: '2px dashed',
-            borderColor: isDragging ? '#1976d2' : '#d1d5db',
-            borderRadius: '12px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: 3,
-            cursor: 'pointer',
-            backgroundColor: isDragging ? '#f0f7ff' : '#f9fafb',
-            transition: 'all 0.2s',
-            '&:hover': { borderColor: '#93c5fd', backgroundColor: '#f0f7ff' }
-          }}
+          className={`w-full h-full min-h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-3 cursor-pointer transition-all duration-200
+            ${isDragging ? 'border-blue-600 bg-blue-50' : ''}
+            hover:border-blue-300 hover:bg-[var(--mui-palette-secondary-lightOpacity)]
+          `}
         >
-          <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} style={{ display: 'none' }} />
+          <input type="file" ref={fileInputRef} className="hidden" onChange={handleFileChange} accept={allowedFormats?.map(ext => `.${ext}`).join(',')} />
 
           {file ? (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <i className="ri-file-text-fill" style={{ fontSize: '32px', color: '#1976d2', marginBottom: '8px' }}></i>
-              <Typography sx={{ fontSize: '13px', fontWeight: 800, color: '#1f2937', maxWidth: '160px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <Box className="flex flex-col items-center text-center">
+              <i className="ri-file-text-fill text-3xl text-[var(--mui-palette-primary-main)] mb-2"></i>
+              <Typography className="text-sm font-extrabold text-gray-800 max-w-xs whitespace-nowrap overflow-hidden text-ellipsis">
                 {file.name}
               </Typography>
-              <Typography sx={{ fontSize: '11px', color: '#16a34a', fontWeight: 800, mt: 0.5 }}>File attached</Typography>
+              <Typography className="text-xs text-green-600 font-extrabold mt-0.5">File attached</Typography>
             </Box>
           ) : (
-            <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
-              <Box sx={{ width: 40, height: 40, backgroundColor: '#fff', border: '1px solid #e5e7eb', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', mb: 2, boxShadow: '0 1px 3px rgba(0,0,0,0.05)' }}>
-                <i className="ri-upload-cloud-2-line" style={{ fontSize: '20px', color: '#1976d2' }}></i>
+            <Box className="flex flex-col items-center text-center">
+              <Box className="w-10 h-10 bg-var(--mui-overlays-1) border border-gray-200 rounded-full flex items-center justify-center mb-2 shadow-sm">
+                <i className="ri-upload-cloud-2-line text-xl text-[var(--mui-palette-primary-main)]"></i>
               </Box>
-              <Typography sx={{ fontSize: '12px', fontWeight: 600, color: '#4b5563' }}>
-                Drop your files here or <span style={{ color: '#1976d2', fontWeight: 800 }}>browse</span>
+              <Typography className="text-xs font-semibold">
+                Drop your files here or <span className="text-[var(--mui-palette-primary-main)] font-extrabold">browse</span>
               </Typography>
             </Box>
           )}
         </Box>
+
+        {subtitle && (
+          <Typography
+            className="text-xs  text-center whitespace-pre-line pt-3 leading-[1.2] h-[4.2em] overflow-hidden"
+          >
+            {subtitle}
+          </Typography>
+        )}
       </Box>
     </Card>
   )
@@ -347,48 +329,28 @@ const SectionAccordion = ({ title, status, defaultExpanded = false, children }: 
       defaultExpanded={defaultExpanded}
       disableGutters
       elevation={0}
-      sx={{
-        border: '1px solid #e5e7eb',
-        borderRadius: '16px !important',
-        mb: 3,
-        '&:before': { display: 'none' },
-        overflow: 'hidden',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.02)'
-      }}
+      className=" mb-3 overflow-hidden shadow-sm before:hidden"
     >
       <AccordionSummary
         expandIcon={
-          <Box sx={{ width: 32, height: 32, borderRadius: '50%', backgroundColor: '#f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <i className="ri-arrow-down-s-line" style={{ fontSize: '20px', color: '#6b7280' }}></i>
+          <Box className="w-8 h-8 rounded-full flex items-center justify-center">
+            <i className="ri-arrow-down-s-line text-xl"></i>
           </Box>
         }
-        sx={{
-          p: 3,
-          backgroundColor: '#fff',
-          '&:hover': { backgroundColor: '#f9fafb' },
-          borderBottom: '1px solid #f3f4f6'
-        }}
+        className="p-3 bg-var(--mui-overlays-1) hover:bg-[var(--mui-palette-primary-main)]"
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Typography sx={{ fontSize: '16px', fontWeight: 800, color: '#111' }}>{title}</Typography>
+        <Box className="flex items-center gap-2">
+          <Typography className="text-base font-extrabold">{title}</Typography>
           {status === 'uploaded' && (
             <Chip
               label="Uploaded"
               size="small"
-              sx={{
-                backgroundColor: '#e6f2fe',
-                color: 'var(--mui-palette-primary-main)',
-                fontWeight: 800,
-                fontSize: '11px',
-                height: '24px',
-                borderRadius: '6px',
-                border: '1px solid #bbf7d0'
-              }}
+              className="bg-blue-50 text-[var(--mui-palette-primary-main)] font-extrabold text-xs h-6 rounded border border-green-200"
             />
           )}
         </Box>
       </AccordionSummary>
-      <AccordionDetails sx={{ p: 4, backgroundColor: '#fafbfc' }}>
+      <AccordionDetails className="p-4">
         {children}
       </AccordionDetails>
     </Accordion>
@@ -398,36 +360,53 @@ const SectionAccordion = ({ title, status, defaultExpanded = false, children }: 
 // 5. MAIN PAGE COMPONENT
 const DocumentUploadPage = () => {
   return (
-    <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-      <Card sx={{ width: '100%', p: { xs: 3, md: 6 }, borderRadius: '24px', boxShadow: '0px 4px 24px rgba(0,0,0,0.04)', border: '1px solid #f3f4f6' }}>
+    <Box className="w-full flex justify-center">
+      <Card className="w-full p-3 md:p-6 rounded-3xl shadow-md border border-gray-100">
 
         {/* Top Stepper */}
         <Stepper_Steps />
 
         {/* Position Selector */}
         <PositionSelector />
-
         <Box sx={{ mt: 5 }}>
           {/* Section 1: Resume */}
-          <SectionAccordion title="Resume / CV" status="uploaded" defaultExpanded={false}>
+          <SectionAccordion title="Resume" status="uploaded" defaultExpanded={false}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-                <UploadCard title="Updated Resume / CV" subtitle="PDF, DOCX format" />
+                <UploadCard
+                  title="Resume / CV"
+                  subtitle={`Supported format: PDF, DOCX`}
+                  allowedFormats={['pdf', 'docx']}
+                />
               </Grid>
             </Grid>
           </SectionAccordion>
 
-          {/* Section 2: Basic Documents */}
-          <SectionAccordion title="Basic Documents" defaultExpanded={true}>
+          {/* Section 2: Documents */}
+          <SectionAccordion title="Documents" defaultExpanded={true}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                <UploadCard title="Full Photo - Clear Background" subtitle="png, jpg | Aspect 9:16" />
+                <UploadCard
+                  title="Full Photo"
+                  subtitle={`Supported format: JPG, PNG\n(Aspect Ratio: 9:16)`}
+                  allowedFormats={['jpg', 'png']}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                <UploadCard title="Passport" subtitle="1st & last 2 pages" />
+                <UploadCard
+                  title="Passport"
+                  subtitle={`Supported format: JPG, PDF, PNG\n(First & Last 2 Pages)`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                <UploadCard title="ID Proof" subtitle="Aadhar / Voter" />
+                <UploadCard
+                  title="ID Proof"
+                  subtitle={`Supported format: JPG, PDF, PNG\n(Aadhar / Voter Card)`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
             </Grid>
           </SectionAccordion>
@@ -436,13 +415,27 @@ const DocumentUploadPage = () => {
           <SectionAccordion title="Experience Certificates" defaultExpanded={true}>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                <UploadCard title="Offer Letter" />
+                <UploadCard
+                  title="Offer Letter / Letter of Appointment"
+                  subtitle={`Supported format: JPG, PDF, PNG`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                <UploadCard title="Work Experience Letter" />
+                <UploadCard
+                  title="Work Experience Letter / Service Certificate"
+                  subtitle={`Supported format: JPG, PDF, PNG`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
+
               <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-                <UploadCard title="OJT / Internship" />
+                <UploadCard
+                  title="OJT / Internship Letter / Certificate"
+                  subtitle={`Supported format: JPG, PDF, PNG`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
             </Grid>
           </SectionAccordion>
@@ -450,37 +443,46 @@ const DocumentUploadPage = () => {
           {/* Section 4: Academic Certificates */}
           <SectionAccordion title="Academic Certificates" defaultExpanded={true}>
             <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-                <UploadCard title="Nursing Registration Certificate" />
+              <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                <UploadCard
+                  title="Nursing Council Registration Certificate"
+                  subtitle={`Supported format: JPG, PDF, PNG\n(Nursing)`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
-              <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-                <UploadCard title="Degree Certificate" />
+
+              <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                <UploadCard
+                  title="Degree Certificate"
+                  subtitle={`Supported format: JPG, PDF, PNG`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
-              <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-                <UploadCard title="Mark Sheets" subtitle="All Semesters" />
+
+              <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                <UploadCard
+                  title="Mark Sheets – All Semesters / Years"
+                  subtitle={`Supported format: JPG, PDF, PNG\n(Post Basic Nursing)`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
-              <Grid size={{ xs: 12, md: 6, lg: 3 }}>
-                <UploadCard title="Passing Certificates" subtitle="10th, 12th, GNM / BSc" />
+
+              <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+                <UploadCard
+                  title="Passing Certificate"
+                  subtitle={`Supported format: JPG, PDF, PNG\n(GNM)`}
+                  allowedFormats={['jpg', 'png', 'pdf']}
+                />
               </Grid>
             </Grid>
           </SectionAccordion>
         </Box>
 
         {/* Bottom Save Button */}
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 6, pt: 4, borderTop: '1px solid #f3f4f6' }}>
+        <Box className="flex justify-end mt-6 pt-4 border-t border-gray-100">
           <Button
             variant="contained"
-            sx={{
-              borderRadius: '12px',
-              px: 6,
-              py: 1.8,
-              textTransform: 'none',
-              fontWeight: 800,
-              fontSize: '15px',
-              backgroundColor: '#1976d2',
-              boxShadow: '0 4px 12px rgba(25, 118, 210, 0.2)',
-              '&:hover': { backgroundColor: '#1565c0', boxShadow: '0 6px 16px rgba(25, 118, 210, 0.3)' }
-            }}
+            className="rounded-xl px-6 py-2 normal-case font-extrabold text-sm bg-blue-600 shadow-md hover:bg-blue-700 hover:shadow-lg"
           >
             Save & Continue
           </Button>

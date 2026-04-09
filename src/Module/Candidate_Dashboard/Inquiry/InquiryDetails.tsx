@@ -509,7 +509,12 @@ West Bengal,
         maxWidth="sm"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: "20px", p: 1, position: "relative" },
+          className: "bg-[var(--mui-palette-background-default)]" 
+        }}
+        slotProps={{
+          backdrop: {
+            className: "bg-[var(--mui-palette-dividerChannel)]"
+          }
         }}
       >
         <IconButton
@@ -529,13 +534,6 @@ West Bengal,
           </Typography>
 
           <Box sx={{ mb: 4 }}>
-            <Typography
-              variant="caption"
-              fontWeight="600"
-              sx={{ textDecoration: "underline", color: "text.secondary" }}
-            >
-              Preferred/Non-Preferred+Online
-            </Typography>
             <Typography variant="body1" sx={{ mt: 1, mb: 2, px: 4 }}>
               You are assigned to a Talent Acquisition Consultant(TAC). <br />
               Be ready for Pre-Counselling.
@@ -557,12 +555,6 @@ West Bengal,
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 4 }}>
-            <Typography
-              variant="caption"
-              sx={{ textDecoration: "underline", color: "text.secondary" }}
-            >
-              Preferred+Offline
-            </Typography>
             <Typography variant="body1" sx={{ mt: 1, mb: 2, px: 4 }}>
               As you are now inside / visiting our{" "}
               <span style={{ color: "#d32f2f", fontWeight: "bold" }}>
@@ -588,12 +580,6 @@ West Bengal,
           <Divider sx={{ my: 4 }} />
 
           <Box sx={{ mb: 2 }}>
-            <Typography
-              variant="caption"
-              sx={{ textDecoration: "underline", color: "text.secondary" }}
-            >
-              Offline / TAC is not present
-            </Typography>
             <Typography
               variant="body1"
               color="error"

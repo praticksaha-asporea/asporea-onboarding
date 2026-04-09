@@ -75,11 +75,7 @@ const PreCounselling = () => {
       {/* Left Section   */}
       <Grid size={{ xs: 12, md: 8 }}>
         <Card
-          sx={{
-            p: { xs: 2, sm: 6 },
-            borderRadius: "15px",
-            boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
-          }}
+          className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]"
         >
           <Typography variant="h4">
             Confirm Your Pre-Counselling Readiness
@@ -153,7 +149,8 @@ const PreCounselling = () => {
               >
                 Available Time Slots
               </Typography>
-              <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1.5, mb: 4 }}>
+              <Box className="flex flex-wrap gap-1.5 mb-4">
+                {/*  */}
                 {slots.map((slot, index) => (
                   <Button
                     key={index}
@@ -241,14 +238,14 @@ const PreCounselling = () => {
                 sx={{
                   mt: 4,
                   p: 2,
-                  backgroundColor: "#f8faff",
+                  // backgroundColor: "#f8faff",
                   borderRadius: "10px",
                   borderLeft: "4px solid #1976d2",
                 }}
               >
                 <Typography
                   variant="body2"
-                  sx={{ color: "text.secondary", fontWeight: "500" }}
+                  // sx={{ color: "text.secondary", fontWeight: "500" }}
                 >
                   Please ensure you have reviewed the pre-counselling materials
                   before your session. Ensure you are ready to receive a call at
@@ -344,13 +341,13 @@ const PreCounselling = () => {
         <Box sx={{ display: "flex", gap: 2, mb: 4, alignItems: "flex-start" }}>
           <i className="ri-whatsapp-line" style={{ fontSize: "24px", color: "#25D366", marginTop: "2px" }}></i>
           <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.5 }}>
-            <span style={{ fontWeight: "bold", color: "#000" }}>WhatsApp:</span> Enabled for timely updates and session reminders.
+            <span style={{ fontWeight: "bold"}}>WhatsApp:</span> Enabled for timely updates and session reminders.
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
           <i className="ri-mail-line" style={{ fontSize: "24px", color: "#1976d2", marginTop: "2px" }}></i>
           <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.5 }}>
-            <span style={{ fontWeight: "bold", color: "#000" }}>Email:</span> Enabled for detailed session information and important documents.
+            <span style={{ fontWeight: "bold" }}>Email:</span> Enabled for detailed session information and important documents.
           </Typography>
         </Box>
       </Box>
@@ -408,17 +405,10 @@ const PreCounselling = () => {
         }}
       >
         <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-            p: 2,
-          }}
+          className="flex flex-col items-center text-center p-2"
         >
           <Typography
             variant="h3"
-            sx={{ fontWeight: 900, color: "#000", mb: 10 }}
           >
             Request Submitted
           </Typography>
@@ -435,7 +425,7 @@ const PreCounselling = () => {
             Please check your communication preference.
           </Typography>
 
-          <Typography variant="body1" sx={{ color: "#000", mb: 6, px: 2 }}>
+          <Typography variant="body1" sx={{  mb: 6, px: 2 }}>
             Meanwhile you can start uploading necessary <br />
             documents
           </Typography>
@@ -452,22 +442,7 @@ const PreCounselling = () => {
               variant="outlined"
               disableRipple
               disableElevation
-              sx={{
-                borderRadius: "50px",
-                backgroundColor: "black",
-
-                px: 4,
-                py: 1.5,
-                textTransform: "none",
-                fontWeight: "bold",
-                color: "white",
-                borderColor: "grey.300",
-                "&:hover": {
-                  borderColor: "grey.900",
-                  color: "black",
-                  backgroundColor: "white",
-                },
-              }}
+              className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case font-bold text-white border border-gray-300 hover:border-gray-900 hover:text-black hover:bg-white"
             >
               Go to Documents
             </Button>
