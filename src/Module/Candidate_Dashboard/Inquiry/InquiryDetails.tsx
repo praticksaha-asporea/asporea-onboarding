@@ -519,43 +519,38 @@ West Bengal,
       >
         <IconButton
           onClick={() => setShowInquiryPopup(false)}
-          sx={{ position: "absolute", right: 20, top: 20, color: "grey.500" }}
+           className="absolute right-5 top-5 text-gray-500"
         >
           <i className="material-symbols--close-rounded" />
 
         </IconButton>
 
-        <DialogContent sx={{ textAlign: "center", p: 4 }}>
-          <Typography variant="h3" fontWeight="900" sx={{ mt: 2 }}>
+        <DialogContent  className="text-center p-8">
+          <Typography variant="h3" fontWeight="900"  className="mt-4">
             Inquiry Submitted
           </Typography>
-          <Typography variant="h6" fontWeight="700" sx={{ mb: 4, mt: 1 }}>
+          <Typography variant="h6" fontWeight="700"  className="mt-2 mb-8">
             ID: ASP-INQ-0841
           </Typography>
 
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="body1" sx={{ mt: 1, mb: 2, px: 4 }}>
+          <Box  className="mb-8">
+            <Typography variant="body1" className="mt-2 mb-4 px-8"
+>
               You are assigned to a Talent Acquisition Consultant(TAC). <br />
               Be ready for Pre-Counselling.
             </Typography>
             <Button
               variant="contained"
-              sx={{
-                borderRadius: "50px",
-                px: 5,
-                py: 1.2,
-                textTransform: "none",
-                fontSize: "1.1rem",
-              }}
+              className="normal-case rounded-[50px] px-10 py-[9.6px] text-[1.1rem]"
             >
               Schedule Pre-Counselling
             </Button>
           </Box>
 
-          <Divider sx={{ my: 4 }} />
+          <Divider className="my-8" />
 
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="body1" sx={{ mt: 1, mb: 2, px: 4 }}>
+          <Box className="mb-4">
+            <Typography variant="body1" className="mt: 1, mb: 2, px: 4 ">
               As you are now inside / visiting our{" "}
               <span style={{ color: "#d32f2f", fontWeight: "bold" }}>
                 Siliguri
@@ -565,25 +560,19 @@ West Bengal,
             </Typography>
             <Button
               variant="contained"
-              sx={{
-                borderRadius: "50px",
-                px: 5,
-                py: 1.2,
-                textTransform: "none",
-                fontSize: "1.1rem",
-              }}
+             className="normal-case rounded-[50px] px-10 py-[9.6px] text-[1.1rem]"
             >
               Schedule Pre-Counselling
             </Button>
           </Box>
 
-          <Divider sx={{ my: 4 }} />
+          <Divider className="my: 4 " />
 
-          <Box sx={{ mb: 2 }}>
+          <Box className="mb-2">
             <Typography
               variant="body1"
               color="error"
-              sx={{ mt: 1, px: 4, fontWeight: "500" }}
+            className="mt-2 px-8 font-medium"
             >
               As you're in <span style={{ fontWeight: "bold" }}>Siliguri</span>{" "}
               Branch. <br />

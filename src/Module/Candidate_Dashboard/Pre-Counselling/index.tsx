@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
- 
+import clsx from "clsx";
+
 import type { ChangeEvent } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-} from "@mui/material";
+import { Dialog, DialogContent } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -20,12 +18,7 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import Switch from "@mui/material/Switch";
-import {
-  
-  FormGroup,
-  FormHelperText,
-  
-} from "@mui/material"
+import { FormGroup, FormHelperText } from "@mui/material";
 
 type StateType = {
   [key: string]: boolean;
@@ -35,22 +28,20 @@ const PreCounselling = () => {
   const [selectedSlot, setSelectedSlot] = useState("2:00-2:30");
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
-  const [isEditingChannels , setIsEditingChannels] = useState(false)
+  const [isEditingChannels, setIsEditingChannels] = useState(false);
 
-   const [state, setState] = useState<StateType>({
-      gilad: true,
-      jason: false,
-      antoine: false,
-    });
+  const [state, setState] = useState<StateType>({
+    gilad: true,
+    jason: false,
+    antoine: false,
+  });
 
-      
-    const { gilad, jason, antoine } = state;
-    const error = [gilad, jason, antoine].filter((v) => v).length !== 2;
-  
-    const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-      setState({ ...state, [event.target.name]: event.target.checked });
-    };
-     
+  const { gilad, jason, antoine } = state;
+  const error = [gilad, jason, antoine].filter((v) => v).length !== 2;
+
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setState({ ...state, [event.target.name]: event.target.checked });
+  };
 
   // Demo slots array
   const slots = [
@@ -74,9 +65,7 @@ const PreCounselling = () => {
     <Grid container spacing={6}>
       {/* Left Section   */}
       <Grid size={{ xs: 12, md: 8 }}>
-        <Card
-          className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]"
-        >
+        <Card className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]">
           <Typography variant="h4">
             Confirm Your Pre-Counselling Readiness
           </Typography>
@@ -85,19 +74,12 @@ const PreCounselling = () => {
             preparedness for the upcoming session via phone call.
           </Typography>
 
-          <Card
-            sx={{
-              borderRadius: "15px",
-              mb: 6,
-              border: "1px solid #e0e0e0",
-              boxShadow: "none",
-            }}
-          >
-            <CardContent sx={{ p: 6 }}>
-              <Typography variant="h5" fontWeight="bold" sx={{ mb: 4 }}>
+          <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
+            <CardContent className="p-6">
+              <Typography variant="h5" fontWeight="bold" className="mb-4">
                 Readiness Checklist
               </Typography>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+              <Box className="flex flex-col gap-4">
                 <FormControlLabel
                   control={<Checkbox defaultChecked />}
                   label="I have reviewed the pre-counselling materials."
@@ -114,39 +96,22 @@ const PreCounselling = () => {
             </CardContent>
           </Card>
 
-          <Card
-            sx={{
-              borderRadius: "15px",
-              border: "1px solid #e0e0e0",
-              boxShadow: "none",
-            }}
-          >
-            <CardContent sx={{ p: 6 }}>
-              <Typography variant="h5" fontWeight="bold" sx={{ mb: 4 }}>
+          <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+            <CardContent className="p-6">
+              <Typography variant="h5" fontWeight="bold" className="mb-4">
                 Your Scheduled Session
               </Typography>
 
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: 1, fontWeight: "bold" }}
-              >
+              <Typography variant="subtitle2" className="mb-2 font-bold">
                 Counselling Date
               </Typography>
               <TextField
                 type="date"
                 defaultValue="2026-02-27"
-                sx={{
-                  width: "100%",
-                  maxWidth: "300px",
-                  mb: 5,
-                  "& .MuiOutlinedInput-root": { borderRadius: "10px" },
-                }}
+                className="w-full max-w-[300px] mb-10"
               />
 
-              <Typography
-                variant="subtitle2"
-                sx={{ mb: 2, fontWeight: "bold" }}
-              >
+              <Typography variant="subtitle2" className="mb-2 font-bold">
                 Available Time Slots
               </Typography>
               <Box className="flex flex-wrap gap-1.5 mb-4">
@@ -159,94 +124,40 @@ const PreCounselling = () => {
                       selectedSlot === slot.time ? "contained" : "outlined"
                     }
                     onClick={() => slot.available && setSelectedSlot(slot.time)}
-                    sx={{
-                      borderRadius: "20px",
-                      textTransform: "none",
-                      px: 3,
-                      borderColor:
-                        selectedSlot === slot.time ? "primary.main" : "#e0e0e0",
-                      backgroundColor:
-                        selectedSlot === slot.time
-                          ? "primary.main"
-                          : slot.available
-                            ? "transparent"
-                            : "#f5f5f5",
-                      color:
-                        selectedSlot === slot.time
-                          ? "white"
-                          : slot.available
-                            ? "text.primary"
-                            : "text.disabled",
-                      "&:hover": {
-                        borderColor: slot.available
-                          ? "primary.main"
-                          : "#e0e0e0",
-                      },
-                      "&.Mui-disabled": {
-                        backgroundColor: "#f5f5f5",
-                        color: "#bdbdbd",
-                        borderColor: "#e0e0e0",
-                      },
-                    }}
+                    className={clsx(
+                      "normal-case rounded-[20px] px-6",
+                      selectedSlot === slot.time
+                        ? "bg-primary border-primary text-white"
+                        : slot.available
+                          ? "bg-transparent border-[#e0e0e0] text-primary hover:border-primary"
+                          : "bg-[#f5f5f5] border-[#e0e0e0] text-[#bdbdbd]",
+                      "disabled:bg-[#f5f5f5] disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]",
+                    )}
                   >
                     {slot.time}
                   </Button>
                 ))}
               </Box>
 
-              <Box sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: "4px",
-                      backgroundColor: "#1976d2",
-                    }}
-                  />
+              <Box className="flex flex-wrap gap-6 mb-6">
+                <Box className="flex items-center gap-2">
+                  <Box className="w-4 h-4 rounded-[4px] bg-[#1976d2]" />
                   <Typography variant="body2">Selected</Typography>
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                      backgroundColor: "transparent",
-                    }}
-                  />
+                <Box className="flex items-center gap-2">
+                  <Box className="w-4 h-4 rounded-[4px] border border-[#ccc] bg-transparent" />
                   <Typography variant="body2">Available</Typography>
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Box
-                    sx={{
-                      width: 16,
-                      height: 16,
-                      borderRadius: "4px",
-                      backgroundColor: "#f5f5f5",
-                      border: "1px solid #e0e0e0",
-                    }}
-                  />
-                  <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                <Box className="flex items-center gap-2">
+                  <Box className="w-4 h-4 rounded-[4px] bg-[#f5f5f5] border border-[#e0e0e0]" />
+                  <Typography variant="body2" className="text-gray-600">
                     Unavailable
                   </Typography>
                 </Box>
               </Box>
 
-              <Box
-                sx={{
-                  mt: 4,
-                  p: 2,
-                  // backgroundColor: "#f8faff",
-                  borderRadius: "10px",
-                  borderLeft: "4px solid #1976d2",
-                }}
-              >
-                <Typography
-                  variant="body2"
-                  // sx={{ color: "text.secondary", fontWeight: "500" }}
-                >
+              <Box className="mt-8 p-4 rounded-[10px] border-l-4 border-l-[#1976d2]">
+                <Typography variant="body2">
                   Please ensure you have reviewed the pre-counselling materials
                   before your session. Ensure you are ready to receive a call at
                   your scheduled time. Your TAC will contact you via your
@@ -260,14 +171,7 @@ const PreCounselling = () => {
             fullWidth
             variant="contained"
             onClick={() => setShowConfirmPopup(true)}
-            sx={{
-              mt: 5,
-              py: 2,
-              borderRadius: "10px",
-              fontSize: "1.1rem",
-              fontWeight: "bold",
-              textTransform: "none",
-            }}
+            className="mt-10 py-4 rounded-[10px] text-[1.1rem] font-bold normal-case"
           >
             Confirm Readiness
           </Button>
@@ -275,124 +179,132 @@ const PreCounselling = () => {
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <Card
-          sx={{
-            borderRadius: "15px",
-            mb: 6,
-            border: "1px solid #e0e0e0",
-            boxShadow: "none",
-          }}
-        >
-          <CardContent sx={{ p: 6 }}>
-            <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+        <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
+          <CardContent className="p-6">
+            <Typography variant="h6" fontWeight="bold" className="mb-3">
               Your Application Progress
             </Typography>
-            <Typography variant="body2" sx={{ mb: 2, color: "text.secondary" }}>
+            <Typography variant="body2" className="mb-4 text-gray-600">
               Pre-counselling: 2 of 7 steps complete
             </Typography>
             <LinearProgress
               variant="determinate"
               value={28}
-              sx={{
-                height: 10,
-                borderRadius: 5,
-                mb: 2,
-                backgroundColor: "#e0e0e0",
-                "& .MuiLinearProgress-bar": { backgroundColor: "#1976d2" },
-              }}
+              className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
             />
-            <Typography
-               variant='caption' sx={{ color: '#1976d2', fontWeight: 700 }}
-            >
+            <Typography variant="caption" className="text-[#1976d2] font-bold">
               You're almost there! Just few steps left.
             </Typography>
           </CardContent>
         </Card>
 
-        <Card
-          sx={{
-            borderRadius: "15px",
-            border: "1px solid #e0e0e0",
-            boxShadow: "none",
-          }}
-        >
-          <CardContent sx={{ p: 6 }}>
-     
-    <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
-      <Typography variant="h6" fontWeight="bold">
-        Notification Channels
-      </Typography>
-      <FormControlLabel
-        control={
-          <Switch 
-            checked={isEditingChannels} 
-            onChange={(e) => setIsEditingChannels(e.target.checked)} 
-            color="primary"
-          />
-        }
-        label="Edit"
-        labelPlacement="start"
-      />
-    </Box>
+        <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+          <CardContent className="p-6">
+            <Box className="flex justify-between items-center mb-8">
+              <Typography variant="h6" fontWeight="bold">
+                Notification Channels
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isEditingChannels}
+                    onChange={(e) => setIsEditingChannels(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Edit"
+                labelPlacement="start"
+              />
+            </Box>
 
-   
-    {!isEditingChannels ? (
-      <Box>
-        <Box sx={{ display: "flex", gap: 2, mb: 4, alignItems: "flex-start" }}>
-          <i className="ri-whatsapp-line" style={{ fontSize: "24px", color: "#25D366", marginTop: "2px" }}></i>
-          <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.5 }}>
-            <span style={{ fontWeight: "bold"}}>WhatsApp:</span> Enabled for timely updates and session reminders.
-          </Typography>
-        </Box>
-        <Box sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}>
-          <i className="ri-mail-line" style={{ fontSize: "24px", color: "#1976d2", marginTop: "2px" }}></i>
-          <Typography variant="body2" sx={{ color: "text.secondary", lineHeight: 1.5 }}>
-            <span style={{ fontWeight: "bold" }}>Email:</span> Enabled for detailed session information and important documents.
-          </Typography>
-        </Box>
-      </Box>
-    ) : (
-      <Box>
-        <FormControl fullWidth>
-          <FormGroup>
-            <FormControlLabel
-              label="Receive updates via Email"
-              control={<Checkbox checked={gilad} onChange={handleChange} name="gilad" />}
-            />
-            <FormControlLabel
-              label="Receive updates via WhatsApp"
-              control={<Checkbox checked={jason} onChange={handleChange} name="jason" />}
-            />
-            <FormControlLabel
-              label="Receive updates via SMS"
-              control={<Checkbox checked={antoine} onChange={handleChange} name="antoine" />}
-            />
-          </FormGroup>
-          <FormHelperText>At least One</FormHelperText>
-        </FormControl>
+            {!isEditingChannels ? (
+              <Box>
+                <Box className="flex gap-4 items-start mb-8">
+                  <i
+                    className="ri-whatsapp-line"
+                    style={{
+                      fontSize: "24px",
+                      color: "#25D366",
+                      marginTop: "2px",
+                    }}
+                  ></i>
+                  <Typography
+                    variant="body2"
+                    className="text-gray-600 leading-normal"
+                  >
+                    <span style={{ fontWeight: "bold" }}>WhatsApp:</span>{" "}
+                    Enabled for timely updates and session reminders.
+                  </Typography>
+                </Box>
+                <Box className="flex gap-4 items-start">
+                  <i
+                    className="ri-mail-line"
+                    style={{
+                      fontSize: "24px",
+                      color: "#1976d2",
+                      marginTop: "2px",
+                    }}
+                  ></i>
+                  <Typography
+                    variant="body2"
+                    className="text-gray-600 leading-normal"
+                  >
+                    <span style={{ fontWeight: "bold" }}>Email:</span> Enabled
+                    for detailed session information and important documents.
+                  </Typography>
+                </Box>
+              </Box>
+            ) : (
+              <Box>
+                <FormControl fullWidth>
+                  <FormGroup>
+                    <FormControlLabel
+                      label="Receive updates via Email"
+                      control={
+                        <Checkbox
+                          checked={gilad}
+                          onChange={handleChange}
+                          name="gilad"
+                        />
+                      }
+                    />
+                    <FormControlLabel
+                      label="Receive updates via WhatsApp"
+                      control={
+                        <Checkbox
+                          checked={jason}
+                          onChange={handleChange}
+                          name="jason"
+                        />
+                      }
+                    />
+                    <FormControlLabel
+                      label="Receive updates via SMS"
+                      control={
+                        <Checkbox
+                          checked={antoine}
+                          onChange={handleChange}
+                          name="antoine"
+                        />
+                      }
+                    />
+                  </FormGroup>
+                  <FormHelperText>At least One</FormHelperText>
+                </FormControl>
 
-     
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-          <Button 
-          
-            variant="contained" 
-            size="small"
-            onClick={() => setIsEditingChannels(false)}  
-            sx={{ 
-              borderRadius: '8px', 
-              textTransform: 'none', 
-              fontWeight: 'bold',
-              px: 3,
-              backgroundColor: '#1976d2',
-              boxShadow: 'none'
-            }}
-          >
-            Save
-          </Button>
-        </Box>
-      </Box>
-    )}
-  </CardContent>
+                <Box className="flex justify-end mt-4">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => setIsEditingChannels(false)}
+                    className="rounded-[8px] normal-case font-bold px-6 bg-[#1976d2] shadow-none"
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </CardContent>
         </Card>
       </Grid>
       <Dialog
@@ -401,43 +313,30 @@ const PreCounselling = () => {
         maxWidth="sm"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: "20px", p: 4, position: "relative" },
+          className: "rounded-[20px] p-8 relative",
         }}
       >
-        <DialogContent
-          className="flex flex-col items-center text-center p-2"
-        >
-          <Typography
-            variant="h3"
-          >
-            Request Submitted
-          </Typography>
+        <DialogContent className="flex flex-col items-center text-center p-2">
+          <Typography variant="h3">Request Submitted</Typography>
 
           <Typography
             variant="body1"
-            sx={{ color: "#d32f2f", mb: 3, lineHeight: 1.9, px: 8 }}
+            className="text-[#d32f2f] mb-6 leading-[1.9] px-16"
           >
             Please be ready for your pre-counselling held on mentioned date and
             time. A Talent Acquisition Consultant(TAC) will connect with you.
           </Typography>
 
-          <Typography variant="body1" sx={{ color: "#d32f2f", mb: 6, px: 2 }}>
+          <Typography variant="body1" className="text-[#d32f2f] mb-12 px-4">
             Please check your communication preference.
           </Typography>
 
-          <Typography variant="body1" sx={{  mb: 6, px: 2 }}>
+          <Typography variant="body1" className="mb-12 px-4">
             Meanwhile you can start uploading necessary <br />
             documents
           </Typography>
 
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              justifyContent: "center",
-              width: "100%",
-            }}
-          >
+          <Box className="flex gap-4 justify-center w-full">
             <Button
               variant="outlined"
               disableRipple

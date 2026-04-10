@@ -214,34 +214,26 @@ const Login = ({ mode }: { mode: Mode }) => {
       <Dialog
         open={showSetupPassword}
         onClose={() => setShowSetupPassword(false)}
-        maxWidth="xs"  
+        maxWidth="xs"
         fullWidth
         PaperProps={{
-          sx: { borderRadius: "20px", p: 3, position: "relative" },
+          className: "rounded-[20px] p-3 relative",
         }}
       >
-         
         <IconButton
           onClick={() => setShowSetupPassword(false)}
-          sx={{ position: "absolute", right: 20, top: 20, color: "grey.500" }}
+          className="absolute right-5 top-5 text-gray-500"
         >
-          
           <i className="material-symbols--close-rounded" />
         </IconButton>
 
-        <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-          }}
-        >
-          <Typography variant="h4" sx={{ mb: 4, mt: 2 }}>
+        <DialogContent className="flex flex-col items-center">
+          <Typography variant="h4" className="mt-4 mb-8">
             Setup Password
           </Typography>
 
-          <Box sx={{ width: "100%", mb: 3 }}>
-            <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 1 }}>
+          <Box className="w-full mb-6">
+            <Typography variant="subtitle2" fontWeight="600" className="mb-2">
               New Password
             </Typography>
             <TextField
@@ -251,17 +243,16 @@ const Login = ({ mode }: { mode: Mode }) => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    
-                    <i className="material-symbols--lock"/>
+                    <i className="material-symbols--lock" />
                   </InputAdornment>
                 ),
+                className: "rounded-[10px] !ring-0",
               }}
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
             />
           </Box>
 
-          <Box sx={{ width: "100%", mb: 4 }}>
-            <Typography variant="subtitle2" fontWeight="600" sx={{ mb: 1 }}>
+          <Box className="w-full mb-8">
+            <Typography variant="subtitle2" fontWeight="600" className="mb-2">
               Confirm Password
             </Typography>
             <TextField
@@ -271,46 +262,26 @@ const Login = ({ mode }: { mode: Mode }) => {
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <i className="material-symbols--lock"/>
+                    <i className="material-symbols--lock" />
                   </InputAdornment>
                 ),
+                className: "rounded-[10px] !ring-0",
               }}
-              sx={{ "& .MuiOutlinedInput-root": { borderRadius: "10px" } }}
             />
           </Box>
 
-          <Box
-            sx={{
-              display: "flex",
-              gap: 2,
-              width: "100%",
-              justifyContent: "center",
-              mb: 2,
-            }}
-          >
+          <Box className="flex w-full justify-center gap-4 mb-4">
             <Button
               variant="text"
               onClick={() => router.push("/inquiry")}
-              sx={{
-                textTransform: "none",
-                color: "grey.600",
-                minWidth: "120px",
-                fontWeight: "600",
-              }}
+              className="normal-case text-gray-600 min-w-[120px] font-semibold"
             >
               Skip now
             </Button>
             <Button
               variant="contained"
               onClick={() => router.push("/inquiry")}
-              sx={{
-                textTransform: "none",
-                minWidth: "150px",
-                borderRadius: "10px",
-                fontWeight: "600",
-                py: 1.2,
-                backgroundColor: "#007FFF", 
-              }}
+              className="normal-case min-w-[150px] rounded-[10px] font-semibold py-[9.6px] bg-[#007FFF]"
             >
               Save Password
             </Button>

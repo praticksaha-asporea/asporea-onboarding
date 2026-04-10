@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import clsx from "clsx";
 import { useRouter } from "next/navigation";
 
 // MUI Imports
@@ -29,74 +30,36 @@ const Stepper = () => {
   ];
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        width: "100%",
-        mb: 8,
-        overflowX: "auto",
-        pb: 2,
-      }}
-    >
+    <Box className="flex items-center justify-between w-full mb-16 overflow-x-auto pb-4">
       {steps.map((step, index) => (
         <Box
           key={index}
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 1.5,
-            flexShrink: 0,
-            minWidth: "100px",
-          }}
+          className="flex flex-col items-center gap-3 flex-shrink-0 min-w-[100px]"
         >
           <Box
-            sx={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "20px",
-              transition: "all 0.3s",
-
-              backgroundColor:
-                step.label === "Assessment"
-                  ? "#ccfbf1"
-                  : step.status === "completed"
-                    ? "#1976d2"
-                    : "#f3f4f6",
-              color:
-                step.label === "Assessment"
-                  ? "#14b8a6"
-                  : step.status === "completed"
-                    ? "#fff"
-                    : "#9ca3af",
-              border:
-                step.status === "active" && step.label !== "Assessment"
-                  ? "2px solid #1976d2"
-                  : "none",
-              boxShadow:
-                step.status === "active" ? "0 0 15px rgba(0,0,0,0.05)" : "none",
-            }}
+            className={clsx(
+              "w-10 h-10 rounded-full flex items-center justify-center text-[20px] transition-all duration-300",
+              step.label === "Assessment"
+                ? "bg-[#ccfbf1] text-[#14b8a6] border-none shadow-none"
+                : step.status === "completed"
+                  ? "bg-[#1976d2] text-white border-none shadow-none"
+                  : "bg-[#f3f4f6] text-[#9ca3af] border-none shadow-none",
+              step.status === "active" &&
+                step.label !== "Assessment" &&
+                "border-2 border-[#1976d2] shadow-[0_0_15px_rgba(0,0,0,0.05)]",
+            )}
           >
             <i className={step.icon}></i>
           </Box>
           <Typography
-            sx={{
-              fontSize: "13px",
-              fontWeight: 600,
-              color:
-                step.status === "active"
-                  ? "#1976d2"
-                  : step.status === "completed"
-                    ? "#1f2937"
-                    : "#9ca3af",
-              textAlign: "center",
-            }}
+            className={clsx(
+              "text-[13px] font-semibold text-center",
+              step.status === "active"
+                ? "text-[#1976d2]"
+                : step.status === "completed"
+                  ? "text-[#1f2937]"
+                  : "text-[#9ca3af]",
+            )}
           >
             {step.label}
           </Typography>
@@ -110,18 +73,7 @@ const Stepper = () => {
 const StatusBadge = ({ status }: { status: string }) => {
   const isCompleted = status === "Completed";
   return (
-    <Box
-      sx={{
-        fontSize: "12px",
-        fontWeight: 500,
-
-        backgroundColor: "transparent",
-        border: "none",
-        padding: 0,
-        textTransform: "capitalize",
-        letterSpacing: "0.2px",
-      }}
-    >
+    <Box className="text-[12px] font-medium bg-transparent border-none p-0 capitalize tracking-[0.2px]">
       {status}
     </Box>
   );
@@ -136,47 +88,26 @@ const JourneyCard = ({
   buttonLabel,
   disabledButton,
   onClick,
-  secondaryButtonLabel, onSecondaryClick
+  secondaryButtonLabel,
+  onSecondaryClick,
 }: any) => {
   return (
     <Card
       variant="outlined"
-      sx={{
-        mb: 3,
-        p: { xs: 3, sm: 4 },
-        borderRadius: "16px",
-        borderColor: "#e5e7eb",
-        boxShadow: "0 2px 8px rgba(0,0,0,0.02)",
-        transition: "all 0.2s",
-        "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.05)" },
-      }}
+      className="mb-6 p-6 sm:p-8 rounded-[16px] border border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200 hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"
     >
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "flex-start",
-          mb: 3,
-        }}
-      >
-        <Typography variant="h6" sx={{ fontSize: "0.9rem", mt: 0.5 }}>
-          {title}
+      <Box className="flex justify-between items-start mb-6">
+        <Typography variant="h6" className="text-[0.9rem] mt-1">
+          {title} 
         </Typography>
 
-        <Box
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            gap: 4,
-          }}
-        >
+        <Box className="flex flex-col items-end gap-2">
           <StatusBadge status={status} />
 
           {dateLabel && date && (
             <Typography
               variant="caption"
-              sx={{ fontWeight: 400, color: "#6b7280", whiteSpace: "nowrap" }}
+              className="font-normal text-[#6b7280] whitespace-nowrap"
             >
               {dateLabel}:{" "}
               <span style={{ fontWeight: 400, color: "#6b7280" }}>{date}</span>
@@ -186,33 +117,17 @@ const JourneyCard = ({
       </Box>
 
       {/* Description */}
-      <Typography
-        variant="body2"
-        sx={{ color: "#4b5563", lineHeight: 1.6, mb: 3 }}
-      >
+      <Typography variant="body2" className="text-[#4b5563] leading-[1.6] mb-6">
         {description}
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "flex-end",
-          alignItems: "center",
-          pt: 2.5,
-          borderTop: "1px solid #f3f4f6",
-          gap:2
-        }}
-      >
+      <Box className="flex justify-end items-center pt-5  gap-4">
         {/* NAYA: View Result Button */}
         {secondaryButtonLabel && (
           <Button
             variant="outlined"
             onClick={onSecondaryClick}
-            sx={{
-              borderRadius: "8px", px: 3, py: 1, textTransform: "none", fontWeight: 800,
-              borderColor: "#d1d5db", color: "#374151",
-              "&:hover": { borderColor: "#9ca3af", backgroundColor: "#f9fafb" }
-            }}
+            className="rounded-[8px] px-6 py-2 normal-case font-extrabold text-[#374151] border border-[#d1d5db] hover:border-[#9ca3af] hover:bg-[#f9fafb] transition-colors duration-150"
           >
             {secondaryButtonLabel}
           </Button>
@@ -222,24 +137,7 @@ const JourneyCard = ({
             variant="contained"
             disabled={disabledButton}
             onClick={onClick}
-            sx={{
-              borderRadius: "8px",
-              px: 3,
-              py: 1,
-              textTransform: "none",
-              fontWeight: 800,
-              backgroundColor: disabledButton ? "#e3f2fd" : "#1976d2",
-              color: disabledButton ? "#93c5fd" : "#fff",
-              boxShadow: "none",
-              "&:hover": {
-                backgroundColor: disabledButton ? "#e3f2fd" : "#1565c0",
-                boxShadow: "none",
-              },
-              "&.Mui-disabled": {
-                backgroundColor: "#e3f2fd",
-                color: "#93c5fd",
-              },
-            }}
+            className="rounded-[8px] px-6 py-2 normal-case font-extrabold text-white bg-[#1976d2] shadow-none hover:bg-[#1565c0] hover:shadow-none transition-colors duration-150 disabled:bg-[#e3f2fd] disabled:text-[#93c5fd] disabled:cursor-not-allowed"
           >
             {buttonLabel}
           </Button>
@@ -254,25 +152,16 @@ const ApplicationTracking = () => {
   const router = useRouter();
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   return (
-    <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
-      <Card
-        sx={{
-          width: "100%",
-          maxWidth: "900px",
-          p: { xs: 3, md: 6 },
-          borderRadius: "24px",
-          boxShadow: "0px 4px 24px rgba(0,0,0,0.04)",
-          border: "1px solid #f3f4f6",
-        }}
-      >
-        <Typography variant="h4" sx={{ mb: 6 }}>
+    <Box className="w-full flex justify-center">
+      <Card className="w-full max-w-[900px] p-6 md:p-12 rounded-[24px] border border-[#f3f4f6] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+        <Typography variant="h4" className="mb-6">
           Application Status Tracking
         </Typography>
 
         <Stepper />
 
-        <Box sx={{ mt: 5 }}>
-          <Typography variant="h5" sx={{ fontWeight: 500, mb: 4 }}>
+        <Box className="mt-5">
+          <Typography variant="h5" className="font-medium mb-4">
             Your Application Journey
           </Typography>
 
@@ -316,7 +205,7 @@ const ApplicationTracking = () => {
             disabledButton={false}
             onClick={() => setIsPopupOpen(true)}
             secondaryButtonLabel="View Result"
-  onSecondaryClick={() => router.push("/assessment?view=result")}
+            onSecondaryClick={() => router.push("/assessment?view=result")}
           />
 
           <JourneyCard

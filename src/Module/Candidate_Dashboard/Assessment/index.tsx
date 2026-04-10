@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import clsx from "clsx";
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "next/navigation";
 
@@ -84,13 +85,7 @@ const Assessment = () => {
     <Grid container spacing={6}>
       <Grid size={{ xs: 12, md: isBookingMode ? 8 : 12 }}>
         {(isBookingMode || isAssessmentResult) && (
-          <Card
-            sx={{
-              p: { xs: 2, sm: 6 },
-              borderRadius: "15px",
-              boxShadow: "0px 4px 18px rgba(0,0,0,0.04)",
-            }}
-          >
+          <Card className="p-4 sm:p-12 rounded-[15px] shadow-[0_4px_18px_rgba(0,0,0,0.04)]">
             {isBookingMode && (
               <>
                 <Typography variant="h4">
@@ -101,21 +96,12 @@ const Assessment = () => {
                   and preparedness for the upcoming session via phone call.
                 </Typography>
 
-                <Card
-                  sx={{
-                    borderRadius: "15px",
-                    mb: 6,
-                    border: "1px solid #e0e0e0",
-                    boxShadow: "none",
-                  }}
-                >
-                  <CardContent sx={{ p: 6 }}>
-                    <Typography variant="h5" fontWeight="bold" sx={{ mb: 4 }}>
+                <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
+                  <CardContent className="p-6">
+                    <Typography variant="h5" fontWeight="bold" className="mb-4">
                       Readiness Checklist
                     </Typography>
-                    <Box
-                      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-                    >
+                    <Box className="flex flex-col gap-4">
                       <FormControlLabel
                         control={<Checkbox defaultChecked />}
                         label="I have uploaded all necessary documents (i.e. id, academic,experience,resume)."
@@ -136,49 +122,34 @@ const Assessment = () => {
                   </CardContent>
                 </Card>
 
-                <Card
-                  sx={{
-                    borderRadius: "15px",
-                    border: "1px solid #e0e0e0",
-                    boxShadow: "none",
-                  }}
-                >
-                  <CardContent sx={{ p: 6 }}>
-                    <Typography variant="h5" fontWeight="bold" sx={{ mb: 4 }}>
+                <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+                  <CardContent className="p-6">
+                    <Typography variant="h5" fontWeight="bold" className="mb-4">
                       Your Scheduled Session
                     </Typography>
 
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 1, fontWeight: "bold" }}
+                      className="font-medium mb-1"
                     >
                       Counselling Date
                     </Typography>
                     <TextField
                       type="date"
                       defaultValue="2026-02-27"
-                      sx={{
-                        width: "100%",
-                        maxWidth: "300px",
-                        mb: 5,
-                        "& .MuiOutlinedInput-root": { borderRadius: "10px" },
+                      className="w-full max-w-[300px] mb-10"
+                      InputProps={{
+                        className: "rounded-[10px] bg-white",
                       }}
                     />
 
                     <Typography
                       variant="subtitle2"
-                      sx={{ mb: 2, fontWeight: "bold" }}
+                      className="mb-2 font-medium"
                     >
                       Available Time Slots
                     </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        flexWrap: "wrap",
-                        gap: 1.5,
-                        mb: 4,
-                      }}
-                    >
+                    <Box className="flex flex-wrap gap-3 mb-8">
                       {slots.map((slot, index) => (
                         <Button
                           key={index}
@@ -191,106 +162,50 @@ const Assessment = () => {
                           onClick={() =>
                             slot.available && setSelectedSlot(slot.time)
                           }
-                          sx={{
-                            borderRadius: "20px",
-                            textTransform: "none",
-                            px: 3,
-                            borderColor:
-                              selectedSlot === slot.time
-                                ? "primary.main"
-                                : "#e0e0e0",
-                            backgroundColor:
-                              selectedSlot === slot.time
-                                ? "primary.main"
-                                : slot.available
-                                  ? "transparent"
-                                  : "#f5f5f5",
-                            color:
-                              selectedSlot === slot.time
-                                ? "white"
-                                : slot.available
-                                  ? "text.primary"
-                                  : "text.disabled",
-                            "&:hover": {
-                              borderColor: slot.available
-                                ? "primary.main"
-                                : "#e0e0e0",
+                          className={clsx(
+                            "rounded-[20px] px-6 normal-case font-medium border transition-colors duration-150",
+                            {
+                              // selected
+                              "bg-blue-600 text-white border-blue-600":
+                                selectedSlot === slot.time,
+                              // available (not selected)
+                              "bg-transparent text-gray-900 border-[#e0e0e0] hover:border-blue-600":
+                                selectedSlot !== slot.time && slot.available,
+                              // unavailable
+                              "bg-[#f5f5f5] text-gray-400 border-[#e0e0e0]":
+                                !slot.available && selectedSlot !== slot.time,
+                              // explicit disabled (native fallback)
+                              "bg-[#f5f5f5] text-[#bdbdbd] border-[#e0e0e0] cursor-not-allowed":
+                                !slot.available,
                             },
-                            "&.Mui-disabled": {
-                              backgroundColor: "#f5f5f5",
-                              color: "#bdbdbd",
-                              borderColor: "#e0e0e0",
-                            },
-                          }}
+                          )}
                         >
                           {slot.time}
                         </Button>
                       ))}
                     </Box>
 
-                    <Box
-                      sx={{ display: "flex", gap: 3, mb: 3, flexWrap: "wrap" }}
-                    >
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Box
-                          sx={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: "4px",
-                            backgroundColor: "#1976d2",
-                          }}
-                        />
+                    <Box className="flex flex-wrap gap-6 mb-6">
+                      <Box className="flex items-center gap-2">
+                        <Box className="w-4 h-4 rounded bg-[#1976d2]" />
                         <Typography variant="body2">Selected</Typography>
                       </Box>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Box
-                          sx={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: "4px",
-                            border: "1px solid #ccc",
-                            backgroundColor: "transparent",
-                          }}
-                        />
+                      <Box className="flex items-center gap-2">
+                        <Box className="w-4 h-4 rounded bg-transparent border border-[#cccccc]" />
                         <Typography variant="body2">Available</Typography>
                       </Box>
-                      <Box
-                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
-                      >
-                        <Box
-                          sx={{
-                            width: 16,
-                            height: 16,
-                            borderRadius: "4px",
-                            backgroundColor: "#f5f5f5",
-                            border: "1px solid #e0e0e0",
-                          }}
-                        />
-                        <Typography
-                          variant="body2"
-                          sx={{ color: "text.secondary" }}
-                        >
+                      <Box className="flex items-center gap-2">
+                        <Box className="w-4 h-4 rounded bg-[#f5f5f5] border border-[#e0e0e0]" />
+                        <Typography variant="body2" className="text-gray-500">
                           Unavailable
                         </Typography>
                       </Box>
                     </Box>
 
-                    <Box
-                      sx={{
-                        mt: 4,
-                        p: 2,
-                        backgroundColor: "#f8faff",
-                        borderRadius: "10px",
-                        borderLeft: "4px solid #1976d2",
-                      }}
-                    >
+                    <Box className="mt-8 p-4 bg-[#f8faff] rounded-[10px] border-l-4 border-l-[#1976d2]">
                       <Typography
                         variant="body2"
-                        sx={{ color: "text.secondary", fontWeight: "500" }}
+                        className="text-gray-500 font-medium"
                       >
                         Please ensure you are available at this time and adjust
                         if necessary via support.
@@ -303,14 +218,7 @@ const Assessment = () => {
                   fullWidth
                   variant="contained"
                   onClick={() => setShowConfirmPopup(true)}
-                  sx={{
-                    mt: 5,
-                    py: 2,
-                    borderRadius: "10px",
-                    fontSize: "1.1rem",
-                    fontWeight: "bold",
-                    textTransform: "none",
-                  }}
+                  className="mt-10 py-4 rounded-[10px] text-[1.1rem] font-bold normal-case"
                 >
                   Confirm Readiness
                 </Button>
@@ -320,83 +228,34 @@ const Assessment = () => {
             {isAssessmentResult && (
               <Box
                 ref={statusCardRef}
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  justifyContent: "space-between",
-                  alignItems: { xs: "flex-start", sm: "center" },
-                  mt: 2,
-                  mb: 2,
-                  gap: 3,
-                }}
+                className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-4 mb-4 gap-6"
               >
                 <Box>
                   <Typography
                     variant="h5"
-                    sx={{
-                      fontWeight: 600,
-                      color: "#111827",
-                      mb: 3,
-                      fontSize: "1.6rem",
-                    }}
+                    className="text-[#111827] text-[1.6rem] font-semibold mb-6"
                   >
                     Applicant Assessment Tool
                   </Typography>
                   <Typography
                     variant="body2"
-                    sx={{ color: "#6b7280", fontSize: "0.8rem" }}
+                    className="text-[#6b7280] text-[0.8rem]"
                   >
                     Evaluate the candidate based on standard scoring rubrics for
                     technical and soft skills.
                   </Typography>
                 </Box>
 
-                <Box
-                  sx={{
-                    border: "2px solid #e0f2fe",
-                    borderRadius: "12px",
-                    px: 3,
-                    py: 1.5,
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    backgroundColor: "#ffffff",
-                    boxShadow: "0 4px 14px rgba(0,0,0,0.03)",
-                    minWidth: "120px",
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontSize: "10px",
-                      fontWeight: 700,
-                      color: "#9ca3af",
-                      letterSpacing: "1.2px",
-                      textTransform: "uppercase",
-                      mb: 0.5,
-                    }}
-                  >
+                <Box className="border-2 border-[#e0f2fe] rounded-[12px] px-6 py-3 flex flex-col items-center bg-white shadow-[0_4px_14px_rgba(0,0,0,0.03)] min-w-[120px]">
+                  <Typography className="text-[#9ca3af] text-[10px] font-bold tracking-[1.2px] uppercase mb-1">
                     Total Score
                   </Typography>
 
-                  <Box sx={{ display: "flex", alignItems: "baseline" }}>
-                    <Typography
-                      sx={{
-                        fontSize: "34px",
-                        fontWeight: 900,
-                        color: "#1877F2",
-                        lineHeight: 1,
-                      }}
-                    >
+                  <Box className="flex items-baseline">
+                    <Typography className="text-[34px] font-black text-[#1877F2] leading-none">
                       78
                     </Typography>
-                    <Typography
-                      sx={{
-                        fontSize: "16px",
-                        fontWeight: 600,
-                        color: "#6b7280",
-                        ml: 0.5,
-                      }}
-                    >
+                    <Typography className="text-[16px] font-semibold text-[#6b7280] ml-1">
                       /100
                     </Typography>
                   </Box>
@@ -506,60 +365,31 @@ const Assessment = () => {
       {/* wrapping the right grid */}
       {isBookingMode && (
         <Grid size={{ xs: 12, md: 4 }}>
-          <Card
-            sx={{
-              borderRadius: "15px",
-              mb: 6,
-              border: "1px solid #e0e0e0",
-              boxShadow: "none",
-            }}
-          >
-            <CardContent sx={{ p: 6 }}>
-              <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
+          <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
+            <CardContent className="p-6">
+              <Typography variant="h6" fontWeight="bold" className="mb-3">
                 Your Application Progress
               </Typography>
-              <Typography
-                variant="body2"
-                sx={{ mb: 2, color: "text.secondary" }}
-              >
-                Pre-counselling: 2 of 7 steps complete
+              <Typography variant="body2" className="mb-4 text-gray-500">
+                Pre-counselling: 7 of 7 steps complete
               </Typography>
               <LinearProgress
                 variant="determinate"
-                value={28}
-                sx={{
-                  height: 10,
-                  borderRadius: 5,
-                  mb: 2,
-                  backgroundColor: "#e0e0e0",
-                  "& .MuiLinearProgress-bar": { backgroundColor: "#1976d2" },
-                }}
+                value={100}
+                className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
               />
               <Typography
                 variant="caption"
-                sx={{ color: "#1976d2", fontWeight: 700 }}
+                className="text-[#1976d2] font-bold"
               >
-                You're almost there! Just few steps left.
+                You're almost there!
               </Typography>
             </CardContent>
           </Card>
 
-          <Card
-            sx={{
-              borderRadius: "15px",
-              border: "1px solid #e0e0e0",
-              boxShadow: "none",
-            }}
-          >
-            <CardContent sx={{ p: 6 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 4,
-                }}
-              >
+          <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+            <CardContent className="p-6">
+              <Box className="flex justify-between items-center mb-8">
                 <Typography variant="h6" fontWeight="bold">
                   Notification Channels
                 </Typography>
@@ -578,14 +408,7 @@ const Assessment = () => {
 
               {!isEditingChannels ? (
                 <Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      gap: 2,
-                      mb: 4,
-                      alignItems: "flex-start",
-                    }}
-                  >
+                  <Box className="flex gap-4 items-start mb-8">
                     <i
                       className="ri-whatsapp-line"
                       style={{
@@ -596,7 +419,7 @@ const Assessment = () => {
                     ></i>
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary", lineHeight: 1.5 }}
+                      className="text-gray-500 leading-6"
                     >
                       <span style={{ fontWeight: "bold", color: "#000" }}>
                         WhatsApp:
@@ -604,9 +427,7 @@ const Assessment = () => {
                       Enabled for timely updates and session reminders.
                     </Typography>
                   </Box>
-                  <Box
-                    sx={{ display: "flex", gap: 2, alignItems: "flex-start" }}
-                  >
+                  <Box className="flex gap-4 items-start">
                     <i
                       className="ri-mail-line"
                       style={{
@@ -617,7 +438,7 @@ const Assessment = () => {
                     ></i>
                     <Typography
                       variant="body2"
-                      sx={{ color: "text.secondary", lineHeight: 1.5 }}
+                      className="text-gray-500 leading-6"
                     >
                       <span style={{ fontWeight: "bold", color: "#000" }}>
                         Email:
@@ -669,21 +490,12 @@ const Assessment = () => {
                     <FormHelperText>At least One</FormHelperText>
                   </FormControl>
 
-                  <Box
-                    sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}
-                  >
+                  <Box className="flex justify-end mt-4">
                     <Button
                       variant="contained"
                       size="small"
                       onClick={() => setIsEditingChannels(false)}
-                      sx={{
-                        borderRadius: "8px",
-                        textTransform: "none",
-                        fontWeight: "bold",
-                        px: 3,
-                        backgroundColor: "#1976d2",
-                        boxShadow: "none",
-                      }}
+                      className="rounded-lg normal-case font-bold px-6 bg-[#1976d2] shadow-none"
                     >
                       Save
                     </Button>
@@ -700,19 +512,9 @@ const Assessment = () => {
         onClose={() => setShowConfirmPopup(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          sx: { borderRadius: "20px", p: 4, position: "relative" },
-        }}
+        PaperProps={{ className: "rounded-[20px] p-8 relative" }}
       >
-        <DialogContent
-          sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            textAlign: "center",
-            p: 2,
-          }}
-        >
+        <DialogContent className="flex flex-col items-center text-center p-4">
           <Typography variant="h3" className="font-black text-black mb-10">
             Request Submitted
           </Typography>
