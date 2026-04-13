@@ -5,6 +5,7 @@ import { useRef } from 'react'
 
 // Next Imports
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 // MUI Imports
 import { styled, useTheme } from '@mui/material/styles'
@@ -12,6 +13,7 @@ import { styled, useTheme } from '@mui/material/styles'
 // Component Imports
 import VerticalNav, { NavHeader } from '../../../@menu/vertical-menu'
 import CandidateMenu from './CandidateMenu'
+import TacMenu from './TacMenu'
 import Logo from '../../../Components_Theme/layout/shared/Logo'
 
 // Hook Imports
@@ -40,6 +42,7 @@ const Navigation = () => {
   // Hooks
   const theme = useTheme()
   const { isBreakpointReached, toggleVerticalNav } = useVerticalNav()
+  const pathname = usePathname()
 
   // Refs
   const shadowRef = useRef(null)
@@ -58,12 +61,13 @@ const Navigation = () => {
       shadowRef.current.classList.remove('scrolled')
     }
   }
+  const isTacRoute = pathname?.includes('/tac-dashboard')
 
   return (
     // eslint-disable-next-line lines-around-comment
     // Sidebar Vertical Menu
     <VerticalNav customStyles={navigationCustomStyles(theme)}>
-      {/* Nav Header including Logo & nav toggle icons  */}
+      
       <NavHeader>
         <Link href='/'>
           <Logo />
@@ -71,7 +75,14 @@ const Navigation = () => {
         {isBreakpointReached && <i className='ri-close-line text-xl' onClick={() => toggleVerticalNav(false)} />}
       </NavHeader>
       <StyledBoxForShadow ref={shadowRef} />
-      <CandidateMenu scrollMenu={scrollMenu} />
+      
+       
+      {isTacRoute ? (
+        <TacMenu scrollMenu={scrollMenu} />
+      ) : (
+        <CandidateMenu scrollMenu={scrollMenu} />
+      )}
+      
     </VerticalNav>
   )
 }

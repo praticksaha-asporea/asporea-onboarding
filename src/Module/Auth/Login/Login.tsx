@@ -184,6 +184,17 @@ const Login = ({ mode }: { mode: Mode }) => {
                   )}
                 </>
               )}
+              {/* --- TAC LOGIN BUTTON START --- */}
+              <Button 
+                // fullWidth 
+              variant="text" 
+                onClick={() => router.push('/tac-dashboard')}
+                size="small"
+                // className=" normal-case font-semibold border border-[#374151] text-white"
+              >
+                Log In as TAC
+              </Button>
+              {/* --- TAC LOGIN BUTTON END --- */}
               <Divider className="gap-3">or</Divider>
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="outlined" size="small" color="secondary">
@@ -246,6 +257,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                     <i className="material-symbols--lock" />
                   </InputAdornment>
                 ),
+                
                 className: "rounded-[10px] !ring-0",
               }}
             />

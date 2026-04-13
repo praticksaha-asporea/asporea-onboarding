@@ -1,0 +1,91 @@
+import { useTheme } from "@mui/material/styles";
+
+import PerfectScrollbar from "react-perfect-scrollbar";
+
+ 
+import type { VerticalMenuContextProps } from "../../../@menu/components/vertical-menu/Menu";
+
+ 
+import {
+  Menu,
+  SubMenu,
+  MenuItem,
+  MenuSection,
+} from "../../../@menu/vertical-menu";
+
+// Hook Imports
+import useVerticalNav from "../../../@menu/hooks/useVerticalNav";
+
+// Styled Component Imports
+import StyledVerticalNavExpandIcon from "../../../@menu/styles/vertical/StyledVerticalNavExpandIcon";
+
+// Style Imports
+import menuItemStyles from "@core/styles/vertical/menuItemStyles";
+import menuSectionStyles from "@core/styles/vertical/menuSectionStyles";
+
+type RenderExpandIconProps = {
+  open?: boolean;
+  transitionDuration?: VerticalMenuContextProps["transitionDuration"];
+};
+
+const RenderExpandIcon = ({
+  open,
+  transitionDuration,
+}: RenderExpandIconProps) => (
+  <StyledVerticalNavExpandIcon
+    open={open}
+    transitionDuration={transitionDuration}
+  >
+    <i className="ri-arrow-right-s-line" />
+  </StyledVerticalNavExpandIcon>
+);
+
+const TacMenu = ({
+  scrollMenu,
+}: {
+  scrollMenu: (container: any, isPerfectScrollbar: boolean) => void;
+}) => {
+  // Hooks
+  const theme = useTheme();
+  const { isBreakpointReached, transitionDuration } = useVerticalNav();
+
+  const ScrollWrapper = isBreakpointReached ? "div" : PerfectScrollbar;
+
+  return (
+    // eslint-disable-next-line lines-around-comment
+    /* Custom scrollbar instead of browser scroll, remove if you want browser scroll only */
+    <ScrollWrapper
+      {...(isBreakpointReached
+        ? {
+            className: "bs-full overflow-y-auto overflow-x-hidden",
+            onScroll: (container) => scrollMenu(container, false),
+          }
+        : {
+            options: { wheelPropagation: false, suppressScrollX: true },
+            onScrollY: (container) => scrollMenu(container, true),
+          })}
+    >
+      {/* Vertical Menu */}
+      <Menu
+        menuItemStyles={menuItemStyles(theme)}
+        renderExpandIcon={({ open }) => (
+          <RenderExpandIcon
+            open={open}
+            transitionDuration={transitionDuration}
+          />
+        )}
+        renderExpandedMenuItemIcon={{ icon: <i className="ri-circle-line" /> }}
+        menuSectionStyles={menuSectionStyles(theme)}
+      >
+        <MenuItem
+          href="/tac-dashboard"
+          icon={<i className="material-symbols--dashboard-outline" />}
+        >
+          TAC Dashboard
+        </MenuItem>
+      </Menu>
+    </ScrollWrapper>
+  );
+};
+
+export default TacMenu;
