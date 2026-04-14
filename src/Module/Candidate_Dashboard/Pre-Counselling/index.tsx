@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import clsx from "clsx";
-
 import type { ChangeEvent } from "react";
 
 import { Dialog, DialogContent } from "@mui/material";
@@ -124,15 +122,17 @@ const PreCounselling = () => {
                       selectedSlot === slot.time ? "contained" : "outlined"
                     }
                     onClick={() => slot.available && setSelectedSlot(slot.time)}
-                    className={clsx(
-                      "normal-case rounded-[20px] px-6",
+                    className={`
+                    normal-case rounded-[20px] px-6
+                    ${
                       selectedSlot === slot.time
                         ? "bg-primary border-primary text-white"
                         : slot.available
-                          ? "bg-transparent border-[#e0e0e0] text-primary hover:border-primary"
-                          : "bg-[#f5f5f5] border-[#e0e0e0] text-[#bdbdbd]",
-                      "disabled:bg-[#f5f5f5] disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]",
-                    )}
+                          ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                          : "bg-[#f5f5f5] border-[#e0e0e0]"
+                    }
+                    disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
+                  `}
                   >
                     {slot.time}
                   </Button>
@@ -145,12 +145,12 @@ const PreCounselling = () => {
                   <Typography variant="body2">Selected</Typography>
                 </Box>
                 <Box className="flex items-center gap-2">
-                  <Box className="w-4 h-4 rounded-[4px] border border-[#ccc] bg-transparent" />
+                  <Box className="w-4 h-4 rounded-[4px] border border-[#ccc] bg-[--var-primary]" />
                   <Typography variant="body2">Available</Typography>
                 </Box>
                 <Box className="flex items-center gap-2">
-                  <Box className="w-4 h-4 rounded-[4px] bg-[#f5f5f5] border border-[#e0e0e0]" />
-                  <Typography variant="body2" className="text-gray-600">
+                  <Box className="w-4 h-4 rounded-[4px] bg-[--mui-palette-action-disabledBackground] border border-[#e0e0e0]" />
+                  <Typography variant="body2">
                     Unavailable
                   </Typography>
                 </Box>
@@ -166,15 +166,18 @@ const PreCounselling = () => {
               </Box>
             </CardContent>
           </Card>
+        <Box className="flex justify-end gap-4">
 
           <Button
-            fullWidth
+            // fullWidth
             variant="contained"
+            size="small"
             onClick={() => setShowConfirmPopup(true)}
-            className="mt-10 py-4 rounded-[10px] text-[1.1rem] font-bold normal-case"
+            className="rounded-xl mt-10 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
           >
             Confirm Readiness
           </Button>
+          </Box>
         </Card>
       </Grid>
 
@@ -184,7 +187,7 @@ const PreCounselling = () => {
             <Typography variant="h6" fontWeight="bold" className="mb-3">
               Your Application Progress
             </Typography>
-            <Typography variant="body2" className="mb-4 text-gray-600">
+            <Typography variant="body2" className="mb-4">
               Pre-counselling: 2 of 7 steps complete
             </Typography>
             <LinearProgress
@@ -221,35 +224,22 @@ const PreCounselling = () => {
               <Box>
                 <Box className="flex gap-4 items-start mb-8">
                   <i
-                    className="ri-whatsapp-line"
-                    style={{
-                      fontSize: "24px",
-                      color: "#25D366",
-                      marginTop: "2px",
-                    }}
+                    className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"
                   ></i>
                   <Typography
-                    variant="body2"
-                    className="text-gray-600 leading-normal"
-                  >
-                    <span style={{ fontWeight: "bold" }}>WhatsApp:</span>{" "}
+                    variant="body2"                  >
+                    <span className="font-bold">WhatsApp:</span>{" "}
                     Enabled for timely updates and session reminders.
                   </Typography>
                 </Box>
                 <Box className="flex gap-4 items-start">
                   <i
-                    className="ri-mail-line"
-                    style={{
-                      fontSize: "24px",
-                      color: "#1976d2",
-                      marginTop: "2px",
-                    }}
+                    className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"
                   ></i>
                   <Typography
                     variant="body2"
-                    className="text-gray-600 leading-normal"
                   >
-                    <span style={{ fontWeight: "bold" }}>Email:</span> Enabled
+                    <span className="font-bold">Email:</span> Enabled
                     for detailed session information and important documents.
                   </Typography>
                 </Box>
@@ -289,7 +279,7 @@ const PreCounselling = () => {
                       }
                     />
                   </FormGroup>
-                  <FormHelperText>At least One</FormHelperText>
+                  <FormHelperText className="pt-2">At least One</FormHelperText>
                 </FormControl>
 
                 <Box className="flex justify-end mt-4">
@@ -316,32 +306,32 @@ const PreCounselling = () => {
           className: "rounded-[20px] p-8 relative",
         }}
       >
-        <DialogContent className="flex flex-col items-center text-center p-2">
-          <Typography variant="h3">Request Submitted</Typography>
+        <DialogContent className="flex flex-col items-center">
+          <Typography variant="h4">Request Submitted</Typography>
 
           <Typography
             variant="body1"
-            className="text-[#d32f2f] mb-6 leading-[1.9] px-16"
+            className="text-[--mui-palette-error-light] mt-5 leading-[1.9] "
           >
             Please be ready for your pre-counselling held on mentioned date and
             time. A Talent Acquisition Consultant(TAC) will connect with you.
           </Typography>
 
-          <Typography variant="body1" className="text-[#d32f2f] mb-12 px-4">
+          <Typography variant="body1" className="text-[--mui-palette-error-light] mt-5">
             Please check your communication preference.
           </Typography>
 
-          <Typography variant="body1" className="mb-12 px-4">
-            Meanwhile you can start uploading necessary <br />
-            documents
+          <Typography variant="body1" className="mt-5">
+            Meanwhile you can start uploading necessary documents
           </Typography>
 
-          <Box className="flex gap-4 justify-center w-full">
+          <Box className="flex gap-4 justify-center w-full mt-5">
             <Button
               variant="outlined"
               disableRipple
               disableElevation
-              className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case font-bold text-white border border-gray-300 hover:border-gray-900 hover:text-black hover:bg-white"
+              className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-white hover:border-gray-900 hover:text-black hover:bg-white"
+              href='/document-upload'
             >
               Go to Documents
             </Button>

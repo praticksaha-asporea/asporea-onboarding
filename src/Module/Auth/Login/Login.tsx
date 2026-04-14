@@ -38,13 +38,13 @@ const Login = ({ mode }: { mode: Mode }) => {
   const [isPasswordShown, setIsPasswordShown] = useState(false);
   const [otp, setOtp] = useState("");
   const [sendOtp, setSendOtp] = useState(false);
-  const [enableVerfifyOTP, setEnableVerfifyOTP] = useState(false);
+  const [enableVerifyOTP, setEnableVerifyOTP] = useState(false);
   const [showSetupPassword, setShowSetupPassword] = useState(false);
 
   const handleChange = (newValue: string) => {
     setOtp(newValue);
     if (newValue.length === 6) {
-      setEnableVerfifyOTP(true);
+      setEnableVerifyOTP(true);
     }
   };
   // Vars
@@ -175,7 +175,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                         variant="contained"
                         size="small"
                         color="success"
-                        disabled={!enableVerfifyOTP}
+                        disabled={!enableVerifyOTP}
                         onClick={() => setShowSetupPassword(true)}
                       >
                         Verify
@@ -190,6 +190,7 @@ const Login = ({ mode }: { mode: Mode }) => {
               variant="text" 
                 onClick={() => router.push('/tac-dashboard')}
                 size="small"
+                color="error"
                 // className=" normal-case font-semibold border border-[#374151] text-white"
               >
                 Log In as TAC
@@ -286,9 +287,9 @@ const Login = ({ mode }: { mode: Mode }) => {
             <Button
               variant="text"
               onClick={() => router.push("/inquiry")}
-              className="normal-case text-gray-600 min-w-[120px] font-semibold"
+              // className="normal-case min-w-[120px] font-semibold"
             >
-              Skip now
+              Skip Now
             </Button>
             <Button
               variant="contained"

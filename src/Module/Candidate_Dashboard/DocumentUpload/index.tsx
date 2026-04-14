@@ -368,7 +368,7 @@ const DocumentUploadPage = () => {
 
         {/* Position Selector */}
         <PositionSelector />
-        <Box sx={{ mt: 5 }}>
+        <Box className="mt-5">
           {/* Section 1: Resume */}
           <SectionAccordion title="Resume" status="uploaded" defaultExpanded={false}>
             <Grid container spacing={3}>
@@ -479,10 +479,11 @@ const DocumentUploadPage = () => {
         </Box>
 
         {/* Bottom Save Button */}
-        <Box className="flex justify-end mt-6 pt-4 border-t border-gray-100">
+        <Box className="flex justify-end mt-6 pt-4">
           <Button
             variant="contained"
-            className="rounded-xl px-6 py-2 normal-case font-extrabold text-sm bg-blue-600 shadow-md hover:bg-blue-700 hover:shadow-lg"
+            className="rounded-xl px-6 py-2 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
+            href="/experience"
           >
             Save & Continue
           </Button>

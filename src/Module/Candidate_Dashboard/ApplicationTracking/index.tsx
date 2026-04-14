@@ -1,73 +1,144 @@
 "use client";
 
 import React, { useState } from "react";
-import clsx from "clsx";
 import { useRouter } from "next/navigation";
 
 // MUI Imports
 
+import Stepper from '@mui/material/Stepper';
 import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
+import { Dialog, DialogContent, Grid, IconButton, lighten, Stack, Step, StepConnector, stepConnectorClasses, StepIconProps, StepLabel, styled } from "@mui/material";
 
-const Stepper = () => {
+
+// 1. TOP STEPPER COMPONENT
+const Stepper_steps = () => {
   const steps = [
-    { label: "Inquiry", status: "completed", icon: "ri-question-line" },
-    {
-      label: "Counselling",
-      status: "completed",
-      icon: "ri-checkbox-circle-line",
-    },
-    { label: "Documents", status: "completed", icon: "ri-upload-cloud-2-line" },
-    { label: "Experience", status: "completed", icon: "ri-briefcase-line" },
-    { label: "Assessment", status: "active", icon: "ri-trophy-line" },
-    {
-      label: "Technical Round",
-      status: "pending",
-      icon: "ri-file-list-3-line",
-    },
+    { label: 'Inquiry', status: 'completed' },
+    { label: 'Counselling', status: 'completed' },
+    { label: 'Documents', status: 'completed' },
+    { label: 'Experience', status: 'completed' },
+    { label: 'Assessment', status: 'active' },
+    { label: 'Technical Round', status: 'pending' },
   ];
 
+
+
+  const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
+    [`&.${stepConnectorClasses.alternativeLabel}`]: {
+      top: 22,
+    },
+    [`&.${stepConnectorClasses.active}`]: {
+      [`& .${stepConnectorClasses.line}`]: {
+        backgroundImage:
+          `linear-gradient(270deg, ${lighten(
+            theme.palette.primary.main,
+            0.5
+          )}, var(--mui-palette-primary-main) 100%)`
+      },
+    },
+    [`&.${stepConnectorClasses.completed}`]: {
+      [`& .${stepConnectorClasses.line}`]: {
+        backgroundImage:
+          `linear-gradient(270deg, ${lighten(
+            theme.palette.primary.main,
+            0.5
+          )}, var(--mui-palette-primary-main) 100%)`,
+      },
+    },
+    [`& .${stepConnectorClasses.line}`]: {
+      height: 3,
+      border: 0,
+      backgroundColor: '#eaeaf0',
+      borderRadius: 1,
+      ...theme.applyStyles('dark', {
+        backgroundColor: theme.palette.grey[800],
+      }),
+    },
+  }));
+
+  const ColorlibStepIconRoot = styled('div')<{
+    ownerState: { completed?: boolean; active?: boolean };
+  }>(({ theme }) => ({
+    backgroundColor: '#ccc',
+    zIndex: 1,
+    color: '#fff',
+    width: 50,
+    height: 50,
+    display: 'flex',
+    borderRadius: '50%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...theme.applyStyles('dark', {
+      backgroundColor: theme.palette.grey[700],
+    }),
+    variants: [
+      {
+        props: ({ ownerState }) => ownerState.active,
+        style: {
+          backgroundImage:
+            `linear-gradient(270deg, ${lighten(
+              theme.palette.primary.main,
+              0.5
+            )}, var(--mui-palette-primary-main) 100%)`,
+          boxShadow: '0 4px 10px 0 rgba(0,0,0,.25)',
+        },
+      },
+      {
+        props: ({ ownerState }) => ownerState.completed,
+        style: {
+          backgroundImage:
+            `linear-gradient(270deg, ${lighten(
+              theme.palette.primary.main,
+              0.5
+            )}, var(--mui-palette-primary-main) 100%)`,
+        },
+      },
+    ],
+  }));
+
+  function ColorlibStepIcon(props: StepIconProps) {
+    const { active, completed, className } = props;
+
+    const icons: { [index: string]: React.ReactElement<unknown> } = {
+      1: <i className="material-symbols--help-outline" />,
+      2: <i className="material-symbols--check-circle-outline" />,
+      3: <i className="material-symbols--file-upload" />,
+      4: <i className="material-symbols--work-outline" />,
+      5: <i className="material-symbols--emoji-events" />,
+      6: <i className="material-symbols-light--list-alt-outline" />,
+    };
+
+    return (
+      <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
+        {icons[String(props.icon)]}
+      </ColorlibStepIconRoot>
+    );
+  }
+
   return (
-    <Box className="flex items-center justify-between w-full mb-16 overflow-x-auto pb-4">
-      {steps.map((step, index) => (
-        <Box
-          key={index}
-          className="flex flex-col items-center gap-3 flex-shrink-0 min-w-[100px]"
+    <Grid container spacing={6}>
+      {/* Left Section   */}
+      <Grid size={{ xs: 12, md: 12 }}>
+        <Card
+          className="p-2 sm:p-6 rounded-xl shadow-md"
         >
-          <Box
-            className={clsx(
-              "w-10 h-10 rounded-full flex items-center justify-center text-[20px] transition-all duration-300",
-              step.label === "Assessment"
-                ? "bg-[#ccfbf1] text-[#14b8a6] border-none shadow-none"
-                : step.status === "completed"
-                  ? "bg-[#1976d2] text-white border-none shadow-none"
-                  : "bg-[#f3f4f6] text-[#9ca3af] border-none shadow-none",
-              step.status === "active" &&
-                step.label !== "Assessment" &&
-                "border-2 border-[#1976d2] shadow-[0_0_15px_rgba(0,0,0,0.05)]",
-            )}
-          >
-            <i className={step.icon}></i>
-          </Box>
-          <Typography
-            className={clsx(
-              "text-[13px] font-semibold text-center",
-              step.status === "active"
-                ? "text-[#1976d2]"
-                : step.status === "completed"
-                  ? "text-[#1f2937]"
-                  : "text-[#9ca3af]",
-            )}
-          >
-            {step.label}
-          </Typography>
-        </Box>
-      ))}
-    </Box>
-  );
-};
+          <Stack className="w-full" spacing={4}>
+            <Stepper alternativeLabel activeStep={3} connector={<ColorlibConnector />}>
+              {steps.map(({ label }) => (
+                <Step key={label}>
+                  <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Stack>
+        </Card>
+      </Grid>
+    </Grid>
+  )
+}
 
 // Custom Status Badge
 const StatusBadge = ({ status }: { status: string }) => {
@@ -107,7 +178,7 @@ const JourneyCard = ({
           {dateLabel && date && (
             <Typography
               variant="caption"
-              className="font-normal text-[#6b7280] whitespace-nowrap"
+              className="font-normal whitespace-nowrap"
             >
               {dateLabel}:{" "}
               <span style={{ fontWeight: 400, color: "#6b7280" }}>{date}</span>
@@ -117,7 +188,7 @@ const JourneyCard = ({
       </Box>
 
       {/* Description */}
-      <Typography variant="body2" className="text-[#4b5563] leading-[1.6] mb-6">
+      <Typography variant="body2" className=" leading-[1.6] mb-6">
         {description}
       </Typography>
 
@@ -127,7 +198,7 @@ const JourneyCard = ({
           <Button
             variant="outlined"
             onClick={onSecondaryClick}
-            className="rounded-[8px] px-6 py-2 normal-case font-extrabold text-[#374151] border border-[#d1d5db] hover:border-[#9ca3af] hover:bg-[#f9fafb] transition-colors duration-150"
+            className="rounded-[8px] px-6 py-2 normal-case text-white bg-[#1976d2] shadow-none hover:bg-[#1565c0] hover:shadow-none transition-colors duration-150 disabled:bg-[#e3f2fd] disabled:text-[#93c5fd] disabled:cursor-not-allowed"
           >
             {secondaryButtonLabel}
           </Button>
@@ -137,7 +208,7 @@ const JourneyCard = ({
             variant="contained"
             disabled={disabledButton}
             onClick={onClick}
-            className="rounded-[8px] px-6 py-2 normal-case font-extrabold text-white bg-[#1976d2] shadow-none hover:bg-[#1565c0] hover:shadow-none transition-colors duration-150 disabled:bg-[#e3f2fd] disabled:text-[#93c5fd] disabled:cursor-not-allowed"
+            className="rounded-[8px] px-6 py-2 normal-case text-white bg-[#1976d2] shadow-none hover:bg-[#1565c0] hover:shadow-none transition-colors duration-150 disabled:bg-[#e3f2fd] disabled:text-[#93c5fd] disabled:cursor-not-allowed"
           >
             {buttonLabel}
           </Button>
@@ -158,7 +229,7 @@ const ApplicationTracking = () => {
           Application Status Tracking
         </Typography>
 
-        <Stepper />
+        <Stepper_steps />
 
         <Box className="mt-5">
           <Typography variant="h5" className="font-medium mb-4">
@@ -204,7 +275,7 @@ const ApplicationTracking = () => {
             buttonLabel="Schedule Assessment"
             disabledButton={false}
             onClick={() => setIsPopupOpen(true)}
-            secondaryButtonLabel="View Result"
+            // secondaryButtonLabel="View Result"
             onSecondaryClick={() => router.push("/assessment?view=result")}
           />
 
@@ -212,7 +283,7 @@ const ApplicationTracking = () => {
             title="Technical Round"
             status="Pending"
             dateLabel="Scheduled"
-            date="Feb 01, 2024"
+            date="Feb 01, 2026"
             description="Assessor will decide if you will need to clear this round or no need. We will notify you of the result after assessment."
             buttonLabel="View Result"
             disabledButton={false}
@@ -220,71 +291,71 @@ const ApplicationTracking = () => {
           />
         </Box>
       </Card>
-      {isPopupOpen && (
-        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-          <div className="bg-white rounded-[24px] w-full max-w-[480px] shadow-2xl relative overflow-hidden flex flex-col pt-12 pb-10 px-8">
-            <button
-              onClick={() => setIsPopupOpen(false)}
-              className="absolute top-5 right-5 text-gray-400 hover:text-gray-600 transition-colors"
+      <Dialog
+        open={isPopupOpen}
+        onClose={() => setIsPopupOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          className:
+            "rounded-[24px] pt-12 pb-10 px-8 relative overflow-hidden",
+        }}
+      >
+        <DialogContent className="flex flex-col items-center text-center">
+
+        <IconButton
+          onClick={() => setIsPopupOpen(false)}
+           className="absolute right-5 top-5 text-gray-500"
+        >
+          <i className="material-symbols--close-rounded" />
+
+        </IconButton>
+
+          <Typography variant="h4">Assessment</Typography>
+
+          <Box  className="mb-8">
+            <Typography variant="body1" className="mt-2 mb-4 px-8"
+>
+              You are assigned to a Talent Acquisition <br />
+              Consultant (TAC). <br />
+              Be ready for e-Assessment with Original Documents
+            </Typography>
+
+            <Button
+              onClick={() => {
+                setIsPopupOpen(false);
+                router.push("/assessment");
+              }}
+              className="bg-[#1877F2] hover:bg-[--mui-palette-secondary-main] text-white rounded-full text-[16px] normal-case"
             >
-              <i
-                className="material-symbols--close-rounded"
-                style={{ fontSize: "28px" }}
-              />
-            </button>
+              Request e-Assessment
+            </Button>
+          </Box>
 
-            <h2 className="text-[36px] font-bold text-center text-gray-900 mb-6 tracking-tight">
-              Assessment
-            </h2>
+          {/* <hr className="border-gray-200 mb-5 w-full" />
 
-            <div className="text-center mb-6">
-              <p className="text-[#111827] text-[15px] leading-[1.6] mb-5">
-                You are assigned to a Talent Acquisition
-                <br />
-                Consultant(TAC).
-                <br />
-                Be ready for e-Assessment with Original Documents
-              </p>
-              <button
-                onClick={() => {
-                  setIsPopupOpen(false);
-                  router.push("/assessment");
-                }}
-                className="bg-[#1877F2] hover:bg-[#166fe5] text-white  py-3 px-10 rounded-full text-[16px] transition-colors w-auto min-w-[260px]"
-              >
-                Request e-Assessment
-              </button>
-            </div>
+          <Box className="mb-6">
+            <Typography className="text-[--mui-palette-error-light] text-[15px] leading-[1.6] mb-5">
+              As you are now inside our <span className="font-bold">Siliguri</span> Branch.<br />
+              Be ready For Assessment with Original Documents
+            </Typography>
 
-            <hr className="border-gray-200 mb-5 w-full" />
+            <Button className="bg-[#111111]  text-white py-3 px-10 rounded-full text-[16px] normal-case min-w-[260px]">
+              Generate Token
+            </Button>
+          </Box>
 
-            <div className="text-center mb-6">
-              <p className="text-[#A32A29] text-[15px] leading-[1.6] mb-5">
-                As you are now inside our{" "}
-                <span className="font-bold">Siliguri</span> Branch .<br />
-                Be ready For Assessment with Original Documents
-              </p>
-              <button className="bg-[#111111] hover:bg-black text-white  py-3 px-10 rounded-full text-[16px] transition-colors w-auto min-w-[260px]">
-                Generate Token
-              </button>
-            </div>
+          <hr className="border-gray-200 mb-5 w-full" />
 
-            <hr className="border-gray-200 mb-5 w-full" />
+          <Typography className="text-[--mui-palette-error-light] text-[15px] leading-[1.6]">
+            As you're in <span className="font-bold">Siliguri</span> Branch.<br />
+            For Assessment, Please reach to Reception Counter.<br />
+            Receptionist will Generate a Token behalf of you.<br />
+            Be ready For Assessment with Original Documents.
+          </Typography> */}
 
-            <div className="text-center">
-              <p className="text-[#A32A29] text-[15px] leading-[1.6]">
-                As you're in <span className="font-bold">Siliguri</span> Branch.
-                <br />
-                For Assessment, Please reach to Reception Counter.
-                <br />
-                Receptionist will Generate a Token behalf of you.
-                <br />
-                Be ready For Assessment with Original Documents.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

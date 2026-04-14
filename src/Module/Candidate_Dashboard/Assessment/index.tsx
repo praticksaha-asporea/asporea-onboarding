@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 
 import type { ChangeEvent } from "react";
 
-import { Dialog, DialogContent } from "@mui/material";
+import { Dialog, DialogContent, IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -122,106 +122,92 @@ const Assessment = () => {
                   </CardContent>
                 </Card>
 
-                <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
-                  <CardContent className="p-6">
-                    <Typography variant="h5" fontWeight="bold" className="mb-4">
-                      Your Scheduled Session
-                    </Typography>
 
-                    <Typography
-                      variant="subtitle2"
-                      className="font-medium mb-1"
-                    >
-                      Counselling Date
-                    </Typography>
-                    <TextField
-                      type="date"
-                      defaultValue="2026-02-27"
-                      className="w-full max-w-[300px] mb-10"
-                      InputProps={{
-                        className: "rounded-[10px] bg-white",
-                      }}
-                    />
 
-                    <Typography
-                      variant="subtitle2"
-                      className="mb-2 font-medium"
-                    >
-                      Available Time Slots
-                    </Typography>
-                    <Box className="flex flex-wrap gap-3 mb-8">
-                      {slots.map((slot, index) => (
-                        <Button
-                          key={index}
-                          disabled={!slot.available}
-                          variant={
-                            selectedSlot === slot.time
-                              ? "contained"
-                              : "outlined"
-                          }
-                          onClick={() =>
-                            slot.available && setSelectedSlot(slot.time)
-                          }
-                          className={clsx(
-                            "rounded-[20px] px-6 normal-case font-medium border transition-colors duration-150",
-                            {
-                              // selected
-                              "bg-blue-600 text-white border-blue-600":
-                                selectedSlot === slot.time,
-                              // available (not selected)
-                              "bg-transparent text-gray-900 border-[#e0e0e0] hover:border-blue-600":
-                                selectedSlot !== slot.time && slot.available,
-                              // unavailable
-                              "bg-[#f5f5f5] text-gray-400 border-[#e0e0e0]":
-                                !slot.available && selectedSlot !== slot.time,
-                              // explicit disabled (native fallback)
-                              "bg-[#f5f5f5] text-[#bdbdbd] border-[#e0e0e0] cursor-not-allowed":
-                                !slot.available,
-                            },
-                          )}
-                        >
-                          {slot.time}
-                        </Button>
-                      ))}
-                    </Box>
+          <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+            <CardContent className="p-6">
+              <Typography variant="h5" fontWeight="bold" className="mb-4">
+                Your Scheduled Session
+              </Typography>
 
-                    <Box className="flex flex-wrap gap-6 mb-6">
-                      <Box className="flex items-center gap-2">
-                        <Box className="w-4 h-4 rounded bg-[#1976d2]" />
-                        <Typography variant="body2">Selected</Typography>
-                      </Box>
-                      <Box className="flex items-center gap-2">
-                        <Box className="w-4 h-4 rounded bg-transparent border border-[#cccccc]" />
-                        <Typography variant="body2">Available</Typography>
-                      </Box>
-                      <Box className="flex items-center gap-2">
-                        <Box className="w-4 h-4 rounded bg-[#f5f5f5] border border-[#e0e0e0]" />
-                        <Typography variant="body2" className="text-gray-500">
-                          Unavailable
-                        </Typography>
-                      </Box>
-                    </Box>
+              <Typography variant="subtitle2" className="mb-2 font-bold">
+                Assessment Date
+              </Typography>
+              <TextField
+                type="date"
+                defaultValue="2026-02-27"
+                className="w-full max-w-[300px] mb-10"
+              />
 
-                    <Box className="mt-8 p-4 bg-[#f8faff] rounded-[10px] border-l-4 border-l-[#1976d2]">
-                      <Typography
-                        variant="body2"
-                        className="text-gray-500 font-medium"
-                      >
-                        Please ensure you are available at this time and adjust
-                        if necessary via support.
-                      </Typography>
-                    </Box>
-                  </CardContent>
-                </Card>
+              <Typography variant="subtitle2" className="mb-2 font-bold">
+                Available Time Slots
+              </Typography>
+              <Box className="flex flex-wrap gap-1.5 mb-4">
+                {/*  */}
+                {slots.map((slot, index) => (
+                  <Button
+                    key={index}
+                    disabled={!slot.available}
+                    variant={
+                      selectedSlot === slot.time ? "contained" : "outlined"
+                    }
+                    onClick={() => slot.available && setSelectedSlot(slot.time)}
+                    className={`
+                    normal-case rounded-[20px] px-6
+                    ${
+                      selectedSlot === slot.time
+                        ? "bg-primary border-primary text-white"
+                        : slot.available
+                          ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                          : "bg-[#f5f5f5] border-[#e0e0e0]"
+                    }
+                    disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
+                  `}
+                  >
+                    {slot.time}
+                  </Button>
+                ))}
+              </Box>
 
-                <Button
-                  fullWidth
-                  variant="contained"
-                  onClick={() => setShowConfirmPopup(true)}
-                  className="mt-10 py-4 rounded-[10px] text-[1.1rem] font-bold normal-case"
-                >
-                  Confirm Readiness
-                </Button>
+              <Box className="flex flex-wrap gap-6 mb-6">
+                <Box className="flex items-center gap-2">
+                  <Box className="w-4 h-4 rounded-[4px] bg-[#1976d2]" />
+                  <Typography variant="body2">Selected</Typography>
+                </Box>
+                <Box className="flex items-center gap-2">
+                  <Box className="w-4 h-4 rounded-[4px] border border-[#ccc] bg-[--var-primary]" />
+                  <Typography variant="body2">Available</Typography>
+                </Box>
+                <Box className="flex items-center gap-2">
+                  <Box className="w-4 h-4 rounded-[4px] bg-[--mui-palette-action-disabledBackground] border border-[#e0e0e0]" />
+                  <Typography variant="body2">
+                    Unavailable
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box className="mt-8 p-4 rounded-[10px] border-l-4 border-l-[#1976d2]">
+                <Typography variant="body2">
+                  Please ensure you have reviewed the assessment materials
+                  before your session. Ensure you are ready to receive a call at
+                  your scheduled time. Your TAC will contact you via your
+                  preferred communication method.
+                </Typography>
+              </Box>
+            </CardContent>
+          </Card>
+        <Box className="flex justify-end gap-4">
+
+          <Button
+            // fullWidth
+            variant="contained"
+            size="small"
+            onClick={() => setShowConfirmPopup(true)}
+            className="rounded-xl mt-10 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
+          >
+            Confirm Readiness
+          </Button>
+          </Box>
               </>
             )}
 
@@ -233,13 +219,13 @@ const Assessment = () => {
                 <Box>
                   <Typography
                     variant="h5"
-                    className="text-[#111827] text-[1.6rem] font-semibold mb-6"
+                    className="text-[1.6rem] font-semibold mb-6"
                   >
                     Applicant Assessment Tool
                   </Typography>
                   <Typography
                     variant="body2"
-                    className="text-[#6b7280] text-[0.8rem]"
+                    className="text-[0.8rem]"
                   >
                     Evaluate the candidate based on standard scoring rubrics for
                     technical and soft skills.
@@ -267,93 +253,81 @@ const Assessment = () => {
 
         {isTechnicalResult && (
           <div ref={statusCardRef} className="flex flex-col gap-6 w-full">
-            <div className="flex items-center gap-4 p-5 bg-white border border-gray-200 rounded-xl shadow-sm">
-              <svg
-                className="w-9 h-9 text-gray-900 shrink-0"
-                fill="none"
-                strokeWidth="1.8"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
+            <div className="flex items-center gap-4 p-5  rounded-xl shadow-sm">
+              <i className="material-symbols-light--check-circle-outline"/>
               <div>
-                <h2 className="text-[22px] font-extrabold text-gray-900 tracking-tight leading-tight">
+                <h2 className="text-[22px] font-extrabold tracking-tight leading-tight">
                   Congratulations!
                 </h2>
-                <p className="text-[15px] text-gray-700 mt-2">
+                <p className="text-[15px] mt-2">
                   You have successfully completed the technical round.
                 </p>
               </div>
             </div>
 
-            <div className="p-7 bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div className="p-7 rounded-xl shadow-sm">
               <div className="flex justify-between items-center mb-8">
-                <h3 className="text-[18px] font-bold text-gray-900">
+                <h3 className="text-[18px] font-bold">
                   Score Summary
                 </h3>
-                <div className="flex gap-3 text-gray-500"></div>
+                <div className="flex gap-3"></div>
               </div>
 
               <div className="grid grid-cols-2 gap-y-8 gap-x-6">
                 <div>
-                  <p className="text-[13px] font-medium text-gray-500 mb-1.5">
+                  <p className="text-[13px] font-medium mb-1.5">
                     Overall Score
                   </p>
-                  <p className="text-[32px] font-semibold text-gray-900 leading-none">
+                  <p className="text-[32px] font-semibold leading-none">
                     85%
                   </p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-medium text-gray-500 mb-1.5">
+                  <p className="text-[13px] font-medium mb-1.5">
                     Questions Answered
                   </p>
-                  <p className="text-[16px] font-medium text-gray-900">
+                  <p className="text-[16px] font-medium">
                     17 / 20
                   </p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-medium text-gray-500 mb-1.5">
+                  <p className="text-[13px] font-medium mb-1.5">
                     Time Taken
                   </p>
-                  <p className="text-[16px] font-medium text-gray-900">
+                  <p className="text-[16px] font-medium">
                     45 minutes
                   </p>
                 </div>
                 <div>
-                  <p className="text-[13px] font-medium text-gray-500 mb-1.5">
+                  <p className="text-[13px] font-medium mb-1.5">
                     Accuracy Rate
                   </p>
-                  <p className="text-[16px] font-medium text-gray-900">85%</p>
+                  <p className="text-[16px] font-medium">85%</p>
                 </div>
               </div>
 
               <hr className="my-7 border-gray-200" />
 
-              <button className="w-full py-[10px] text-[14px] font-bold text-gray-800 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <button className="w-full py-[10px] text-[14px] font-bold rounded-lg hover:bg-blue-500 transition-colors">
                 View Detailed Breakdown
               </button>
             </div>
 
-            <div className="p-7 bg-white border border-gray-200 rounded-xl shadow-sm">
+            <div className="p-7  rounded-xl shadow-sm">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="text-[18px] font-bold text-gray-900">
+                <h3 className="text-[18px] font-bold">
                   Detailed Feedback
                 </h3>
-                <div className="flex gap-3 text-gray-500"></div>
+                <div className="flex gap-3"></div>
               </div>
 
-              <ul className="list-disc pl-5 space-y-3 text-[15px] text-gray-900 font-medium mb-8">
+              <ul className="list-disc pl-5 space-y-3 text-[15px] font-medium mb-8">
                 <li>Strong understanding of core concepts.</li>
                 <li>Excellent problem-solving approach.</li>
                 <li>Good code quality and documentation.</li>
               </ul>
 
-              <p className="text-[15px] text-gray-600 font-normal">
+              <p className="text-[15px] font-normal">
                 You demonstrated exceptional skills. We look forward to the next
                 stage!
               </p>
@@ -366,144 +340,120 @@ const Assessment = () => {
       {isBookingMode && (
         <Grid size={{ xs: 12, md: 4 }}>
           <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
-            <CardContent className="p-6">
-              <Typography variant="h6" fontWeight="bold" className="mb-3">
-                Your Application Progress
+          <CardContent className="p-6">
+            <Typography variant="h6" fontWeight="bold" className="mb-3">
+              Your Application Progress
+            </Typography>
+            <Typography variant="body2" className="mb-4">
+              Pre-counselling: 7 of 7 steps complete
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={100}
+              className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
+            />
+            <Typography variant="caption" className="text-[#1976d2] font-bold">
+              You're almost there
+            </Typography>
+          </CardContent>
+        </Card>
+
+          
+        <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+          <CardContent className="p-6">
+            <Box className="flex justify-between items-center mb-8">
+              <Typography variant="h6" fontWeight="bold">
+                Notification Channels
               </Typography>
-              <Typography variant="body2" className="mb-4 text-gray-500">
-                Pre-counselling: 7 of 7 steps complete
-              </Typography>
-              <LinearProgress
-                variant="determinate"
-                value={100}
-                className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={isEditingChannels}
+                    onChange={(e) => setIsEditingChannels(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label="Edit"
+                labelPlacement="start"
               />
-              <Typography
-                variant="caption"
-                className="text-[#1976d2] font-bold"
-              >
-                You're almost there!
-              </Typography>
-            </CardContent>
-          </Card>
+            </Box>
 
-          <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
-            <CardContent className="p-6">
-              <Box className="flex justify-between items-center mb-8">
-                <Typography variant="h6" fontWeight="bold">
-                  Notification Channels
-                </Typography>
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={isEditingChannels}
-                      onChange={(e) => setIsEditingChannels(e.target.checked)}
-                      color="primary"
-                    />
-                  }
-                  label="Edit"
-                  labelPlacement="start"
-                />
-              </Box>
-
-              {!isEditingChannels ? (
-                <Box>
-                  <Box className="flex gap-4 items-start mb-8">
-                    <i
-                      className="ri-whatsapp-line"
-                      style={{
-                        fontSize: "24px",
-                        color: "#25D366",
-                        marginTop: "2px",
-                      }}
-                    ></i>
-                    <Typography
-                      variant="body2"
-                      className="text-gray-500 leading-6"
-                    >
-                      <span style={{ fontWeight: "bold", color: "#000" }}>
-                        WhatsApp:
-                      </span>{" "}
-                      Enabled for timely updates and session reminders.
-                    </Typography>
-                  </Box>
-                  <Box className="flex gap-4 items-start">
-                    <i
-                      className="ri-mail-line"
-                      style={{
-                        fontSize: "24px",
-                        color: "#1976d2",
-                        marginTop: "2px",
-                      }}
-                    ></i>
-                    <Typography
-                      variant="body2"
-                      className="text-gray-500 leading-6"
-                    >
-                      <span style={{ fontWeight: "bold", color: "#000" }}>
-                        Email:
-                      </span>{" "}
-                      Enabled for detailed session information and important
-                      documents.
-                    </Typography>
-                  </Box>
-                  <Typography className="text-center text-sm mt-4">
-                    You will receive your counselling confirmation and reminders
-                    on these channels
+            {!isEditingChannels ? (
+              <Box>
+                <Box className="flex gap-4 items-start mb-8">
+                  <i
+                    className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"
+                  ></i>
+                  <Typography
+                    variant="body2"                  >
+                    <span className="font-bold">WhatsApp:</span>{" "}
+                    Enabled for timely updates and session reminders.
                   </Typography>
                 </Box>
-              ) : (
-                <Box>
-                  <FormControl fullWidth>
-                    <FormGroup>
-                      <FormControlLabel
-                        label="Receive updates via Email"
-                        control={
-                          <Checkbox
-                            checked={gilad}
-                            onChange={handleChange}
-                            name="gilad"
-                          />
-                        }
-                      />
-                      <FormControlLabel
-                        label="Receive updates via WhatsApp"
-                        control={
-                          <Checkbox
-                            checked={jason}
-                            onChange={handleChange}
-                            name="jason"
-                          />
-                        }
-                      />
-                      <FormControlLabel
-                        label="Receive updates via SMS"
-                        control={
-                          <Checkbox
-                            checked={antoine}
-                            onChange={handleChange}
-                            name="antoine"
-                          />
-                        }
-                      />
-                    </FormGroup>
-                    <FormHelperText>At least One</FormHelperText>
-                  </FormControl>
-
-                  <Box className="flex justify-end mt-4">
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => setIsEditingChannels(false)}
-                      className="rounded-lg normal-case font-bold px-6 bg-[#1976d2] shadow-none"
-                    >
-                      Save
-                    </Button>
-                  </Box>
+                <Box className="flex gap-4 items-start">
+                  <i
+                    className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"
+                  ></i>
+                  <Typography
+                    variant="body2"
+                  >
+                    <span className="font-bold">Email:</span> Enabled
+                    for detailed session information and important documents.
+                  </Typography>
                 </Box>
-              )}
-            </CardContent>
-          </Card>
+              </Box>
+            ) : (
+              <Box>
+                <FormControl fullWidth>
+                  <FormGroup>
+                    <FormControlLabel
+                      label="Receive updates via Email"
+                      control={
+                        <Checkbox
+                          checked={gilad}
+                          onChange={handleChange}
+                          name="gilad"
+                        />
+                      }
+                    />
+                    <FormControlLabel
+                      label="Receive updates via WhatsApp"
+                      control={
+                        <Checkbox
+                          checked={jason}
+                          onChange={handleChange}
+                          name="jason"
+                        />
+                      }
+                    />
+                    <FormControlLabel
+                      label="Receive updates via SMS"
+                      control={
+                        <Checkbox
+                          checked={antoine}
+                          onChange={handleChange}
+                          name="antoine"
+                        />
+                      }
+                    />
+                  </FormGroup>
+                  <FormHelperText className="pt-2">At least One</FormHelperText>
+                </FormControl>
+
+                <Box className="flex justify-end mt-4">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => setIsEditingChannels(false)}
+                    className="rounded-[8px] normal-case font-bold px-6 bg-[#1976d2] shadow-none"
+                  >
+                    Save
+                  </Button>
+                </Box>
+              </Box>
+            )}
+          </CardContent>
+        </Card>
         </Grid>
       )}
 
@@ -515,13 +465,19 @@ const Assessment = () => {
         PaperProps={{ className: "rounded-[20px] p-8 relative" }}
       >
         <DialogContent className="flex flex-col items-center text-center p-4">
-          <Typography variant="h3" className="font-black text-black mb-10">
+          <Typography variant="h4">
+            <IconButton
+              onClick={() => setShowConfirmPopup(false)}
+              className="absolute right-5 top-5"
+            >
+              <i className="material-symbols--close-rounded" />
+
+            </IconButton>
             Request Submitted
           </Typography>
 
-          <Typography
-            variant="body1"
-            className="text-[#d32f2f] text-lg mb-3 leading-[1.9] px-20"
+          <Box  className="">
+            <Typography variant="body1" className="mt-2 mb-4 px-8 text-[--mui-palette-error-light]  leading-[1.9] px-20"
           >
             Please be ready for your assessment for the mentioned date. You will
             be notified via reminder notification channels.
@@ -529,11 +485,12 @@ const Assessment = () => {
 
           <Typography
             variant="body1"
-            className="text-black text-[16px] mb-24 px-24 mt-5"
+            className="mt-5"
           >
             Meanwhile you can fill all details of assessment form and keep
             necessary (uploaded) documents original version handy.
           </Typography>
+          </Box>
         </DialogContent>
       </Dialog>
     </Grid>

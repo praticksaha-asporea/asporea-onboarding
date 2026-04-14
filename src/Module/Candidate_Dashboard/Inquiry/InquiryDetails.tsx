@@ -130,7 +130,7 @@ const AccountDetails = () => {
   return (
     <>
       <Grid container spacing={6}>
-        <Grid size={{ xs: 6, md: 9 }}>
+        <Grid size={{ xs: 6, md: 8 }}>
           <Card>
             <CardContent>
               <Typography variant="h4">Generate Inquiry</Typography>
@@ -410,9 +410,10 @@ West Bengal,
                         <Button
                           variant="contained"
                           type="button"
-                          onClick={() => setShowInquiryPopup(true)}
+                          onClick={() => setShowInquiryPopup(true)}                          
+                          className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
                         >
-                          Submit Inquiry
+                          Submit
                         </Button>
                       </Grid>
                     </Grid>
@@ -422,12 +423,12 @@ West Bengal,
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 6, md: 3 }}>
+        <Grid size={{ xs: 6, md: 4 }}>
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, md: 12, sm: 12 }}>
               <Card>
                 <CardContent>
-                  <Typography variant="h5" className="mb-5">
+                  <Typography variant="h4" className="mb-5">
                     Application Progress
                   </Typography>
                   <Stepper activeStep={activeStep} orientation="vertical">
@@ -439,6 +440,7 @@ West Bengal,
                               <Typography variant="caption">Pending</Typography>
                             ) : null
                           }
+                          className=""
                         >
                           {step.label}
                         </StepLabel>
@@ -460,7 +462,7 @@ West Bengal,
                 <Grid container spacing={5}>
                   <Grid size={{ xs: 12, md: 12, sm: 12 }}>
                     <FormControl className="mbs-4 mie-4">
-                      <Typography variant="h5">Contact Preferences</Typography>
+                      <Typography variant="h5" className="pb-5">Contact Preferences</Typography>
                       <FormGroup>
                         <FormControlLabel
                           label="Receive updates via Email"
@@ -493,7 +495,7 @@ West Bengal,
                           }
                         />
                       </FormGroup>
-                      <FormHelperText>At least One</FormHelperText>
+                      <FormHelperText className="pt-3">At least One</FormHelperText>
                     </FormControl>
                   </Grid>
                 </Grid>
@@ -508,14 +510,6 @@ West Bengal,
         onClose={() => setShowInquiryPopup(false)}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          className: "bg-[var(--mui-palette-background-default)]" 
-        }}
-        slotProps={{
-          backdrop: {
-            className: "bg-[var(--mui-palette-dividerChannel)]"
-          }
-        }}
       >
         <IconButton
           onClick={() => setShowInquiryPopup(false)}
@@ -526,10 +520,10 @@ West Bengal,
         </IconButton>
 
         <DialogContent  className="text-center p-8">
-          <Typography variant="h3" fontWeight="900"  className="mt-4">
+          <Typography variant="h4" className="mt-4">
             Inquiry Submitted
           </Typography>
-          <Typography variant="h6" fontWeight="700"  className="mt-2 mb-8">
+          <Typography variant="h6" className="mt-2 mb-8">
             ID: ASP-INQ-0841
           </Typography>
 
@@ -541,18 +535,19 @@ West Bengal,
             </Typography>
             <Button
               variant="contained"
-              className="normal-case rounded-[50px] px-10 py-[9.6px] text-[1.1rem]"
+              className="normal-case rounded-[50px] py-[9.6px]"
+              href="/pre-counselling"
             >
               Schedule Pre-Counselling
             </Button>
           </Box>
 
-          <Divider className="my-8" />
+          {/* <Divider className="my-8" />
 
           <Box className="mb-4">
-            <Typography variant="body1" className="mt: 1, mb: 2, px: 4 ">
+            <Typography variant="body1" className="mt-2 mb-4 px-8">
               As you are now inside / visiting our{" "}
-              <span style={{ color: "#d32f2f", fontWeight: "bold" }}>
+              <span className="text-[#d32f2f] font-bold">
                 Siliguri
               </span>{" "}
               Branch. <br />
@@ -574,12 +569,12 @@ West Bengal,
               color="error"
             className="mt-2 px-8 font-medium"
             >
-              As you're in <span style={{ fontWeight: "bold" }}>Siliguri</span>{" "}
+              As you're in <span className="font-bold">Siliguri</span>{" "}
               Branch. <br />
               For Pre-counselling, Please reach to Reception Counter. <br />
               Receptionist will Generate a Token behalf of you.
             </Typography>
-          </Box>
+          </Box> */}
         </DialogContent>
       </Dialog>
     </>
