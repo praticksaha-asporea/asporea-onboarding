@@ -5,7 +5,10 @@ import React, { useState } from "react";
 const TACDashboard = () => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCandidate, setSelectedCandidate] = useState<any>(null); // State to toggle pages
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);  
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "detail" | "assessment"
+  >("dashboard");
 
   const candidates = [
     {
@@ -89,13 +92,188 @@ const TACDashboard = () => {
     }
   };
 
-  if (selectedCandidate) {
+  const scoringSections = [
+    {
+      id: 1,
+      title: "ACADEMIC QUALIFICATION",
+      max: 10,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        {
+          label: "Post Graduate Certificate / Diploma / Master Degree",
+          score: 10,
+          selected: true,
+        },
+        {
+          label: "3 Years Honours Undergraduate Degree / 4 Years Degree",
+          score: 7,
+        },
+        { label: "3 Years Undergraduate Degree", score: 6 },
+        { label: "Higher / Senior Secondary Education", score: 5 },
+        { label: "Secondary School Education", score: 3 },
+      ],
+    },
+    {
+      id: 2,
+      title: "PROFESSIONAL QUALIFICATION",
+      max: 10,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        { label: "Professional Certification / L7 (Recognized)", score: 10 },
+        {
+          label: "3 Years Diploma Course / L6 (Recognized)",
+          score: 9,
+          selected: true,
+        },
+        { label: "2 Years Diploma Course / L4/L5 (Recognized)", score: 7 },
+        { label: "ITI  /Trade Certificate / L1/L2 [Recognized]", score: 4 },
+        {
+          label: "Certificate Course / Skill Development (Recognized)",
+          score: 2,
+        },
+      ],
+    },
+    // ID 3 is Language Abilities, handled explicitly in JSX for the complex UI
+    {
+      id: 4,
+      title: "GENERAL ABILITIES",
+      max: 7,
+      bg: "bg-[#f5f5dc]",
+      text: "text-yellow-900",
+      options: [
+        { label: "Communication Skills", score: 4, selected: true },
+        { label: "Personality & Confidence", score: 3 },
+      ],
+    },
+    {
+      id: 5,
+      title: "WORK EXPERIENCE (RELEVANT)",
+      max: 10,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        { label: "Six years or more", score: 10 },
+        { label: "Four to Five years", score: 7, selected: true },
+        { label: "Two to Three years", score: 5 },
+        { label: "One year", score: 3 },
+      ],
+    },
+    {
+      id: 6,
+      title: "ABROAD WORK EXPERIENCE",
+      max: 10,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        { label: "Six years or more", score: 10 },
+        { label: "Two to Three years", score: 5, selected: true },
+        { label: "One year", score: 3 },
+      ],
+    },
+    {
+      id: 7,
+      title: "STABILITY (DURATION AT SINGLE EMPLOYER)",
+      max: 5,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        { label: "Has worked in one employer for more than 5 years", score: 5 },
+        {
+          label: "Has worked in one employer for 2 to 5 years",
+          score: 4,
+          selected: true,
+        },
+        { label: "Has worked in one employer for 2 years", score: 3 },
+      ],
+    },
+    {
+      id: 8,
+      title: "CAREER INITIATIVE",
+      max: 5,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        {
+          label: "Changed employment in same industry in last three employment",
+          score: 4,
+          selected: true,
+        },
+        {
+          label: "Changed employment in same industry in last two employment",
+          score: 3,
+        },
+      ],
+    },
+    {
+      id: 9,
+      title: "AGE BRACKET",
+      max: 10,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        { label: "18 to 25 years", score: 10 },
+        { label: "26 to 30 years", score: 7, selected: true },
+        { label: "31 to 35 years", score: 5 },
+        { label: "More than 36 years", score: 1 },
+      ],
+    },
+    {
+      id: 10,
+      title: "EXISTING PROFESSIONAL LICENSE",
+      max: 8,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        {
+          label:
+            "Has obtained any License to the profession from India / Foreign",
+          score: 3.5,
+        },
+        {
+          label: "Has obtained Driving License from Foreign Country",
+          score: 2.5,
+          selected: true,
+        },
+      ],
+    },
+    {
+      id: 11,
+      title: "ADAPTABILITY & MOBILITY",
+      max: 6,
+      bg: "bg-[#f3e8ff]",
+      text: "text-purple-900",
+      options: [
+        {
+          label:
+            "Applicant has a minimum of 1 year skilled Work experience in Abroad",
+          score: 2,
+          selected: true,
+        },
+        {
+          label: "Applicant spouse is working in Abroad",
+          score: 1,
+          selected: true,
+        },
+        { label: "Applicant family member is working in Abroad", score: 1 },
+      ],
+    },
+  ];
+
+   
+
+   
+
+  if (currentView === "detail" && selectedCandidate) {
     return (
       <div className="w-full min-h-screen bg-gray-50/30 p-4 md:p-6 font-sans text-gray-900">
-        {/* Back Button & Title */}
         <div className="flex items-center gap-4 mb-6">
           <button
-            onClick={() => setSelectedCandidate(null)}
+            onClick={() => {
+              setSelectedCandidate(null);
+              setCurrentView("dashboard");
+            }}
             className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
           >
             <svg
@@ -430,7 +608,6 @@ const TACDashboard = () => {
                       }}
                     />
 
-                    {/* UI Toggle: Agar file hai toh naam dikhao, warna default Drop files */}
                     {resumeFile ? (
                       <div className="flex flex-col items-center text-center">
                         {/* Success Check Icon */}
@@ -726,7 +903,6 @@ const TACDashboard = () => {
                   </div>
                 </div>
 
-                {/* --------------------------------- */}
                 {/* SUB-SECTION: EXPERIENCE */}
                 <div className="border border-gray-200 rounded-xl p-5 mb-2">
                   <div className="mb-4">
@@ -777,7 +953,6 @@ const TACDashboard = () => {
                   </div>
                 </div>
 
-                {/* --------------------------------- */}
                 {/* SUB-SECTION: ASSESSMENT FLOW */}
                 <div className="border border-gray-200 rounded-xl p-5 mb-2">
                   <div className="mb-6">
@@ -833,7 +1008,10 @@ const TACDashboard = () => {
                     <button className="bg-[#fca5a5] hover:bg-red-400 text-white text-[13px] font-bold px-4 py-2 rounded-lg transition-colors">
                       Refer Technical
                     </button>
-                    <button className="bg-[#fde047] hover:bg-yellow-400 text-white text-[13px] font-bold px-6 py-2 rounded-lg transition-colors shadow-sm">
+                    <button
+                      onClick={() => setCurrentView("assessment")}
+                      className="bg-[#fde047] hover:bg-yellow-400 text-white text-[13px] font-bold px-6 py-2 rounded-lg transition-colors shadow-sm"
+                    >
                       Start
                     </button>
                     <button className="bg-[#86efac] hover:bg-green-400 text-white text-[13px] font-bold px-6 py-2 rounded-lg transition-colors shadow-sm">
@@ -941,9 +1119,361 @@ const TACDashboard = () => {
     );
   }
 
-  // ==========================================
-  // VIEW 1: MAIN DASHBOARD
-  // ==========================================
+  if (currentView === "assessment") {
+    return (
+      <div className="w-full min-h-screen bg-gray-50/50 p-4 md:p-8 font-sans text-gray-900">
+        {/* Back Navigation */}
+        <div className="flex items-center gap-4 mb-8">
+          <button
+            onClick={() => setCurrentView("detail")}
+            className="p-2 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+          >
+            <svg
+              className="w-5 h-5 text-gray-600"
+              fill="none"
+              strokeWidth="2"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+          </button>
+          <h1 className="text-[22px] font-bold text-gray-900">
+            Assessment Form
+          </h1>
+        </div>
+
+        <div className="w-full bg-white rounded-xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] border border-gray-200 p-6 md:p-8">
+          {/* TOP INPUTS */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 flex items-center gap-2 mb-1.5 uppercase tracking-wide">
+                Name of Candidate
+              </label>
+              <input
+                type="text"
+                defaultValue={selectedCandidate?.name || "Jonathan Doe"}
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-[14px] text-gray-800 font-medium outline-none focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 flex items-center gap-2 mb-1.5 uppercase tracking-wide">
+                Passport No.
+              </label>
+              <input
+                type="text"
+                defaultValue="H234566Y"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-[14px] text-gray-800 font-medium outline-none focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 flex items-center gap-2 mb-1.5 uppercase tracking-wide">
+                Date of Assessment
+              </label>
+              <input
+                type="text"
+                defaultValue="11/11/2026"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-[14px] text-gray-800 font-medium outline-none focus:border-blue-500"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] font-bold text-gray-500 flex items-center gap-2 mb-1.5 uppercase tracking-wide">
+                Assessment No.
+              </label>
+              <input
+                type="text"
+                defaultValue="ASF-2015-1021"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-[14px] text-gray-800 font-medium outline-none focus:border-blue-500"
+              />
+            </div>
+            <div className="md:col-span-2">
+              <label className="text-[11px] font-bold text-gray-500 flex items-center gap-2 mb-1.5 uppercase tracking-wide">
+                Assessed By
+              </label>
+              <input
+                type="text"
+                defaultValue="Mason Lee"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-[14px] text-gray-800 font-medium outline-none focus:border-blue-500"
+              />
+            </div>
+          </div>
+
+          <div className="border border-gray-200 rounded-xl overflow-hidden mb-10">
+            {/* Table Header */}
+            <div className="flex items-center justify-between bg-gray-50 px-4 py-3 border-b border-gray-200 text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+              <div className="flex gap-4 w-full">
+                <span className="w-8">S.N</span>
+                <span className="flex-1">Factor / Criteria</span>
+              </div>
+              <div className="flex gap-10 min-w-[120px] justify-end">
+                <span>Score</span>
+                <span>Final</span>
+              </div>
+            </div>
+
+            {scoringSections.map((section) => {
+              const isLanguagePos = section.id === 4;
+
+              return (
+                <React.Fragment key={section.id}>
+                  {isLanguagePos && (
+                    <>
+                      <div className="flex items-center justify-between bg-[#ffedd5] px-4 py-2.5 font-bold text-[13px] border-b border-gray-200">
+                        <div className="flex gap-4 w-full items-center text-orange-900">
+                          <span className="w-8">3</span>
+                          <span className="flex-1 flex items-center gap-2 uppercase">
+                            LANGUAGE ABILITIES (2ND & 3RD LANGUAGES){" "}
+                            <svg
+                              className="w-3.5 h-3.5 text-blue-600 cursor-pointer"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                              />
+                            </svg>
+                          </span>
+                        </div>
+                        <div className="flex gap-10 min-w-[120px] justify-end pr-2">
+                          <span className="text-gray-500 font-medium text-[11px]">
+                            Max.
+                          </span>
+                          <span className="w-6 text-center text-gray-900">
+                            20
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="px-4 py-1.5 bg-gray-50 border-b -translate-x-8 border-gray-200">
+                        <span className="pl-8 text-[10px]  font-bold text-orange-400 uppercase tracking-wider">
+                          2nd Language (English)
+                        </span>
+                      </div>
+                      {["Listening", "Speaking", "Writing", "Reading"].map(
+                        (skill, i) => (
+                          <div
+                            key={`eng-${i}`}
+                            className={`px-4 py-2 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 transition-colors`}
+                          >
+                            <span className="pl-12 text-[13px] text-gray-700 w-[200px]">
+                              {skill}
+                            </span>
+                            <div className="flex gap-2 flex-1 justify-end pr-10">
+                              {["L1", "L2", "L3", "L4"].map((lvl, j) => {
+                                const isSelected =
+                                  (skill === "Writing" && j === 2) ||
+                                  (skill !== "Writing" && j === 3);
+                                return (
+                                  <button
+                                    key={j}
+                                    className={`w-8 h-7 rounded text-[11px] font-bold transition-colors ${isSelected ? "bg-blue-600 text-white border-blue-600" : "border border-gray-200 text-gray-400 bg-white hover:border-blue-400"}`}
+                                  >
+                                    {lvl}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                            <span className="mr-3 text-[13px] font-bold text-gray-900 w-6 text-center">
+                              {skill === "Writing" ? "3" : "4"}
+                            </span>
+                          </div>
+                        ),
+                      )}
+
+                      <div className="px-4 py-1.5 bg-gray-50 border-b -translate-x-8 border-gray-200">
+                        <span className="pl-8 text-[10px] font-bold text-orange-400 uppercase tracking-wider">
+                          3rd Language (Arabic / German / Japanese)
+                        </span>
+                      </div>
+                      {["Listening", "Speaking", "Writing", "Reading"].map(
+                        (skill, i) => (
+                          <div
+                            key={`oth-${i}`}
+                            className={`px-4 py-2 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 transition-colors`}
+                          >
+                            <span className="pl-12 text-[13px] text-gray-700 w-[200px]">
+                              {skill}
+                            </span>
+                            <div className="flex gap-2 flex-1 justify-end pr-10">
+                              {["L1", "L2", "L3", "L4"].map((lvl, j) => (
+                                <button
+                                  key={j}
+                                  className={`w-8 h-7 rounded text-[11px] font-bold transition-colors ${j === 0 ? "bg-blue-600 text-white border-blue-600" : "border border-gray-200 text-gray-400 bg-white hover:border-blue-400"}`}
+                                >
+                                  {lvl}
+                                </button>
+                              ))}
+                            </div>
+                            <span className="mr-3 text-[13px] font-bold text-gray-900 w-6 text-center">
+                              1
+                            </span>
+                          </div>
+                        ),
+                      )}
+                    </>
+                  )}
+
+                  <div
+                    className={`flex items-center justify-between ${section.bg} px-4 py-2.5 font-bold text-[13px] border-b border-gray-200`}
+                  >
+                    <div
+                      className={`flex gap-4 w-full items-center ${section.text}`}
+                    >
+                      <span className="w-8">{section.id}</span>
+                      <span className="flex-1 flex items-center gap-2 uppercase">
+                        {section.title}{" "}
+                        <svg
+                          className="w-3.5 h-3.5 text-blue-600 cursor-pointer"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                      </span>
+                    </div>
+                    <div className="flex gap-10 min-w-[120px] justify-end pr-2">
+                      <span className="text-gray-500 font-medium text-[11px]">
+                        Max.
+                      </span>
+                      <span className="w-6 text-center text-gray-900">
+                        {section.options.find((o) => o.selected)?.score || "-"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {section.options.map((opt, oIdx) => (
+                    <div
+                      key={oIdx}
+                      className={`px-4 py-2 border-b border-gray-100 flex items-center justify-between cursor-pointer transition-colors ${opt.selected ? "bg-blue-50/50" : "hover:bg-gray-50"}`}
+                    >
+                      <div className="flex items-center pl-10">
+                        {opt.selected  }
+                        <span
+                          className={`text-[13px] ${opt.selected ? "text-gray-900 font-medium" : "text-gray-900"}`}
+                        >
+                          {opt.label}
+                        </span>
+                      </div>
+                      <span
+                        className={`mr-3 text-[13px] ${opt.selected ? "font-bold text-gray-900" : "font-medium text-gray-500"}`}
+                      >
+                        {opt.score}
+                      </span>
+                    </div>
+                  ))}
+                </React.Fragment>
+              );
+            })}
+
+            <div className="bg-[#eff6ff] px-4 py-5 border-t border-gray-300 flex justify-end items-center gap-6">
+              <span className="text-[14px] font-extrabold text-gray-900 uppercase tracking-widest">
+                Grand Total Score:
+              </span>
+              <span className="text-[18px] font-extrabold text-blue-600 mr-2">
+                78 / 100
+              </span>
+            </div>
+          </div>
+
+          <div className="mb-10">
+            <h3 className="text-[14px] font-bold text-gray-900 mb-4 flex items-center gap-2">
+              <svg
+                className="w-4 h-4 text-blue-600"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              Additional Assessment Notes
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-white">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                  Note 1: Academic & Professional Details
+                </label>
+                <textarea
+                  rows={4}
+                  defaultValue="Candidate possesses a Master's from a top-tier European University. Specialized certification in Lean Six Sigma is a strong plus for the current role."
+                  className="w-full text-[13px] text-gray-700 outline-none resize-none bg-transparent"
+                ></textarea>
+              </div>
+              <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-white">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                  Note 2: Language Competency
+                </label>
+                <textarea
+                  rows={4}
+                  defaultValue="Native level English proficiency, observed during technical interview. Arabic skills are foundational but sufficient for basic site communication."
+                  className="w-full text-[13px] text-gray-700 outline-none resize-none bg-transparent"
+                ></textarea>
+              </div>
+              <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-white">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                  Note 3: Personality & Adaptability
+                </label>
+                <textarea
+                  rows={4}
+                  defaultValue="Highly adaptable mindset. Previous exposure to Gulf work environment ensures quick onboarding. Demonstrated high emotional intelligence in situational questions."
+                  className="w-full text-[13px] text-gray-700 outline-none resize-none bg-transparent"
+                ></textarea>
+              </div>
+              <div className="border border-gray-200 rounded-xl p-4 shadow-sm bg-white">
+                <label className="text-[11px] font-bold text-gray-500 uppercase tracking-wider mb-2 block">
+                  Note 4: Final Recommendation Summary
+                </label>
+                <textarea
+                  rows={4}
+                  defaultValue="Strong candidate for the Senior Engineering Lead position. Experience profile aligns perfectly with project requirements. Recommend proceeding to final partner round."
+                  className="w-full text-[13px] text-gray-700 outline-none resize-none bg-transparent"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          {/* SIGNATURES & SUBMIT */}    // Use fILE UPLOAD Intead Signature manual
+          <div className="mt-12 flex flex-col md:flex-row justify-between items-end gap-10">
+            <div className="flex w-full md:w-[60%] gap-10">
+              <div className="flex-1 text-center border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50">
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-6">
+                  Candidate Signature
+                </p>
+              </div>
+              <div className="flex-1 text-center border border-dashed border-gray-300 rounded-xl p-6 bg-gray-50">
+                <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest mt-6">
+                  Assessment by Signature
+                </p>
+              </div>
+            </div>
+
+            <button className="bg-[#43dd95] hover:bg-green-500 text-white font-extrabold px-12 py-3.5 rounded-lg transition-colors shadow-sm tracking-widest text-[14px]">
+              SUBMIT
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full bg-white rounded-[20px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)] border border-gray-200 p-6 md:p-8 font-sans text-gray-900">
       {/* HEADER SECTION */}
@@ -1070,7 +1600,7 @@ const TACDashboard = () => {
           </p>
         </div>
       </div>
-      {/* ASSIGNED CANDIDATES TABLE SECTION */}
+
       <h2 className="text-[19px] font-bold text-gray-900 mb-5">
         Assigned Candidates
       </h2>
@@ -1147,7 +1677,10 @@ const TACDashboard = () => {
             {filteredCandidates.map((candidate, index) => (
               <tr
                 key={index}
-                onClick={() => setSelectedCandidate(candidate)} // <-- Click handle to open detail page
+                onClick={() => {
+                  setSelectedCandidate(candidate);
+                  setCurrentView("detail");
+                }}
                 className="border-b border-gray-100 hover:bg-blue-50/50 cursor-pointer transition-colors"
               >
                 <td className="py-3 px-4">
