@@ -130,7 +130,7 @@ const AccountDetails = () => {
   return (
     <>
       <Grid container spacing={6}>
-        <Grid size={{ xs: 6, md: 8 }}>
+        <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
               <Typography variant="h4">Generate Inquiry</Typography>
@@ -260,7 +260,7 @@ const AccountDetails = () => {
                               label="Want to visit online rather than in-person branch visit"
                             />
                           </RadioGroup>
-                          <FormHelperText>
+                          <FormHelperText className="py-2">
                             NOTE: Online Schedule you can choose from next
                             screen, If you have preferred consultant.
                           </FormHelperText>
@@ -423,10 +423,10 @@ West Bengal,
             </CardContent>
           </Card>
         </Grid>
-        <Grid size={{ xs: 6, md: 4 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, md: 12, sm: 12 }}>
-              <Card>
+              <Card className="hidden md:block">
                 <CardContent>
                   <Typography variant="h4" className="mb-5">
                     Application Progress
@@ -457,10 +457,10 @@ West Bengal,
 
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, md: 12, sm: 12 }}></Grid>
-            <Card>
-              <CardContent>
-                <Grid container spacing={5}>
+                {/* <Grid container spacing={5}> */}
                   <Grid size={{ xs: 12, md: 12, sm: 12 }}>
+                    <Card>
+                      <CardContent>
                     <FormControl className="mbs-4 mie-4">
                       <Typography variant="h5" className="pb-5">Contact Preferences</Typography>
                       <FormGroup>
@@ -497,10 +497,11 @@ West Bengal,
                       </FormGroup>
                       <FormHelperText className="pt-3">At least One</FormHelperText>
                     </FormControl>
-                  </Grid>
+                    </CardContent>
+                    </Card>
+                  {/* </Grid> */}
+                  
                 </Grid>
-              </CardContent>
-            </Card>
           </Grid>
         </Grid>
       </Grid>

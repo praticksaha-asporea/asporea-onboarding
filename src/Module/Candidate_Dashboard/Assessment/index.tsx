@@ -7,7 +7,7 @@ import { useSearchParams } from "next/navigation";
 
 import type { ChangeEvent } from "react";
 
-import { Dialog, DialogContent, IconButton } from "@mui/material";
+import { Dialog, DialogContent, Divider, IconButton } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -124,90 +124,89 @@ const Assessment = () => {
 
 
 
-          <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
-            <CardContent className="p-6">
-              <Typography variant="h5" fontWeight="bold" className="mb-4">
-                Your Scheduled Session
-              </Typography>
+                <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+                  <CardContent className="p-6">
+                    <Typography variant="h5" fontWeight="bold" className="mb-4">
+                      Your Scheduled Session
+                    </Typography>
 
-              <Typography variant="subtitle2" className="mb-2 font-bold">
-                Assessment Date
-              </Typography>
-              <TextField
-                type="date"
-                defaultValue="2026-02-27"
-                className="w-full max-w-[300px] mb-10"
-              />
+                    <Typography variant="subtitle2" className="mb-2 font-bold">
+                      Assessment Date
+                    </Typography>
+                    <TextField
+                      type="date"
+                      defaultValue="2026-02-27"
+                      className="w-full max-w-[300px] mb-10"
+                    />
 
-              <Typography variant="subtitle2" className="mb-2 font-bold">
-                Available Time Slots
-              </Typography>
-              <Box className="flex flex-wrap gap-1.5 mb-4">
-                {/*  */}
-                {slots.map((slot, index) => (
-                  <Button
-                    key={index}
-                    disabled={!slot.available}
-                    variant={
-                      selectedSlot === slot.time ? "contained" : "outlined"
-                    }
-                    onClick={() => slot.available && setSelectedSlot(slot.time)}
-                    className={`
+                    <Typography variant="subtitle2" className="mb-2 font-bold">
+                      Available Time Slots
+                    </Typography>
+                    <Box className="flex flex-wrap gap-1.5 mb-4">
+                      {/*  */}
+                      {slots.map((slot, index) => (
+                        <Button
+                          key={index}
+                          disabled={!slot.available}
+                          variant={
+                            selectedSlot === slot.time ? "contained" : "outlined"
+                          }
+                          onClick={() => slot.available && setSelectedSlot(slot.time)}
+                          className={`
                     normal-case rounded-[20px] px-6
-                    ${
-                      selectedSlot === slot.time
-                        ? "bg-primary border-primary text-white"
-                        : slot.available
-                          ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
-                          : "bg-[#f5f5f5] border-[#e0e0e0]"
-                    }
+                    ${selectedSlot === slot.time
+                              ? "bg-primary border-primary text-white"
+                              : slot.available
+                                ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                                : "bg-[#f5f5f5] border-[#e0e0e0]"
+                            }
                     disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
                   `}
+                        >
+                          {slot.time}
+                        </Button>
+                      ))}
+                    </Box>
+
+                    <Box className="flex flex-wrap gap-6 mb-6">
+                      <Box className="flex items-center gap-2">
+                        <Box className="w-4 h-4 rounded-[4px] bg-[#1976d2]" />
+                        <Typography variant="body2">Selected</Typography>
+                      </Box>
+                      <Box className="flex items-center gap-2">
+                        <Box className="w-4 h-4 rounded-[4px] border border-[#ccc] bg-[--var-primary]" />
+                        <Typography variant="body2">Available</Typography>
+                      </Box>
+                      <Box className="flex items-center gap-2">
+                        <Box className="w-4 h-4 rounded-[4px] bg-[--mui-palette-action-disabledBackground] border border-[#e0e0e0]" />
+                        <Typography variant="body2">
+                          Unavailable
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    <Box className="mt-8 p-4 rounded-[10px] border-l-4 border-l-[#1976d2]">
+                      <Typography variant="body2">
+                        Please ensure you have reviewed the assessment materials
+                        before your session. Ensure you are ready to receive a call at
+                        your scheduled time. Your TAC will contact you via your
+                        preferred communication method.
+                      </Typography>
+                    </Box>
+                  </CardContent>
+                </Card>
+                <Box className="flex justify-end gap-4">
+
+                  <Button
+                    // fullWidth
+                    variant="contained"
+                    size="small"
+                    onClick={() => setShowConfirmPopup(true)}
+                    className="rounded-xl mt-10 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
                   >
-                    {slot.time}
+                    Confirm Readiness
                   </Button>
-                ))}
-              </Box>
-
-              <Box className="flex flex-wrap gap-6 mb-6">
-                <Box className="flex items-center gap-2">
-                  <Box className="w-4 h-4 rounded-[4px] bg-[#1976d2]" />
-                  <Typography variant="body2">Selected</Typography>
                 </Box>
-                <Box className="flex items-center gap-2">
-                  <Box className="w-4 h-4 rounded-[4px] border border-[#ccc] bg-[--var-primary]" />
-                  <Typography variant="body2">Available</Typography>
-                </Box>
-                <Box className="flex items-center gap-2">
-                  <Box className="w-4 h-4 rounded-[4px] bg-[--mui-palette-action-disabledBackground] border border-[#e0e0e0]" />
-                  <Typography variant="body2">
-                    Unavailable
-                  </Typography>
-                </Box>
-              </Box>
-
-              <Box className="mt-8 p-4 rounded-[10px] border-l-4 border-l-[#1976d2]">
-                <Typography variant="body2">
-                  Please ensure you have reviewed the assessment materials
-                  before your session. Ensure you are ready to receive a call at
-                  your scheduled time. Your TAC will contact you via your
-                  preferred communication method.
-                </Typography>
-              </Box>
-            </CardContent>
-          </Card>
-        <Box className="flex justify-end gap-4">
-
-          <Button
-            // fullWidth
-            variant="contained"
-            size="small"
-            onClick={() => setShowConfirmPopup(true)}
-            className="rounded-xl mt-10 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
-          >
-            Confirm Readiness
-          </Button>
-          </Box>
               </>
             )}
 
@@ -252,87 +251,105 @@ const Assessment = () => {
         )}
 
         {isTechnicalResult && (
-          <div ref={statusCardRef} className="flex flex-col gap-6 w-full">
-            <div className="flex items-center gap-4 p-5  rounded-xl shadow-sm">
-              <i className="material-symbols-light--check-circle-outline"/>
-              <div>
-                <h2 className="text-[22px] font-extrabold tracking-tight leading-tight">
-                  Congratulations!
-                </h2>
-                <p className="text-[15px] mt-2">
-                  You have successfully completed the technical round.
-                </p>
-              </div>
-            </div>
+          <Box ref={statusCardRef} className="flex flex-col gap-6 w-full">
 
-            <div className="p-7 rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-8">
-                <h3 className="text-[18px] font-bold">
+            {/* Top Success Card */}
+            <Card className="p-5 rounded-xl shadow-sm">
+              <Box className="flex items-center gap-4">
+                <i className="material-symbols-light--check-circle-outline text-[28px]" />
+                <Box>
+                  <Typography className="text-[22px] font-extrabold tracking-tight leading-tight">
+                    Congratulations!
+                  </Typography>
+                  <Typography className="text-[15px] mt-2">
+                    You have successfully completed the technical round.
+                  </Typography>
+                </Box>
+              </Box>
+            </Card>
+
+            {/* Score Summary */}
+            <Card className="p-7 rounded-xl shadow-sm">
+              <Box className="flex justify-between items-center mb-8">
+                <Typography className="text-[18px] font-bold">
                   Score Summary
-                </h3>
-                <div className="flex gap-3"></div>
-              </div>
+                </Typography>
+              </Box>
 
-              <div className="grid grid-cols-2 gap-y-8 gap-x-6">
-                <div>
-                  <p className="text-[13px] font-medium mb-1.5">
+              <Box className="grid grid-cols-2 gap-y-8 gap-x-6">
+                <Box>
+                  <Typography className="text-[13px] font-medium mb-1.5">
                     Overall Score
-                  </p>
-                  <p className="text-[32px] font-semibold leading-none">
+                  </Typography>
+                  <Typography className="text-[32px] font-semibold leading-none">
                     85%
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-medium mb-1.5">
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography className="text-[13px] font-medium mb-1.5">
                     Questions Answered
-                  </p>
-                  <p className="text-[16px] font-medium">
+                  </Typography>
+                  <Typography className="text-[16px] font-medium">
                     17 / 20
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-medium mb-1.5">
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography className="text-[13px] font-medium mb-1.5">
                     Time Taken
-                  </p>
-                  <p className="text-[16px] font-medium">
+                  </Typography>
+                  <Typography className="text-[16px] font-medium">
                     45 minutes
-                  </p>
-                </div>
-                <div>
-                  <p className="text-[13px] font-medium mb-1.5">
+                  </Typography>
+                </Box>
+
+                <Box>
+                  <Typography className="text-[13px] font-medium mb-1.5">
                     Accuracy Rate
-                  </p>
-                  <p className="text-[16px] font-medium">85%</p>
-                </div>
-              </div>
+                  </Typography>
+                  <Typography className="text-[16px] font-medium">
+                    85%
+                  </Typography>
+                </Box>
+              </Box>
 
-              <hr className="my-7 border-gray-200" />
+              <Divider className="my-7" />
 
-              <button className="w-full py-[10px] text-[14px] font-bold rounded-lg hover:bg-blue-500 transition-colors">
+              <Button
+                fullWidth
+                disableRipple
+                disableElevation
+                variant="contained"
+                className="py-[10px] text-[14px] font-bold rounded-lg normal-case hover:bg-blue-500"
+              >
                 View Detailed Breakdown
-              </button>
-            </div>
+              </Button>
+            </Card>
 
-            <div className="p-7  rounded-xl shadow-sm">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-[18px] font-bold">
+            {/* Detailed Feedback */}
+            <Card className="p-7 rounded-xl shadow-sm">
+              <Box className="flex justify-between items-center mb-6">
+                <Typography className="text-[18px] font-bold">
                   Detailed Feedback
-                </h3>
-                <div className="flex gap-3"></div>
-              </div>
+                </Typography>
+              </Box>
 
-              <ul className="list-disc pl-5 space-y-3 text-[15px] font-medium mb-8">
+              <Box
+                component="ul"
+                className="list-disc pl-5 space-y-3 text-[15px] font-medium mb-8"
+              >
                 <li>Strong understanding of core concepts.</li>
                 <li>Excellent problem-solving approach.</li>
                 <li>Good code quality and documentation.</li>
-              </ul>
+              </Box>
 
-              <p className="text-[15px] font-normal">
-                You demonstrated exceptional skills. We look forward to the next
-                stage!
-              </p>
-            </div>
-          </div>
+              <Typography className="text-[15px] font-normal">
+                You demonstrated exceptional skills. We look forward to the next stage!
+              </Typography>
+            </Card>
+
+          </Box>
         )}
       </Grid>
 
@@ -340,120 +357,120 @@ const Assessment = () => {
       {isBookingMode && (
         <Grid size={{ xs: 12, md: 4 }}>
           <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
-          <CardContent className="p-6">
-            <Typography variant="h6" fontWeight="bold" className="mb-3">
-              Your Application Progress
-            </Typography>
-            <Typography variant="body2" className="mb-4">
-              Pre-counselling: 7 of 7 steps complete
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={100}
-              className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
-            />
-            <Typography variant="caption" className="text-[#1976d2] font-bold">
-              You're almost there
-            </Typography>
-          </CardContent>
-        </Card>
-
-          
-        <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
-          <CardContent className="p-6">
-            <Box className="flex justify-between items-center mb-8">
-              <Typography variant="h6" fontWeight="bold">
-                Notification Channels
+            <CardContent className="p-6">
+              <Typography variant="h6" fontWeight="bold" className="mb-3">
+                Your Application Progress
               </Typography>
-              <FormControlLabel
-                control={
-                  <Switch
-                    checked={isEditingChannels}
-                    onChange={(e) => setIsEditingChannels(e.target.checked)}
-                    color="primary"
-                  />
-                }
-                label="Edit"
-                labelPlacement="start"
+              <Typography variant="body2" className="mb-4">
+                Pre-counselling: 7 of 7 steps complete
+              </Typography>
+              <LinearProgress
+                variant="determinate"
+                value={100}
+                className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
               />
-            </Box>
+              <Typography variant="caption" className="text-[#1976d2] font-bold">
+                You're almost there
+              </Typography>
+            </CardContent>
+          </Card>
 
-            {!isEditingChannels ? (
-              <Box>
-                <Box className="flex gap-4 items-start mb-8">
-                  <i
-                    className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"
-                  ></i>
-                  <Typography
-                    variant="body2"                  >
-                    <span className="font-bold">WhatsApp:</span>{" "}
-                    Enabled for timely updates and session reminders.
-                  </Typography>
-                </Box>
-                <Box className="flex gap-4 items-start">
-                  <i
-                    className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"
-                  ></i>
-                  <Typography
-                    variant="body2"
-                  >
-                    <span className="font-bold">Email:</span> Enabled
-                    for detailed session information and important documents.
-                  </Typography>
-                </Box>
-              </Box>
-            ) : (
-              <Box>
-                <FormControl fullWidth>
-                  <FormGroup>
-                    <FormControlLabel
-                      label="Receive updates via Email"
-                      control={
-                        <Checkbox
-                          checked={gilad}
-                          onChange={handleChange}
-                          name="gilad"
-                        />
-                      }
-                    />
-                    <FormControlLabel
-                      label="Receive updates via WhatsApp"
-                      control={
-                        <Checkbox
-                          checked={jason}
-                          onChange={handleChange}
-                          name="jason"
-                        />
-                      }
-                    />
-                    <FormControlLabel
-                      label="Receive updates via SMS"
-                      control={
-                        <Checkbox
-                          checked={antoine}
-                          onChange={handleChange}
-                          name="antoine"
-                        />
-                      }
-                    />
-                  </FormGroup>
-                  <FormHelperText className="pt-2">At least One</FormHelperText>
-                </FormControl>
 
-                <Box className="flex justify-end mt-4">
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => setIsEditingChannels(false)}
-                    className="rounded-[8px] normal-case font-bold px-6 bg-[#1976d2] shadow-none"
-                  >
-                    Save
-                  </Button>
-                </Box>
+          <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+            <CardContent className="p-6">
+              <Box className="flex justify-between items-center mb-8">
+                <Typography variant="h6" fontWeight="bold">
+                  Notification Channels
+                </Typography>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={isEditingChannels}
+                      onChange={(e) => setIsEditingChannels(e.target.checked)}
+                      color="primary"
+                    />
+                  }
+                  label="Edit"
+                  labelPlacement="start"
+                />
               </Box>
-            )}
-          </CardContent>
-        </Card>
+
+              {!isEditingChannels ? (
+                <Box>
+                  <Box className="flex gap-4 items-start mb-8">
+                    <i
+                      className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"
+                    ></i>
+                    <Typography
+                      variant="body2"                  >
+                      <span className="font-bold">WhatsApp:</span>{" "}
+                      Enabled for timely updates and session reminders.
+                    </Typography>
+                  </Box>
+                  <Box className="flex gap-4 items-start">
+                    <i
+                      className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"
+                    ></i>
+                    <Typography
+                      variant="body2"
+                    >
+                      <span className="font-bold">Email:</span> Enabled
+                      for detailed session information and important documents.
+                    </Typography>
+                  </Box>
+                </Box>
+              ) : (
+                <Box>
+                  <FormControl fullWidth>
+                    <FormGroup>
+                      <FormControlLabel
+                        label="Receive updates via Email"
+                        control={
+                          <Checkbox
+                            checked={gilad}
+                            onChange={handleChange}
+                            name="gilad"
+                          />
+                        }
+                      />
+                      <FormControlLabel
+                        label="Receive updates via WhatsApp"
+                        control={
+                          <Checkbox
+                            checked={jason}
+                            onChange={handleChange}
+                            name="jason"
+                          />
+                        }
+                      />
+                      <FormControlLabel
+                        label="Receive updates via SMS"
+                        control={
+                          <Checkbox
+                            checked={antoine}
+                            onChange={handleChange}
+                            name="antoine"
+                          />
+                        }
+                      />
+                    </FormGroup>
+                    <FormHelperText className="pt-2">At least One</FormHelperText>
+                  </FormControl>
+
+                  <Box className="flex justify-end mt-4">
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => setIsEditingChannels(false)}
+                      className="rounded-[8px] normal-case font-bold px-6 bg-[#1976d2] shadow-none"
+                    >
+                      Save
+                    </Button>
+                  </Box>
+                </Box>
+              )}
+            </CardContent>
+          </Card>
         </Grid>
       )}
 
@@ -476,20 +493,20 @@ const Assessment = () => {
             Request Submitted
           </Typography>
 
-          <Box  className="">
+          <Box className="">
             <Typography variant="body1" className="mt-2 mb-4 px-8 text-[--mui-palette-error-light]  leading-[1.9] px-20"
-          >
-            Please be ready for your assessment for the mentioned date. You will
-            be notified via reminder notification channels.
-          </Typography>
+            >
+              Please be ready for your assessment for the mentioned date. You will
+              be notified via reminder notification channels.
+            </Typography>
 
-          <Typography
-            variant="body1"
-            className="mt-5"
-          >
-            Meanwhile you can fill all details of assessment form and keep
-            necessary (uploaded) documents original version handy.
-          </Typography>
+            <Typography
+              variant="body1"
+              className="mt-5"
+            >
+              Meanwhile you can fill all details of assessment form and keep
+              necessary (uploaded) documents original version handy.
+            </Typography>
           </Box>
         </DialogContent>
       </Dialog>

@@ -122,7 +122,6 @@ const Stepper_Steps = () => {
 
   return (
     <Grid container spacing={6}>
-      {/* Left Section   */}
       <Grid size={{ xs: 12, md: 12 }}>
         <Typography variant="h4">
           Document Upload & Verification
@@ -136,10 +135,16 @@ const Stepper_Steps = () => {
           className="p-2 sm:p-6 rounded-xl shadow-md"
         >
           <Stack className="w-full" spacing={4}>
-            <Stepper alternativeLabel activeStep={2} connector={<ColorlibConnector />}>
+            <Stepper
+              alternativeLabel
+              activeStep={2}
+              connector={<ColorlibConnector />}
+            >
               {steps.map(({ label }) => (
                 <Step key={label}>
-                  <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+                  <StepLabel StepIconComponent={ColorlibStepIcon}>
+                    <span className="hidden md:inline">{label}</span>
+                  </StepLabel>
                 </Step>
               ))}
             </Stepper>
@@ -293,7 +298,7 @@ const UploadCard = ({ title, subtitle, allowedFormats }: { title: string, subtit
           {file ? (
             <Box className="flex flex-col items-center text-center">
               <i className="ri-file-text-fill text-3xl text-[var(--mui-palette-primary-main)] mb-2"></i>
-              <Typography className="text-sm font-extrabold text-gray-800 max-w-xs whitespace-nowrap overflow-hidden text-ellipsis">
+              <Typography className="text-sm font-extrabold max-w-xs whitespace-nowrap overflow-hidden text-ellipsis">
                 {file.name}
               </Typography>
               <Typography className="text-xs text-green-600 font-extrabold mt-0.5">File attached</Typography>
@@ -361,7 +366,7 @@ const SectionAccordion = ({ title, status, defaultExpanded = false, children }: 
 const DocumentUploadPage = () => {
   return (
     <Box className="w-full flex justify-center">
-      <Card className="w-full p-3 md:p-6 rounded-3xl shadow-md border border-gray-100">
+      <Card className="w-full p-3 md:p-6 rounded-3xl shadow-md">
 
         {/* Top Stepper */}
         <Stepper_Steps />

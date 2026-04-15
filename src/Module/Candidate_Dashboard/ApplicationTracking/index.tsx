@@ -129,7 +129,9 @@ const Stepper_steps = () => {
             <Stepper alternativeLabel activeStep={3} connector={<ColorlibConnector />}>
               {steps.map(({ label }) => (
                 <Step key={label}>
-                  <StepLabel StepIconComponent={ColorlibStepIcon}>{label}</StepLabel>
+                  <StepLabel StepIconComponent={ColorlibStepIcon}>
+                    <span className="hidden md:inline">{label}</span>
+                  </StepLabel>
                 </Step>
               ))}
             </Stepper>
@@ -169,7 +171,7 @@ const JourneyCard = ({
     >
       <Box className="flex justify-between items-start mb-6">
         <Typography variant="h6" className="text-[0.9rem] mt-1">
-          {title} 
+          {title}
         </Typography>
 
         <Box className="flex flex-col items-end gap-2">
@@ -303,19 +305,19 @@ const ApplicationTracking = () => {
       >
         <DialogContent className="flex flex-col items-center text-center">
 
-        <IconButton
-          onClick={() => setIsPopupOpen(false)}
-           className="absolute right-5 top-5 text-gray-500"
-        >
-          <i className="material-symbols--close-rounded" />
+          <IconButton
+            onClick={() => setIsPopupOpen(false)}
+            className="absolute right-5 top-5 text-gray-500"
+          >
+            <i className="material-symbols--close-rounded" />
 
-        </IconButton>
+          </IconButton>
 
           <Typography variant="h4">Assessment</Typography>
 
-          <Box  className="mb-8">
+          <Box className="mb-8">
             <Typography variant="body1" className="mt-2 mb-4 px-8"
->
+            >
               You are assigned to a Talent Acquisition <br />
               Consultant (TAC). <br />
               Be ready for e-Assessment with Original Documents

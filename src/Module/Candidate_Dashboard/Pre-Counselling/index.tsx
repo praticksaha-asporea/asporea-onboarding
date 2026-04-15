@@ -188,11 +188,11 @@ const PreCounselling = () => {
               Your Application Progress
             </Typography>
             <Typography variant="body2" className="mb-4">
-              Pre-counselling: 2 of 7 steps complete
+              Pre-counselling: 2 of 6 steps complete
             </Typography>
             <LinearProgress
               variant="determinate"
-              value={28}
+              value={33}
               className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
             />
             <Typography variant="caption" className="text-[#1976d2] font-bold">
@@ -311,17 +311,17 @@ const PreCounselling = () => {
 
           <Typography
             variant="body1"
-            className="text-[--mui-palette-error-light] mt-5 leading-[1.9] "
+            className="text-[--mui-palette-error-light] mt-5 leading-[1.9] text-center"
           >
             Please be ready for your pre-counselling held on mentioned date and
             time. A Talent Acquisition Consultant(TAC) will connect with you.
           </Typography>
 
-          <Typography variant="body1" className="text-[--mui-palette-error-light] mt-5">
+          <Typography variant="body1" className="text-[--mui-palette-error-light] mt-5 text-center">
             Please check your communication preference.
           </Typography>
 
-          <Typography variant="body1" className="mt-5">
+          <Typography variant="body1" className="mt-5 text-center">
             Meanwhile you can start uploading necessary documents
           </Typography>
 
