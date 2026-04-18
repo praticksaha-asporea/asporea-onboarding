@@ -1,5 +1,5 @@
 // Third-party Imports
-// import 'react-perfect-scrollbar/dist/css/styles.css'
+import 'react-perfect-scrollbar/dist/css/styles.css'
 
 // Type Imports
 import type { ChildrenType } from '@core/types'
