@@ -74,7 +74,7 @@ const AccountDetails = () => {
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
     setFormData({ ...formData, [field]: value });
   };
-  const [activeStep, ] = useState(0);
+  const [activeStep] = useState(0);
   const [state, setState] = useState<StateType>({
     gilad: true,
     jason: false,
@@ -410,7 +410,7 @@ West Bengal,
                         <Button
                           variant="contained"
                           type="button"
-                          onClick={() => setShowInquiryPopup(true)}                          
+                          onClick={() => setShowInquiryPopup(true)}
                           className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
                         >
                           Submit
@@ -457,51 +457,54 @@ West Bengal,
 
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, md: 12, sm: 12 }}></Grid>
-                {/* <Grid container spacing={5}> */}
-                  <Grid size={{ xs: 12, md: 12, sm: 12 }}>
-                    <Card>
-                      <CardContent>
-                    <FormControl className="mbs-4 mie-4">
-                      <Typography variant="h5" className="pb-5">Contact Preferences</Typography>
-                      <FormGroup>
-                        <FormControlLabel
-                          label="Receive updates via Email"
-                          control={
-                            <Checkbox
-                              checked={gilad}
-                              onChange={handleChange}
-                              name="gilad"
-                            />
-                          }
-                        />
-                        <FormControlLabel
-                          label="Receive updates via WhatsApp"
-                          control={
-                            <Checkbox
-                              checked={jason}
-                              onChange={handleChange}
-                              name="jason"
-                            />
-                          }
-                        />
-                        <FormControlLabel
-                          label="Receive updates via SMS"
-                          control={
-                            <Checkbox
-                              checked={antoine}
-                              onChange={handleChange}
-                              name="antoine"
-                            />
-                          }
-                        />
-                      </FormGroup>
-                      <FormHelperText className="pt-3">At least One</FormHelperText>
-                    </FormControl>
-                    </CardContent>
-                    </Card>
-                  {/* </Grid> */}
-                  
-                </Grid>
+            {/* <Grid container spacing={5}> */}
+            <Grid size={{ xs: 12, md: 12, sm: 12 }}>
+              <Card>
+                <CardContent>
+                  <FormControl className="mbs-4 mie-4">
+                    <Typography variant="h5" className="pb-5">
+                      Contact Preferences
+                    </Typography>
+                    <FormGroup>
+                      <FormControlLabel
+                        label="Receive updates via Email"
+                        control={
+                          <Checkbox
+                            checked={gilad}
+                            onChange={handleChange}
+                            name="gilad"
+                          />
+                        }
+                      />
+                      <FormControlLabel
+                        label="Receive updates via WhatsApp"
+                        control={
+                          <Checkbox
+                            checked={jason}
+                            onChange={handleChange}
+                            name="jason"
+                          />
+                        }
+                      />
+                      <FormControlLabel
+                        label="Receive updates via SMS"
+                        control={
+                          <Checkbox
+                            checked={antoine}
+                            onChange={handleChange}
+                            name="antoine"
+                          />
+                        }
+                      />
+                    </FormGroup>
+                    <FormHelperText className="pt-3">
+                      At least One
+                    </FormHelperText>
+                  </FormControl>
+                </CardContent>
+              </Card>
+              {/* </Grid> */}
+            </Grid>
           </Grid>
         </Grid>
       </Grid>
@@ -514,13 +517,12 @@ West Bengal,
       >
         <IconButton
           onClick={() => setShowInquiryPopup(false)}
-           className="absolute right-5 top-5 text-gray-500"
+          className="absolute right-5 top-5 text-gray-500"
         >
           <i className="material-symbols--close-rounded" />
-
         </IconButton>
 
-        <DialogContent  className="text-center p-8">
+        <DialogContent className="text-center p-8">
           <Typography variant="h4" className="mt-4">
             Inquiry Submitted
           </Typography>
@@ -528,9 +530,8 @@ West Bengal,
             ID: ASP-INQ-0841
           </Typography>
 
-          <Box  className="mb-8">
-            <Typography variant="body1" className="mt-2 mb-4 px-8"
->
+          <Box className="mb-8">
+            <Typography variant="body1" className="mt-2 mb-4 px-8">
               You are assigned to a Talent Acquisition Consultant(TAC). <br />
               Be ready for Pre-Counselling.
             </Typography>

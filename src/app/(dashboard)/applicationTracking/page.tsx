@@ -1,7 +1,5 @@
-import dynamic from 'next/dynamic'
-
+import ApplicationTracking from "@/Module/Candidate_Dashboard/ApplicationTracking"
  
-const ApplicationTracking = dynamic(() => import('@/Module/Candidate_Dashboard/ApplicationTracking'));
 
 export default function AssessmentPage() {
   return <ApplicationTracking />

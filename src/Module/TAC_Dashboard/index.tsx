@@ -510,7 +510,7 @@ const TACDashboard = () => {
           <Button
             onClick={() => setCurrentView("detail")}
             variant="outlined"
-            className="min-w-0 p-2 rounded-lg bg-white border border-gray-200 rounded-lg shadow-sm"
+            className="min-w-0 p-2  bg-white border border-gray-200 rounded-lg shadow-sm"
           >
             <i className="mdi--arrow-back text-gray-600"/>
           </Button>
