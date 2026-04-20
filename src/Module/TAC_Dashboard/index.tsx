@@ -702,7 +702,7 @@ const TACDashboard = () => {
                       <Button
                         key={item}
                         variant="contained"
-                        size="small"
+                        // size="small"
                         className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case !text-[12px]"
                       >
                         {item}

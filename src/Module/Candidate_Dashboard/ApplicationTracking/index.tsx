@@ -240,8 +240,8 @@ const ApplicationTracking = () => {
 
           <JourneyCard
             title="Inquiry Submission"
-            status="Completed"
-            dateLabel="Completed"
+            status="Done"
+            dateLabel="On"
             date="Feb 27, 2026"
             description="A Talent Acquisition Consultant will be assigned to you shortly to guide you through the next stages."
           />
@@ -249,23 +249,23 @@ const ApplicationTracking = () => {
           <JourneyCard
             title="Pre-Counselling Readiness"
             status="Completed"
-            dateLabel="Completed"
+            dateLabel="On"
             date="Feb 27, 2026"
             description="Please confirm your readiness for pre-counselling sessions. This is a crucial step."
           />
 
           <JourneyCard
             title="Document Verification"
-            status="Pending"
-            dateLabel="Uploaded"
+            status="Uploaded"
+            dateLabel="On"
             date="Feb 28, 2026"
             description="All uploaded documents (ID, Resume, Certificates) have been verified and approved. Good job!"
           />
 
           <JourneyCard
             title="Experience Verification"
-            status="Pending"
-            dateLabel="Filled"
+            status="Filled"
+            dateLabel="On"
             date="Feb 28, 2026"
             description="Your experience type has been confirmed as 'Domestic Professional'."
           />
