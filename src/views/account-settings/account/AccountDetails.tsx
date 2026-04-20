@@ -15,7 +15,6 @@ import FormControl from '@mui/material/FormControl'
 import InputLabel from '@mui/material/InputLabel'
 import Select from '@mui/material/Select'
 import MenuItem from '@mui/material/MenuItem'
-import Chip from '@mui/material/Chip'
 import type { SelectChangeEvent } from '@mui/material/Select'
 
 type Data = {
@@ -24,6 +23,7 @@ type Data = {
   email: string
   organization: string
   phoneNumber: number | string
+  whatsappNumber: number | string
   address: string
   state: string
   zipCode: string
@@ -31,15 +31,18 @@ type Data = {
   language: string
   timezone: string
   currency: string
+  passportStatus: string
+  passportNumber: string
 }
 
 // Vars
 const initialData: Data = {
-  firstName: 'John',
-  lastName: 'Doe',
-  email: 'john.doe@example.com',
+  firstName: 'Rahul',
+  lastName: 'Sharma',
+  email: 'rahul.sharma@example.com',
   organization: 'ThemeSelection',
-  phoneNumber: '+1 (917) 543-9876',
+  phoneNumber: '+91 98765 43210',
+  whatsappNumber: '+91 98765 43210',
   address: `123 Talent Lane, Darjeeling,
 West Bengal,
 700001`,
@@ -48,25 +51,21 @@ West Bengal,
   country: 'usa',
   language: 'arabic',
   timezone: 'gmt-12',
-  currency: 'usd'
+  currency: 'inr',
+  passportStatus: 'No',
+  passportNumber: ''
 }
 
-const languageData = ['English', 'Arabic', 'French', 'German', 'Portuguese']
+ 
 
 const AccountDetails = () => {
   // States
   const [formData, setFormData] = useState<Data>(initialData)
   const [fileInput, setFileInput] = useState<string>('')
   const [imgSrc, setImgSrc] = useState<string>('/images/avatars/1.png')
-  const [language, setLanguage] = useState<string[]>(['English'])
+  
 
-  const handleDelete = (value: string) => {
-    setLanguage(current => current.filter(item => item !== value))
-  }
-
-  const handleChange = (event: SelectChangeEvent<string[]>) => {
-    setLanguage(event.target.value as string[])
-  }
+ 
 
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
     setFormData({ ...formData, [field]: value })
@@ -125,7 +124,7 @@ const AccountDetails = () => {
                 fullWidth
                 label='First Name'
                 value={formData.firstName}
-                placeholder='John'
+                placeholder='Rahul'
                 onChange={e => handleFormChange('firstName', e.target.value)}
               />
             </Grid>
@@ -134,7 +133,7 @@ const AccountDetails = () => {
                 fullWidth
                 label='Last Name'
                 value={formData.lastName}
-                placeholder='Doe'
+                placeholder='Sharma'
                 onChange={e => handleFormChange('lastName', e.target.value)}
               />
             </Grid>
@@ -145,18 +144,59 @@ const AccountDetails = () => {
                 fullWidth
                 label='Email'
                 value={formData.email}
-                placeholder='john.doe@gmail.com'
+                placeholder='rahul.sharma@gmail.com'
                 onChange={e => handleFormChange('email', e.target.value)}
               />
             </Grid>
               
-           <Grid  size={{ xs: 12, sm: 6 }}>
+           <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Phone Number"
+                          value={formData.phoneNumber}
+                          placeholder="9876543210"
+                          onChange={(e) =>
+                            handleFormChange("phoneNumber", e.target.value)
+                          }
+                        />
+                      </Grid>
+     <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                        <TextField
+                          fullWidth
+                          type="number"
+                          label="Whatsapp Number"
+                          value={formData.whatsappNumber}
+                          placeholder="9876543210"
+                          onChange={(e) =>
+                            handleFormChange("phoneNumber", e.target.value)
+                          }
+                        />
+                      </Grid>
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <FormControl fullWidth>
+                <InputLabel>Having Passport</InputLabel>
+                <Select
+                  label='Having Passport'
+                  value={formData.passportStatus}
+                  onChange={e => handleFormChange('passportStatus', e.target.value)}
+                >
+                  <MenuItem value='Yes'>Yes</MenuItem>
+                  <MenuItem value='No'>No</MenuItem>
+                  <MenuItem value='Applied'>Applied</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+
+            <Grid size={{xs:12, sm:6}}>
               <TextField
                 fullWidth
-                label='Phone Number'
-                value={formData.phoneNumber}
-                placeholder='+1 (234) 567-8901'
-                onChange={e => handleFormChange('phoneNumber', e.target.value)}
+                label='Passport Number'
+                value={formData.passportNumber}
+                placeholder='Z1234567'
+                onChange={e => handleFormChange('passportNumber', e.target.value)}
+                disabled={formData.passportStatus !== 'Yes'}  
               />
             </Grid>
 
