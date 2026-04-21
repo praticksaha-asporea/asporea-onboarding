@@ -291,7 +291,7 @@ const TACDashboard = () => {
         <Grid container spacing={3}>
 
           {/* LEFT */}
-          <Grid size={{ xs: 12, lg: 9 }}>
+          <Grid size={{ xs: 12, lg: 8 }}>
             <Stack spacing={3}>
 
               {/* Inquiry Details */}
@@ -477,7 +477,7 @@ const TACDashboard = () => {
                     {/* Textareas */}
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography className="text-[13px] font-semibold mb-1.5">
+                      <Typography className="mb-1.5">
                         Additional Details of Candidate <span className="text-[var(--mui-palette-error-light)]">*</span>
                       </Typography>
                       <TextField
@@ -485,24 +485,24 @@ const TACDashboard = () => {
                         rows={3}
                         defaultValue="Worked in sales from 2-3 years, etc..."
                         fullWidth
-                        InputProps={{ className: "text-[14px]" }}
+                        // InputProps={{ className: "text-[14px]" }}
                       />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography className="text-[13px] font-semibold mb-1.5">
-                        Specific Notes (During Pre-Counselling)
+                      <Typography className="mb-1.5">
+                        Specific Notes (Pre-Counselling)
                       </Typography>
                       <TextField
                         multiline
                         rows={3}
                         defaultValue="Not wants to work in Europe"
                         fullWidth
-                        InputProps={{ className: "text-[14px]" }}
+                        // InputProps={{ className: "text-[14px]" }}
                       />
                     </Grid>
                     <Grid size={{ xs: 12, md: 12 }}>
-                      <Typography className="text-[13px] font-semibold mb-1.5">
+                      <Typography className="mb-1.5">
                         Advice
                       </Typography>
                       <TextField
@@ -510,13 +510,13 @@ const TACDashboard = () => {
                         rows={3}
                         defaultValue="German Nurse Opportunity and details shared with candidate"
                         fullWidth
-                        InputProps={{ className: "text-[13px]" }}
+                        // InputProps={{ className: "text-[13px]" }}
                       />
                     </Grid>
 
                     <Grid size={{ xs: 12, md: 12 }}>
 
-                      <Typography className="text-[12px] font-semibold mb-1.5">
+                      <Typography className="mb-1.5">
                         Resume
                       </Typography>
 
@@ -538,10 +538,10 @@ const TACDashboard = () => {
                         {resumeFile ? (
                           <Box className="flex flex-col items-center text-center">
                             <i className="mdi--check-circle-outline text-green-500 mb-2" />
-                            <Typography className="text-[13px] font-bold text-gray-800">
+                            <Typography className="font-bold text-gray-800">
                               {resumeFile.name}
                             </Typography>
-                            <Typography className="text-[11px] text-gray-500">
+                            <Typography className="text-gray-500">
                               Click to change file
                             </Typography>
                           </Box>
@@ -551,7 +551,7 @@ const TACDashboard = () => {
                               <i className="ri-upload-cloud-2-line text-xl text-[var(--mui-palette-primary-main)]"></i>
                             </Box>
 
-                            <Typography className="text-xs font-semibold">
+                            <Typography className="">
                               Drop your files here or{" "}
                               <span className="text-[var(--mui-palette-primary-main)] font-extrabold">
                                 browse
@@ -566,14 +566,14 @@ const TACDashboard = () => {
                   <Box className="flex justify-end gap-3 mt-4 pt-6">
                     <Button
                       variant="contained"
-                      className="!bg-red-300 hover:!bg-red-400 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                      className="!bg-red-300 hover:!bg-red-400 !text-white !rounded-lg !normal-case"
                     >
                       Not Responded
                     </Button>
 
                     <Button
                       variant="contained"
-                      className="!bg-blue-500 hover:!bg-blue-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                      className="!bg-blue-500 hover:!bg-blue-600 !text-white !rounded-lg !normal-case"
                     >
                       Send As Prescription
                     </Button>
@@ -631,14 +631,14 @@ const TACDashboard = () => {
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography className="text-[13px] font-medium mb-1.5">
+                    <Typography className="mb-1.5">
                       Token No
                     </Typography>
                     <TextField fullWidth defaultValue="T001" />
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <Typography className="text-[13px] font-medium mb-1.5">
+                    <Typography className="mb-1.5">
                       Token Generated
                     </Typography>
 
@@ -646,7 +646,7 @@ const TACDashboard = () => {
                       fullWidth
                       defaultValue="25/02/2026 11:16 AM"
                       InputProps={{
-                        startAdornment: <i className="mdi--access-time mr-2 text-gray-400" />
+                        startAdornment: <i className="mdi--access-time mr-2" />
                       }}
                     />
                   </Grid>
@@ -659,7 +659,7 @@ const TACDashboard = () => {
                       <Button
                         variant="contained"
                         disabled
-                        className="!bg-blue-300 !text-white !rounded-lg !normal-case !opacity-100"
+                        className="!bg-blue-300 !rounded-lg !normal-case !opacity-100"
                       >
                         Call for Assessment
                       </Button>
@@ -692,8 +692,8 @@ const TACDashboard = () => {
                   </Typography>
 
                   <RadioGroup row>
-                    <FormControlLabel value="nurse" control={<Radio size="small" />} label="Nurse" />
-                    <FormControlLabel value="caregiver" control={<Radio size="small" />} label="Caregiver" />
+                    <FormControlLabel value="nurse" control={<Radio />} label="Nurse" />
+                    <FormControlLabel value="caregiver" control={<Radio />} label="Caregiver" />
                   </RadioGroup>
 
                   {/* Action Chips */}
@@ -703,7 +703,7 @@ const TACDashboard = () => {
                         key={item}
                         variant="contained"
                         // size="small"
-                        className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case !text-[12px]"
+                        className="!bg-blue-300 hover:!bg-blue-400 !rounded-lg !normal-case"
                       >
                         {item}
                       </Button>
@@ -713,14 +713,14 @@ const TACDashboard = () => {
                   <Box className="flex justify-end gap-3">
                     <Button
                       variant="contained"
-                      className="!bg-red-300 hover:!bg-red-400 !text-white !rounded-lg !normal-case"
+                      className="!bg-red-300 hover:!bg-red-400 !rounded-lg !normal-case"
                     >
                       Rejected
                     </Button>
 
                     <Button
                       variant="contained"
-                      className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case"
+                      className="!bg-green-300 hover:!bg-green-400 !rounded-lg !normal-case"
                     >
                       Verified
                     </Button>
@@ -750,14 +750,14 @@ const TACDashboard = () => {
                   <Box className="flex justify-end gap-3 mt-5">
                     <Button
                       variant="contained"
-                      className="!bg-yellow-300 hover:!bg-yellow-400 !text-white !rounded-lg !normal-case"
+                      className="!bg-yellow-300 hover:!bg-yellow-400 !rounded-lg !normal-case"
                     >
                       TL Verified
                     </Button>
 
                     <Button
                       variant="contained"
-                      className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case"
+                      className="!bg-green-300 hover:!bg-green-400 !rounded-lg !normal-case"
                     >
                       Save
                     </Button>
@@ -832,7 +832,7 @@ const TACDashboard = () => {
                   <Box className="flex justify-end gap-3">
                     <Button
                       variant="contained"
-                      className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case"
+                      className="!bg-green-300 hover:!bg-green-400 !rounded-lg !normal-case"
                     >
                       Save
                     </Button>
@@ -844,7 +844,7 @@ const TACDashboard = () => {
           </Grid>
 
           {/* RIGHT COLUMN: PROGRESS CARD */}
-          <Grid size={{ xs: 12, lg: 3 }}>
+          <Grid size={{ xs: 12, lg: 4 }}>
             <Card className="p-5 sticky top-6 rounded-xl border border-gray-200 shadow-sm">
               <Typography className="text-[16px] font-semibold mb-4">
                 Progress
@@ -899,7 +899,7 @@ const TACDashboard = () => {
             {/* TOP INPUTS */}
             <Grid container spacing={3} className="mb-8">
               <Grid size={{ xs: 12, md: 4 }}>
-                <Typography className="text-[11px] font-bold mb-1 uppercase">
+                <Typography className="mb-1">
                   Name of Candidate
                 </Typography>
                 <TextField
@@ -910,28 +910,28 @@ const TACDashboard = () => {
               </Grid>
 
               <Grid size={{ xs: 12, md: 4 }}>
-                <Typography className="text-[11px] font-bold mb-1 uppercase">
+                <Typography className="mb-1">
                   Passport No.
                 </Typography>
                 <TextField fullWidth defaultValue="H234566Y" />
               </Grid>
 
               <Grid size={{ xs: 12, md: 4 }}>
-                <Typography className="text-[11px] font-bold mb-1 uppercase">
+                <Typography className="mb-1">
                   Date of Assessment
                 </Typography>
                 <TextField fullWidth defaultValue="11/11/2026" />
               </Grid>
 
               <Grid size={{ xs: 12, md: 4 }}>
-                <Typography className="text-[11px] font-bold mb-1 uppercase">
+                <Typography className="mb-1">
                   Assessment No.
                 </Typography>
                 <TextField fullWidth defaultValue="ASF-2015-1021" />
               </Grid>
 
               <Grid size={{ xs: 12, md: 8 }}>
-                <Typography className="text-[11px] font-bold mb-1 uppercase">
+                <Typography className="mb-1">
                   Assessed By
                 </Typography>
                 <TextField fullWidth defaultValue="Mason Lee" />
@@ -941,7 +941,7 @@ const TACDashboard = () => {
             <Box className="border border-gray-200 rounded-xl overflow-hidden mb-10">
 
               {/* HEADER */}
-              <Box className="flex justify-between px-4 py-3 text-[11px] font-bold text-[var(--mui-palette-text-primary)] uppercase">
+              <Box className="flex justify-between px-4 py-3 text-[var(--mui-palette-text-primary)] uppercase">
                 <Box className="flex gap-4 w-full">
                   <span className="w-8">S.N</span>
                   <span className="flex-1">Factor / Criteria</span>
@@ -970,7 +970,7 @@ const TACDashboard = () => {
                           </Box>
 
                           <Box className="flex gap-10 min-w-[120px] justify-end">
-                            <span className="text-gray-500 text-[11px]">Max</span>
+                            <span className="text-gray-500">Max</span>
                             <span className="text-gray-500 font-bold">
                               20
                             </span>
@@ -1105,7 +1105,7 @@ const TACDashboard = () => {
                       </Box>
 
                       <Box className="flex gap-10 min-w-[120px] justify-end">
-                        <span className="text-gray-500 text-[11px]">Max</span>
+                        <span className="text-gray-500">Max</span>
                         <span className="text-gray-500 font-bold">
                           {section.options.find(o => o.selected)?.score || "-"}
                         </span>
@@ -1143,7 +1143,7 @@ const TACDashboard = () => {
             </Box>
 
             <Box className="mb-10">
-              <Typography className="text-[14px] font-bold mb-4">
+              <Typography className="mb-4">
                 Additional Assessment Notes
               </Typography>
               <Grid container spacing={3}>
@@ -1151,7 +1151,7 @@ const TACDashboard = () => {
                   <Grid size={{ xs: 12, md: 6 }} key={i}>
                     <Card className="border border-gray-200 shadow-sm">
                       <CardContent>
-                        <Typography className="text-[11px] font-bold mb-2 uppercase">
+                        <Typography className=" mb-2 uppercase">
                           Note {i}
                         </Typography>
                         <TextField
@@ -1179,7 +1179,7 @@ const TACDashboard = () => {
                     className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer"
                   >
                     <input type="file" className="hidden" />
-                    <Typography className="text-[11px] text-gray-400 uppercase mt-4">
+                    <Typography className="text-[13px] mt-4">
                       {label}
                     </Typography>
                   </Box>
