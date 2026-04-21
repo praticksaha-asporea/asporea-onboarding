@@ -36,7 +36,7 @@ const colorSchemes = (): Theme['colorSchemes'] => {
           lighterOpacity: 'rgb(var(--mui-palette-error-mainChannel) / 0.08)',
           lightOpacity: 'rgb(var(--mui-palette-error-mainChannel) / 0.16)',
           mainOpacity: 'rgb(var(--mui-palette-error-mainChannel) / 0.24)',
-          darkOpacity: 'rgb(var(--mui-palette-error-mainChannel) / 0.32)',
+          darkOpacity : 'rgb(var(--mui-palette-error-mainChannel) / 0.32)',
           darkerOpacity: 'rgb(var(--mui-palette-error-mainChannel) / 0.38)'
         },
         warning: {
