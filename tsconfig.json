@@ -36,6 +36,6 @@
     ".next/dev/types/**/*.ts",
     "tailwind.config.ts",
     "**/*.mts"
-  ],
+, "src/lib/models"  ],
   "exclude": ["node_modules"]
 }

@@ -1,7 +1,8 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IToken extends Document {
-  user: mongoose.Types.ObjectId;
+  userId: Types.ObjectId;
+
   token: string;
   type: "access" | "refresh";
   expiresAt: Date;
@@ -9,23 +10,26 @@ export interface IToken extends Document {
 
 const TokenSchema = new Schema<IToken>(
   {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      required: true,
-      ref: "User", 
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
     },
+
     token: { type: String, required: true },
+
     type: {
       type: String,
       enum: ["access", "refresh"],
-      required: true,
     },
-    expiresAt: { type: Date, required: true },
+
+    expiresAt: Date,
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
-const Token =
-  mongoose.models.Token || mongoose.model<IToken>("Token", TokenSchema);
+export const Token =
+  mongoose.models.Token ||
+  mongoose.model<IToken>("Token", TokenSchema);
 
-export default Token;
+  TokenSchema.index({ userId: 1, type: 1 });
