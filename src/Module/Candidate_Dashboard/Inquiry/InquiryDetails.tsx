@@ -213,7 +213,7 @@ const AccountDetails = () => {
 
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
                         <FormControl fullWidth>
-                          <InputLabel>Preffered Consulutant</InputLabel>
+                          <InputLabel>Preffered Consultant</InputLabel>
                           <Select
                             label="prefferedConsultant"
                             value={formData.prefferedConsultant}
