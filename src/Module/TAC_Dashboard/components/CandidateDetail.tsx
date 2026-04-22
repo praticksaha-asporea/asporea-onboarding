@@ -30,8 +30,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   setCurrentView,
 }) => {
   useEffect(() => {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, []);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   return (
@@ -591,22 +591,34 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </Card>
           </Stack>
         </Grid>
-
         {/* RIGHT COLUMN: PROGRESS CARD */}
         <Grid size={{ xs: 12, lg: 3 }}>
           <Card className="p-5 sticky top-6 rounded-xl border border-gray-200 shadow-sm">
             <Typography className="text-[16px] font-semibold mb-4">
               Progress
             </Typography>
+
             <FormControl fullWidth className="mb-4">
               <InputLabel>Escalate</InputLabel>
               <Select label="Escalate">
                 <MenuItem>-- Talent Acquisition Consultant --</MenuItem>
               </Select>
             </FormControl>
+
+            <TextField
+              fullWidth
+              multiline
+              rows={3}
+              label="Reason *"
+              placeholder="Enter reason for escalation..."
+              className="mb-4"
+              InputProps={{ className: "text-[14px]" }}
+            />
+
             <Typography className="text-[12px] text-[var(--mui-palette-error-light)] mb-4">
               NOTE: This will need approval of your manager.
             </Typography>
+
             <Box className="flex justify-center">
               <Button disabled variant="contained">
                 Submit
