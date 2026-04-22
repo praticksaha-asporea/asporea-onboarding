@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -29,6 +29,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   setSelectedCandidate,
   setCurrentView,
 }) => {
+  useEffect(() => {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, []);
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
   return (

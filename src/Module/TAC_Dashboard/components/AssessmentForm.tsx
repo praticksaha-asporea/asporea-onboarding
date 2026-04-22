@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Button,
@@ -20,6 +20,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   selectedCandidate,
   setCurrentView,
 }) => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+  const [candidateSignature, setCandidateSignature] = useState<File | null>(null);
+  const [assessorSignature, setAssessorSignature] = useState<File | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<any>({
     1: null,
     2: null,
@@ -30,7 +35,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     8: null,
     9: null,
     10: [],
-    11: null,
+    11: [],
   });
 
   const [languageLevels, setLanguageLevels] = useState<any>({
@@ -75,18 +80,20 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       max: 10,
       bg: "bg-[#f3e8ff]",
       options: [
-        { label: "Professional Certification / L7 (Recognized)", score: 10 },
+        { label: "Professional Certification / L7 [Recognized]", score: 10 },
         {
-          label: "3 Years Diploma Course / L6 (Recognized)",
+          label: "3 Years Diploma Course / L6 [Recognized]",
           score: 8,
           selected: true,
         },
-        { label: "2 Years Diploma Course / L4/L5 (Recognized)", score: 7 },
+        { label: "2 Years Diploma Course / L4/L5 [Recognized]", score: 7 },
         { label: "ITI  /Trade Certificate / L1/L2 [Recognized]", score: 4 },
+         { label: "Diploma Course [Recognzied/Non-recognized]", score: 3 },
         {
-          label: "Certificate Course / Skill Development (Recognized)",
+          label: "Certificate Course / Skill Development Course [Recognized/Non-recognized]",
           score: 2,
         },
+         { label: "Others:" }
       ],
     },
     {
@@ -96,67 +103,75 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       bg: "bg-[#f5f5dc]",
       options: [
         { label: "Communication Skills", score: 4, selected: true },
-        { label: "Personality & Confidence", score: 3 },
+        { label: "Personality", score: 3 },
       ],
     },
     {
       id: 5,
-      title: "WORK EXPERIENCE (RELEVANT)",
+      title: "WORK EXPERIENCE (RELEVANT TO ACADEMIC/PROFESSIONAL QUALIFICATION)",
       max: 10,
       bg: "bg-[#f3e8ff]",
       options: [
-        { label: "Six years or more", score: 10 },
-        { label: "Four to Five years", score: 7, selected: true },
-        { label: "Two to Three years", score: 5 },
         { label: "One year", score: 3 },
+        { label: "Two to Three years", score: 5 },
+        { label: "Four to Five years", score: 7, selected: true },
+        { label: "Six years or more", score: 10 },
       ],
     },
     {
       id: 6,
-      title: "ABROAD WORK EXPERIENCE",
+      title: "ABROAD WORK EXPERIENCE (RELEVENCE TO ACAMEDIC/PROFESSIONAL QUALIFICATION)",
       max: 10,
       bg: "bg-[#f3e8ff]",
       options: [
-        { label: "Six years or more", score: 10 },
-        { label: "Two to Three years", score: 5, selected: true },
         { label: "One year", score: 3 },
+        { label: "Two to Three years", score: 5, selected: true },
+        { label: "Four to five years", score: 7 },
+        { label: "Six years or more", score: 10 },
       ],
     },
     {
       id: 7,
-      title: "STABILITY (DURATION AT SINGLE EMPLOYER)",
+      title: "STABILITY ",
       max: 5,
       bg: "bg-[#f3e8ff]",
       options: [
-        { label: "Has worked in one employer for more than 5 years", score: 5 },
+        { label: "Has worked in one employer for 2 years", score: 3 },
         {
           label: "Has worked in one employer for 2 to 5 years",
           score: 4,
           selected: true,
         },
-        { label: "Has worked in one employer for 2 years", score: 3 },
+        { label: "Has worked in one employer for more than 5 years", score: 5 },
       ],
     },
     {
       id: 8,
-      title: "CAREER INITIATIVE",
+      title: "CAREER INITIATIVE  (EACH EMPLOYMENT MUST BE MORE THAN 12 MONTHS PERIOD)",
       max: 5,
       bg: "bg-[#f3e8ff]",
       options: [
+         {
+          label: " Has Changed employment in same industry in last two employment",
+          score: 3,
+        },
         {
-          label: "Changed employment in same industry in last three employment",
+          label: " Has Changed employment in same industry in last three employment",
           score: 4,
           selected: true,
         },
         {
-          label: "Changed employment in same industry in last two employment",
-          score: 3,
+          label: "  Has changed employment in same industry in last four or more than four employment",
+          score: 5,
+          selected: true,
         },
+       
+        
       ],
     },
     {
       id: 9,
-      title: "AGE BRACKET",
+      title: "AGE",
       max: 10,
       bg: "bg-[#f3e8ff]",
       options: [
@@ -174,7 +189,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       options: [
         {
           label:
-            "Has obtained any License to the profession from India / Foreign",
+            "Has obtained any License to the profession from India / Foreign Country",
           score: 2.5,
         },
         {
@@ -186,7 +201,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     },
     {
       id: 11,
-      title: "ADAPTABILITY & MOBILITY",
+      title: "ADAPTABILITY",
       max: 8,
       bg: "bg-[#f3e8ff]",
       options: [
@@ -202,9 +217,25 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
           selected: true,
         },
         {
+          label: "Applicant family member [other than spouse] working in Abroad",
+          score: 1,
+        },
+         {
+          label: "Applicant family member [including spouse] recently worked in Abroad",
+          score: 1,
+        },
+         {
+          label: "Applicant family member [including spouse] educated in Abroad",
+          score: 1,
+        },
+         {
           label: "Applicant spouse family member is working in Abroad",
           score: 1,
         },
+         {
+          label: "Applicant spouse family member recently worked in Aborad",
+          score: 1,
+        }
       ],
     },
   ];
@@ -234,6 +265,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   );
 
   const finalTotal = totalScore + englishTotal + otherTotal;
+  const signatureFields = [
+    { label: "Candidate Signature", file: candidateSignature, setFile: setCandidateSignature },
+    { label: "Assessor Signature", file: assessorSignature, setFile: setAssessorSignature },
+  ];
 
   return (
     <Box className="w-full min-h-screen p-4 md:p-8 text-gray-900">
@@ -439,7 +474,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
                   </Box>
 
                   {section.options.map((opt, i) => {
-                    const isMulti = section.id === 4 || section.id === 10;
+                     const isMulti = section.id === 4 || section.id === 10 || section.id === 11;
                     const isSelected = isMulti
                       ? selectedOptions[section.id]?.includes(i)
                       : selectedOptions[section.id] === i;
@@ -521,24 +556,59 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             </Grid>
           </Box>
 
-          <Box className="flex flex-col md:flex-row justify-between items-end gap-10">
+         <Box className="flex flex-col md:flex-row justify-between items-end gap-10">
             <Box className="flex w-full md:w-[60%] gap-6">
-              {["Candidate Signature", "Assessor Signature"].map((label) => (
+              {signatureFields.map(({ label, file, setFile }) => (
                 <Box
                   key={label}
-                  className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer"
+                  component="label"
+                  className="flex-1 border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
                 >
-                  <input type="file" className="hidden" />
-                  <Typography className="text-[11px] text-gray-400 uppercase mt-4">
-                    {label}
-                  </Typography>
+                  <input
+                    type="file"
+                    hidden
+                    accept=".pdf, .jpg, .jpeg, .png"
+                    onChange={(e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        setFile(e.target.files[0]);
+                      }
+                    }}
+                  />
+
+                  {file ? (
+                    <Box className="flex flex-col items-center text-center">
+                      <i className="mdi--check-circle-outline text-green-500 mb-2 text-2xl" />
+                      <Typography className="text-[13px] font-bold text-gray-800">
+                        {file.name}
+                      </Typography>
+                      <Typography className="text-[11px] text-gray-500">
+                        Click to change file
+                      </Typography>
+                      <Typography className="text-[10px] text-gray-400 uppercase mt-4">
+                        {label}
+                      </Typography>
+                    </Box>
+                  ) : (
+                    <Box className="flex flex-col items-center text-center">
+                      <Box className="w-10 h-10 bg-[var(--mui-overlays-1)] border border-gray-200 rounded-full flex items-center justify-center mb-2 shadow-sm">
+                        <i className="ri-upload-cloud-2-line text-xl text-[var(--mui-palette-primary-main)]"></i>
+                      </Box>
+                      <Typography className="text-xs font-semibold mb-1">
+                        Drop file here or{" "}
+                        <span className="text-[var(--mui-palette-primary-main)] font-extrabold">
+                          browse
+                        </span>
+                      </Typography>
+                      <Typography className="text-[10px] text-gray-400 uppercase mt-2">
+                        {label}
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
               ))}
             </Box>
-            <Button
-              variant="contained"
-              className="bg-green-500 hover:bg-green-600 px-10 py-3 font-bold tracking-widest"
-            >
+
+            <Button variant="contained" className="bg-green-500 hover:bg-green-600 px-10 py-3 font-bold tracking-widest">
               SUBMIT
             </Button>
           </Box>
