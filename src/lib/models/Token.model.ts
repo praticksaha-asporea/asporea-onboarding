@@ -28,8 +28,9 @@ const TokenSchema = new Schema<IToken>(
   { timestamps: true }
 );
 
-export const Token =
-  mongoose.models.Token ||
-  mongoose.model<IToken>("Token", TokenSchema);
-
   TokenSchema.index({ userId: 1, type: 1 });
+const Token =
+  (mongoose.models.Token as mongoose.Model<IToken>) ||
+  mongoose.model<IToken>('Token', TokenSchema);
+
+export default Token;

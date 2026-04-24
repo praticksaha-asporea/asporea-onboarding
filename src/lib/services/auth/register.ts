@@ -6,7 +6,10 @@ import { ApiError } from '@/lib/error/api.error';
 export const register = async (body: RegisterPayload) => {
    
 const {
-  name,email,password
+  firstName,
+  lastName,
+  email,
+  password
 } = body; 
 
 const existingUser = await User.findOne({email});
@@ -17,7 +20,8 @@ if(existingUser) {
 
 const hashedPassword = await hashPassword(password);
 const newUser = await User.create({
-  name,
+  firstName,
+  lastName,
   email,
   password:hashedPassword
 })
