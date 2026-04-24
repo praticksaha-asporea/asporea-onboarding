@@ -30,7 +30,8 @@ const passwordSchema = Joi.string().pattern(passwordRegex).required().messages({
 });
 
 export const registerSchema = Joi.object({ 
-  name: nameSchema,
+  firstName: nameSchema,
+   lastName: nameSchema,
   email: emailSchema,
   password: passwordSchema,
 
