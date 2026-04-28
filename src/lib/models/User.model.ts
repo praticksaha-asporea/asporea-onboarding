@@ -11,7 +11,7 @@ export interface IUser extends Document {
   password?: string;
   role: {
     type: String,
-    enum: ["admin","tac","user","reception","finance","coordinator","pca","pcra","institute","sub_pca"]
+    enum: ["admin","tac","user","reception","finance","coordinator","pca","pcra","institute","sub_pca","branch_head","tac_head"]
   }
   passportStatus?: "having" | "not" | "applied";
   enquired?: boolean;
@@ -26,6 +26,7 @@ export interface IUser extends Document {
     email?: boolean;
   };
 
+  reviewer?: Types.ObjectId;
   createdBy?: Types.ObjectId;
 
   createdAt: Date;
@@ -69,6 +70,10 @@ const UserSchema = new Schema<IUser>(
       email: Boolean,
     },
 
+    reviewer: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
