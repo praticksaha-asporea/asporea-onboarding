@@ -1,5 +1,4 @@
 import jwt from "jsonwebtoken";
-import { SignOptions } from "jsonwebtoken";
 import Token from "../models/Token.model";
 const ACCESS_SECRET = process.env.JWT_SECRET!;
 const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
