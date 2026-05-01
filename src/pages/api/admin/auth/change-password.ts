@@ -3,6 +3,7 @@ import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middlewar
 import connectToDatabase from "@/lib/mongodb";
 import { changePassword } from "@/lib/services/auth/change-password";
 import ResponseHandler from "@/lib/utils/responseUtil";
+import { adminChangePasswordSchema } from "@/lib/validation/authValidation";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function handler(
@@ -16,7 +17,6 @@ export default async function handler(
 
   try {
     const token = getTokenFromHeader(req);
-    // console.log(token);
 
     if (token === null) {
       throw new ApiError('Un-aunthentic user ', 400);
@@ -24,9 +24,19 @@ export default async function handler(
 
     const authUser = await verifyToken(token);
 
-    
-    const payload = req.body?.userId ? req.body:{ ...req.body, userId: authUser.id };
-    // console.log(payload,987);
+    const payload = req.body?.userId ? req.body : { ...req.body, userId: authUser.id };
+
+    const { error } = adminChangePasswordSchema.validate(payload, {
+      abortEarly: false,
+      allowUnknown: false,
+      stripUnknown: true,
+    });
+
+    if (error) {
+      const message = error.details.map((detail) => detail.message).join(', ');
+      throw new ApiError(message, 400);
+    }
+
     const profile = await changePassword(payload);
 
     return ResponseHandler.sendSuccess(

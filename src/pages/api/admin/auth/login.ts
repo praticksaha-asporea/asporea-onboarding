@@ -2,6 +2,7 @@ import { ApiError } from "@/lib/error/api.error";
 import connectToDatabase from "@/lib/mongodb";
 import { adminLoginService } from "@/lib/services/admin/admin.service";
 import ResponseHandler from "@/lib/utils/responseUtil";
+import { adminLoginSchema } from "@/lib/validation/authValidation";
 import { NextApiRequest, NextApiResponse } from "next";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -12,11 +13,21 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   try {
+    const { error } = adminLoginSchema.validate(req.body, {
+      abortEarly: false,
+      allowUnknown: false,
+      stripUnknown: true,
+    });
+
+    if (error) {
+      const message = error.details.map((detail) => detail.message).join(', ');
+      throw new ApiError(message, 400);
+    }
+
     const userData = await adminLoginService(req.body);
     return ResponseHandler.sendSuccess(
       res,
       userData,
-    // {},
       'You are successfully loggedIn'
     );
   } catch (error: unknown) {

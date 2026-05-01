@@ -41,7 +41,6 @@ export const changePassword = async (payload: changePasswordPayload) => {
 
   user.password = hashedPassword;
   await user.save();
-  console.log(user,888);
   
   return {
     id: user._id,

@@ -35,7 +35,7 @@ export const registerSchema = Joi.object({
   email: emailSchema,
   password: passwordSchema,
 
-  role: Joi.string().valid("user", "admin").optional(),
+  role: Joi.string().valid("user").optional(),
 })
   .options({ abortEarly: false })
   .unknown(false);
@@ -63,5 +63,48 @@ export const verifyOtpSchema = Joi.object({
     .required()
     .messages({
       "string.pattern.base": "OTP must be a 6-digit number",
+    }),
+}).options({ abortEarly: false, allowUnknown: false });
+
+// ─── Admin Auth Schemas ───────────────────────────────────────────────────────
+
+export const adminLoginSchema = Joi.object({
+  email: emailSchema,
+  password: Joi.string().required().messages({
+    "string.empty": "Password is required",
+  }),
+}).options({ abortEarly: false, allowUnknown: false });
+
+export const adminForgotPasswordSchema = Joi.object({
+  email: emailSchema,
+}).options({ abortEarly: false, allowUnknown: false });
+
+export const adminResetPasswordSchema = Joi.object({
+  email: emailSchema,
+  code: Joi.string().trim().required().messages({
+    "string.empty": "Reset code is required",
+  }),
+  password: passwordSchema,
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("password"))
+    .required()
+    .messages({
+      "any.only": "Passwords do not match",
+      "string.empty": "Confirm password is required",
+    }),
+}).options({ abortEarly: false, allowUnknown: false });
+
+export const adminChangePasswordSchema = Joi.object({
+  userId: Joi.string().optional(),
+  oldPassword: Joi.string().required().messages({
+    "string.empty": "Old password is required",
+  }),
+  newPassword: passwordSchema,
+  confirmPassword: Joi.string()
+    .valid(Joi.ref("newPassword"))
+    .required()
+    .messages({
+      "any.only": "Passwords do not match",
+      "string.empty": "Confirm password is required",
     }),
 }).options({ abortEarly: false, allowUnknown: false });
