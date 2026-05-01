@@ -14,10 +14,16 @@ export interface ForgotPasswordPayload {
   email: string;
 }
 
-
 export interface ResetPasswordPayload {
   email: string;
   password: string;
   confirmPassword: string;
   code: number;
+}
+
+export interface changePasswordPayload {
+  userId: string;
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }

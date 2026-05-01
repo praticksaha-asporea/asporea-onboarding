@@ -50,3 +50,18 @@ export const loginSchema = Joi.object({
 export const refreshTokenSchema = Joi.object({
   refreshToken: Joi.string().required(),
 });
+
+export const phoneLoginSchema = Joi.object({
+  identity: Joi.string().required(),
+});
+
+export const verifyOtpSchema = Joi.object({
+  identity: Joi.string().trim().required(),
+  otp: Joi.string()
+    .trim()
+    .pattern(/^[0-9]{6}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "OTP must be a 6-digit number",
+    }),
+}).options({ abortEarly: false, allowUnknown: false });

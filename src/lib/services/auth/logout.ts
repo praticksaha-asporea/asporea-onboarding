@@ -6,9 +6,9 @@ export const logout = async (refreshToken: string) => {
     throw new ApiError("Refresh Token Required", 400);
   }
 
-  const existing = await Token.findOne({ token: refreshToken });
+  const existing = await Token.findOne({ token: refreshToken, type: "refresh" });
   if (!existing) {
-    throw new ApiError("Already Loggged Out or Invalid token", 401);
+    throw new ApiError("Already Logged Out or Invalid token", 401);
   }
   await Token.deleteOne({ token: refreshToken });
 

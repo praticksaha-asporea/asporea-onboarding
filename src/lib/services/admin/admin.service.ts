@@ -24,7 +24,8 @@ export const adminLoginService = async (body: AdminLoginInput) => {
       throw new ApiError('Invalid credentials', 401);
     }
     const tokens = await generateTokens({
-      _id: String(admin._id)
+      _id: String(admin._id),
+      role: "admin"
     });
 
     return {
@@ -40,7 +41,6 @@ export const adminLoginService = async (body: AdminLoginInput) => {
 
 export const resetAdminPassword = async (payload: ResetPasswordPayload) => {
   const { code, email, password, confirmPassword } = payload;
-  // console.log(code, email, password, confirmPassword);
   if (!code || !email || !password) {
     throw new ApiError('Code, email and password are required');
   }
@@ -63,33 +63,28 @@ export const resetAdminPassword = async (payload: ResetPasswordPayload) => {
 
 
   const otpData = await Otp.findOne({
-  userId: user._id, // OR email if you store it
-  'otp.code': code,
-  'otp.expiresAt': { $gt: new Date() },
-});
+    userId: user._id,
+    'otp.code': code,
+  });
 
   if (!otpData) {
     throw new ApiError('Invalid Code');
   }
 
-  // this is not working need to work
-  if (otpData.expiresAt < new Date()) {
+
+  if (otpData.otp.expiresAt < new Date()) {
     throw new ApiError('Code has been expired');
   }
 
-  // Check user is exist or not
   if (!user) {
     throw new ApiError('Invalid User');
   }
 
-  // Hash new password
   const hashedPassword = await hashPassword(password);
 
-  // Update user record with new password
   await User.findByIdAndUpdate(user._id, {
     password: hashedPassword,
   });
 
-  // Delete reset password OTP
   await Otp.deleteOne({ otp: otpData.otp });
 };
