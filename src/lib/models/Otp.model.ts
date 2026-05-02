@@ -6,6 +6,7 @@ export interface IOtp extends Document {
   otp?: {
     code?: string; //hashed version will store
     expiresAt?: Date;
+    sentTo?: string;
   };
 }
 
@@ -20,6 +21,7 @@ const OtpSchema = new Schema<IOtp>(
     otp: {
       code: String,
       expiresAt: Date,
+      sentTo: String
     },
   },
   { timestamps: true }

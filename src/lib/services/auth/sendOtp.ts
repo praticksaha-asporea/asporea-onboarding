@@ -1,0 +1,110 @@
+import { Otp } from "@/lib/models/Otp.model";
+import User from "@/lib/models/User.model";
+import { sendMail } from "@/lib/utils/emailUtil";
+import { sendSms, sendWhatsApp } from "@/lib/utils/messageUtil";
+
+const EMAIL_CHANNEL = "email" as const;
+const SMS_CHANNEL = "sms" as const;
+const WHATSAPP_CHANNEL = "whatsapp" as const;
+
+type DeliveryChannel = typeof EMAIL_CHANNEL | typeof SMS_CHANNEL | typeof WHATSAPP_CHANNEL;
+
+function isEmail(value: string) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
+}
+
+export const sendOtpService = async (identity: string) => {
+  const normalizedIdentity = identity.trim();
+
+  const user = await User.findOne({
+    $or: [
+      { email: normalizedIdentity },
+      { phoneNumber: normalizedIdentity },
+      { whatsappNumber: normalizedIdentity },
+    ],
+  }).select("email phoneNumber whatsappNumber");
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  let channel: DeliveryChannel;
+  let destination: string;
+
+  if (user.email === normalizedIdentity) {
+    channel = EMAIL_CHANNEL;
+    destination = user.email;
+  } else if (user.whatsappNumber === normalizedIdentity) {
+    channel = WHATSAPP_CHANNEL;
+    destination = user.whatsappNumber as string;
+  } else if (user.phoneNumber === normalizedIdentity) {
+    channel = SMS_CHANNEL;
+    destination = user.phoneNumber as string;
+  } else if (isEmail(normalizedIdentity) && user.email) {
+    channel = EMAIL_CHANNEL;
+    destination = user.email;
+  } else if (user.whatsappNumber) {
+    channel = WHATSAPP_CHANNEL;
+    destination = user.whatsappNumber;
+  } else if (user.phoneNumber) {
+    channel = SMS_CHANNEL;
+    destination = user.phoneNumber;
+  } else {
+    throw new Error("No valid delivery channel found for this user");
+  }
+
+  const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(
+    Date.now() +
+      parseInt(process.env.LOGIN_OTP_EXPIRES_MINUTES || "10", 10) *
+        60 *
+        1000,
+  );
+
+  const message = `Your verification code is ${otpCode}. It expires in ${
+    process.env.LOGIN_OTP_EXPIRES_MINUTES || "10"
+  } minutes.`;
+
+  if (channel === EMAIL_CHANNEL) {
+    await sendMail({
+      to: destination,
+      subject: "Your login OTP code",
+      html: `<div style="font-family: sans-serif; line-height: 1.4;">
+        <p>Use the OTP below to complete your login:</p>
+        <h2 style="margin: 0;">${otpCode}</h2>
+        <p>This code will expire in ${
+          process.env.LOGIN_OTP_EXPIRES_MINUTES || "10"
+        } minutes.</p>
+      </div>`,
+    });
+  } else if (channel === SMS_CHANNEL) {
+    await sendSms({
+      to: destination,
+      body: message,
+    });
+  } else if (channel === WHATSAPP_CHANNEL) {
+    await sendWhatsApp({
+      to: destination,
+      body: message,
+    });
+  }
+
+  await Otp.findOneAndUpdate(
+    { userId: user._id },
+    {
+      otp: {
+        code: otpCode,
+        expiresAt,
+        sentTo: destination,
+      },
+    },
+    { upsert: true,
+      returnDocument: 'after', },
+  );
+
+  return {
+    channel,
+    sentTo: destination,
+    expiresAt,
+  };
+};

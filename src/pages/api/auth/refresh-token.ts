@@ -10,11 +10,11 @@ export default async function handler(
 ) {
   try {
     const { refreshToken } = req.body;
-
+    
     if (!refreshToken || typeof refreshToken !== "string") {
       return ResponseHandler.sendError(
         res,
-        "Refresh token required or invalid refrsh token",
+        "Refresh token required or invalid refresh token",
         400,
       );
     }
@@ -39,7 +39,7 @@ export default async function handler(
       );
     }
 
-    const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.userId);
 
     if (!user) {
       return ResponseHandler.sendError(res, "User not found", 404);
