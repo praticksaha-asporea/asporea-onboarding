@@ -10,8 +10,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   if (applyCors(req, res)) return;
   await connectToDatabase();
 
-  if (req.method !== 'POST') {
-    return ResponseHandler.sendError(res, 'Method not allowed', 405);
+  if (req.method !== "POST") {
+    return ResponseHandler.sendError(res, "Method not allowed", 405);
   }
 
   try {
