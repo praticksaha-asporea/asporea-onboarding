@@ -40,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
     }
     
-    console.error("Login Error:", error); 
+    // console.error("Login Error:", error); 
     return ResponseHandler.sendError(res, 'Unknown error occurred', 500);
   }
 }

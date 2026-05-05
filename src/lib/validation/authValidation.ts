@@ -29,16 +29,47 @@ const passwordSchema = Joi.string().pattern(passwordRegex).required().messages({
     "Password must be 8+ chars with uppercase, lowercase, number & special char",
 });
 
-export const registerSchema = Joi.object({ 
+export const registerSchema = Joi.object({
   firstName: nameSchema,
-   lastName: nameSchema,
+  lastName: nameSchema,
   email: emailSchema,
   password: passwordSchema,
-
-  role: Joi.string().valid("user").optional(),
-})
-  .options({ abortEarly: false })
-  .unknown(false);
+  phoneNumber: Joi.string()
+    .trim()
+    .pattern(/^[0-9]{10}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Phone number must be exactly 10 digits",
+    }),
+  address: Joi.string()
+    .min(5)
+    .trim()
+    .required(),
+  whatsappNumber: Joi.string()
+    .trim()
+    .pattern(/^[0-9]{10}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "WhatsApp number must be exactly 10 digits",
+    }),
+  passportStatus: Joi.string()
+    .valid("having", "not", "applied")
+    .required()
+    .messages({
+      "any.only": "Passport status must be one of: having, not, applied",
+    }),
+  passportNo: Joi.string()
+    .trim()
+    .max(20)
+    .when("passportStatus", {
+      is: "having",
+      then: Joi.required().messages({
+        "string.empty": "Passport number is required when you have passport",
+        "any.required": "Passport number is required when you have passport",
+      }),
+      otherwise: Joi.optional(),
+    }),
+}).options({ abortEarly: false, allowUnknown: false });
 
 export const loginSchema = Joi.object({
   email: emailSchema,
@@ -66,7 +97,6 @@ export const verifyOtpSchema = Joi.object({
     }),
 }).options({ abortEarly: false, allowUnknown: false });
 
-// ─── Admin Auth Schemas ───────────────────────────────────────────────────────
 
 export const adminLoginSchema = Joi.object({
   email: emailSchema,

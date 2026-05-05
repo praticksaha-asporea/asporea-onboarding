@@ -1,13 +1,18 @@
 export interface RegisterPayload {
-    firstName:string,
-    lastName:string,
-    email:string,
-    password:string
+  firstName: string,
+  lastName: string,
+  email: string,
+  password: string,
+  phoneNumber: string,
+  whatsappNumber: string,
+  passportStatus: "having" | "not" | "applied",
+  passportNo: string,
+  address: string
 }
 
 export interface LoginPayload {
-    email:string;
-    password:string
+  email: string;
+  password: string
 }
 
 export interface ForgotPasswordPayload {

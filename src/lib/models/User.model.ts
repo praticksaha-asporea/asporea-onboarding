@@ -14,6 +14,7 @@ export interface IUser extends Document {
     enum: ["admin","tac","user","reception","finance","coordinator","pca","pcra","institute","sub_pca","branch_head","tac_head"]
   }
   passportStatus?: "having" | "not" | "applied";
+  passportNo: string;
   enquired?: boolean;
 
   status?: "active" | "inactive" | "deleted";
@@ -50,6 +51,7 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: ["having", "not", "applied"],
     },
+    passportNo: String,
 
     enquired: Boolean,
 
@@ -87,49 +89,3 @@ const User =
   mongoose.model<IUser>('User', UserSchema);
 
 export default User;
-
-
-// import mongoose, { Schema, Document } from "mongoose";
-
-// export interface IUser extends Document {
-//   name: string;
-//   phone: string;
-//   email: string;
-//   password?: string;
-//   role: string;
-//   createdAt: Date;
-//   updatedAt: Date;
-// }
-
-// const UserSchema = new Schema<IUser>(
-//   {
-//     name: {
-//       type: String,
-//       required: true,
-//     },
-//     phone: {
-//       type: String,
-//       unique: true,
-//     },
-//     email: {
-//       type: String,
-//       unique: true,
-//       lowercase: true,
-//       sparse: true,
-//     },
-
-//     password: {
-//       type: String,
-//       select: false,
-//     },
-
-//     role: {
-//       type: String,
-//       default: "user",
-//     },
-//   },
-//   { timestamps: true },
-// );
-
-// export default mongoose.models.User ||
-//   mongoose.model<IUser>("User", UserSchema);

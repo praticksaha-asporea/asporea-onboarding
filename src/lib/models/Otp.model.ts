@@ -15,7 +15,9 @@ const OtpSchema = new Schema<IOtp>(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      required: false,
       unique: true,
+      sparse: true,
     },
 
     otp: {

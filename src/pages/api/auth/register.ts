@@ -13,13 +13,14 @@ export default async function handler(
 
   if (req.method !== "POST")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
-
+  
   try {
     const { error } = registerSchema.validate(req.body, {
       abortEarly: false,
       allowUnknown: false,
       stripUnknown: true,
     });
+  // console.log(error,2222);
     if (error) {
       const message = error.details.map((detail) => detail.message).join(", ");
       throw new ApiError(message, 400);

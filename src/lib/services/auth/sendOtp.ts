@@ -13,6 +13,19 @@ function isEmail(value: string) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim());
 }
 
+/** Resolve delivery channel and destination purely from the identity string,
+ *  without needing a DB user record. */
+function resolveChannelFromIdentity(
+  normalizedIdentity: string,
+): { channel: DeliveryChannel; destination: string } {
+  if (isEmail(normalizedIdentity)) {
+    return { channel: EMAIL_CHANNEL, destination: normalizedIdentity };
+  }
+  // Treat anything that looks like a phone number as WhatsApp-first, SMS fallback.
+  // Callers can extend this logic if they need to distinguish the two.
+  return { channel: WHATSAPP_CHANNEL, destination: normalizedIdentity };
+}
+
 export const sendOtpService = async (identity: string) => {
   const normalizedIdentity = identity.trim();
 
@@ -24,33 +37,35 @@ export const sendOtpService = async (identity: string) => {
     ],
   }).select("email phoneNumber whatsappNumber");
 
-  if (!user) {
-    throw new Error("User not found");
-  }
-
   let channel: DeliveryChannel;
   let destination: string;
 
-  if (user.email === normalizedIdentity) {
-    channel = EMAIL_CHANNEL;
-    destination = user.email;
-  } else if (user.whatsappNumber === normalizedIdentity) {
-    channel = WHATSAPP_CHANNEL;
-    destination = user.whatsappNumber as string;
-  } else if (user.phoneNumber === normalizedIdentity) {
-    channel = SMS_CHANNEL;
-    destination = user.phoneNumber as string;
-  } else if (isEmail(normalizedIdentity) && user.email) {
-    channel = EMAIL_CHANNEL;
-    destination = user.email;
-  } else if (user.whatsappNumber) {
-    channel = WHATSAPP_CHANNEL;
-    destination = user.whatsappNumber;
-  } else if (user.phoneNumber) {
-    channel = SMS_CHANNEL;
-    destination = user.phoneNumber;
+  if (user) {
+    // ── Registered user: prefer the field that matched the identity ──────────
+    if (user.email === normalizedIdentity) {
+      channel = EMAIL_CHANNEL;
+      destination = user.email;
+    } else if (user.whatsappNumber === normalizedIdentity) {
+      channel = WHATSAPP_CHANNEL;
+      destination = user.whatsappNumber as string;
+    } else if (user.phoneNumber === normalizedIdentity) {
+      channel = SMS_CHANNEL;
+      destination = user.phoneNumber as string;
+    } else if (isEmail(normalizedIdentity) && user.email) {
+      channel = EMAIL_CHANNEL;
+      destination = user.email;
+    } else if (user.whatsappNumber) {
+      channel = WHATSAPP_CHANNEL;
+      destination = user.whatsappNumber;
+    } else if (user.phoneNumber) {
+      channel = SMS_CHANNEL;
+      destination = user.phoneNumber;
+    } else {
+      throw new Error("No valid delivery channel found for this user");
+    }
   } else {
-    throw new Error("No valid delivery channel found for this user");
+    // ── Guest / unregistered: send directly to the provided identity ─────────
+    ({ channel, destination } = resolveChannelFromIdentity(normalizedIdentity));
   }
 
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
@@ -89,22 +104,37 @@ export const sendOtpService = async (identity: string) => {
     });
   }
 
-  await Otp.findOneAndUpdate(
-    { userId: user._id },
-    {
-      otp: {
-        code: otpCode,
-        expiresAt,
-        sentTo: destination,
+  // Registered user: upsert by userId. Guest: upsert by sentTo (sparse unique on userId allows multiple null docs).
+  if (user) {
+    await Otp.findOneAndUpdate(
+      { userId: user._id },
+      {
+        otp: {
+          code: otpCode,
+          expiresAt,
+          sentTo: destination,
+        },
       },
-    },
-    { upsert: true,
-      returnDocument: 'after', },
-  );
+      { upsert: true, returnDocument: "after" },
+    );
+  } else {
+    await Otp.findOneAndUpdate(
+      { "otp.sentTo": destination, userId: { $exists: false } },
+      {
+        otp: {
+          code: otpCode,
+          expiresAt,
+          sentTo: destination,
+        },
+      },
+      { upsert: true, returnDocument: "after" },
+    );
+  }
 
   return {
     channel,
     sentTo: destination,
     expiresAt,
+    isRegistered: !!user,
   };
 };
