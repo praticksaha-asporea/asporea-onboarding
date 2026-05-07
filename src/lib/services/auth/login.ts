@@ -11,7 +11,7 @@ export const login = async (body:LoginBody ) => {
   const { email, password } = body;
 
   const user: IUser | null = await User.findOne({ email }).select("+password") ;
-  console.log(user,5844);
+  // console.log(user,5844);
   
    if(!user){
     throw new ApiError("User not found Please Type Correct Email",404)
