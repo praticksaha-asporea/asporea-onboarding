@@ -8,6 +8,9 @@ import type { FormEvent } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
+// NextAuth
+import { signIn } from "next-auth/react";
+
 // MUI Imports
 import { Dialog, DialogContent, Box } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -198,22 +201,42 @@ const Login = ({ mode }: { mode: Mode }) => {
               {/* --- TAC LOGIN BUTTON END --- */}
               <Divider className="gap-3">or</Divider>
               <div className="grid grid-cols-2 gap-3">
-                <Button variant="outlined" size="small" color="secondary">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="secondary"
+                  onClick={() => signIn("google", { callbackUrl: "/inquiry" })}
+                >
                   Continue With &nbsp;{" "}
                   <i className="ri-google-fill text-googlePlus" />
                 </Button>
 
-                <Button variant="outlined" size="small" color="secondary">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="secondary"
+                  onClick={() => signIn("facebook", { callbackUrl: "/inquiry" })}
+                >
                   Continue With &nbsp;{" "}
                   <i className="ri-facebook-fill text-facebook" />
                 </Button>
 
-                <Button variant="outlined" size="small" color="secondary">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="secondary"
+                  onClick={() => signIn("linkedin", { callbackUrl: "/inquiry" })}
+                >
                   Continue With &nbsp;{" "}
                   <i className="ri-linkedin-box-fill text-linkedin" />
                 </Button>
 
-                <Button variant="outlined" size="small" color="secondary">
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="secondary"
+                  onClick={() => signIn("instagram", { callbackUrl: "/inquiry" })}
+                >
                   Continue With &nbsp;{" "}
                   <i className="ri-instagram-fill text-instagram" />
                 </Button>

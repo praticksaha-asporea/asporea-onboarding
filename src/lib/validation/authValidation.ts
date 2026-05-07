@@ -69,6 +69,13 @@ export const registerSchema = Joi.object({
       }),
       otherwise: Joi.optional(),
     }),
+  social: Joi.object({
+    providerId: Joi.string().trim().required(),
+    scopes: Joi.string().trim().required(),
+    accessToken: Joi.string().trim().required(),
+    expiresAt: Joi.string().trim().required(),
+    type: Joi.string().trim().required(),
+  }).optional(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 export const loginSchema = Joi.object({

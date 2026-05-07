@@ -8,6 +8,13 @@ export interface RegisterPayload {
   passportStatus: "having" | "not" | "applied",
   passportNo: string,
   address: string
+  social: {
+    providerId: string,
+    scopes: string,
+    accessToken: string,
+    expiresAt: string,
+    type: "google" | "facebook" | "instagram" | "linkedin",
+  }
 }
 
 export interface LoginPayload {

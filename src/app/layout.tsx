@@ -10,6 +10,8 @@ import './globals.css'
 // Generated Icon CSS Imports
 import '@assets/iconify-icons/generated-icons.css'
 
+import NextAuthProvider from '@/Components_Theme/NextAuthProvider'
+
 export const metadata = {
   title: 'Asporea Candidate Onboarding',
   description:
@@ -22,7 +24,9 @@ const RootLayout = ({ children }: ChildrenType) => {
 
   return (
     <html id='__next' dir={direction}>
-      <body className='flex is-full min-bs-full flex-auto flex-col'>{children}</body>
+      <body className='flex is-full min-bs-full flex-auto flex-col'>
+        <NextAuthProvider>{children}</NextAuthProvider>
+      </body>
     </html>
   )
 }
