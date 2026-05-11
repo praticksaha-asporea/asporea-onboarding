@@ -81,17 +81,22 @@ export const sendOtpService = async (identity: string) => {
   } minutes.`;
 
   if (channel === EMAIL_CHANNEL) {
-    await sendMail({
-      to: destination,
-      subject: "Your login OTP code",
-      html: `<div style="font-family: sans-serif; line-height: 1.4;">
-        <p>Use the OTP below to complete your login:</p>
-        <h2 style="margin: 0;">${otpCode}</h2>
-        <p>This code will expire in ${
-          process.env.LOGIN_OTP_EXPIRES_MINUTES || "10"
-        } minutes.</p>
-      </div>`,
-    });
+    console.log(`\n==============================================`);
+    console.log(`📧 DEVELOPMENT MODE - MOCK EMAIL`);
+    console.log(`To: ${destination}`);
+    console.log(`OTP Code: ${otpCode}`);
+    console.log(`==============================================\n`);
+    // await sendMail({
+    //   to: destination,
+    //   subject: "Your login OTP code",
+    //   html: `<div style="font-family: sans-serif; line-height: 1.4;">
+    //     <p>Use the OTP below to complete your login:</p>
+    //     <h2 style="margin: 0;">${otpCode}</h2>
+    //     <p>This code will expire in ${
+    //       process.env.LOGIN_OTP_EXPIRES_MINUTES || "10"
+    //     } minutes.</p>
+    //   </div>`,
+    // });
   } else if (channel === SMS_CHANNEL) {
     await sendSms({
       to: destination,

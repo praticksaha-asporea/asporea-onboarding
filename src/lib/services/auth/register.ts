@@ -44,7 +44,8 @@ export const register = async (body: RegisterPayload) => {
     whatsappNumber,
     passportStatus,
     passportNo,
-    address
+    address,
+    role: "user"
   })
   if (social) {
     await SocialLogins.create({
