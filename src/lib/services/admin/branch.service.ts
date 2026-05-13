@@ -45,21 +45,25 @@ export const branchList = async ({
 };
 
 export const createBranch = async (body: any) => {
-  const { title, location, counters, timeZone, workDays } = body;
+  const { title, location, counters, timeZone, workDays,latitude,longitude } = body;
 
   const existing = await BranchModel.findOne({
     title: { $regex: new RegExp(`^${title}$`, "i") },
   });
   if (existing)
     throw new ApiError("Branch with this title already exists", 409);
-
+  console.log(body,8777);
+  
   const branch = await BranchModel.create({
     title,
     location,
     counters,
     timeZone,
     workDays,
+    latitude,
+    longitude
   });
+  console.log(branch,222222);
 
   return branch;
 };
@@ -81,7 +85,7 @@ export const updateBranch = async (branchId: string, body: any) => {
   const branch = await BranchModel.findById(branchId);
   if (!branch) throw new ApiError("Branch not found", 404);
 
-  const ALLOWED = ["title", "location", "counters", "timeZone", "workDays"];
+  const ALLOWED = ["title", "location", "counters", "timeZone", "workDays", "latitude", "longitude"];
   const update: Record<string, unknown> = {};
 
   for (const key of ALLOWED) {

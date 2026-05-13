@@ -12,7 +12,7 @@ export interface IUser extends Document {
   role?: "admin" | "tac" | "user" | "reception" | "finance" | "coordinator" | "pca" | "pcra" | "institute" | "sub_pca" | "branch_head" | "tac_head",
   passportStatus?: "having" | "not" | "applied";
   passportNo: string;
-  enquired?: boolean;
+  enquired?: "yes" | "no";
 
   status?: "active" | "inactive" | "deleted";
 
@@ -50,7 +50,7 @@ const UserSchema = new Schema<IUser>(
     },
     passportNo: String,
 
-    enquired: Boolean,
+    enquired: String,
 
     status: {
       type: String,

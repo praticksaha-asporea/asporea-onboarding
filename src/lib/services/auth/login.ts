@@ -27,6 +27,11 @@ export const login = async (body:LoginBody ) => {
     throw new ApiError("Incorrect Password",401)
    }
 
+   if(user.role==="admin")
+   {
+    throw new ApiError("Please login on admin portal",401)
+   }
+
    const tokens = await generateTokens({
     _id: String(user._id),
     role: String(user.role)

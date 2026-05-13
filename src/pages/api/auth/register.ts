@@ -28,7 +28,7 @@ export default async function handler(
     const newUser = await register(req.body);
     return ResponseHandler.sendSuccess(res, newUser, "Signup Successfull");
   } catch (error: unknown) {
-    console.log("register error", error);
+    // console.log("register error", error);
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(
         res,

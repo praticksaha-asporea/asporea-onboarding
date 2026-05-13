@@ -3,14 +3,17 @@ import { verifyRefreshToken, generateTokens } from "@/lib/utils/tokenUtil";
 import User from "@/lib/models/User.model";
 import ResponseHandler from "@/lib/utils/responseUtil";
 import Token from "@/lib/models/Token.model";
+import { applyCors } from "@/lib/cors";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  if (applyCors(req, res)) return;
   try {
     const { refreshToken } = req.body;
-    
+    // console.log(req.body,699655);
+
     if (!refreshToken || typeof refreshToken !== "string") {
       return ResponseHandler.sendError(
         res,
@@ -21,20 +24,20 @@ export default async function handler(
 
     const decoded: any = verifyRefreshToken(refreshToken);
     const tokenDoc = await Token.findOne({
-      token:refreshToken,
-      type:"refresh"
+      token: refreshToken,
+      type: "refresh"
     });
 
-    if(!tokenDoc) {
+    if (!tokenDoc) {
       return ResponseHandler.sendError(
-        res,"Invalid refresh token (not found in DB)",
+        res, "Invalid refresh token (not found in DB)",
         401
       );
     }
-    
+
     if (tokenDoc.expiresAt < new Date()) {
       return ResponseHandler.sendError(
-        res,'Refresh Token expired',
+        res, 'Refresh Token expired',
         401
       );
     }
@@ -45,9 +48,12 @@ export default async function handler(
       return ResponseHandler.sendError(res, "User not found", 404);
     }
 
-    await Token.deleteOne({_id:tokenDoc._id})
+    await Token.deleteOne({ _id: tokenDoc._id })
 
-    const tokens = await generateTokens(user);
+    const tokens = await generateTokens(({
+      _id: String(user._id),
+      role: user?.role
+    }));
 
     return ResponseHandler.sendSuccess(res, tokens, "Token refreshed");
   } catch (err) {

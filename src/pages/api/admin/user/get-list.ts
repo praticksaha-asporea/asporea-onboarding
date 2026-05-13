@@ -5,6 +5,7 @@ import connectToDatabase from '../../../../lib/mongodb';
 import { ApiError } from '../../../../lib/error/api.error';
 import { userList } from '@/lib/services/admin/user.service';
 import { getTokenFromHeader, verifyToken } from '@/lib/middleware/auth.middleware';
+import { applyCors } from '@/lib/cors';
 
 // type UserRole = 'instructor' | 'learner' | 'admin';
 
@@ -13,6 +14,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   await connectToDatabase();
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'GET') {
     return ResponseHandler.sendError(res, 'Method not allowed', 405);

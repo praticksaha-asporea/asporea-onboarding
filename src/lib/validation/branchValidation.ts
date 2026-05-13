@@ -10,6 +10,8 @@ export const createBranchSchema = Joi.object({
   workDays: Joi.array()
     .items(Joi.string().valid(...validDays))
     .optional(),
+  latitude: Joi.number().optional(),
+  longitude: Joi.number().optional(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 export const updateBranchSchema = Joi.object({
@@ -20,5 +22,7 @@ export const updateBranchSchema = Joi.object({
   timeZone: Joi.string().trim().optional(),
   workDays: Joi.array()
     .items(Joi.string().valid(...validDays))
-    .optional(),
+    .optional(),    
+  latitude: Joi.number().optional(),
+  longitude: Joi.number().optional(),
 }).options({ abortEarly: false, allowUnknown: false });
