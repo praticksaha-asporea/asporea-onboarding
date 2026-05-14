@@ -1,114 +1,217 @@
-'use client'
+"use client";
 
 // React Imports
-import { useState } from 'react'
-import type { ChangeEvent } from 'react'
+import { useState, useEffect } from "react";
+import type { ChangeEvent, FormEvent } from "react";
+
+import Cookies from "js-cookie";
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
 // MUI Imports
-import Grid from '@mui/material/Grid'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
-import Typography from '@mui/material/Typography'
-import TextField from '@mui/material/TextField'
-import FormControl from '@mui/material/FormControl'
-import InputLabel from '@mui/material/InputLabel'
-import Select from '@mui/material/Select'
-import MenuItem from '@mui/material/MenuItem'
-import type { SelectChangeEvent } from '@mui/material/Select'
+import Grid from "@mui/material/Grid";
+import Card from "@mui/material/Card";
+import CardContent from "@mui/material/CardContent";
+import Button from "@mui/material/Button";
+import Typography from "@mui/material/Typography";
+import TextField from "@mui/material/TextField";
+import FormControl from "@mui/material/FormControl";
+import InputLabel from "@mui/material/InputLabel";
+import Select from "@mui/material/Select";
+import MenuItem from "@mui/material/MenuItem";
+import CircularProgress from "@mui/material/CircularProgress";
 
 type Data = {
-  firstName: string
-  lastName: string
-  email: string
-  organization: string
-  phoneNumber: number | string
-  whatsappNumber: number | string
-  address: string
-  state: string
-  zipCode: string
-  country: string
-  language: string
-  timezone: string
-  currency: string
-  passportStatus: string
-  passportNumber: string
-}
+  firstName: string;
+  lastName: string;
+  email: string;
+  organization: string;
+  phoneNumber: number | string;
+  whatsappNumber: number | string;
+  address: string;
+  state: string;
+  zipCode: string;
+  country: string;
+  language: string;
+  timezone: string;
+  currency: string;
+  passportStatus: string;
+  passportNumber: string;
+  experienceInMonths: number | string;
+  bio: string;
+};
 
 // Vars
 const initialData: Data = {
-  firstName: 'Rahul',
-  lastName: 'Sharma',
-  email: 'rahul.sharma@example.com',
-  organization: 'ThemeSelection',
-  phoneNumber: '+91 98765 43210',
-  whatsappNumber: '+91 98765 43210',
-  address: `123 Talent Lane, Darjeeling,
-West Bengal,
-700001`,
-  state: 'New York',
-  zipCode: '634880',
-  country: 'usa',
-  language: 'arabic',
-  timezone: 'gmt-12',
-  currency: 'inr',
-  passportStatus: 'No',
-  passportNumber: ''
-}
-
- 
+  firstName: "",
+  lastName: "",
+  email: "",
+  organization: "",
+  phoneNumber: "",
+  whatsappNumber: "",
+  address: "",
+  state: "",
+  zipCode: "",
+  country: "india",
+  language: "english",
+  timezone: "gmt-0530",
+  currency: "inr",
+  passportStatus: "not",
+  passportNumber: "",
+  experienceInMonths: "",
+  bio: "",
+};
 
 const AccountDetails = () => {
-  // States
-  const [formData, setFormData] = useState<Data>(initialData)
-  const [fileInput, setFileInput] = useState<string>('')
-  const [imgSrc, setImgSrc] = useState<string>('/images/avatars/1.png')
-  
+  const [formData, setFormData] = useState<Data>(initialData);
+  const [fileInput, setFileInput] = useState<string>("");
+  const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
 
- 
+  const [fetching, setFetching] = useState(true);
+  const [updating, setUpdating] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const token = Cookies.get("accessToken");
+        if (!token) {
+          setFetching(false);
+          return;
+        }
+
+        const payloadBase64 = token.split(".")[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        const userId = decodedPayload.userId;
+
+        if (!userId) {
+          console.error("ID NOT FOUND IN TOKEN!");
+          setFetching(false);
+          return;
+        }
+
+        const res = await axiosClient.get(`/user/details?id=${userId}`);
+
+        if (res.data?.success) {
+          const userData = res.data.data.user;
+
+          setFormData({
+            firstName: userData.firstName || "",
+            lastName: userData.lastName || "",
+            email: userData.email || "",
+            organization: userData.organization || "",
+            phoneNumber: userData.phoneNumber || "",
+            whatsappNumber: userData.whatsappNumber || "",
+            address: userData.address || "",
+            state: userData.state || "",
+            zipCode: userData.zipCode || "",
+            country: userData.country || "india",
+            language: userData.language || "english",
+            timezone: userData.timezone || "gmt-0530",
+            currency: userData.currency || "inr",
+            passportStatus: userData.passportStatus || "not",
+            passportNumber: userData.passportNumber || "",
+            experienceInMonths: userData.experienceInMonths || "",
+            bio: userData.bio || "",
+          });
+        }
+      } catch (error) {
+        console.error("Profile Fetch Error:", error);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
-    setFormData({ ...formData, [field]: value })
-  }
+    setFormData({ ...formData, [field]: value });
+  };
 
   const handleFileInputChange = (file: ChangeEvent) => {
-    const reader = new FileReader()
-    const { files } = file.target as HTMLInputElement
+    const reader = new FileReader();
+    const { files } = file.target as HTMLInputElement;
 
     if (files && files.length !== 0) {
-      reader.onload = () => setImgSrc(reader.result as string)
-      reader.readAsDataURL(files[0])
-
-      if (reader.result !== null) {
-        setFileInput(reader.result as string)
-      }
+      reader.onload = () => setImgSrc(reader.result as string);
+      reader.readAsDataURL(files[0]);
+      if (reader.result !== null) setFileInput(reader.result as string);
     }
-  }
+  };
 
   const handleFileInputReset = () => {
-    setFileInput('')
-    setImgSrc('/images/avatars/1.png')
+    setFileInput("");
+    setImgSrc("/images/avatars/1.png");
+  };
+
+  const handleUpdateProfile = async (e: FormEvent) => {
+    e.preventDefault();
+    setUpdating(true);
+     try {
+      const token = Cookies.get("accessToken");
+      if (!token) return;
+
+      const payloadBase64 = token.split(".")[1];
+      const decodedPayload = JSON.parse(atob(payloadBase64));
+      const userId = decodedPayload.userId || decodedPayload.id;
+
+       
+      const res = await axiosClient.put(`/user/update?id=${userId}`, formData);
+
+      if (res.data?.success) {
+        alert("Profile Updated Successfully! 🎉");
+      }
+    } catch (error) {
+      console.error("Update Profile Error:", error);
+      alert("Failed to update profile.");
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  if (fetching) {
+    return (
+      <Card className="flex justify-center items-center h-64">
+        <CircularProgress />
+        <Typography className="ml-4">Loading Profile Data...</Typography>
+      </Card>
+    );
   }
 
   return (
     <Card>
-      <CardContent className='mbe-5'>
-        <div className='flex max-sm:flex-col items-center gap-6'>
-          <img height={100} width={100} className='rounded' src={imgSrc} alt='Profile' />
-          <div className='flex flex-grow flex-col gap-4'>
-            <div className='flex flex-col sm:flex-row gap-4'>
-              <Button component='label' size='small' variant='contained' htmlFor='account-settings-upload-image'>
+      <CardContent className="mbe-5">
+        <div className="flex max-sm:flex-col items-center gap-6">
+          <img
+            height={100}
+            width={100}
+            className="rounded"
+            src={imgSrc}
+            alt="Profile"
+          />
+          <div className="flex flex-grow flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button
+                component="label"
+                size="small"
+                variant="contained"
+                htmlFor="upload-image"
+              >
                 Upload New Photo
                 <input
                   hidden
-                  type='file'
+                  type="file"
                   value={fileInput}
-                  accept='image/png, image/jpeg'
+                  accept="image/png, image/jpeg"
                   onChange={handleFileInputChange}
-                  id='account-settings-upload-image'
+                  id="upload-image"
                 />
               </Button>
-              <Button size='small' variant='outlined' color='error' onClick={handleFileInputReset}>
+              <Button
+                size="small"
+                variant="outlined"
+                color="error"
+                onClick={handleFileInputReset}
+              >
                 Reset
               </Button>
             </div>
@@ -116,118 +219,137 @@ const AccountDetails = () => {
           </div>
         </div>
       </CardContent>
+
       <CardContent>
-        <form onSubmit={e => e.preventDefault()}>
+        <form onSubmit={handleUpdateProfile}>
           <Grid container spacing={5}>
-            <Grid  size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label='First Name'
+                label="First Name"
                 value={formData.firstName}
-                placeholder='Rahul'
-                onChange={e => handleFormChange('firstName', e.target.value)}
+                onChange={(e) => handleFormChange("firstName", e.target.value)}
               />
             </Grid>
-        <Grid  size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label='Last Name'
+                label="Last Name"
                 value={formData.lastName}
-                placeholder='Sharma'
-                onChange={e => handleFormChange('lastName', e.target.value)}
+                onChange={(e) => handleFormChange("lastName", e.target.value)}
               />
             </Grid>
 
-           
-            <Grid  size={{ xs: 12, sm: 6 }}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label='Email'
+                label="Email"
                 value={formData.email}
-                placeholder='rahul.sharma@gmail.com'
-                onChange={e => handleFormChange('email', e.target.value)}
+                disabled
+                onChange={(e) => handleFormChange("email", e.target.value)}
               />
             </Grid>
-              
-           <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <TextField
-                          fullWidth
-                          type="number"
-                          label="Phone Number"
-                          value={formData.phoneNumber}
-                          placeholder="9876543210"
-                          onChange={(e) =>
-                            handleFormChange("phoneNumber", e.target.value)
-                          }
-                        />
-                      </Grid>
-     <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <TextField
-                          fullWidth
-                          type="number"
-                          label="Whatsapp Number"
-                          value={formData.whatsappNumber}
-                          placeholder="9876543210"
-                          onChange={(e) =>
-                            handleFormChange("phoneNumber", e.target.value)
-                          }
-                        />
-                      </Grid>
+
+            <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Phone Number"
+                value={formData.phoneNumber}
+                onChange={(e) =>
+                  handleFormChange("phoneNumber", e.target.value)
+                }
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Whatsapp Number"
+                value={formData.whatsappNumber}
+                onChange={(e) =>
+                  handleFormChange("whatsappNumber", e.target.value)
+                }
+              />
+            </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
                 <InputLabel>Having Passport</InputLabel>
                 <Select
-                  label='Having Passport'
+                  label="Having Passport"
                   value={formData.passportStatus}
-                  onChange={e => handleFormChange('passportStatus', e.target.value)}
+                  onChange={(e) =>
+                    handleFormChange("passportStatus", e.target.value)
+                  }
                 >
-                  <MenuItem value='Yes'>Yes</MenuItem>
-                  <MenuItem value='No'>No</MenuItem>
-                  <MenuItem value='Applied'>Applied</MenuItem>
+                  <MenuItem value="having">Yes</MenuItem>
+                  <MenuItem value="not">No</MenuItem>
+                  <MenuItem value="applied">Applied</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
 
-            <Grid size={{xs:12, sm:6}}>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
-                label='Passport Number'
+                label="Passport Number"
                 value={formData.passportNumber}
-                placeholder='Z1234567'
-                onChange={e => handleFormChange('passportNumber', e.target.value)}
-                disabled={formData.passportStatus !== 'Yes'}  
+                onChange={(e) =>
+                  handleFormChange("passportNumber", e.target.value)
+                }
+                disabled={formData.passportStatus !== "having"}
               />
             </Grid>
 
-              <Grid size={{ xs: 12, sm: 12 }}>
+            <Grid size={{ xs: 12, sm: 12 }}>
               <TextField
                 fullWidth
-                label='Address'
+                label="Address"
                 value={formData.address}
-                   placeholder={`123 Talent Lane,Darjeeling,
-West Bengal,
-700001`}
-                          multiline
-                          aria-colspan={3}
-                onChange={e => handleFormChange('address', e.target.value)}
+                multiline
+                aria-colspan={3}
+                onChange={(e) => handleFormChange("address", e.target.value)}
               />
             </Grid>
-            
-           
-            
-            
-            <Grid size={12} className='flex justify-end  gap-4 flex-wrap'>
-              <Button variant='contained' type='submit'>
-                Save Changes
+
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <TextField
+                fullWidth
+                type="number"
+                label="Experience (in months)"
+                value={formData.experienceInMonths}
+                onChange={(e) =>
+                  handleFormChange("experienceInMonths", e.target.value)
+                }
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                multiline
+                rows={4}
+                label="Bio"
+                value={formData.bio}
+                onChange={(e) => handleFormChange("bio", e.target.value)}
+              />
+            </Grid>
+
+            <Grid size={12} className="flex justify-end gap-4 flex-wrap">
+              <Button variant="contained" type="submit" disabled={updating}>
+                {updating ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : (
+                  "Save Changes"
+                )}
               </Button>
-              
             </Grid>
           </Grid>
         </form>
       </CardContent>
     </Card>
-  )
-}
+  );
+};
 
-export default AccountDetails
+export default AccountDetails;

@@ -11,6 +11,7 @@ import './globals.css'
 import '@assets/iconify-icons/generated-icons.css'
 
 import NextAuthProvider from '@/Components_Theme/NextAuthProvider'
+import MainLayout from '@/Components/Layouts/MainLayout/MainLayout' 
 
 export const metadata = {
   title: 'Asporea Candidate Onboarding',
@@ -25,8 +26,12 @@ const RootLayout = ({ children }: ChildrenType) => {
   return (
     <html id='__next' dir={direction}>
       <body className='flex is-full min-bs-full flex-auto flex-col'>
-        <NextAuthProvider>{children}</NextAuthProvider>
-      </body>
+          <NextAuthProvider>
+            <MainLayout>
+              {children}
+            </MainLayout>
+          </NextAuthProvider>
+        </body>
     </html>
   )
 }

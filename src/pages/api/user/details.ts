@@ -1,8 +1,10 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import connectToDatabase from '@/lib/mongodb';
 import ResponseHandler from '@/lib/utils/responseUtil';
+
 import { ApiError } from '@/lib/error/api.error';
 import { viewUser } from '@/lib/services/admin/user.service';
+import { getTokenFromHeader, verifyToken } from '@/lib/middleware/auth.middleware';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
@@ -11,9 +13,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return ResponseHandler.sendError(res, 'Method not allowed', 405);
 
   try {
-    // const token = getTokenFromHeader(req);
-    // if (!token) throw new ApiError('Unauthenticated user', 401);
-    // const authUser = await verifyToken(token);
+    const token = getTokenFromHeader(req);
+    if (!token) throw new ApiError('Unauthenticated user', 401);
+    const authUser = await verifyToken(token);
 
     // authorizeRoles('user')(authUser as any);
 
@@ -23,6 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await viewUser(userId);
     return ResponseHandler.sendSuccess(res, data, 'User fetched successfully');
   } catch (error: unknown) {
+    console.log("Actual error",error)
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
     return ResponseHandler.sendError(res, 'Unknown error occurred', 500);

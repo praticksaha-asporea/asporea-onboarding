@@ -6,7 +6,11 @@ import { ExternalSourceModel } from '../../models/ExternalSource.model';
 import { ApiError } from '../../error/api.error';
 import { hashPassword } from '../../utils/bcryptUtil';
 import mongoose from 'mongoose';
+import '../../models/Shift.model'
+import '../../models/Branch.model'
+import '../../models/User.model'
 
+ 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
 export const VALID_ROLES = [
