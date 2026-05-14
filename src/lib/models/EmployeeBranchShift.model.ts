@@ -49,8 +49,7 @@ const EmployeeBranchShiftSchema = new Schema<IEmployeeBranchShift>(
     },
 
     counterNo: {
-      type: Number,
-      default: 1,
+      type: Number
     },
   },
   { timestamps: true }

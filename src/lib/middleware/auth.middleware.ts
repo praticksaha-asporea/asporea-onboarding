@@ -20,6 +20,10 @@ export const getTokenFromHeader = (req: NextApiRequest): string | null => {
   return null;
 };
 
+export const decodedToken= (token: string) => {
+  return jwt.decode(token);
+}
+
 export const verifyToken = (token: string | null): Promise<AuthUser> =>
   new Promise((resolve, reject) => {
     if (!token)
