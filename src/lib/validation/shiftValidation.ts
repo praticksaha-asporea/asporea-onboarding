@@ -10,7 +10,7 @@ const scheduleSchema = Joi.object({
   startTime: Joi.string().required(),
   endTime: Joi.string().required(),
   breakTime: Joi.string().allow("", null).optional(),
-});
+}).options({ stripUnknown: true });
 
 export const createShiftSchema = Joi.object({
   shiftName: Joi.string().trim().required(),

@@ -1,3 +1,4 @@
+import { applyCors } from "@/lib/cors";
 import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 import connectToDatabase from "@/lib/mongodb";
@@ -11,6 +12,7 @@ export default async function handler(
   res: NextApiResponse,
 ) {
   await connectToDatabase();
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST')
     return ResponseHandler.sendError(res, 'Method not allowed', 405);

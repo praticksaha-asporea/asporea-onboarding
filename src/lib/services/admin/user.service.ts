@@ -81,7 +81,17 @@ export const createUser = async (body: any, createdBy: string) => {
   } = body;
 
   const existing = await UserModel.findOne({ email });
-  if (existing) throw new ApiError('Email already exists', 409);
+  if (existing) throw new ApiError('Email already exists', 401);
+
+  if (phoneNumber) {
+    const phoneExists = await UserModel.findOne({ phoneNumber });
+    if (phoneExists) throw new ApiError('Phone number already exists', 401);
+  }
+
+  if (whatsappNumber) {
+    const whatsappExists = await UserModel.findOne({ whatsappNumber });
+    if (whatsappExists) throw new ApiError('WhatsApp number already exists', 401);
+  }
 
   const hashedPassword = password ? await hashPassword(password) : undefined;
 
@@ -100,8 +110,8 @@ export const createUser = async (body: any, createdBy: string) => {
 // ─── View (single user with linked data) ─────────────────────────────────────
 
 export const viewUser = async (userId: string) => {
-  if (!mongoose.Types.ObjectId.isValid(userId))
-    throw new ApiError('Invalid user ID', 400);
+  // if (!mongoose.Types.ObjectId.isValid(userId))
+  //   throw new ApiError('Invalid user ID', 400);
 
   const user = await UserModel.findById(userId)
     .select('-password')
@@ -151,7 +161,17 @@ export const updateUser = async (userId: string, body: any) => {
   // Prevent email collision
   if (body.email && body.email !== user.email) {
     const collision = await UserModel.findOne({ email: body.email });
-    if (collision) throw new ApiError('Email already in use', 409);
+    if (collision) throw new ApiError('Email already in use', 401);
+  }
+
+  if (body.phoneNumber && body.phoneNumber !== user.phoneNumber) {
+    const phoneExists = await UserModel.findOne({ phoneNumber: body.phoneNumber });
+    if (phoneExists) throw new ApiError('Phone number already exists', 401);
+  }
+
+  if (body.whatsappNumber && body.whatsappNumber !== user.whatsappNumber) {
+    const whatsappExists = await UserModel.findOne({ whatsappNumber: body.whatsappNumber });
+    if (whatsappExists) throw new ApiError('WhatsApp number already exists', 401);
   }
 
   // Never allow password update through this endpoint
@@ -160,7 +180,7 @@ export const updateUser = async (userId: string, body: any) => {
   const ALLOWED = [
     'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
     'address', 'role', 'passportStatus', 'passportNo', 'status',
-    'notificationPreference', 'reviewer',
+    'notificationPreference', 'reviewer', 'enquired'
   ];
 
   const update: Record<string, unknown> = {};
@@ -171,7 +191,7 @@ export const updateUser = async (userId: string, body: any) => {
   const updated = await UserModel.findByIdAndUpdate(
     userId,
     { $set: update },
-    { new: true, runValidators: true },
+    { returnDocument: 'after', runValidators: true }
   ).select('-password');
 
   return updated;
@@ -181,7 +201,7 @@ export const updateUser = async (userId: string, body: any) => {
 
 export const updateUserNote = async (
   userId: string,
-  body: { enquired?: boolean; reviewer?: string },
+  body: { enquired?: string; reviewer?: string },
 ) => {
   if (!mongoose.Types.ObjectId.isValid(userId))
     throw new ApiError('Invalid user ID', 400);

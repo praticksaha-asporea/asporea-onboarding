@@ -5,9 +5,11 @@ import { ApiError } from '@/lib/error/api.error';
 import { getTokenFromHeader, verifyToken } from '@/lib/middleware/auth.middleware';
 import { createUser } from '@/lib/services/admin/user.service';
 import { createUserSchema } from '@/lib/validation/userValidation';
+import { applyCors } from '@/lib/cors';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST')
     return ResponseHandler.sendError(res, 'Method not allowed', 405);
@@ -27,6 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = await createUser(req.body, authUser.id);
     return ResponseHandler.sendSuccess(res, user, 'User created successfully');
   } catch (error: unknown) {
+    // console.log(error,588);
+    
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
     return ResponseHandler.sendError(res, 'Unknown error occurred', 500);

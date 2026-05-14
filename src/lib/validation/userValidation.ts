@@ -36,8 +36,20 @@ export const createUserSchema = Joi.object({
   address: Joi.string().trim().optional(),
   role: roleSchema.required(),
   passportStatus: Joi.string().valid('having', 'not', 'applied').optional(),
-  passportNo: Joi.string().trim().max(20).optional(),
+  passportNo: Joi.string()
+    .trim()
+    .max(20)
+    .when("passportStatus", {
+      is: "having",
+      then: Joi.required().messages({
+        "string.empty": "Passport number is required when you have passport",
+        "any.required": "Passport number is required when you have passport",
+      }),
+      otherwise: Joi.allow(null, "").optional(),
+    }),
   notificationPreference: notificationPreferenceSchema,
+  enquired: Joi.string(),
+  status: Joi.string().valid("active", "inactive", "deleted").optional(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 // ─── Update User ──────────────────────────────────────────────────────────────
@@ -51,17 +63,34 @@ export const updateUserSchema = Joi.object({
   address: Joi.string().trim().optional(),
   role: roleSchema.optional(),
   passportStatus: Joi.string().valid('having', 'not', 'applied').optional(),
-  passportNo: Joi.string().trim().max(20).optional(),
+  passportNo: Joi
+    .when("passportStatus", {
+      is: "having",
+      then: Joi
+        .string()
+        .trim()
+        .max(20).required().messages({
+          "string.empty": "Passport number is required when you have passport",
+          "any.required": "Passport number is required when you have passport",
+        }),
+      otherwise: Joi
+        .optional(),
+    }),
   status: Joi.string().valid('active', 'inactive', 'deleted').optional(),
   reviewer: objectIdSchema.optional(),
   notificationPreference: notificationPreferenceSchema,
-  id:Joi.string().trim().required(),
+  id: Joi.string().trim().required(),
+  enquired: Joi.string(),
+  password: Joi.string().pattern(passwordRegex).optional().messages({
+    'string.pattern.base':
+      'Password must be 8+ chars with uppercase, lowercase, number & special char',
+  }),
 }).options({ abortEarly: false, allowUnknown: false });
 
 // ─── Update Note ──────────────────────────────────────────────────────────────
 
 export const updateNoteSchema = Joi.object({
-  enquired: Joi.boolean().optional(),
+  enquired: Joi.string().optional(),
   reviewer: objectIdSchema.optional(),
 })
   .or('enquired', 'reviewer')

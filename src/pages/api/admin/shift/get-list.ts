@@ -7,13 +7,15 @@ import {
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
 import { shiftList } from "@/lib/services/admin/shift.service";
+import { applyCors } from "@/lib/cors";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await connectToDatabase();
-  if (req.method !== "GET")
+    if (applyCors(req, res)) return;
+    if (req.method !== "GET")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
 
   try {

@@ -1,3 +1,4 @@
+import { applyCors } from "@/lib/cors";
 import { ApiError } from "@/lib/error/api.error";
 import connectToDatabase from "@/lib/mongodb";
 import { adminLoginService } from "@/lib/services/admin/admin.service";
@@ -7,6 +8,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'POST') {
     return ResponseHandler.sendError(res, 'Method not allowed', 405);

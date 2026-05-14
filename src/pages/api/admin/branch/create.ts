@@ -8,13 +8,15 @@ import {
 } from "@/lib/middleware/auth.middleware";
 import { createBranch } from "@/lib/services/admin/branch.service";
 import { createBranchSchema } from "@/lib/validation/branchValidation";
+import { applyCors } from "@/lib/cors";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await connectToDatabase();
-
+  if (applyCors(req, res)) return;
+  
   if (req.method !== "POST")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
 
@@ -25,13 +27,13 @@ export default async function handler(
     if (authUser.role !== "admin")
       throw new ApiError("Admin access required", 403);
 
-    const { error } = createBranchSchema.validate(req.body);
+    const { error, value } = createBranchSchema.validate(req.body);
     if (error) {
       const message = error.details.map((d) => d.message).join(", ");
       throw new ApiError(message, 400);
     }
 
-    const branch = await createBranch(req.body);
+    const branch = await createBranch(value);
     return ResponseHandler.sendSuccess(
       res,
       branch,

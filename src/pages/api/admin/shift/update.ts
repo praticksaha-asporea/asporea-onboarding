@@ -8,12 +8,15 @@ import {
 } from "@/lib/middleware/auth.middleware";
 import { updateShift } from "@/lib/services/admin/shift.service";
 import { updateShiftSchema } from "@/lib/validation/shiftValidation";
+import { applyCors } from "@/lib/cors";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await connectToDatabase();
+    if (applyCors(req, res)) return;
+  
   if (req.method !== "PUT" && req.method !== "PATCH")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
 

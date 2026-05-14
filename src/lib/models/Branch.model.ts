@@ -7,6 +7,8 @@ export interface IBranch extends Document {
   timeZone?: string;
 
   workDays?: string[];
+  latitude?: number;
+  longitude?: number;
 
   createdAt: Date;
   updatedAt: Date;
@@ -28,6 +30,8 @@ const BranchSchema = new Schema<IBranch>(
         enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       },
     ],
+    latitude: { type: Number },
+    longitude: { type: Number },
   },
   { timestamps: true }
 );

@@ -8,12 +8,14 @@ import {
 } from "@/lib/middleware/auth.middleware";
 import { updateBranch } from "@/lib/services/admin/branch.service";
 import { updateBranchSchema } from "@/lib/validation/branchValidation";
+import { applyCors } from "@/lib/cors";
 
 export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse,
 ) {
     await connectToDatabase();
+  if (applyCors(req, res)) return;
 
     if (req.method !== "PUT" && req.method !== "PATCH")
         return ResponseHandler.sendError(res, "Method not allowed", 405);

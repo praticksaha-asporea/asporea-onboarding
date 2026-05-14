@@ -1,13 +1,14 @@
 "use client";
 
-// React Imports
 import { useState, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
+
+import { useSelector, useDispatch } from "react-redux";
+import { updateUserData } from "@/Redux/Auth/user.slice";
 
 import Cookies from "js-cookie";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
-// MUI Imports
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -40,7 +41,6 @@ type Data = {
   bio: string;
 };
 
-// Vars
 const initialData: Data = {
   firstName: "",
   lastName: "",
@@ -62,6 +62,14 @@ const initialData: Data = {
 };
 
 const AccountDetails = () => {
+  const dispatch = useDispatch();
+
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );
+
+  console.log(" REDUX STORE DATA:", reduxUser);
+
   const [formData, setFormData] = useState<Data>(initialData);
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
@@ -70,7 +78,31 @@ const AccountDetails = () => {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    const fetchAndSetData = async () => {
+      if (reduxUser && reduxUser.firstName) {
+        setFormData({
+          firstName: reduxUser.firstName || "",
+          lastName: reduxUser.lastName || "",
+          email: reduxUser.email || "",
+          organization: reduxUser.organization || "",
+          phoneNumber: reduxUser.phoneNumber || "",
+          whatsappNumber: reduxUser.whatsappNumber || "",
+          address: reduxUser.address || "",
+          state: reduxUser.state || "",
+          zipCode: reduxUser.zipCode || "",
+          country: reduxUser.country || "india",
+          language: reduxUser.language || "english",
+          timezone: reduxUser.timezone || "gmt-0530",
+          currency: reduxUser.currency || "inr",
+          passportStatus: reduxUser.passportStatus || "not",
+          passportNumber: reduxUser.passportNumber || "",
+          experienceInMonths: reduxUser.experienceInMonths || "",
+          bio: reduxUser.bio || "",
+        });
+        setFetching(false);
+        return;
+      }
+
       try {
         const token = Cookies.get("accessToken");
         if (!token) {
@@ -80,38 +112,34 @@ const AccountDetails = () => {
 
         const payloadBase64 = token.split(".")[1];
         const decodedPayload = JSON.parse(atob(payloadBase64));
-        const userId = decodedPayload.userId;
-
-        if (!userId) {
-          console.error("ID NOT FOUND IN TOKEN!");
-          setFetching(false);
-          return;
-        }
+        const userId = decodedPayload.userId || decodedPayload.id;
 
         const res = await axiosClient.get(`/user/details?id=${userId}`);
 
         if (res.data?.success) {
-          const userData = res.data.data.user;
+          const fullUserData = res.data.data.user;
 
           setFormData({
-            firstName: userData.firstName || "",
-            lastName: userData.lastName || "",
-            email: userData.email || "",
-            organization: userData.organization || "",
-            phoneNumber: userData.phoneNumber || "",
-            whatsappNumber: userData.whatsappNumber || "",
-            address: userData.address || "",
-            state: userData.state || "",
-            zipCode: userData.zipCode || "",
-            country: userData.country || "india",
-            language: userData.language || "english",
-            timezone: userData.timezone || "gmt-0530",
-            currency: userData.currency || "inr",
-            passportStatus: userData.passportStatus || "not",
-            passportNumber: userData.passportNumber || "",
-            experienceInMonths: userData.experienceInMonths || "",
-            bio: userData.bio || "",
+            firstName: fullUserData.firstName || "",
+            lastName: fullUserData.lastName || "",
+            email: fullUserData.email || reduxUser?.email || "",
+            organization: fullUserData.organization || "",
+            phoneNumber: fullUserData.phoneNumber || "",
+            whatsappNumber: fullUserData.whatsappNumber || "",
+            address: fullUserData.address || "",
+            state: fullUserData.state || "",
+            zipCode: fullUserData.zipCode || "",
+            country: fullUserData.country || "india",
+            language: fullUserData.language || "english",
+            timezone: fullUserData.timezone || "gmt-0530",
+            currency: fullUserData.currency || "inr",
+            passportStatus: fullUserData.passportStatus || "not",
+            passportNumber: fullUserData.passportNumber || "",
+            experienceInMonths: fullUserData.experienceInMonths || "",
+            bio: fullUserData.bio || "",
           });
+
+          dispatch(updateUserData(fullUserData));
         }
       } catch (error) {
         console.error("Profile Fetch Error:", error);
@@ -120,8 +148,8 @@ const AccountDetails = () => {
       }
     };
 
-    fetchUserData();
-  }, []);
+    fetchAndSetData();
+  }, [reduxUser, dispatch]);
 
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
     setFormData({ ...formData, [field]: value });
@@ -146,7 +174,7 @@ const AccountDetails = () => {
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
     setUpdating(true);
-     try {
+    try {
       const token = Cookies.get("accessToken");
       if (!token) return;
 
@@ -154,11 +182,12 @@ const AccountDetails = () => {
       const decodedPayload = JSON.parse(atob(payloadBase64));
       const userId = decodedPayload.userId || decodedPayload.id;
 
-       
       const res = await axiosClient.put(`/user/update?id=${userId}`, formData);
 
       if (res.data?.success) {
         alert("Profile Updated Successfully! 🎉");
+
+        dispatch(updateUserData(formData));
       }
     } catch (error) {
       console.error("Update Profile Error:", error);

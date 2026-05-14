@@ -1,39 +1,35 @@
-// Third-party Imports
-import 'react-perfect-scrollbar/dist/css/styles.css'
+import "react-perfect-scrollbar/dist/css/styles.css";
 
-// Type Imports
-import type { ChildrenType } from '@core/types'
+import type { ChildrenType } from "@core/types";
 
-// Style Imports
-import './globals.css'
+import "./globals.css";
 
-// Generated Icon CSS Imports
-import '@assets/iconify-icons/generated-icons.css'
+import "@assets/iconify-icons/generated-icons.css";
 
-import NextAuthProvider from '@/Components_Theme/NextAuthProvider'
-import MainLayout from '@/Components/Layouts/MainLayout/MainLayout' 
+import NextAuthProvider from "@/Components_Theme/NextAuthProvider";
+import MainLayout from "@/Components/Layouts/MainLayout/MainLayout";
+
+import Providers from "@/Components_Theme/Providers";
 
 export const metadata = {
-  title: 'Asporea Candidate Onboarding',
-  description:
-    'Developed for future'
-}
+  title: "Asporea Candidate Onboarding",
+  description: "Developed for future",
+};
 
 const RootLayout = ({ children }: ChildrenType) => {
-  // Vars
-  const direction = 'ltr'
+  const direction = "ltr";
 
   return (
-    <html id='__next' dir={direction}>
-      <body className='flex is-full min-bs-full flex-auto flex-col'>
+    <html id="__next" dir={direction}>
+      <body className="flex is-full min-bs-full flex-auto flex-col">
+        <Providers direction={direction}>
           <NextAuthProvider>
-            <MainLayout>
-              {children}
-            </MainLayout>
+            <MainLayout>{children}</MainLayout>
           </NextAuthProvider>
-        </body>
+        </Providers>
+      </body>
     </html>
-  )
-}
+  );
+};
 
-export default RootLayout
+export default RootLayout;

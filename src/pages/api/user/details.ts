@@ -5,9 +5,11 @@ import ResponseHandler from '@/lib/utils/responseUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { viewUser } from '@/lib/services/admin/user.service';
 import { getTokenFromHeader, verifyToken } from '@/lib/middleware/auth.middleware';
+import { applyCors } from '@/lib/cors';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
+  if (applyCors(req, res)) return;
 
   if (req.method !== 'GET')
     return ResponseHandler.sendError(res, 'Method not allowed', 405);
@@ -15,7 +17,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const token = getTokenFromHeader(req);
     if (!token) throw new ApiError('Unauthenticated user', 401);
-    const authUser = await verifyToken(token);
+    await verifyToken(token);//const authUser = 
 
     // authorizeRoles('user')(authUser as any);
 
@@ -25,7 +27,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await viewUser(userId);
     return ResponseHandler.sendSuccess(res, data, 'User fetched successfully');
   } catch (error: unknown) {
-    console.log("Actual error",error)
+    // console.log(error,5844);
+    
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
     return ResponseHandler.sendError(res, 'Unknown error occurred', 500);
