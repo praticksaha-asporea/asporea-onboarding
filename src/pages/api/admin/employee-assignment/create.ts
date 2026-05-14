@@ -8,12 +8,15 @@ import {
 } from "@/lib/middleware/auth.middleware";
 import { createAssignment } from "@/lib/services/admin/employeeAssignment.service";
 import { createAssignmentSchema } from "@/lib/validation/employeeAssignmentValidation";
+import { applyCors } from "@/lib/cors";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await connectToDatabase();
+  if (applyCors(req, res)) return;  
+  
   if (req.method !== "POST")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
 
@@ -35,7 +38,7 @@ export default async function handler(
       "Employee assigned successfully",
     );
   } catch (error: unknown) {
-    console.log("ACTUAL ERROR: ", error)
+    // console.log("ACTUAL ERROR: ", error)
     if (error instanceof ApiError)
       return ResponseHandler.sendError(
         res,
