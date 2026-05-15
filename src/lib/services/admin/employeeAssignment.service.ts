@@ -23,23 +23,62 @@ async function enforceCounterLimit(branchId: string, counterNo: number | undefin
 export const assignmentList = async ({
   page = 1,
   limit = 10,
+  search,
+  role,
 }: {
   page?: number;
   limit?: number;
+  search?: string;
+  role?: string;
 }) => {
   const skip = (page - 1) * limit;
 
+  const assignmentFilter: Record<string, unknown> = {};
+
+  if (search && search.trim().length > 0) {
+    const regex = new RegExp(search.trim(), "i");
+
+    // Resolve employee IDs matching name/email
+    const UserModel = mongoose.model("User");
+    const empFilter: Record<string, unknown> = {
+      $or: [{ firstName: regex }, { lastName: regex }, { email: regex }],
+    };
+    if (role) empFilter.role = role;
+    const employees = await UserModel.find(empFilter).select("_id").lean();
+    const employeeIds = employees.map((e: any) => e._id);
+
+    // Resolve branch IDs matching title
+    const branches = await BranchModel.find({ title: regex }).select("_id").lean();
+    const branchIds = branches.map((b: any) => b._id);
+
+    // Resolve shift IDs matching shiftName
+    const ShiftModel = mongoose.model("Shift");
+    const shifts = await ShiftModel.find({ shiftName: regex }).select("_id").lean();
+    const shiftIds = shifts.map((s: any) => s._id);
+
+    // OR across all three dimensions
+    assignmentFilter.$or = [
+      { employeeId: { $in: employeeIds } },
+      { branchId: { $in: branchIds } },
+      { shiftId: { $in: shiftIds } },
+    ];
+  } else if (role) {
+    // No search term but role filter present — filter by employee role only
+    const UserModel = mongoose.model("User");
+    const employees = await UserModel.find({ role }).select("_id").lean();
+    assignmentFilter.employeeId = { $in: employees.map((e: any) => e._id) };
+  }
+
   const [assignments, total] = await Promise.all([
-    EmployeeBranchShiftModel.find()
+    EmployeeBranchShiftModel.find(assignmentFilter)
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-
-      .populate("employeeId", "firstName lastName role")
+      .populate("employeeId", "firstName lastName role email")
       .populate("branchId", "title")
       .populate("shiftId", "shiftName")
       .lean(),
-    EmployeeBranchShiftModel.countDocuments(),
+    EmployeeBranchShiftModel.countDocuments(assignmentFilter),
   ]);
 
   const totalPages = Math.ceil(total / limit);

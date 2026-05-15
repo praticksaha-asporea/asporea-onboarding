@@ -37,9 +37,12 @@ export default async function handler(
             return ResponseHandler.sendError(res, "Invalid limit (max 100)", 400);
 
         const keyword =
-            typeof req.query.keyword === "string" ? req.query.keyword : undefined;
+            typeof req.query.search === "string" ? req.query.search : undefined;
 
-        const data = await branchList({ keyword, page, limit });
+        const timeZone =
+            typeof req.query.timeZone === "string" ? req.query.timeZone : undefined;
+
+        const data = await branchList({ keyword, timeZone, page, limit });
 
         return ResponseHandler.sendSuccess(res, data, "Branch list fetched");
     } catch (error: unknown) {

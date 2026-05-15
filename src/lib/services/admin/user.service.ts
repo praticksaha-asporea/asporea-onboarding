@@ -8,7 +8,7 @@ import { hashPassword } from '../../utils/bcryptUtil';
 import mongoose from 'mongoose';
 import '../../models/Shift.model'
 import '../../models/Branch.model'
-import '../../models/User.model'
+import '../../models/User.model';
 
  
 // ─── Valid roles constant ─────────────────────────────────────────────────────
@@ -25,18 +25,33 @@ export type UserRole = typeof VALID_ROLES[number];
 export const userList = async ({
   role,
   keyword,
+  status,
   page = 1,
   limit = 10,
+  excludeId,
 }: FilterUserListQuery & {
   page?: number;
   limit?: number;
   keyword?: string;
+  status?: string;
+  excludeId?: string;
 }) => {
   const filter: Record<string, unknown> =
     role && VALID_ROLES.includes(role as UserRole)
       ? { role }
       : { role: { $in: VALID_ROLES } };
 
+  // Exclude the requesting admin from results and count
+  if (excludeId && mongoose.Types.ObjectId.isValid(excludeId)) {
+    filter._id = { $ne: new mongoose.Types.ObjectId(excludeId) };
+  }
+
+  // Status filter
+  if (status && ['active', 'inactive', 'deleted'].includes(status)) {
+    filter.status = status;
+  }
+
+  // Keyword search across name + email
   if (keyword && keyword.trim().length > 0) {
     const regex = new RegExp(keyword.trim(), 'i');
     filter.$or = [
@@ -54,7 +69,7 @@ export const userList = async ({
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    UserModel.countDocuments(filter),
+    UserModel.countDocuments(filter), // same filter — count also excludes self
   ]);
 
   const totalPages = Math.ceil(total / limit);

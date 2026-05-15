@@ -30,7 +30,7 @@ export default async function handler(
       ? parseInt(req.query.limit as string, 10)
       : 10;
     const keyword =
-      typeof req.query.keyword === "string" ? req.query.keyword : undefined;
+      typeof req.query.search === "string" ? req.query.search : undefined;
 
     const data = await shiftList({ keyword, page, limit });
     return ResponseHandler.sendSuccess(res, data, "Shift list fetched");

@@ -18,7 +18,7 @@ export const createAssignmentSchema = Joi.object({
   minuteOfSlots: Joi.number().min(5).optional(),
   // role is passed by the caller so Joi can enforce counterNo — stripped before DB save
   role: Joi.string().optional(),
-  counterNo: Joi.number().min(1).when("role", {
+  counterNo: Joi.number().when("role", {
     is: Joi.valid(...COUNTER_REQUIRED_ROLES),
     then: Joi.required().messages({
       "any.required": "Counter no is required for tac and coordinator",
