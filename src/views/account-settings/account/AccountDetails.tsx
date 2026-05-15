@@ -68,7 +68,7 @@ const AccountDetails = () => {
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
 
-  console.log(" REDUX STORE DATA:", reduxUser);
+  // console.log(" REDUX STORE DATA:", reduxUser);
 
   const [formData, setFormData] = useState<Data>(initialData);
   const [fileInput, setFileInput] = useState<string>("");
@@ -372,7 +372,7 @@ const AccountDetails = () => {
                 ) : (
                   "Save Changes"
                 )}
-              </Button>
+              </Button>            
             </Grid>
           </Grid>
         </form>

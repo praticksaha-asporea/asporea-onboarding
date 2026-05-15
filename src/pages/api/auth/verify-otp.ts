@@ -17,6 +17,8 @@ export default async function handler(
 
     const { identity, otp } = value;
     const data = await verifyOtpService(identity, otp);
+    // console.log(data,33333);
+
     return ResponseHandler.sendSuccess(res, data, "Login Success");
   } catch (err: any) {
     return ResponseHandler.sendError(res, err.message, err.statuscode || 500);
