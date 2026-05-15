@@ -13,7 +13,7 @@ const ModeChanger = () => {
   const { settings } = useSettings()
 
   useEffect(() => {
-      console.log(settings.mode);
+      // console.log(settings.mode);
 
     if (settings.mode) {
       

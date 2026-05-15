@@ -52,7 +52,7 @@ export const createBranch = async (body: any) => {
   });
   if (existing)
     throw new ApiError("Branch with this title already exists", 409);
-  console.log(body,8777);
+  // console.log(body,8777);
   
   const branch = await BranchModel.create({
     title,
@@ -63,7 +63,7 @@ export const createBranch = async (body: any) => {
     latitude,
     longitude
   });
-  console.log(branch,222222);
+  // console.log(branch,222222);
 
   return branch;
 };

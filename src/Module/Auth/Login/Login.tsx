@@ -329,12 +329,12 @@ const Login = ({ mode }: { mode: Mode }) => {
           </Box>
 
           <Box className="flex w-full justify-center gap-4 mb-4">
-            <Button
+            {/* <Button
               variant="text"
               onClick={() => router.push("/complete-profile")}
             >
               Skip Now
-            </Button>
+            </Button> */}
             <Button
               variant="contained"
               onClick={handleSavePasswordAndRedirect}

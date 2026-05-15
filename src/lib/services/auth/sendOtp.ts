@@ -23,7 +23,7 @@ function resolveChannelFromIdentity(
   }
   // Treat anything that looks like a phone number as WhatsApp-first, SMS fallback.
   // Callers can extend this logic if they need to distinguish the two.
-  return { channel: WHATSAPP_CHANNEL, destination: normalizedIdentity };
+  return { channel: SMS_CHANNEL, destination: normalizedIdentity };
 }
 
 export const sendOtpService = async (identity: string) => {
@@ -42,27 +42,28 @@ export const sendOtpService = async (identity: string) => {
 
   if (user) {
     // ── Registered user: prefer the field that matched the identity ──────────
-    if (user.email === normalizedIdentity) {
+    if (user.email === normalizedIdentity && user.notificationPreference?.email === true) {
       channel = EMAIL_CHANNEL;
       destination = user.email;
-    } else if (user.whatsappNumber === normalizedIdentity) {
-      channel = WHATSAPP_CHANNEL;
-      destination = user.whatsappNumber as string;
-    } else if (user.phoneNumber === normalizedIdentity) {
+    } else if (user.phoneNumber === normalizedIdentity && user.notificationPreference?.sms === true) {
       channel = SMS_CHANNEL;
       destination = user.phoneNumber as string;
+    } else if (user.whatsappNumber === normalizedIdentity && user.notificationPreference?.whatsapp === true) {
+      channel = WHATSAPP_CHANNEL;
+      destination = user.whatsappNumber as string;
     } else if (isEmail(normalizedIdentity) && user.email) {
       channel = EMAIL_CHANNEL;
       destination = user.email;
-    } else if (user.whatsappNumber) {
-      channel = WHATSAPP_CHANNEL;
-      destination = user.whatsappNumber;
     } else if (user.phoneNumber) {
       channel = SMS_CHANNEL;
       destination = user.phoneNumber;
+    } else if (user.whatsappNumber) {
+      channel = WHATSAPP_CHANNEL;
+      destination = user.whatsappNumber;
     } else {
       throw new Error("No valid delivery channel found for this user");
     }
+
   } else {
     // ── Guest / unregistered: send directly to the provided identity ─────────
     ({ channel, destination } = resolveChannelFromIdentity(normalizedIdentity));
@@ -71,14 +72,13 @@ export const sendOtpService = async (identity: string) => {
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = new Date(
     Date.now() +
-      parseInt(process.env.LOGIN_OTP_EXPIRES_MINUTES || "10", 10) *
-        60 *
-        1000,
+    parseInt(process.env.LOGIN_OTP_EXPIRES_MINUTES || "10", 10) *
+    60 *
+    1000,
   );
 
-  const message = `Your verification code is ${otpCode}. It expires in ${
-    process.env.LOGIN_OTP_EXPIRES_MINUTES || "10"
-  } minutes.`;
+  const message = `Your verification code is ${otpCode}. It expires in ${process.env.LOGIN_OTP_EXPIRES_MINUTES || "10"
+    } minutes.`;
 
   if (channel === EMAIL_CHANNEL) {
     await sendMail({
@@ -113,6 +113,7 @@ export const sendOtpService = async (identity: string) => {
           code: otpCode,
           expiresAt,
           sentTo: destination,
+          channel
         },
       },
       { upsert: true, returnDocument: "after" },
@@ -125,6 +126,7 @@ export const sendOtpService = async (identity: string) => {
           code: otpCode,
           expiresAt,
           sentTo: destination,
+          channel
         },
       },
       { upsert: true, returnDocument: "after" },

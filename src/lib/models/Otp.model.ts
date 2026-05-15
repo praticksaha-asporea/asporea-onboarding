@@ -23,7 +23,8 @@ const OtpSchema = new Schema<IOtp>(
     otp: {
       code: String,
       expiresAt: Date,
-      sentTo: String
+      sentTo: String,
+      channel: String
     },
   },
   { timestamps: true }
