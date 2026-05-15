@@ -20,6 +20,7 @@ import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
+import Divider from "@mui/material/Divider";
 
 type Data = {
   firstName: string;
@@ -95,7 +96,8 @@ const AccountDetails = () => {
           timezone: reduxUser.timezone || "gmt-0530",
           currency: reduxUser.currency || "inr",
           passportStatus: reduxUser.passportStatus || "not",
-          passportNumber: reduxUser.passportNumber || "",
+          passportNumber:
+            reduxUser.passportNo || reduxUser.passportNumber || "",
           experienceInMonths: reduxUser.experienceInMonths || "",
           bio: reduxUser.bio || "",
         });
@@ -170,24 +172,40 @@ const AccountDetails = () => {
     setFileInput("");
     setImgSrc("/images/avatars/1.png");
   };
-
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
     setUpdating(true);
+
     try {
-      const token = Cookies.get("accessToken");
-      if (!token) return;
+      const userId = reduxUser?.id || reduxUser?._id;
 
-      const payloadBase64 = token.split(".")[1];
-      const decodedPayload = JSON.parse(atob(payloadBase64));
-      const userId = decodedPayload.userId || decodedPayload.id;
+      if (!userId) {
+        alert("Session expired. Please login again.");
+        return;
+      }
 
-      const res = await axiosClient.put(`/user/update?id=${userId}`, formData);
+      const payload = {
+        id: userId,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        phoneNumber: formData.phoneNumber,
+        whatsappNumber: formData.whatsappNumber,
+        address: formData.address,
+
+        passportStatus: formData.passportStatus,
+
+        passportNo:
+          formData.passportStatus === "having" ? formData.passportNumber : "",
+
+        enquired: "yes",
+      };
+
+      const res = await axiosClient.patch(`/user/profile-update`, payload);
 
       if (res.data?.success) {
         alert("Profile Updated Successfully! 🎉");
-
-        dispatch(updateUserData(formData));
+        dispatch(updateUserData(res.data.data));
       }
     } catch (error) {
       console.error("Update Profile Error:", error);
@@ -319,17 +337,18 @@ const AccountDetails = () => {
               </FormControl>
             </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
-                label="Passport Number"
-                value={formData.passportNumber}
-                onChange={(e) =>
-                  handleFormChange("passportNumber", e.target.value)
-                }
-                disabled={formData.passportStatus !== "having"}
-              />
-            </Grid>
+            {formData.passportStatus === "having" && (
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <TextField
+                  fullWidth
+                  label="Passport Number"
+                  value={formData.passportNumber}
+                  onChange={(e) =>
+                    handleFormChange("passportNumber", e.target.value)
+                  }
+                />
+              </Grid>
+            )}
 
             <Grid size={{ xs: 12, sm: 12 }}>
               <TextField
@@ -340,6 +359,18 @@ const AccountDetails = () => {
                 aria-colspan={3}
                 onChange={(e) => handleFormChange("address", e.target.value)}
               />
+            </Grid>
+
+            <Grid size={14}>
+              <Typography
+                variant="h6"
+                color="text.primary"
+                sx={{ mt: 4, mb: 1, fontWeight: 600 }}
+              >
+                Professional Experience
+              </Typography>
+
+              <Divider sx={{ mb: 2 }} />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>

@@ -2,7 +2,8 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 // 1. UserData mein profile ke saare fields optional (?) karke daal diye
 export interface UserData {
-  id: string;
+  id?: string;
+  _id?: string;
   email: string;
   role?: string;
   firstName?: string;
@@ -18,9 +19,18 @@ export interface UserData {
   timezone?: string;
   currency?: string;
   passportStatus?: string;
-  passportNumber?: string;
+  passportNo?: string;
   experienceInMonths?: string | number;
   bio?: string;
+  enquired?: string;     
+  status?: string;        
+  createdAt?: string;
+  updatedAt?: string;
+  notificationPreference?: {
+    sms: boolean;
+    whatsapp: boolean;
+    email: boolean;
+  };
 }
 
 interface UserState {
@@ -38,7 +48,7 @@ export const userSlice = createSlice({
     setUserData: (state, action: PayloadAction<{ userData: UserData }>) => {
       state.userData = action.payload.userData;
     },
-    // 👇 NAYA ACTION: Profile update karne ke liye
+   
     updateUserData: (state, action: PayloadAction<Partial<UserData>>) => {
       if (state.userData) {
         state.userData = { ...state.userData, ...action.payload };
