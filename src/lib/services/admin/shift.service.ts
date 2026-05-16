@@ -123,3 +123,14 @@ export const updateShift = async (shiftId: string, body: any) => {
   const updatedSchedules = await ShiftScheduleModel.find({ shiftId }).lean();
   return { ...shift.toObject(), schedules: updatedSchedules };
 };
+
+export const deleteShift = async (shiftId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(shiftId))
+    throw new ApiError("Invalid shift ID", 400);
+
+  const deleted =
+    await ShiftModel.findByIdAndDelete(shiftId);
+  if (!deleted) throw new ApiError("Shift not found", 404);
+
+  return { message: "Shift deleted successfully" };
+};

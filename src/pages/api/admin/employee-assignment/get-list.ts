@@ -30,7 +30,17 @@ export default async function handler(
       ? parseInt(req.query.limit as string, 10)
       : 10;
 
-    const data = await assignmentList({ page, limit });
+    if (isNaN(page) || page <= 0)
+      return ResponseHandler.sendError(res, "Invalid page number", 400);
+    if (isNaN(limit) || limit <= 0 || limit > 100)
+      return ResponseHandler.sendError(res, "Invalid limit (max 100)", 400);
+
+    const search =
+      typeof req.query.search === "string" ? req.query.search : undefined;
+    const role =
+      typeof req.query.role === "string" ? req.query.role : undefined;
+
+    const data = await assignmentList({ page, limit, search, role });
     return ResponseHandler.sendSuccess(
       res,
       data,

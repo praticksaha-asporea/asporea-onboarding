@@ -1,47 +1,52 @@
-import User,{IUser} from '@/lib/models/User.model';
+import User, { IUser } from '@/lib/models/User.model';
 import { generateTokens } from '@/lib/utils/tokenUtil';
 import { comparePassword } from '@/lib/utils/bcryptUtil';
 import { ApiError } from '@/lib/error/api.error';
 
 interface LoginBody {
-  email:string;
-  password:string;
+  identity: string;
+  password: string;
 }
-export const login = async (body:LoginBody ) => {
-  const { email, password } = body;
 
-  const user: IUser | null = await User.findOne({ email }).select("+password") ;
-  // console.log(user,5844);
-  
-   if(!user){
-    throw new ApiError("User not found Please Type Correct Email",404)
-   }
+export const login = async (body: LoginBody) => {
+  const { identity, password } = body;
 
-   if(!user.password) {
-    throw new ApiError('Password not set',400);
-   }
+  const isPhone = /^[0-9]{10}$/.test(identity);
 
-   const isMatch = await comparePassword(password,user.password);
+  const user: IUser | null = await User.findOne(
+    isPhone
+      ? { phoneNumber: identity }
+      : { email: identity.toLowerCase().trim() },
+  ).select('+password');
 
-   if(!isMatch) {
-    throw new ApiError("Incorrect Password",401)
-   }
+  if (!user) {
+    throw new ApiError('User not found', 404);
+  }
 
-   if(user.role==="admin")
-   {
-    throw new ApiError("Please login on admin portal",401)
-   }
+  if (!user.password) {
+    throw new ApiError('Password not set', 400);
+  }
 
-   const tokens = await generateTokens({
+  const isMatch = await comparePassword(password, user.password);
+  if (!isMatch) {
+    throw new ApiError('Incorrect password', 401);
+  }
+
+  if (user.role === 'admin') {
+    throw new ApiError('Please login on admin portal', 401);
+  }
+
+  const tokens = await generateTokens({
     _id: String(user._id),
-    role: String(user.role)
-   });
+    role: String(user.role),
+  });
 
-   return {
-    user:{
-      id:user._id,
-      email:user.email,
-    },  
-    tokens
-   }
+  return {
+    user: {
+      id: user._id,
+      email: user.email,
+      phoneNumber: user.phoneNumber,
+    },
+    tokens,
+  };
 };

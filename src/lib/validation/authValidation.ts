@@ -79,7 +79,13 @@ export const registerSchema = Joi.object({
 }).options({ abortEarly: false, allowUnknown: false });
 
 export const loginSchema = Joi.object({
-  email: emailSchema,
+  identity: Joi.alternatives()
+    .try(
+      Joi.string().email().lowercase().trim().messages({ "string.email": "Invalid email format" }),
+      Joi.string().pattern(/^[0-9]{10}$/).messages({ "string.pattern.base": "Phone number must be exactly 10 digits" }),
+    )
+    .required()
+    .messages({ "alternatives.match": "Must be a valid email or 10-digit phone number" }),
   password: Joi.string().required(),
 })
   .options({ abortEarly: false })

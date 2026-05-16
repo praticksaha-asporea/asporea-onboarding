@@ -23,6 +23,10 @@ export const adminLoginService = async (body: AdminLoginInput) => {
     if (!(await comparePassword(password, admin.password as string))) {
       throw new ApiError('Invalid credentials', 401);
     }
+     if(admin.role!=="admin")
+      {
+      throw new ApiError("Admin only allowed",401)
+      }
     const tokens = await generateTokens({
       _id: String(admin._id),
       role: "admin"

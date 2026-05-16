@@ -6,16 +6,17 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { shiftList } from "@/lib/services/admin/shift.service";
+import { deleteAssignment } from "@/lib/services/admin/employeeAssignment.service";
 import { applyCors } from "@/lib/cors";
+import { deleteShift } from "@/lib/services/admin/shift.service";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await connectToDatabase();
-    if (applyCors(req, res)) return;
-    if (req.method !== "GET")
+  if (applyCors(req, res)) return;  
+  if (req.method !== "DELETE")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
 
   try {
@@ -25,15 +26,15 @@ export default async function handler(
     if (authUser.role !== "admin")
       throw new ApiError("Admin access required", 403);
 
-    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
-    const limit = req.query.limit
-      ? parseInt(req.query.limit as string, 10)
-      : 10;
-    const keyword =
-      typeof req.query.search === "string" ? req.query.search : undefined;
+    const shiftId = req.query.id as string;
+    if (!shiftId) throw new ApiError("Shift ID is required", 400);
 
-    const data = await shiftList({ keyword, page, limit });
-    return ResponseHandler.sendSuccess(res, data, "Shift list fetched");
+    const data = await deleteShift(shiftId);
+    return ResponseHandler.sendSuccess(
+      res,
+      data,
+      "Shift deleted successfully",
+    );
   } catch (error: unknown) {
     if (error instanceof ApiError)
       return ResponseHandler.sendError(

@@ -4,10 +4,12 @@ import mongoose from "mongoose";
 
 export const branchList = async ({
   keyword,
+  timeZone,
   page = 1,
   limit = 10,
 }: {
   keyword?: string;
+  timeZone?: string;
   page?: number;
   limit?: number;
 }) => {
@@ -16,6 +18,10 @@ export const branchList = async ({
   if (keyword && keyword.trim().length > 0) {
     const regex = new RegExp(keyword.trim(), "i");
     filter.$or = [{ title: regex }, { location: regex }];
+  }
+
+  if (timeZone && timeZone.trim().length > 0) {
+    filter.timeZone = timeZone.trim();
   }
 
   const skip = (page - 1) * limit;
