@@ -1,7 +1,12 @@
 "use client";
 
-import { useState, useEffect, ChangeEvent, FormEvent } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "react-hot-toast";
+
+// Formik & Yup Imports
+import { useFormik } from "formik";
+import * as yup from "yup";
 
 // MUI Imports
 import Grid from "@mui/material/Grid";
@@ -16,7 +21,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Box from "@mui/material/Box";
-import type { SelectChangeEvent } from "@mui/material/Select";
 import axios from "axios";
 
 type Data = {
@@ -55,26 +59,102 @@ const initialData: Data = {
   passportNumber: "",
 };
 
+// 🛡️ STRICT YUP VALIDATION SCHEMA
+const validationSchema = yup.object({
+  firstName: yup
+    .string()
+    .matches(/^[A-Za-z\s]+$/, "Only alphabets allowed (no numbers)")
+    .min(2, "Min 2 characters required")
+    .required("First name is required"),
+  lastName: yup
+    .string()
+    .matches(/^[A-Za-z\s]+$/, "Only alphabets allowed (no numbers)")
+    .required("Last name is required"),
+  email: yup
+    .string()
+    .email("Invalid email format")
+    .required("Email is required"),
+  phoneNumber: yup
+    .string()
+    .matches(/^[0-9]{10}$/, "Enter exactly 10 digits (no words/letters)")
+    .required("Phone number is required"),
+  whatsappNumber: yup
+    .string()
+    .matches(/^[0-9]{10}$/, "Enter exactly 10 digits")
+    .notRequired(),
+  passportStatus: yup.string(),
+  passportNumber: yup.string().when("passportStatus", {
+    is: "having",
+    then: (schema) =>
+      schema
+        .matches(/^[A-Z][0-9]{7}$/, "Format: 1 Letter + 7 Digits (e.g., Z1234567)")
+        .required("Passport number is required"),
+    otherwise: (schema) => schema.notRequired(),
+  }),
+  address: yup.string().required("Address is required"),
+});
+
 export default function CompleteProfilePage() {
   const router = useRouter();
-  const [formData, setFormData] = useState<Data>(initialData);
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
   const [loading, setLoading] = useState(false);
+  const [verifiedChannel, setVerifiedChannel] = useState<"email" | "sms" | "">("");
 
-  // Jab page load ho, toh LocalStorage se Email utha kar form me bhar do
+  // 🚀 TERA WAPAS AAYA HUA handleRegisterUser FUNCTION
+  const handleRegisterUser = async (values: Data) => {
+    setLoading(true);
+    const password = localStorage.getItem("temp_register_password");
+
+    const payload = {
+      ...values,
+      passportNumber:
+        values.passportStatus === "having" ? values.passportNumber : "",
+      password,
+    };
+
+    try {
+      const res = await axios.post("/api/auth/register", payload);
+
+      if (res.data?.success) {
+        localStorage.removeItem("temp_register_email");
+        localStorage.removeItem("temp_register_password");
+        toast.success("Profile completed! Redirecting to login...", {
+          duration: 2000,
+        });
+        setTimeout(() => {
+          router.push("/login");
+        }, 4000);
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err.response?.data?.message || "Registration failed!");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🚀 FORMIK SETUP
+  const formik = useFormik({
+    initialValues: initialData,
+    validationSchema: validationSchema,
+    onSubmit: handleRegisterUser, // Yahan humne apna function Formik ko de diya!
+  });
+
   useEffect(() => {
-    const savedEmail = localStorage.getItem("temp_register_email");
-    if (savedEmail) {
-      setFormData((prev) => ({ ...prev, email: savedEmail }));
+    const savedIdentity = localStorage.getItem("temp_register_email");
+
+    if (savedIdentity) {
+      const isEmail = savedIdentity.includes("@");
+      setVerifiedChannel(isEmail ? "email" : "sms");
+
+      formik.setFieldValue("email", isEmail ? savedIdentity : "");
+      formik.setFieldValue("phoneNumber", !isEmail ? savedIdentity : "");
     } else {
       router.push("/login");
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
-
-  const handleFormChange = (field: keyof Data, value: string) => {
-    setFormData({ ...formData, [field]: value });
-  };
 
   const handleFileInputChange = (file: ChangeEvent) => {
     const reader = new FileReader();
@@ -88,54 +168,19 @@ export default function CompleteProfilePage() {
     }
   };
 
-  // 🚀 MAIN REGISTRATION API CALL 🚀
-  const handleRegisterUser = async (e: FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-
-    const email = localStorage.getItem("temp_register_email") || formData.email;
-    const password = localStorage.getItem("temp_register_password");
-
-    const payload = {
-      ...formData,
-      email,
-      password,
-    };
-
-    try {
-       
-      const res = await axios.post("/api/auth/register", payload);
-
-      if (res.data?.success) {
-         
-        localStorage.removeItem("temp_register_email");
-        localStorage.removeItem("temp_register_password");
-
-       
-        router.push("/inquiry");
-      }
-    } catch (err: any) {
-      console.error(err);
-      alert(
-        err.response?.data?.message ||
-          "Something went wrong during registration.",
-      );
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   const handleFileInputReset = () => {
-    setFileInput('')
-    setImgSrc('/images/avatars/1.png')
-  }
-
+    setFileInput("");
+    setImgSrc("/images/avatars/1.png");
+  };
 
   return (
     <Box className="min-h-screen bg-gray-50 flex items-center justify-center p-4 sm:p-8">
       <Card className="w-full max-w-4xl shadow-xl rounded-2xl">
         <Box className="p-6 text-center border-b border-gray-100 bg-white rounded-t-2xl">
-          <Typography variant="h5" className="font-semibold tracking-wide text-gray-500">
+          <Typography
+            variant="h5"
+            className="font-semibold tracking-wide text-gray-500"
+          >
             Complete Your Profile
           </Typography>
           <Typography className="text-gray-500 mt-2">
@@ -143,61 +188,92 @@ export default function CompleteProfilePage() {
           </Typography>
         </Box>
 
-        <CardContent className="p-6 sm:p-10  bg-white rounded-b-2xl">
-           <div className='flex max-sm:flex-col mb-4 items-center gap-6'>
-                     <img height={100} width={100} className='rounded' src={imgSrc} alt='Profile' />
-                     <div className='flex flex-grow flex-col gap-4'>
-                       <div className='flex flex-col sm:flex-row gap-4'>
-                         <Button component='label' size='small' variant='contained' htmlFor='account-settings-upload-image'>
-                           Upload New Photo
-                           <input
-                             hidden
-                             type='file'
-                             value={fileInput}
-                             accept='image/png, image/jpeg'
-                             onChange={handleFileInputChange}
-                             id='account-settings-upload-image'
-                           />
-                         </Button>
-                         <Button size='small' variant='outlined' color='error' onClick={handleFileInputReset}>
-                           Reset
-                         </Button>
-                       </div>
-                       <Typography>Allowed JPG, GIF or PNG. Max size of 800K</Typography>
-                     </div>
-                   </div>
+        <CardContent className="p-6 sm:p-10 bg-white rounded-b-2xl">
+          <div className="flex max-sm:flex-col mb-4 items-center gap-6">
+            <img
+              height={100}
+              width={100}
+              className="rounded"
+              src={imgSrc}
+              alt="Profile"
+            />
+            <div className="flex flex-grow flex-col gap-4">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button
+                  component="label"
+                  size="small"
+                  variant="contained"
+                  htmlFor="account-settings-upload-image"
+                >
+                  Upload New Photo
+                  <input
+                    hidden
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={handleFileInputChange}
+                    id="account-settings-upload-image"
+                  />
+                </Button>
+                <Button
+                  size="small"
+                  variant="outlined"
+                  color="error"
+                  onClick={handleFileInputReset}
+                >
+                  Reset
+                </Button>
+              </div>
+              <Typography>Allowed JPG, GIF or PNG. Max size of 800K</Typography>
+            </div>
+          </div>
 
-          <form onSubmit={handleRegisterUser}>
+          <form onSubmit={formik.handleSubmit} noValidate>
             <Grid container spacing={4}>
-              
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   required
+                  id="firstName"
+                  name="firstName"
                   label="First Name"
-                  value={formData.firstName}
-                  onChange={(e) =>
-                    handleFormChange("firstName", e.target.value)
-                  }
+                  value={formik.values.firstName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.firstName && Boolean(formik.errors.firstName)}
+                  helperText={formik.touched.firstName && formik.errors.firstName}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
                   required
+                  id="lastName"
+                  name="lastName"
                   label="Last Name"
-                  value={formData.lastName}
-                  onChange={(e) => handleFormChange("lastName", e.target.value)}
+                  value={formik.values.lastName}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.lastName && Boolean(formik.errors.lastName)}
+                  helperText={formik.touched.lastName && formik.errors.lastName}
                 />
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
+                  id="email"
+                  name="email"
                   label="Email"
-                  value={formData.email}
-                  disabled
-                  helperText="Verified via OTP"
+                  value={formik.values.email}
+                  disabled={verifiedChannel === "email"}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.email && Boolean(formik.errors.email)}
+                  helperText={
+                    (formik.touched.email && formik.errors.email) ||
+                    (verifiedChannel === "email" ? "Verified via OTP" : "")
+                  }
+                  required={verifiedChannel !== "email"}
                 />
               </Grid>
 
@@ -206,11 +282,18 @@ export default function CompleteProfilePage() {
                   fullWidth
                   type="tel"
                   required
+                  id="phoneNumber"
+                  name="phoneNumber"
                   label="Phone Number"
-                  value={formData.phoneNumber}
                   placeholder="+91 9876543210"
-                  onChange={(e) =>
-                    handleFormChange("phoneNumber", e.target.value)
+                  value={formik.values.phoneNumber}
+                  disabled={verifiedChannel === "sms"}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)}
+                  helperText={
+                    (formik.touched.phoneNumber && formik.errors.phoneNumber) ||
+                    (verifiedChannel === "sms" ? "Verified via OTP" : "")
                   }
                 />
               </Grid>
@@ -219,12 +302,15 @@ export default function CompleteProfilePage() {
                 <TextField
                   fullWidth
                   type="tel"
+                  id="whatsappNumber"
+                  name="whatsappNumber"
                   label="WhatsApp Number"
-                  value={formData.whatsappNumber}
                   placeholder="+91 9876543210"
-                  onChange={(e) =>
-                    handleFormChange("whatsappNumber", e.target.value)
-                  }
+                  value={formik.values.whatsappNumber}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.whatsappNumber && Boolean(formik.errors.whatsappNumber)}
+                  helperText={formik.touched.whatsappNumber && formik.errors.whatsappNumber}
                 />
               </Grid>
 
@@ -232,11 +318,17 @@ export default function CompleteProfilePage() {
                 <FormControl fullWidth>
                   <InputLabel>Having Passport</InputLabel>
                   <Select
+                    id="passportStatus"
+                    name="passportStatus"
                     label="Having Passport"
-                    value={formData.passportStatus}
-                    onChange={(e) =>
-                      handleFormChange("passportStatus", e.target.value)
-                    }
+                    value={formik.values.passportStatus}
+                    onChange={(e) => {
+                      formik.handleChange(e);
+                      if (e.target.value !== "having") {
+                        formik.setFieldValue("passportNumber", "");
+                      }
+                    }}
+                    onBlur={formik.handleBlur}
                   >
                     <MenuItem value="having">Yes</MenuItem>
                     <MenuItem value="not">No</MenuItem>
@@ -245,44 +337,39 @@ export default function CompleteProfilePage() {
                 </FormControl>
               </Grid>
 
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Passport Number"
-                  value={formData.passportNumber}
-                  placeholder="Z1234567"
-                  onChange={(e) =>
-                    handleFormChange("passportNumber", e.target.value)
-                  }
-                   disabled={formData.passportStatus !== 'having'}
-                />
-              </Grid>
-
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <FormControl fullWidth>
-                  <InputLabel>Country</InputLabel>
-                  <Select
-                    label="Country"
-                    value={formData.country}
-                    onChange={(e) =>
-                      handleFormChange("country", e.target.value)
-                    }
-                  >
-                    <MenuItem value="india">India</MenuItem>
-                    <MenuItem value="usa">USA</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
+              {formik.values.passportStatus === "having" && (
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="passportNumber"
+                    name="passportNumber"
+                    label="Passport Number"
+                    placeholder="Z1234567"
+                    value={formik.values.passportNumber}
+                    onChange={(e) => {
+                      formik.setFieldValue("passportNumber", e.target.value.toUpperCase());
+                    }}
+                    onBlur={formik.handleBlur}
+                    error={formik.touched.passportNumber && Boolean(formik.errors.passportNumber)}
+                    helperText={formik.touched.passportNumber && formik.errors.passportNumber}
+                  />
+                </Grid>
+              )}
 
               <Grid size={{ xs: 12 }}>
                 <TextField
                   fullWidth
+                  id="address"
+                  name="address"
                   label="Address"
-                  value={formData.address}
                   placeholder="123 Talent Lane..."
                   multiline
                   rows={3}
-                  onChange={(e) => handleFormChange("address", e.target.value)}
+                  value={formik.values.address}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={formik.touched.address && Boolean(formik.errors.address)}
+                  helperText={formik.touched.address && formik.errors.address}
                 />
               </Grid>
 

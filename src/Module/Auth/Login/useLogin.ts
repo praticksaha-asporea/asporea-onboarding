@@ -7,7 +7,8 @@ import {
   sendOtpApi,
   verifyOtpApi,
 } from "@/Services/APIs/auth/auth.actions";
-import { setUserData, UserData } from "@/Redux/Auth/user.slice";
+import { setUserData, updateUserData, UserData } from "@/Redux/Auth/user.slice";
+import toast from "react-hot-toast";
 
 export function useLogin() {
   const router = useRouter();
@@ -41,7 +42,7 @@ export function useLogin() {
 
   const handlePasswordLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!identity || !password) return alert("Please enter email and password");
+    
 
     try {
       setLoading(true);
@@ -61,7 +62,7 @@ export function useLogin() {
       }
     } catch (err: any) {
       console.error("Login Error:", err);
-      alert(err.response?.data?.message || "Login failed");
+       
     } finally {
       setLoading(false);
     }
@@ -76,11 +77,11 @@ export function useLogin() {
 
       if (res.data?.success) {
         setSendOtp(true);
-        alert("OTP Sent! (Check Terminal Console)");
+         toast.success("OTP Sent! Successfully");
       }
     } catch (err: any) {
       console.error("Send OTP Error:", err);
-      alert(err.response?.data?.message || "Failed to send OTP");
+      toast.error(err.response?.data?.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -91,25 +92,36 @@ export function useLogin() {
       setLoading(true);
       const res = await verifyOtpApi({ identity, otp });
 
-      if (res.data?.success) {
-        const isRegistered = res.data.data.isRegistered;
+     if (res.data?.success) {
+      toast.success("OTP Verified Successfully!", { duration: 3000 });
+        const responseData = res.data.data;
+        const isRegistered = responseData.isRegistered;
+
+        
+        dispatch(updateUserData({
+          isRegistered: responseData.isRegistered,
+          verifiedIdentity: responseData.verifiedIdentity,
+          channel: responseData.channel
+        }));
 
         if (isRegistered) {
-          const { tokens, user } = res.data.data;
+          const { tokens, user } = responseData;
           Cookies.set("accessToken", tokens.accessToken);
           if (tokens.refreshToken)
             Cookies.set("refreshToken", tokens.refreshToken);
 
+          
           if (user) dispatch(setUserData({ userData: user as UserData }));
 
           router.push("/inquiry");
         } else {
+         
           setShowSetupPassword(true);
         }
       }
     } catch (err: any) {
       console.error("Verify OTP Error:", err);
-      alert(err.response?.data?.message || "Invalid OTP");
+      
     } finally {
       setLoading(false);
     }

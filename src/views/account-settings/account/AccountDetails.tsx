@@ -1,5 +1,7 @@
 "use client";
 
+import { useFormik } from "formik";
+import { profileValidationSchema } from "@/Validations/profileValidation"
 import { useState, useEffect } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 
@@ -21,6 +23,7 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
+import toast from "react-hot-toast";
 
 type Data = {
   firstName: string;
@@ -69,24 +72,31 @@ const AccountDetails = () => {
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
 
-  // console.log(" REDUX STORE DATA:", reduxUser);
+  console.log(" REDUX STORE DATA:", reduxUser);
 
   const [formData, setFormData] = useState<Data>(initialData);
+  const [errors, setErrors] = useState<Partial<Record<keyof Data, string>>>({});
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
 
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
-
   useEffect(() => {
     const fetchAndSetData = async () => {
-      if (reduxUser && reduxUser.firstName) {
+      if (reduxUser && (reduxUser.firstName || reduxUser.verifiedIdentity)) {
+        const isEmailChannel = reduxUser.channel === "email";
+        const isSmsChannel = reduxUser.channel === "sms";
+        const identity = reduxUser.verifiedIdentity || "";
+
         setFormData({
           firstName: reduxUser.firstName || "",
           lastName: reduxUser.lastName || "",
-          email: reduxUser.email || "",
+
+          email: isEmailChannel ? identity : reduxUser.email || "",
           organization: reduxUser.organization || "",
-          phoneNumber: reduxUser.phoneNumber || "",
+
+          phoneNumber: isSmsChannel ? identity : reduxUser.phoneNumber || "",
+
           whatsappNumber: reduxUser.whatsappNumber || "",
           address: reduxUser.address || "",
           state: reduxUser.state || "",
@@ -153,7 +163,48 @@ const AccountDetails = () => {
     fetchAndSetData();
   }, [reduxUser, dispatch]);
 
+   
+  const validate = () => {
+    let tempErrors: Partial<Record<keyof Data, string>> = {};
+
+    // First Name
+    if (!formData.firstName.trim()) tempErrors.firstName = "First name is required";
+    else if (!/^[a-zA-Z\s]{2,}$/.test(formData.firstName)) tempErrors.firstName = "Enter a valid name";
+
+    // Last Name
+    if (!formData.lastName.trim()) tempErrors.lastName = "Last name is required";
+    else if (!/^[a-zA-Z\s]{2,}$/.test(formData.lastName)) tempErrors.lastName = "Enter a valid name";
+
+    // Phone Number
+    if (!String(formData.phoneNumber).trim()) tempErrors.phoneNumber = "Phone number is required";
+    else if (!/^\d{10}$/.test(String(formData.phoneNumber))) tempErrors.phoneNumber = "Enter exactly 10 digits";
+
+    // 👇 WHATSAPP VALIDATION
+    if (!String(formData.whatsappNumber).trim()) {
+      tempErrors.whatsappNumber = "WhatsApp number is required";
+    } else if (!/^\d{10}$/.test(String(formData.whatsappNumber))) {
+      tempErrors.whatsappNumber = "Enter exactly 10 digits";
+    }
+
+    // Passport
+    if (formData.passportStatus === "having") {
+      if (!formData.passportNumber) tempErrors.passportNumber = "Passport number is required";
+      else if (!/^[A-Z][0-9]{7}$/.test(formData.passportNumber)) {
+        tempErrors.passportNumber = "Format: 1 Letter + 7 Digits (e.g., Z1234567)";
+      }
+    }
+
+    // Address
+    if (!formData.address.trim()) tempErrors.address = "Address is required";
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
+    if (errors[field]) {
+      setErrors({ ...errors, [field]: "" });
+    }
     setFormData({ ...formData, [field]: value });
   };
 
@@ -172,15 +223,22 @@ const AccountDetails = () => {
     setFileInput("");
     setImgSrc("/images/avatars/1.png");
   };
+
   const handleUpdateProfile = async (e: FormEvent) => {
     e.preventDefault();
+
+    
+    if (!validate()) {
+      return; 
+    }
+
     setUpdating(true);
 
     try {
       const userId = reduxUser?.id || reduxUser?._id;
 
       if (!userId) {
-        alert("Session expired. Please login again.");
+        toast.error("Session expired. Please login again.");
         return;
       }
 
@@ -192,24 +250,22 @@ const AccountDetails = () => {
         phoneNumber: formData.phoneNumber,
         whatsappNumber: formData.whatsappNumber,
         address: formData.address,
-
         passportStatus: formData.passportStatus,
-
-        passportNo:
-          formData.passportStatus === "having" ? formData.passportNumber : "",
-
+        passportNo: formData.passportStatus === "having" ? formData.passportNumber : "",
         enquired: "yes",
       };
 
       const res = await axiosClient.patch(`/user/profile-update`, payload);
 
       if (res.data?.success) {
-        alert("Profile Updated Successfully! 🎉");
+        toast.success("Profile Updated Successfully!", {
+          duration: 3000,
+        });
         dispatch(updateUserData(res.data.data));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update Profile Error:", error);
-      alert("Failed to update profile.");
+     
     } finally {
       setUpdating(false);
     }
@@ -275,6 +331,8 @@ const AccountDetails = () => {
                 fullWidth
                 label="First Name"
                 value={formData.firstName}
+                error={!!errors.firstName}
+                helperText={errors.firstName}
                 onChange={(e) => handleFormChange("firstName", e.target.value)}
               />
             </Grid>
@@ -283,6 +341,8 @@ const AccountDetails = () => {
                 fullWidth
                 label="Last Name"
                 value={formData.lastName}
+                error={!!errors.lastName}
+                helperText={errors.lastName}
                 onChange={(e) => handleFormChange("lastName", e.target.value)}
               />
             </Grid>
@@ -303,6 +363,8 @@ const AccountDetails = () => {
                 type="number"
                 label="Phone Number"
                 value={formData.phoneNumber}
+                error={!!errors.phoneNumber}
+                helperText={errors.phoneNumber}
                 onChange={(e) =>
                   handleFormChange("phoneNumber", e.target.value)
                 }
@@ -314,6 +376,8 @@ const AccountDetails = () => {
                 type="number"
                 label="Whatsapp Number"
                 value={formData.whatsappNumber}
+                error={!!errors.whatsappNumber}
+                helperText={errors.whatsappNumber}
                 onChange={(e) =>
                   handleFormChange("whatsappNumber", e.target.value)
                 }
@@ -403,7 +467,7 @@ const AccountDetails = () => {
                 ) : (
                   "Save Changes"
                 )}
-              </Button>            
+              </Button>
             </Grid>
           </Grid>
         </form>

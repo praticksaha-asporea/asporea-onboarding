@@ -16,6 +16,7 @@ import CircularProgress from "@mui/material/CircularProgress";
 
 // Style Imports
 import tableStyles from "@core/styles/table.module.css";
+import toast from "react-hot-toast";
 
 const NotificationsTab = () => {
   const dispatch = useDispatch();
@@ -74,11 +75,11 @@ const NotificationsTab = () => {
           }),
         );
 
-        alert("Notification Preferences Saved Successfully! 🎉");
+        toast.success("Notification Preferences Saved Successfully!");
       }
     } catch (error) {
       console.error("Failed to update preferences:", error);
-      alert("Failed to update preferences.");
+       
     } finally {
       setUpdating(false);
     }

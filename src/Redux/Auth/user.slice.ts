@@ -10,6 +10,9 @@ export interface UserData {
   lastName?: string;
   organization?: string;
   phoneNumber?: string | number;
+  isRegistered?: boolean;
+  verifiedIdentity?: string;
+  channel?: 'sms' | 'email' | string;
   whatsappNumber?: string | number;
   address?: string;
   state?: string;

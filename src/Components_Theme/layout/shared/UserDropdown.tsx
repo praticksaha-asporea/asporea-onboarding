@@ -6,7 +6,8 @@ import type { MouseEvent } from 'react'
 
 // Next Imports
 import { useRouter } from 'next/navigation'
-
+import Cookies from 'js-cookie'
+import { signOut } from 'next-auth/react'
 // MUI Imports
 import { styled } from '@mui/material/styles'
 import Badge from '@mui/material/Badge'
@@ -55,6 +56,31 @@ const UserDropdown = () => {
     }
 
     setOpen(false)
+  }
+
+  const handleUserLogout = async () => {
+    try {
+      
+      localStorage.clear()
+
+       
+      const allCookies = Cookies.get()
+      Object.keys(allCookies).forEach((cookieName) => {
+        if (cookieName !== 'remEmail' && cookieName !== 'remPass') {
+          Cookies.remove(cookieName)
+          Cookies.remove(cookieName, { path: '/' })  
+        }
+      })
+
+      
+      await signOut({ redirect: false })
+
+      
+      window.location.href = '/login'
+    } catch (error) {
+      console.error('Logout Error:', error)
+      window.location.href = '/login'
+    }
   }
 
   return (
@@ -117,7 +143,7 @@ const UserDropdown = () => {
                       color='error'
                       size='small'
                       endIcon={<i className='ri-logout-box-r-line' />}
-                      onClick={e => handleDropdownClose(e, '/login')}
+                       onClick={handleUserLogout}
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
                       Logout

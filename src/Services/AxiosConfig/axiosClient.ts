@@ -56,6 +56,10 @@ axiosClient.interceptors.response.use(
       | undefined;
 
     const isUnauthorized = error.response?.status === 401;
+    const errorMessage = error.response?.data?.message?.toLowerCase() || "";
+    const isDuplicateError = 
+      errorMessage.includes("already exists") || 
+      errorMessage.includes("in use");
      const tokenExpired = error.response?.data?.error?.isTokenValid === false || error.response?.data?.message === "Invalid / expired token";
 
     if (isUnauthorized && tokenExpired && !originalRequest?._retry) {
@@ -126,7 +130,7 @@ axiosClient.interceptors.response.use(
         isRefreshing = false;
       }
     } else {
-      if (isUnauthorized) {
+      if (isUnauthorized && !isDuplicateError) {
         Object.keys(Cookies.get()).forEach((cookieName) => {
           if (cookieName !== "remEmail" && cookieName !== "remPass") {
             Cookies.remove(cookieName);

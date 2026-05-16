@@ -1,4 +1,6 @@
 import "react-perfect-scrollbar/dist/css/styles.css";
+import { Toaster } from "react-hot-toast";
+import GlobalAlertProvider from "@/Components/GlobalAlertProvider/GlobalAlertProvider";
 
 import type { ChildrenType } from "@core/types";
 
@@ -24,7 +26,11 @@ const RootLayout = ({ children }: ChildrenType) => {
       <body className="flex is-full min-bs-full flex-auto flex-col">
         <Providers direction={direction}>
           <NextAuthProvider>
-            <MainLayout>{children}</MainLayout>
+            <MainLayout>
+              {children}
+              <Toaster position="top-center" reverseOrder={false} />
+              <GlobalAlertProvider />
+            </MainLayout>
           </NextAuthProvider>
         </Providers>
       </body>

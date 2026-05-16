@@ -1,5 +1,6 @@
 "use client";
-
+import { toast } from "react-hot-toast";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
@@ -57,7 +58,65 @@ const Login = ({ mode }: { mode: Mode }) => {
   const darkImg = "/images/pages/auth-v1-mask-dark.png";
   const lightImg = "/images/pages/auth-v1-mask-light.png";
   const authBackground = useImageVariant(mode, lightImg, darkImg);
+  const [pwdError, setPwdError] = useState({ newPwd: "", confirmPwd: "" });
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loginErrors, setLoginErrors] = useState({
+    identity: "",
+    password: "",
+  });
 
+  const handlePasswordValidation = () => {
+    let isValid = true;
+    let errors = { newPwd: "", confirmPwd: "" };
+
+    if (!newPassword) {
+      errors.newPwd = "Password is required";
+      isValid = false;
+    } else if (newPassword.length < 6) {
+      errors.newPwd = "Password must be at least 6 characters";
+      isValid = false;
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPwd = "Confirm Password is required";
+      isValid = false;
+    } else if (newPassword !== confirmPassword) {
+      errors.confirmPwd = "Passwords do not match";
+      isValid = false;
+    }
+
+    setPwdError(errors);
+
+    if (isValid) {
+      handleSavePasswordAndRedirect();
+    }
+  };
+
+  const onLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    let isValid = true;
+    let tempErrors = { identity: "", password: "" };
+
+    if (!identity.trim()) {
+      tempErrors.identity = "Phone Number or Email is required";
+      isValid = false;
+    }
+    if (authMode === "password" && !password) {
+      tempErrors.password = "Password is required";
+      isValid = false;
+    }
+
+    setLoginErrors(tempErrors);
+
+    if (isValid) {
+      if (authMode === "password") {
+        handlePasswordLogin(e);
+      } else {
+        handleSendOtp();
+      }
+    }
+  };
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
       <Card className="flex flex-col sm:is-[450px]">
@@ -76,11 +135,7 @@ const Login = ({ mode }: { mode: Mode }) => {
             <form
               noValidate
               autoComplete="off"
-              onSubmit={
-                authMode === "password"
-                  ? handlePasswordLogin
-                  : (e) => e.preventDefault()
-              }
+              onSubmit={onLoginSubmit}
               className="flex flex-col gap-5"
             >
               <TextField
@@ -88,7 +143,13 @@ const Login = ({ mode }: { mode: Mode }) => {
                 fullWidth
                 label="Phone Number or Email"
                 value={identity}
-                onChange={(e) => setIdentity(e.target.value)}
+                error={!!loginErrors.identity}
+                helperText={loginErrors.identity}
+                onChange={(e) => {
+                  setIdentity(e.target.value);
+                  if (loginErrors.identity)
+                    setLoginErrors({ ...loginErrors, identity: "" });
+                }}
               />
 
               {authMode === "password" && (
@@ -96,7 +157,13 @@ const Login = ({ mode }: { mode: Mode }) => {
                   fullWidth
                   label="Password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  error={!!loginErrors.password}
+                  helperText={loginErrors.password}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (loginErrors.password)
+                      setLoginErrors({ ...loginErrors, password: "" });
+                  }}
                   type={isPasswordShown ? "text" : "password"}
                   InputProps={{
                     endAdornment: (
@@ -293,13 +360,34 @@ const Login = ({ mode }: { mode: Mode }) => {
             <TextField
               fullWidth
               placeholder="Enter a password"
-              type="password"
+              type={showNewPassword ? "text" : "password"}
               value={newPassword}
+              error={!!pwdError.newPwd}
+              helperText={pwdError.newPwd}
               onChange={(e) => setNewPassword(e.target.value)}
+              sx={{
+                "& input::-ms-reveal, & input::-ms-clear": {
+                  display: "none",
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <i className="material-symbols--lock" />
+                  </InputAdornment>
+                ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setShowNewPassword(!showNewPassword)}
+                      edge="end"
+                    >
+                      <i
+                        className={
+                          showNewPassword ? "ri-eye-off-line" : "ri-eye-line"
+                        }
+                      />
+                    </IconButton>
                   </InputAdornment>
                 ),
                 className: "rounded-[10px] !ring-0",
@@ -314,20 +402,44 @@ const Login = ({ mode }: { mode: Mode }) => {
             <TextField
               fullWidth
               placeholder="Enter password again"
-              type="password"
+              type={showConfirmPassword ? "text" : "password"}
               value={confirmPassword}
+              error={!!pwdError.confirmPwd}
+              helperText={pwdError.confirmPwd}
               onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{
+                "& input::-ms-reveal, & input::-ms-clear": {
+                  display: "none",
+                },
+              }}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <i className="material-symbols--lock" />
                   </InputAdornment>
                 ),
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
+                      edge="end"
+                    >
+                      <i
+                        className={
+                          showConfirmPassword
+                            ? "ri-eye-off-line"
+                            : "ri-eye-line"
+                        }
+                      />
+                    </IconButton>
+                  </InputAdornment>
+                ),
                 className: "rounded-[10px] !ring-0",
               }}
             />
           </Box>
-
           <Box className="flex w-full justify-center gap-4 mb-4">
             {/* <Button
               variant="text"
@@ -337,7 +449,7 @@ const Login = ({ mode }: { mode: Mode }) => {
             </Button> */}
             <Button
               variant="contained"
-              onClick={handleSavePasswordAndRedirect}
+              onClick={handlePasswordValidation}
               className="normal-case min-w-[150px] rounded-[10px] font-semibold py-[9.6px] bg-[#007FFF]"
             >
               Save Password
