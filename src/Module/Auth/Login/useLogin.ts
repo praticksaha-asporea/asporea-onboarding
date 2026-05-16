@@ -45,7 +45,7 @@ export function useLogin() {
 
     try {
       setLoading(true);
-      const res = await loginApi({ email: identity, password });
+      const res = await loginApi({ identity, password });
 
       if (res.data?.success) {
         const { user, tokens } = res.data.data;
