@@ -1,5 +1,7 @@
 "use client";
-import { toast } from "react-hot-toast";
+
+import { useFormik } from "formik";
+import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -58,65 +60,68 @@ const Login = ({ mode }: { mode: Mode }) => {
   const darkImg = "/images/pages/auth-v1-mask-dark.png";
   const lightImg = "/images/pages/auth-v1-mask-light.png";
   const authBackground = useImageVariant(mode, lightImg, darkImg);
-  const [pwdError, setPwdError] = useState({ newPwd: "", confirmPwd: "" });
+   
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [loginErrors, setLoginErrors] = useState({
-    identity: "",
-    password: "",
-  });
 
-  const handlePasswordValidation = () => {
-    let isValid = true;
-    let errors = { newPwd: "", confirmPwd: "" };
-
-    if (!newPassword) {
-      errors.newPwd = "Password is required";
-      isValid = false;
-    } else if (newPassword.length < 6) {
-      errors.newPwd = "Password must be at least 6 characters";
-      isValid = false;
-    }
-
-    if (!confirmPassword) {
-      errors.confirmPwd = "Confirm Password is required";
-      isValid = false;
-    } else if (newPassword !== confirmPassword) {
-      errors.confirmPwd = "Passwords do not match";
-      isValid = false;
-    }
-
-    setPwdError(errors);
-
-    if (isValid) {
-      handleSavePasswordAndRedirect();
-    }
-  };
-
-  const onLoginSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    let isValid = true;
-    let tempErrors = { identity: "", password: "" };
-
-    if (!identity.trim()) {
-      tempErrors.identity = "Phone Number or Email is required";
-      isValid = false;
-    }
-    if (authMode === "password" && !password) {
-      tempErrors.password = "Password is required";
-      isValid = false;
-    }
-
-    setLoginErrors(tempErrors);
-
-    if (isValid) {
+  
+  const formik = useFormik({
+    initialValues: {
+      identity: identity || "",
+      password: password || "",
+    },
+    enableReinitialize: true,
+    
+    validateOnBlur: false, 
+    validationSchema: getLoginValidationSchema(authMode),
+    onSubmit: (values) => {
+      setIdentity(values.identity);
+      
       if (authMode === "password") {
-        handlePasswordLogin(e);
+        setPassword(values.password);
+        const dummyEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
+        handlePasswordLogin(dummyEvent);
       } else {
         handleSendOtp();
       }
-    }
+    },
+  });
+
+  const passwordFormik = useFormik({
+    initialValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+    validateOnBlur: false,
+    validationSchema: passwordSetupSchema,
+    onSubmit: (values) => {
+       
+      setNewPassword(values.newPassword);
+      setConfirmPassword(values.confirmPassword);
+      
+      
+      handleSavePasswordAndRedirect();
+    },
+  });
+
+   
+  const handleToggleAuthMode = () => {
+    formik.resetForm({
+      values: {
+        identity: formik.values.identity,  
+        password: "",
+      },
+    });
+    togglePasswordOTP();
   };
+
+  const handleCloseDialog = () => {
+    passwordFormik.resetForm();
+    setShowSetupPassword(false);
+  };
+
+ 
+
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
       <Card className="flex flex-col sm:is-[450px]">
@@ -135,34 +140,41 @@ const Login = ({ mode }: { mode: Mode }) => {
             <form
               noValidate
               autoComplete="off"
-              onSubmit={onLoginSubmit}
+              onSubmit={formik.handleSubmit}
               className="flex flex-col gap-5"
             >
+              {/* IDENTITY FIELD */}
               <TextField
                 autoFocus
                 fullWidth
+                id="identity"
+                name="identity"
                 label="Phone Number or Email"
-                value={identity}
-                error={!!loginErrors.identity}
-                helperText={loginErrors.identity}
+                value={formik.values.identity}
+                onBlur={formik.handleBlur}
+                
+                error={formik.submitCount > 0 && Boolean(formik.errors.identity)}
+                helperText={formik.submitCount > 0 && formik.errors.identity ? (formik.errors.identity as string) : undefined}
                 onChange={(e) => {
+                  formik.handleChange(e);
                   setIdentity(e.target.value);
-                  if (loginErrors.identity)
-                    setLoginErrors({ ...loginErrors, identity: "" });
                 }}
               />
 
+              {/* PASSWORD FIELD */}
               {authMode === "password" && (
                 <TextField
                   fullWidth
+                  id="password"
+                  name="password"
                   label="Password"
-                  value={password}
-                  error={!!loginErrors.password}
-                  helperText={loginErrors.password}
+                  value={formik.values.password}
+                  onBlur={formik.handleBlur}
+                  error={formik.submitCount > 0 && Boolean(formik.errors.password)}
+                  helperText={formik.submitCount > 0 && formik.errors.password ? (formik.errors.password as string) : undefined}
                   onChange={(e) => {
+                    formik.handleChange(e);
                     setPassword(e.target.value);
-                    if (loginErrors.password)
-                      setLoginErrors({ ...loginErrors, password: "" });
                   }}
                   type={isPasswordShown ? "text" : "password"}
                   InputProps={{
@@ -173,13 +185,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                           edge="end"
                           onClick={handleClickShowPassword}
                         >
-                          <i
-                            className={
-                              isPasswordShown
-                                ? "ri-eye-off-line"
-                                : "ri-eye-line"
-                            }
-                          />
+                          <i className={isPasswordShown ? "ri-eye-off-line" : "ri-eye-line"} />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -199,13 +205,14 @@ const Login = ({ mode }: { mode: Mode }) => {
                 <Typography
                   className="text-end cursor-pointer font-bold"
                   color="primary"
-                  onClick={togglePasswordOTP}
+                  onClick={handleToggleAuthMode}
                 >
                   Login / Signup via{" "}
                   {authMode === "password" ? "OTP" : "Password"}
                 </Typography>
               </div>
 
+              {/* PASSWORD SIGNIN BUTTON */}
               {authMode === "password" && (
                 <Button
                   fullWidth
@@ -221,12 +228,13 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
+              {/* OTP SEND BUTTON */}
               {authMode === "otp" && (
                 <Button
                   fullWidth
                   variant="contained"
                   className="btn btn-success"
-                  onClick={handleSendOtp}
+                  type="submit" 
                   disabled={sendOtp || loading}
                 >
                   {loading ? (
@@ -245,7 +253,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                       color="error"
                       size="small"
                       variant="text"
-                      onClick={handleSendOtp}
+                      type="button"
+                      onClick={() => formik.handleSubmit()}
                     >
                       Resend OTP
                     </Button>
@@ -261,6 +270,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                         variant="contained"
                         size="small"
                         color="success"
+                        type="button"
                         disabled={!enableVerifyOTP || loading}
                         onClick={handleVerifyOtp}
                       >
@@ -277,6 +287,7 @@ const Login = ({ mode }: { mode: Mode }) => {
 
               <Button
                 variant="text"
+                type="button"
                 onClick={() => router.push("/tac-dashboard")}
                 size="small"
                 color="error"
@@ -286,11 +297,11 @@ const Login = ({ mode }: { mode: Mode }) => {
 
               <Divider className="gap-3">or</Divider>
               <div className="grid grid-cols-2 gap-3">
-                {/* Social Login Buttons ... (Kept same as yours) */}
                 <Button
                   variant="outlined"
                   size="small"
                   color="secondary"
+                  type="button"
                   onClick={() => signIn("google", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
@@ -300,9 +311,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                   variant="outlined"
                   size="small"
                   color="secondary"
-                  onClick={() =>
-                    signIn("facebook", { callbackUrl: "/inquiry" })
-                  }
+                  type="button"
+                  onClick={() => signIn("facebook", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-facebook-fill text-facebook" />
@@ -311,9 +321,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                   variant="outlined"
                   size="small"
                   color="secondary"
-                  onClick={() =>
-                    signIn("linkedin", { callbackUrl: "/inquiry" })
-                  }
+                  type="button"
+                  onClick={() => signIn("linkedin", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-linkedin-box-fill text-linkedin" />
@@ -322,9 +331,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                   variant="outlined"
                   size="small"
                   color="secondary"
-                  onClick={() =>
-                    signIn("instagram", { callbackUrl: "/inquiry" })
-                  }
+                  type="button"
+                  onClick={() => signIn("instagram", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-instagram-fill text-instagram" />
@@ -335,17 +343,14 @@ const Login = ({ mode }: { mode: Mode }) => {
         </CardContent>
       </Card>
 
-      <Dialog
+     <Dialog
         open={showSetupPassword}
-        onClose={() => setShowSetupPassword(false)}
+        onClose={handleCloseDialog}
         maxWidth="xs"
         fullWidth
         PaperProps={{ className: "rounded-[20px] p-3 relative" }}
       >
-        <IconButton
-          onClick={() => setShowSetupPassword(false)}
-          className="absolute right-5 top-5 text-gray-500"
-        >
+        <IconButton onClick={handleCloseDialog} className="absolute right-5 top-5 text-gray-500">
           <i className="material-symbols--close-rounded" />
         </IconButton>
         <DialogContent className="flex flex-col items-center">
@@ -353,108 +358,97 @@ const Login = ({ mode }: { mode: Mode }) => {
             Setup Password
           </Typography>
 
-          <Box className="w-full mb-6">
-            <Typography variant="subtitle2" fontWeight="600" className="mb-2">
-              New Password
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Enter a password"
-              type={showNewPassword ? "text" : "password"}
-              value={newPassword}
-              error={!!pwdError.newPwd}
-              helperText={pwdError.newPwd}
-              onChange={(e) => setNewPassword(e.target.value)}
-              sx={{
-                "& input::-ms-reveal, & input::-ms-clear": {
-                  display: "none",
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <i className="material-symbols--lock" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      edge="end"
-                    >
-                      <i
-                        className={
-                          showNewPassword ? "ri-eye-off-line" : "ri-eye-line"
-                        }
-                      />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                className: "rounded-[10px] !ring-0",
-              }}
-            />
-          </Box>
+          {/* Form wrapper for popup formik */}
+          <form onSubmit={passwordFormik.handleSubmit} className="w-full">
+            
+            {/* NEW PASSWORD FIELD */}
+            <Box className="w-full mb-6">
+              <Typography variant="subtitle2" fontWeight="600" className="mb-2">
+                New Password
+              </Typography>
+              <TextField
+                fullWidth
+                id="newPassword"
+                name="newPassword"
+                placeholder="Enter a password"
+                type={showNewPassword ? "text" : "password"}
+                value={passwordFormik.values.newPassword}
+                onChange={passwordFormik.handleChange}
+                onBlur={passwordFormik.handleBlur}
+                error={passwordFormik.submitCount > 0 && Boolean(passwordFormik.errors.newPassword)}
+                helperText={passwordFormik.submitCount > 0 && passwordFormik.errors.newPassword ? (passwordFormik.errors.newPassword as string) : undefined}
+                sx={{
+                  "& input::-ms-reveal, & input::-ms-clear": {
+                    display: "none",
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <i className="material-symbols--lock" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
+                        <i className={showNewPassword ? "ri-eye-off-line" : "ri-eye-line"} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  className: "rounded-[10px] !ring-0",
+                }}
+              />
+            </Box>
 
-          <Box className="w-full mb-8">
-            <Typography variant="subtitle2" fontWeight="600" className="mb-2">
-              Confirm Password
-            </Typography>
-            <TextField
-              fullWidth
-              placeholder="Enter password again"
-              type={showConfirmPassword ? "text" : "password"}
-              value={confirmPassword}
-              error={!!pwdError.confirmPwd}
-              helperText={pwdError.confirmPwd}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              sx={{
-                "& input::-ms-reveal, & input::-ms-clear": {
-                  display: "none",
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <i className="material-symbols--lock" />
-                  </InputAdornment>
-                ),
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      edge="end"
-                    >
-                      <i
-                        className={
-                          showConfirmPassword
-                            ? "ri-eye-off-line"
-                            : "ri-eye-line"
-                        }
-                      />
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                className: "rounded-[10px] !ring-0",
-              }}
-            />
-          </Box>
-          <Box className="flex w-full justify-center gap-4 mb-4">
-            {/* <Button
-              variant="text"
-              onClick={() => router.push("/complete-profile")}
-            >
-              Skip Now
-            </Button> */}
-            <Button
-              variant="contained"
-              onClick={handlePasswordValidation}
-              className="normal-case min-w-[150px] rounded-[10px] font-semibold py-[9.6px] bg-[#007FFF]"
-            >
-              Save Password
-            </Button>
-          </Box>
+            {/* CONFIRM PASSWORD FIELD */}
+            <Box className="w-full mb-8">
+              <Typography variant="subtitle2" fontWeight="600" className="mb-2">
+                Confirm Password
+              </Typography>
+              <TextField
+                fullWidth
+                id="confirmPassword"
+                name="confirmPassword"
+                placeholder="Enter password again"
+                type={showConfirmPassword ? "text" : "password"}
+                value={passwordFormik.values.confirmPassword}
+                onChange={passwordFormik.handleChange}
+                onBlur={passwordFormik.handleBlur}
+                error={passwordFormik.submitCount > 0 && Boolean(passwordFormik.errors.confirmPassword)}
+                helperText={passwordFormik.submitCount > 0 && passwordFormik.errors.confirmPassword ? (passwordFormik.errors.confirmPassword as string) : undefined}
+                sx={{
+                  "& input::-ms-reveal, & input::-ms-clear": {
+                    display: "none",
+                  },
+                }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <i className="material-symbols--lock" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
+                        <i className={showConfirmPassword ? "ri-eye-off-line" : "ri-eye-line"} />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  className: "rounded-[10px] !ring-0",
+                }}
+              />
+            </Box>
+
+            <Box className="flex w-full justify-center gap-4 mb-4">
+              <Button
+                variant="contained"
+                type="submit" // 🚀 Trigger passwordFormik onSubmit natively
+                className="normal-case min-w-[150px] rounded-[10px] font-semibold py-[9.6px] bg-[#007FFF]"
+              >
+                Save Password
+              </Button>
+            </Box>
+          </form>
         </DialogContent>
       </Dialog>
       <Illustrations maskImg={{ src: authBackground }} />
