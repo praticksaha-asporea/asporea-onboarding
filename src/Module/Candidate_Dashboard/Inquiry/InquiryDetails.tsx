@@ -1,7 +1,7 @@
 "use client";
 
 // React Imports
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 
 // MUI Imports
@@ -31,6 +31,7 @@ import {
   StepLabel,
   Stepper,
 } from "@mui/material";
+import toast from "react-hot-toast";
 
 type Data = {
   fullName: string;
@@ -70,6 +71,7 @@ const AccountDetails = () => {
   // States
   const [formData, setFormData] = useState<Data>(initialData);
   const [showInquiryPopup, setShowInquiryPopup] = useState(false);
+  const [branches, setBranches] = useState([]);
 
   const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
     setFormData({ ...formData, [field]: value });
@@ -127,6 +129,36 @@ const AccountDetails = () => {
     },
   ];
 
+  const fetchBranches = async (
+    lat: number,
+    lng: number,
+  ) => {
+    try {
+      const response = await fetch(
+        `/api/branch/list?lat=${lat}&lng=${lng}&radiusKm=5000&limit=50`
+      );
+
+      const result = await response.json();
+
+      setBranches(result?.data?.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fetchBranches(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+      },
+      (error) => {
+        console.error(error);
+        toast.error(`Please allow location access to get preffered branch list`)
+      }
+    );
+  }, []);
   return (
     <>
       <Grid container spacing={6}>
@@ -190,9 +222,10 @@ const AccountDetails = () => {
 
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
                         <FormControl fullWidth>
-                          <InputLabel>Preffered Branch</InputLabel>
+                          <InputLabel>Preferred Branch</InputLabel>
+
                           <Select
-                            label="prefferedBranch"
+                            label="Preferred Branch"
                             value={formData.prefferedBranch}
                             onChange={(e) =>
                               handleFormChange(
@@ -201,12 +234,22 @@ const AccountDetails = () => {
                               )
                             }
                           >
-                            <MenuItem value="siliguri">
-                              Siliguri (Within 1 Km)
-                            </MenuItem>
-                            <MenuItem value="dehradun">Dehradun</MenuItem>
-                            <MenuItem value="darjeeling">Darjeeling</MenuItem>
-                            <MenuItem value="guwahati">Guwahati</MenuItem>
+                            {branches?.map((branch: any,index:number) => (
+                              <MenuItem
+                                key={branch._id}
+                                value={branch._id}
+                              >
+                                {branch.title}
+                                {branch.distanceKm !== undefined &&
+                                  ` (
+                                  ${index==0?`Recommend - `:``}
+                                  ${branch.distanceKm < 1
+                                    ? "Within 1 Km"
+                                    : `${branch.distanceKm.toFixed(2)} Km`
+                                  }
+                                  )`}
+                              </MenuItem>
+                            ))}
                           </Select>
                         </FormControl>
                       </Grid>
