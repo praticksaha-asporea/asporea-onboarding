@@ -7,8 +7,10 @@ export interface IBranch extends Document {
   timeZone?: string;
 
   workDays?: string[];
-  latitude?: number;
-  longitude?: number;
+  coordinates?: {
+    type: "Point";
+    coordinates: [number, number];
+  };
 
   createdAt: Date;
   updatedAt: Date;
@@ -30,14 +32,25 @@ const BranchSchema = new Schema<IBranch>(
         enum: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       },
     ],
-    latitude: { type: Number },
-    longitude: { type: Number },
+    coordinates: {
+      type: {
+        type: String,
+        enum: ["Point"],
+        default: "Point",
+      },
+
+      coordinates: {
+        type: [Number], // [longitude, latitude]
+        required: true,
+      },
+    },
   },
   { timestamps: true }
 );
 
 /* INDEXES */
 BranchSchema.index({ title: 1 });
+BranchSchema.index({ coordinates: "2dsphere" });
 
 /* EXPORT */
 export const BranchModel =
