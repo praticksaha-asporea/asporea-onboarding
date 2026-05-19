@@ -1,11 +1,21 @@
 "use client";
 
 // React Imports
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/Redux/store";
+import {
+  getTacListAction,
+  getExternalSourcesAction,
+  createInquiryAction,
+} from "@/Services/APIs/Inquiry/inquiry.action";
+import toast from "react-hot-toast";
 
-// MUI Imports
-import { Dialog, DialogContent, IconButton, Divider } from "@mui/material";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+
+import { Dialog, DialogContent, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -32,48 +42,182 @@ import {
   Stepper,
 } from "@mui/material";
 
-type Data = {
-  fullName: string;
-  email: string;
-  phoneNumber: number | string;
-  whatsappNumber: number | string;
-  prefferedBranch: string;
-  prefferedConsultant: string;
-  visitOption: number;
-  fullAddress: string;
-  referedFrom: string;
-  referedType: string;
-  referedBy: number;
-  otherReferedBy: string | null;
-};
+const temporaryBranches = [
+  { _id: "6a0854518d4641cbe8d9c064", title: "Siliguri" },
+  { _id: "6a0854518d4641cbe8d9c065", title: "Kalimpong" },
+  { _id: "6a0854518d4641cbe8d9c066", title: "Dehradun" },
+  { _id: "6a0854518d4641cbe8d9c067", title: "Guwahati" },
+  { _id: "6a0854518d4641cbe8d9c068", title: "Shillong" },
+];
 
-// Vars
-const initialData: Data = {
-  fullName: "",
-  email: "",
-  phoneNumber: "",
-  whatsappNumber: "",
-  prefferedBranch: "",
-  prefferedConsultant: "",
-  visitOption: 0,
-  fullAddress: "",
-  referedFrom: "web-app",
-  referedType: "pcra",
-  referedBy: 1,
-  otherReferedBy: "",
-};
 type StateType = {
   [key: string]: boolean;
 };
 
-const AccountDetails = () => {
-  // States
-  const [formData, setFormData] = useState<Data>(initialData);
-  const [showInquiryPopup, setShowInquiryPopup] = useState(false);
+const inquiryValidationSchema = Yup.object({
+  fullName: Yup.string().trim().required("Full Name is required"),
+  email: Yup.string()
+    .email("Enter a valid email address")
+    .required("Email is required"),
+  phoneNumber: Yup.string()
+    .matches(/^[0-9]{10}$/, "Please Provide valid 10-digit phone number")
+    .required("Phone Number required"),
+  whatsappNumber: Yup.string()
+    .matches(/^[0-9]{10}$/, "Please Provide valid 10-digit WhatsApp number")
+    .required("WhatsApp Number required"),
+  prefferedBranch: Yup.string().required("Please select a preferred branch"),
+  prefferedConsultant: Yup.string().required("Please select a consultant"),
+  visitOption: Yup.number().required("Visit option is required"),
+  fullAddress: Yup.string().trim().required("Full Address is required"),
 
-  const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
-    setFormData({ ...formData, [field]: value });
-  };
+  referedFrom: Yup.string().required("Please select how you heard about us"),
+
+  referedType: Yup.string().when("referedFrom", {
+    is: "reffer",
+    then: (schema) => schema.required("Please select referral type"),
+    otherwise: (schema) => schema.nullable().notRequired(),
+  }),
+  referedBy: Yup.string().when("referedFrom", {
+    is: "reffer",
+    then: (schema) => schema.required("Please select who referred you"),
+    otherwise: (schema) => schema.nullable().notRequired(),
+  }),
+  otherReferedBy: Yup.string().when(["referedFrom", "referedType"], {
+    is: (from: string, type: string) => from === "reffer" && type === "other",
+    then: (schema) => schema.required("Please specify the details"),
+    otherwise: (schema) => schema.nullable().notRequired(),
+  }),
+});
+
+const AccountDetails = () => {
+  const { userData } = useSelector((state: RootState) => (state as any).user);
+  const [showInquiryPopup, setShowInquiryPopup] = useState(false);
+  const [generatedInqNo, setGeneratedInqNo] = useState("");
+  const [consultants, setConsultants] = useState<any[]>([]);
+  const [externalSources, setExternalSources] = useState<any[]>([]);
+  const [loadingConsultants, setLoadingConsultants] = useState(false);
+  const [loadingSources, setLoadingSources] = useState(false);
+
+  const formik = useFormik({
+    initialValues: {
+      fullName: "",
+      email: "",
+      phoneNumber: "",
+      whatsappNumber: "",
+      prefferedBranch: "",
+      prefferedConsultant: "",
+      visitOption: 0,
+      fullAddress: "",
+      referedFrom: "web-app",
+      referedType: "",
+      referedBy: "",
+      otherReferedBy: "",
+    },
+    validationSchema: inquiryValidationSchema,
+    onSubmit: async (values, { setSubmitting }) => {
+      try {
+        const payload = {
+          ...values,
+          phoneNumber: String(values.phoneNumber),
+          whatsappNumber: String(values.whatsappNumber),
+          visitOption: Number(values.visitOption),
+          referedBy: values.referedFrom === "reffer" ? values.referedBy : null,
+          referedType:
+            values.referedFrom === "reffer" ? values.referedType : null,
+        };
+
+        const response = await createInquiryAction(payload);
+        if (response.success) {
+          toast.success(response.message);
+          setGeneratedInqNo(response.data.inqNo);
+          setShowInquiryPopup(true);
+        }
+      } catch (err: any) {
+        console.error("Submission failed");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+
+  useEffect(() => {
+    if (userData) {
+      formik.setValues({
+        ...formik.values,
+        fullName:
+          `${userData.firstName || ""} ${userData.lastName || ""}`.trim(),
+        email: userData.email || "",
+        phoneNumber: userData.phoneNumber || "",
+        whatsappNumber: userData.whatsappNumber || "",
+        fullAddress: userData.address || "",
+      });
+    }
+  }, [userData]);
+
+  useEffect(() => {
+    if (!formik.values.prefferedBranch) {
+      setConsultants([]);
+      return;
+    }
+
+    const fetchConsultants = async () => {
+      setLoadingConsultants(true);
+      try {
+        const response = await getTacListAction(formik.values.prefferedBranch);
+        if (response.success) {
+          setConsultants(response.data);
+          if (response.data.length > 0) {
+            formik.setFieldValue("prefferedConsultant", response.data[0]._id);
+          } else {
+            formik.setFieldValue("prefferedConsultant", "");
+          }
+        }
+      } catch (err) {
+        console.error("TAC action error:", err);
+      } finally {
+        setLoadingConsultants(false);
+      }
+    };
+
+    fetchConsultants();
+  }, [formik.values.prefferedBranch]);
+
+  useEffect(() => {
+    if (!formik.values.referedType) {
+      setExternalSources([]);
+      return;
+    }
+
+    if (formik.values.referedType === "other") {
+      setExternalSources([]);
+      formik.setFieldValue("referedBy", "other");
+      return;
+    }
+
+    const fetchSources = async () => {
+      setLoadingSources(true);
+      try {
+        const response = await getExternalSourcesAction(
+          formik.values.referedType,
+        );
+        if (response.success) {
+          setExternalSources(response.data);
+          if (response.data.length > 0) {
+            formik.setFieldValue("referedBy", response.data[0]._id);
+          } else {
+            formik.setFieldValue("referedBy", "");
+          }
+        }
+      } catch (err) {
+        console.error("External sources action error:", err);
+      } finally {
+        setLoadingSources(false);
+      }
+    };
+
+    fetchSources();
+  }, [formik.values.referedType]);
+
   const [activeStep] = useState(0);
   const [state, setState] = useState<StateType>({
     gilad: true,
@@ -81,20 +225,14 @@ const AccountDetails = () => {
     antoine: false,
   });
 
-  // Vars
   const { gilad, jason, antoine } = state;
-  const error = [gilad, jason, antoine].filter((v) => v).length !== 2;
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
     setState({ ...state, [event.target.name]: event.target.checked });
   };
+
   const steps = [
-    {
-      step: 1,
-      label: "Inquiry",
-      description: "",
-      status: "completed",
-    },
+    { step: 1, label: "Inquiry", description: "", status: "completed" },
     {
       step: 2,
       label: "Pre-Counselling",
@@ -137,122 +275,186 @@ const AccountDetails = () => {
               <Typography variant="subtitle1" className="pb-5">
                 Please fill out the form below to register an inquiry
               </Typography>
-              <form onSubmit={(e) => e.preventDefault()}>
+
+              <form onSubmit={formik.handleSubmit}>
                 <Card>
                   <CardContent className="mbe-5">
                     <Grid container spacing={5}>
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
                         <TextField
                           fullWidth
+                          name="fullName"
                           label="Full Name"
-                          value={formData.fullName}
+                          value={formik.values.fullName}
                           placeholder="Kunal Chettri"
-                          onChange={(e) =>
-                            handleFormChange("fullName", e.target.value)
+                          onChange={formik.handleChange}
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.fullName)
+                          }
+                          helperText={
+                            formik.submitCount > 0 && formik.errors.fullName
                           }
                         />
                       </Grid>
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
                         <TextField
                           fullWidth
+                          name="email"
                           label="Email Address"
-                          value={formData.email}
+                          value={formik.values.email}
                           placeholder="kunal.chettri@gmail.com"
-                          onChange={(e) =>
-                            handleFormChange("email", e.target.value)
+                          onChange={formik.handleChange}
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.email)
+                          }
+                          helperText={
+                            formik.submitCount > 0 && formik.errors.email
                           }
                         />
                       </Grid>
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
                         <TextField
                           fullWidth
-                          type="number"
+                          type="tel"
+                          name="phoneNumber"
                           label="Phone Number"
-                          value={formData.phoneNumber}
+                          value={formik.values.phoneNumber}
                           placeholder="9876543210"
-                          onChange={(e) =>
-                            handleFormChange("phoneNumber", e.target.value)
+                          onChange={formik.handleChange}
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.phoneNumber)
+                          }
+                          helperText={
+                            formik.submitCount > 0 && formik.errors.phoneNumber
                           }
                         />
                       </Grid>
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
                         <TextField
                           fullWidth
-                          type="number"
+                          type="tel"
+                          name="whatsappNumber"
                           label="Whatsapp Number"
-                          value={formData.whatsappNumber}
+                          value={formik.values.whatsappNumber}
                           placeholder="9876543210"
-                          onChange={(e) =>
-                            handleFormChange("phoneNumber", e.target.value)
+                          onChange={formik.handleChange}
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.whatsappNumber)
+                          }
+                          helperText={
+                            formik.submitCount > 0 &&
+                            formik.errors.whatsappNumber
                           }
                         />
                       </Grid>
 
+                      {/* Dropdown Branch */}
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl fullWidth>
+                        <FormControl
+                          fullWidth
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.prefferedBranch)
+                          }
+                        >
                           <InputLabel>Preffered Branch</InputLabel>
                           <Select
-                            label="prefferedBranch"
-                            value={formData.prefferedBranch}
-                            onChange={(e) =>
-                              handleFormChange(
-                                "prefferedBranch",
-                                e.target.value,
-                              )
-                            }
+                            name="prefferedBranch"
+                            label="Preffered Branch"
+                            value={formik.values.prefferedBranch}
+                            onChange={formik.handleChange}
                           >
-                            <MenuItem value="siliguri">
-                              Siliguri (Within 1 Km)
-                            </MenuItem>
-                            <MenuItem value="dehradun">Dehradun</MenuItem>
-                            <MenuItem value="darjeeling">Darjeeling</MenuItem>
-                            <MenuItem value="guwahati">Guwahati</MenuItem>
+                            {temporaryBranches.map((branch) => (
+                              <MenuItem key={branch._id} value={branch._id}>
+                                {branch.title}
+                              </MenuItem>
+                            ))}
                           </Select>
+                          {formik.submitCount > 0 &&
+                            formik.errors.prefferedBranch && (
+                              <FormHelperText>
+                                {formik.errors.prefferedBranch}
+                              </FormHelperText>
+                            )}
                         </FormControl>
                       </Grid>
 
+                      {/* Dropdown Consultant */}
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl fullWidth>
-                          <InputLabel>Preffered Consultant</InputLabel>
+                        <FormControl
+                          fullWidth
+                          disabled={
+                            loadingConsultants || !formik.values.prefferedBranch
+                          }
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.prefferedConsultant)
+                          }
+                        >
+                          <InputLabel>
+                            {loadingConsultants
+                              ? "Loading..."
+                              : "Preffered Consultant"}
+                          </InputLabel>
                           <Select
-                            label="prefferedConsultant"
-                            value={formData.prefferedConsultant}
-                            onChange={(e) =>
-                              handleFormChange(
-                                "prefferedConsultant",
-                                e.target.value,
-                              )
-                            }
+                            name="prefferedConsultant"
+                            label="Preffered Consultant"
+                            value={formik.values.prefferedConsultant}
+                            onChange={formik.handleChange}
                           >
-                            <MenuItem value="srijana">Srijana</MenuItem>
-                            <MenuItem value="swarnima">Swarnima</MenuItem>
-                            <MenuItem value="puspa">Puspa</MenuItem>
-                            <MenuItem value="priyanjali">Priyanjali</MenuItem>
-                            <MenuItem value="ayush">Ayush</MenuItem>
-                            <MenuItem value="matilda">Matilda</MenuItem>
-                            <MenuItem value="matilda">Matilda</MenuItem>
-                            <MenuItem value="sanjana">Sanjana</MenuItem>
+                            {consultants.length === 0 ? (
+                              <MenuItem value="" disabled>
+                                No TAC found
+                              </MenuItem>
+                            ) : (
+                              consultants.map((tac) => (
+                                <MenuItem key={tac._id} value={tac._id}>
+                                  {`${tac.firstName} ${tac.lastName}`}
+                                </MenuItem>
+                              ))
+                            )}
                           </Select>
+                          {formik.submitCount > 0 &&
+                            formik.errors.prefferedConsultant && (
+                              <FormHelperText>
+                                {formik.errors.prefferedConsultant}
+                              </FormHelperText>
+                            )}
                         </FormControl>
                       </Grid>
+
                       <Grid size={{ xs: 12, md: 12, sm: 12 }}>
-                        <FormControl fullWidth>
+                        <FormControl
+                          fullWidth
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.visitOption)
+                          }
+                        >
                           <RadioGroup
+                            name="visitOption"
                             aria-label="Visit Option"
-                            value={formData.visitOption}
+                            value={Number(formik.values.visitOption)}
                             onChange={(e) =>
-                              handleFormChange("visitOption", e.target.value)
+                              formik.setFieldValue(
+                                "visitOption",
+                                Number(e.target.value),
+                              )
                             }
                           >
                             <FormControlLabel
-                              value={1}
+                              value={0}
                               control={<Radio />}
                               label="Are you currently now in this branch? (Only use while you are in branch premises)"
                             />
                             <FormControlLabel
-                              value={0}
+                              value={1}
                               control={<Radio />}
-                              label="Are you visiting this branch?  (Only use while you are outside and willing to visit in-person )"
+                              label="Are you visiting this branch? (Only use while you are outside and willing to visit in-person)"
                             />
                             <FormControlLabel
                               value={2}
@@ -266,18 +468,23 @@ const AccountDetails = () => {
                           </FormHelperText>
                         </FormControl>
                       </Grid>
+
                       <Grid size={{ xs: 12, md: 12, sm: 12 }}>
                         <TextField
                           fullWidth
+                          name="fullAddress"
                           label="Full Address"
-                          value={formData.fullAddress}
-                          placeholder={`123 Talent Lane,Darjeeling,
-West Bengal,
-700001`}
+                          value={formik.values.fullAddress}
+                          placeholder={`123 Talent Lane,Darjeeling,\nWest Bengal,\n700001`}
                           multiline
-                          aria-colspan={3}
-                          onChange={(e) =>
-                            handleFormChange("fullAddress", e.target.value)
+                          rows={3}
+                          onChange={formik.handleChange}
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.fullAddress)
+                          }
+                          helperText={
+                            formik.submitCount > 0 && formik.errors.fullAddress
                           }
                         />
                       </Grid>
@@ -288,119 +495,193 @@ West Bengal,
                 <Card className="mt-5">
                   <CardContent className="mbe-5">
                     <Grid container spacing={5}>
-                      <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl fullWidth>
+                      {/* 1. Main Radio Buttons */}
+                      <Grid size={{ xs: 12, md: 12, sm: 12 }}>
+                        <FormControl
+                          fullWidth
+                          error={
+                            formik.submitCount > 0 &&
+                            Boolean(formik.errors.referedFrom)
+                          }
+                        >
                           <FormLabel component="legend">
-                            How did you hear about us?.
+                            How did you hear about us?
                           </FormLabel>
-
                           <RadioGroup
                             row
-                            aria-label="Refered From"
-                            value={formData.referedFrom}
-                            onChange={(e) =>
-                              handleFormChange("referedFrom", e.target.value)
-                            }
+                            name="referedFrom"
+                            value={formik.values.referedFrom}
+                            onChange={(e) => {
+                              formik.handleChange(e);
+
+                              if (e.target.value !== "reffer") {
+                                formik.setFieldValue("referedType", "");
+                                formik.setFieldValue("referedBy", "");
+                                formik.setFieldValue("otherReferedBy", "");
+                              }
+                            }}
                           >
                             <FormControlLabel
-                              value={`web-app`}
+                              value="web-app"
                               control={<Radio />}
                               label="Asporea Website/App"
                             />
                             <FormControlLabel
-                              value={`call`}
+                              value="call"
                               control={<Radio />}
                               label="Tele Caller"
                             />
                             <FormControlLabel
-                              value={`social`}
+                              value="social"
                               control={<Radio />}
                               label="Social Media"
                             />
                             <FormControlLabel
-                              value={`reffer`}
+                              value="reffer"
                               control={<Radio />}
                               label="Referral"
                             />
                           </RadioGroup>
+                          {formik.submitCount > 0 &&
+                            formik.errors.referedFrom && (
+                              <FormHelperText>
+                                {formik.errors.referedFrom}
+                              </FormHelperText>
+                            )}
                         </FormControl>
                       </Grid>
 
-                      <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl fullWidth>
-                          <FormLabel component="legend">Reffered By</FormLabel>
+                      {formik.values.referedFrom === "reffer" && (
+                        <>
+                          <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                            <FormControl
+                              fullWidth
+                              error={
+                                formik.submitCount > 0 &&
+                                Boolean(formik.errors.referedType)
+                              }
+                            >
+                              <FormLabel component="legend">
+                                Reffered By
+                              </FormLabel>
+                              <RadioGroup
+                                row
+                                name="referedType"
+                                value={formik.values.referedType || ""}
+                                onChange={formik.handleChange}
+                              >
+                                <FormControlLabel
+                                  value="pca"
+                                  control={<Radio />}
+                                  label="PCA"
+                                />
+                                <FormControlLabel
+                                  value="pcra"
+                                  control={<Radio />}
+                                  label="PCRA"
+                                />
+                                <FormControlLabel
+                                  value="institution"
+                                  control={<Radio />}
+                                  label="Institution"
+                                />
+                                <FormControlLabel
+                                  value="other"
+                                  control={<Radio />}
+                                  label="Other"
+                                />
+                              </RadioGroup>
+                              {formik.submitCount > 0 &&
+                                formik.errors.referedType && (
+                                  <FormHelperText>
+                                    {formik.errors.referedType}
+                                  </FormHelperText>
+                                )}
+                            </FormControl>
+                          </Grid>
 
-                          <RadioGroup
-                            row
-                            aria-label="Refered Type"
-                            value={formData.referedType}
-                            onChange={(e) =>
-                              handleFormChange("referedType", e.target.value)
-                            }
-                          >
-                            <FormControlLabel
-                              value={`pca`}
-                              control={<Radio />}
-                              label="PCA"
-                            />
-                            <FormControlLabel
-                              value={`pcra`}
-                              control={<Radio />}
-                              label="PCRA"
-                            />
-                            <FormControlLabel
-                              value={`institution`}
-                              control={<Radio />}
-                              label="Institution"
-                            />
-                            <FormControlLabel
-                              value={`other`}
-                              control={<Radio />}
-                              label="Other"
-                            />
-                          </RadioGroup>
-                        </FormControl>
-                      </Grid>
+                          <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                            <FormControl
+                              fullWidth
+                              disabled={
+                                loadingSources ||
+                                formik.values.referedType === "other"
+                              }
+                              error={
+                                formik.submitCount > 0 &&
+                                Boolean(formik.errors.referedBy)
+                              }
+                            >
+                              <InputLabel>
+                                {loadingSources
+                                  ? "Loading..."
+                                  : `Name of ${capitalize(formik.values.referedType || "Referrer")}`}
+                              </InputLabel>
+                              <Select
+                                name="referedBy"
+                                label={`Name of ${capitalize(formik.values.referedType || "Referrer")}`}
+                                value={formik.values.referedBy}
+                                onChange={(e) => {
+                                  const val = e.target.value;
+                                  formik.handleChange(e);
+                                  // 👇 AUTO SELECT 'Other' LOGIC
+                                  if (val === "other") {
+                                    formik.setFieldValue(
+                                      "referedType",
+                                      "other",
+                                    );
+                                  }
+                                }}
+                              >
+                                {/* Fallback Option */}
+                                {externalSources.length === 0 ? (
+                                  <MenuItem value="other">
+                                    Provide details in 'Please specify'
+                                  </MenuItem>
+                                ) : (
+                                  externalSources.map((src) => (
+                                    <MenuItem key={src._id} value={src._id}>
+                                      {`${src.firstName} ${src.lastName || ""}`}
+                                    </MenuItem>
+                                  ))
+                                )}
+                              </Select>
+                              {formik.submitCount > 0 &&
+                                formik.errors.referedBy && (
+                                  <FormHelperText>
+                                    {formik.errors.referedBy}
+                                  </FormHelperText>
+                                )}
+                            </FormControl>
+                          </Grid>
 
-                      <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl fullWidth>
-                          <InputLabel>
-                            Name of {capitalize(formData.referedType)}
-                          </InputLabel>
-                          <Select
-                            label="referedBy"
-                            value={formData.referedBy}
-                            onChange={(e) =>
-                              handleFormChange("referedBy", e.target.value)
-                            }
-                          >
-                            <MenuItem value={`1`}>
-                              {capitalize(formData.referedType) + ` 1`}
-                            </MenuItem>
-                            <MenuItem value={`2`}>
-                              {capitalize(formData.referedType) + ` 2`}
-                            </MenuItem>
-                            <MenuItem value={`3`}>
-                              {capitalize(formData.referedType) + ` 3`}
-                            </MenuItem>
-                          </Select>
-                        </FormControl>
-                      </Grid>
-                      <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl fullWidth>
-                          <TextField
-                            fullWidth
-                            label="Please specify"
-                            value={formData.otherReferedBy}
-                            placeholder="Eg: John Singh"
-                            onChange={(e) =>
-                              handleFormChange("otherReferedBy", e.target.value)
-                            }
-                          />
-                        </FormControl>
-                      </Grid>
+                          {/* 🔥 HIDE/SHOW 'Please specify' Box */}
+                          {formik.values.referedType === "other" && (
+                            <Grid size={{ xs: 12, md: 12, sm: 12 }}>
+                              <TextField
+                                fullWidth
+                                name="otherReferedBy"
+                                label="Please specify referer name"
+                                value={formik.values.otherReferedBy || ""}
+                                placeholder="Eg: John Singh"
+                                onChange={formik.handleChange}
+                                error={
+                                  formik.submitCount > 0 &&
+                                  Boolean(formik.errors.otherReferedBy)
+                                }
+                                helperText={
+                                  formik.submitCount > 0 &&
+                                  formik.errors.otherReferedBy
+                                }
+                              />
+                            </Grid>
+                          )}
+                        </>
+                      )}
+                      {/* MAGIC END */}
                     </Grid>
                   </CardContent>
+
                   <CardContent className="mbe-5">
                     <Grid container spacing={5}>
                       <Grid
@@ -409,11 +690,15 @@ West Bengal,
                       >
                         <Button
                           variant="contained"
-                          type="button"
-                          onClick={() => setShowInquiryPopup(true)}
+                          type="submit"
+                          disabled={formik.isSubmitting}
                           className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
                         >
-                          Submit
+                          {formik.isSubmitting ? (
+                            <CircularProgress size={24} color="inherit" />
+                          ) : (
+                            "Submit"
+                          )}
                         </Button>
                       </Grid>
                     </Grid>
@@ -423,6 +708,8 @@ West Bengal,
             </CardContent>
           </Card>
         </Grid>
+
+        {/* Right Stepper Column */}
         <Grid size={{ xs: 12, md: 4 }}>
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, md: 12, sm: 12 }}>
@@ -440,7 +727,6 @@ West Bengal,
                               <Typography variant="caption">Pending</Typography>
                             ) : null
                           }
-                          className=""
                         >
                           {step.label}
                         </StepLabel>
@@ -454,10 +740,7 @@ West Bengal,
               </Card>
             </Grid>
           </Grid>
-
           <Grid container spacing={5}>
-            <Grid size={{ xs: 12, md: 12, sm: 12 }}></Grid>
-            {/* <Grid container spacing={5}> */}
             <Grid size={{ xs: 12, md: 12, sm: 12 }}>
               <Card>
                 <CardContent>
@@ -503,36 +786,32 @@ West Bengal,
                   </FormControl>
                 </CardContent>
               </Card>
-              {/* </Grid> */}
             </Grid>
           </Grid>
         </Grid>
       </Grid>
-      {/* Inquiry Submitted Popup  */}
+
+      {/* Dialog Popup */}
       <Dialog
         open={showInquiryPopup}
-        onClose={() => setShowInquiryPopup(false)}
+        onClose={(event, reason) => {
+          if (reason !== "backdropClick") {
+            setShowInquiryPopup(false);
+          }
+        }}
         maxWidth="sm"
         fullWidth
       >
-        <IconButton
-          onClick={() => setShowInquiryPopup(false)}
-          className="absolute right-5 top-5 text-gray-500"
-        >
-          <i className="material-symbols--close-rounded" />
-        </IconButton>
-
         <DialogContent className="text-center p-8">
           <Typography variant="h4" className="mt-4">
             Inquiry Submitted
           </Typography>
-          <Typography variant="h6" className="mt-2 mb-8">
-            ID: ASP-INQ-0841
+          <Typography variant="h6" className="mt-2 mb-8" color="primary">
+            ID: {generatedInqNo}
           </Typography>
-
           <Box className="mb-8">
             <Typography variant="body1" className="mt-2 mb-4 px-8">
-              You are assigned to a Talent Acquisition Consultant(TAC). <br />
+              You are assigned to a Talent Acquisition Consultant (TAC). <br />{" "}
               Be ready for Pre-Counselling.
             </Typography>
             <Button
@@ -543,40 +822,6 @@ West Bengal,
               Schedule Pre-Counselling
             </Button>
           </Box>
-
-          {/* <Divider className="my-8" />
-
-          <Box className="mb-4">
-            <Typography variant="body1" className="mt-2 mb-4 px-8">
-              As you are now inside / visiting our{" "}
-              <span className="text-[#d32f2f] font-bold">
-                Siliguri
-              </span>{" "}
-              Branch. <br />
-              Be ready For Pre-Counselling,
-            </Typography>
-            <Button
-              variant="contained"
-             className="normal-case rounded-[50px] px-10 py-[9.6px] text-[1.1rem]"
-            >
-              Schedule Pre-Counselling
-            </Button>
-          </Box>
-
-          <Divider className="my: 4 " />
-
-          <Box className="mb-2">
-            <Typography
-              variant="body1"
-              color="error"
-            className="mt-2 px-8 font-medium"
-            >
-              As you're in <span className="font-bold">Siliguri</span>{" "}
-              Branch. <br />
-              For Pre-counselling, Please reach to Reception Counter. <br />
-              Receptionist will Generate a Token behalf of you.
-            </Typography>
-          </Box> */}
         </DialogContent>
       </Dialog>
     </>
