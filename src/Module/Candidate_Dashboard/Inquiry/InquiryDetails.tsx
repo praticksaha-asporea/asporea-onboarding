@@ -890,7 +890,7 @@ const AccountDetails = () => {
                       {isPreferenceError
                         ? formik.submitCount > 0
                           ? "At least choose one preference to proceed"
-                          : "At least One"
+                          : ""
                         : null}
                     </FormHelperText>
                   </FormControl>
