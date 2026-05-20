@@ -3,13 +3,15 @@
 // React Imports
 import { useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/Redux/store";
 import {
   getTacListAction,
   getExternalSourcesAction,
   createInquiryAction,
 } from "@/Services/APIs/Inquiry/inquiry.action";
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { updateUserData } from "@/Redux/Auth/user.slice";
 import toast from "react-hot-toast";
 
 import { useFormik } from "formik";
@@ -90,6 +92,7 @@ const inquiryValidationSchema = Yup.object({
 });
 
 const AccountDetails = () => {
+  const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => (state as any).user);
   const [showInquiryPopup, setShowInquiryPopup] = useState(false);
   const [generatedInqNo, setGeneratedInqNo] = useState("");
@@ -97,6 +100,28 @@ const AccountDetails = () => {
   const [externalSources, setExternalSources] = useState<any[]>([]);
   const [loadingConsultants, setLoadingConsultants] = useState(false);
   const [loadingSources, setLoadingSources] = useState(false);
+  const [preferences, setPreferences] = useState({
+    email: true,
+    sms: false,
+    whatsapp: false,
+  });
+
+  useEffect(() => {
+    if (userData?.notificationPreference) {
+      setPreferences({
+        email: userData.notificationPreference.email ?? true,
+        sms: userData.notificationPreference.sms ?? false,
+        whatsapp: userData.notificationPreference.whatsapp ?? false,
+      });
+    }
+  }, [userData]);
+
+  const handlePreferenceToggle = (type: "email" | "sms" | "whatsapp") => {
+    setPreferences((prev) => ({
+      ...prev,
+      [type]: !prev[type],
+    }));
+  };
 
   const formik = useFormik({
     initialValues: {
@@ -115,6 +140,12 @@ const AccountDetails = () => {
     },
     validationSchema: inquiryValidationSchema,
     onSubmit: async (values, { setSubmitting }) => {
+      const atLeastOneSelected =
+        preferences.email || preferences.sms || preferences.whatsapp;
+      if (!atLeastOneSelected) {
+        setSubmitting(false);
+        return;
+      }
       try {
         const payload = {
           ...values,
@@ -131,6 +162,30 @@ const AccountDetails = () => {
           toast.success(response.message);
           setGeneratedInqNo(response.data.inqNo);
           setShowInquiryPopup(true);
+
+          const userId = userData?.id || userData?._id;
+          if (userId) {
+            try {
+              const profilePayload = {
+                id: userId,
+                notificationPreference: preferences,
+              };
+              const res = await axiosClient.patch(
+                "/user/profile-update",
+                profilePayload,
+              );
+              if (res.data?.success) {
+                dispatch(
+                  updateUserData({
+                    notificationPreference:
+                      res.data.data.notificationPreference,
+                  }),
+                );
+              }
+            } catch (err) {
+              console.error("Profile preference sync failed:", err);
+            }
+          }
         }
       } catch (err: any) {
         console.error("Submission failed");
@@ -264,6 +319,11 @@ const AccountDetails = () => {
       status: "pending",
     },
   ];
+  const isPreferenceError = !(
+    preferences.email ||
+    preferences.sms ||
+    preferences.whatsapp
+  );
 
   return (
     <>
@@ -741,10 +801,14 @@ const AccountDetails = () => {
             </Grid>
           </Grid>
           <Grid container spacing={5}>
+            <Grid size={{ xs: 12, md: 12, sm: 12 }}></Grid>
             <Grid size={{ xs: 12, md: 12, sm: 12 }}>
               <Card>
                 <CardContent>
-                  <FormControl className="mbs-4 mie-4">
+                  <FormControl
+                    className="mbs-4 mie-4"
+                    error={formik.submitCount > 0 && isPreferenceError}
+                  >
                     <Typography variant="h5" className="pb-5">
                       Contact Preferences
                     </Typography>
@@ -753,9 +817,9 @@ const AccountDetails = () => {
                         label="Receive updates via Email"
                         control={
                           <Checkbox
-                            checked={gilad}
-                            onChange={handleChange}
-                            name="gilad"
+                            checked={preferences.email}
+                            onChange={() => handlePreferenceToggle("email")}
+                            name="email"
                           />
                         }
                       />
@@ -763,9 +827,9 @@ const AccountDetails = () => {
                         label="Receive updates via WhatsApp"
                         control={
                           <Checkbox
-                            checked={jason}
-                            onChange={handleChange}
-                            name="jason"
+                            checked={preferences.whatsapp}
+                            onChange={() => handlePreferenceToggle("whatsapp")}
+                            name="whatsapp"
                           />
                         }
                       />
@@ -773,15 +837,23 @@ const AccountDetails = () => {
                         label="Receive updates via SMS"
                         control={
                           <Checkbox
-                            checked={antoine}
-                            onChange={handleChange}
-                            name="antoine"
+                            checked={preferences.sms}
+                            onChange={() => handlePreferenceToggle("sms")}
+                            name="sms"
                           />
                         }
                       />
                     </FormGroup>
-                    <FormHelperText className="pt-3">
-                      At least One
+
+                    <FormHelperText
+                      className="pt-3"
+                      error={formik.submitCount > 0 && isPreferenceError}
+                    >
+                      {isPreferenceError
+                        ? formik.submitCount > 0
+                          ? "At least choose one preference to proceed"
+                          : "At least One"
+                        : null}
                     </FormHelperText>
                   </FormControl>
                 </CardContent>
