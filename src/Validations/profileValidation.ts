@@ -13,12 +13,12 @@ export const profileValidationSchema = yup.object({
 
   phoneNumber: yup
     .string()
-    .matches(/^\d{10}$/, "Enter exactly 10 digits")
+    .matches(/^\d{10}$/, "Please Provide a valid 10-digit phone number")
     .required("Phone number is required"),
 
   whatsappNumber: yup
     .string()
-    .matches(/^\d{10}$/, "Enter exactly 10 digits")
+    .matches(/^\d{10}$/, "Please Provide a valid 10-digit WhatsApp number")
     .required("WhatsApp number is required"),
 
    address: yup.string()

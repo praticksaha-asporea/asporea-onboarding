@@ -117,8 +117,8 @@ const AccountDetails = () => {
           firstName: values.firstName,
           lastName: values.lastName,
           email: values.email,
-          phoneNumber: values.phoneNumber,
-          whatsappNumber: values.whatsappNumber,
+          phoneNumber: String(values.phoneNumber),
+          whatsappNumber: String(values.whatsappNumber),
           address: values.address,
           passportStatus: values.passportStatus,
           passportNo:
