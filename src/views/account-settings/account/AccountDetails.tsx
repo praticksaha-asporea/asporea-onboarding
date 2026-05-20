@@ -1,9 +1,9 @@
 "use client";
 
 import { useFormik } from "formik";
-import { profileValidationSchema } from "@/Validations/profileValidation"
+import { profileValidationSchema } from "@/Validations/profileValidation";
 import { useState, useEffect } from "react";
-import type { ChangeEvent, FormEvent } from "react";
+import type { ChangeEvent } from "react";
 
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserData } from "@/Redux/Auth/user.slice";
@@ -25,46 +25,6 @@ import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import toast from "react-hot-toast";
 
-type Data = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  organization: string;
-  phoneNumber: number | string;
-  whatsappNumber: number | string;
-  address: string;
-  state: string;
-  zipCode: string;
-  country: string;
-  language: string;
-  timezone: string;
-  currency: string;
-  passportStatus: string;
-  passportNumber: string;
-  experienceInMonths: number | string;
-  bio: string;
-};
-
-const initialData: Data = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  organization: "",
-  phoneNumber: "",
-  whatsappNumber: "",
-  address: "",
-  state: "",
-  zipCode: "",
-  country: "india",
-  language: "english",
-  timezone: "gmt-0530",
-  currency: "inr",
-  passportStatus: "not",
-  passportNumber: "",
-  experienceInMonths: "",
-  bio: "",
-};
-
 const AccountDetails = () => {
   const dispatch = useDispatch();
 
@@ -72,45 +32,16 @@ const AccountDetails = () => {
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
 
-  console.log(" REDUX STORE DATA:", reduxUser);
-
-  const [formData, setFormData] = useState<Data>(initialData);
-  const [errors, setErrors] = useState<Partial<Record<keyof Data, string>>>({});
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
 
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
+
+  
   useEffect(() => {
     const fetchAndSetData = async () => {
       if (reduxUser && (reduxUser.firstName || reduxUser.verifiedIdentity)) {
-        const isEmailChannel = reduxUser.channel === "email";
-        const isSmsChannel = reduxUser.channel === "sms";
-        const identity = reduxUser.verifiedIdentity || "";
-
-        setFormData({
-          firstName: reduxUser.firstName || "",
-          lastName: reduxUser.lastName || "",
-
-          email: isEmailChannel ? identity : reduxUser.email || "",
-          organization: reduxUser.organization || "",
-
-          phoneNumber: isSmsChannel ? identity : reduxUser.phoneNumber || "",
-
-          whatsappNumber: reduxUser.whatsappNumber || "",
-          address: reduxUser.address || "",
-          state: reduxUser.state || "",
-          zipCode: reduxUser.zipCode || "",
-          country: reduxUser.country || "india",
-          language: reduxUser.language || "english",
-          timezone: reduxUser.timezone || "gmt-0530",
-          currency: reduxUser.currency || "inr",
-          passportStatus: reduxUser.passportStatus || "not",
-          passportNumber:
-            reduxUser.passportNo || reduxUser.passportNumber || "",
-          experienceInMonths: reduxUser.experienceInMonths || "",
-          bio: reduxUser.bio || "",
-        });
         setFetching(false);
         return;
       }
@@ -130,27 +61,6 @@ const AccountDetails = () => {
 
         if (res.data?.success) {
           const fullUserData = res.data.data.user;
-
-          setFormData({
-            firstName: fullUserData.firstName || "",
-            lastName: fullUserData.lastName || "",
-            email: fullUserData.email || reduxUser?.email || "",
-            organization: fullUserData.organization || "",
-            phoneNumber: fullUserData.phoneNumber || "",
-            whatsappNumber: fullUserData.whatsappNumber || "",
-            address: fullUserData.address || "",
-            state: fullUserData.state || "",
-            zipCode: fullUserData.zipCode || "",
-            country: fullUserData.country || "india",
-            language: fullUserData.language || "english",
-            timezone: fullUserData.timezone || "gmt-0530",
-            currency: fullUserData.currency || "inr",
-            passportStatus: fullUserData.passportStatus || "not",
-            passportNumber: fullUserData.passportNumber || "",
-            experienceInMonths: fullUserData.experienceInMonths || "",
-            bio: fullUserData.bio || "",
-          });
-
           dispatch(updateUserData(fullUserData));
         }
       } catch (error) {
@@ -163,51 +73,76 @@ const AccountDetails = () => {
     fetchAndSetData();
   }, [reduxUser, dispatch]);
 
-   
-  const validate = () => {
-    let tempErrors: Partial<Record<keyof Data, string>> = {};
+ 
+  const formik = useFormik({
+    initialValues: {
+      firstName: reduxUser?.firstName || "",
+      lastName: reduxUser?.lastName || "",
+      email:
+        (reduxUser?.channel === "email"
+          ? reduxUser.verifiedIdentity
+          : reduxUser?.email) || "",
+      organization: reduxUser?.organization || "",
+      phoneNumber:
+        (reduxUser?.channel === "sms"
+          ? reduxUser.verifiedIdentity
+          : reduxUser?.phoneNumber) || "",
+      whatsappNumber: reduxUser?.whatsappNumber || "",
+      address: reduxUser?.address || "",
+      state: reduxUser?.state || "",
+      zipCode: reduxUser?.zipCode || "",
+      country: reduxUser?.country || "india",
+      language: reduxUser?.language || "english",
+      timezone: reduxUser?.timezone || "gmt-0530",
+      currency: reduxUser?.currency || "inr",
+      passportStatus: reduxUser?.passportStatus || "not",
+      passportNumber: reduxUser?.passportNo || reduxUser?.passportNumber || "",
+      experienceInMonths: reduxUser?.experienceInMonths || "",
+      bio: reduxUser?.bio || "",
+    },
+    enableReinitialize: true,
+    validationSchema: profileValidationSchema,
+    onSubmit: async (values) => {
+      setUpdating(true);
+      try {
+        const userId = reduxUser?.id || reduxUser?._id;
 
-    // First Name
-    if (!formData.firstName.trim()) tempErrors.firstName = "First name is required";
-    else if (!/^[a-zA-Z\s]{2,}$/.test(formData.firstName)) tempErrors.firstName = "Enter a valid name";
+        if (!userId) {
+          toast.error("Session expired. Please login again.");
+          return;
+        }
 
-    // Last Name
-    if (!formData.lastName.trim()) tempErrors.lastName = "Last name is required";
-    else if (!/^[a-zA-Z\s]{2,}$/.test(formData.lastName)) tempErrors.lastName = "Enter a valid name";
+        const payload = {
+          id: userId,
+          firstName: values.firstName,
+          lastName: values.lastName,
+          email: values.email,
+          phoneNumber: values.phoneNumber,
+          whatsappNumber: values.whatsappNumber,
+          address: values.address,
+          passportStatus: values.passportStatus,
+          passportNo:
+            values.passportStatus === "having" ? values.passportNumber : "",
+          enquired: "yes",
+        };
 
-    // Phone Number
-    if (!String(formData.phoneNumber).trim()) tempErrors.phoneNumber = "Phone number is required";
-    else if (!/^\d{10}$/.test(String(formData.phoneNumber))) tempErrors.phoneNumber = "Enter exactly 10 digits";
+        const res = await axiosClient.patch(`/user/profile-update`, payload);
 
-    // 👇 WHATSAPP VALIDATION
-    if (!String(formData.whatsappNumber).trim()) {
-      tempErrors.whatsappNumber = "WhatsApp number is required";
-    } else if (!/^\d{10}$/.test(String(formData.whatsappNumber))) {
-      tempErrors.whatsappNumber = "Enter exactly 10 digits";
-    }
-
-    // Passport
-    if (formData.passportStatus === "having") {
-      if (!formData.passportNumber) tempErrors.passportNumber = "Passport number is required";
-      else if (!/^[A-Z][0-9]{7}$/.test(formData.passportNumber)) {
-        tempErrors.passportNumber = "Format: 1 Letter + 7 Digits (e.g., Z1234567)";
+        if (res.data?.success) {
+          toast.success("Profile Updated Successfully!", {
+            duration: 3000,
+          });
+          dispatch(updateUserData(res.data.data));
+        }
+      } catch (error: any) {
+        console.error("Update Profile Error:", error);
+      } finally {
+        setUpdating(false);
       }
-    }
+    },
+  });
 
-    // Address
-    if (!formData.address.trim()) tempErrors.address = "Address is required";
-
-    setErrors(tempErrors);
-    return Object.keys(tempErrors).length === 0;
-  };
-
-  const handleFormChange = (field: keyof Data, value: Data[keyof Data]) => {
-    if (errors[field]) {
-      setErrors({ ...errors, [field]: "" });
-    }
-    setFormData({ ...formData, [field]: value });
-  };
-
+  // Image Upload Handlers
   const handleFileInputChange = (file: ChangeEvent) => {
     const reader = new FileReader();
     const { files } = file.target as HTMLInputElement;
@@ -222,53 +157,6 @@ const AccountDetails = () => {
   const handleFileInputReset = () => {
     setFileInput("");
     setImgSrc("/images/avatars/1.png");
-  };
-
-  const handleUpdateProfile = async (e: FormEvent) => {
-    e.preventDefault();
-
-    
-    if (!validate()) {
-      return; 
-    }
-
-    setUpdating(true);
-
-    try {
-      const userId = reduxUser?.id || reduxUser?._id;
-
-      if (!userId) {
-        toast.error("Session expired. Please login again.");
-        return;
-      }
-
-      const payload = {
-        id: userId,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        email: formData.email,
-        phoneNumber: formData.phoneNumber,
-        whatsappNumber: formData.whatsappNumber,
-        address: formData.address,
-        passportStatus: formData.passportStatus,
-        passportNo: formData.passportStatus === "having" ? formData.passportNumber : "",
-        enquired: "yes",
-      };
-
-      const res = await axiosClient.patch(`/user/profile-update`, payload);
-
-      if (res.data?.success) {
-        toast.success("Profile Updated Successfully!", {
-          duration: 3000,
-        });
-        dispatch(updateUserData(res.data.data));
-      }
-    } catch (error: any) {
-      console.error("Update Profile Error:", error);
-     
-    } finally {
-      setUpdating(false);
-    }
   };
 
   if (fetching) {
@@ -324,36 +212,57 @@ const AccountDetails = () => {
       </CardContent>
 
       <CardContent>
-        <form onSubmit={handleUpdateProfile}>
+        <form onSubmit={formik.handleSubmit} noValidate>
           <Grid container spacing={5}>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                id="firstName"
+                name="firstName"
                 label="First Name"
-                value={formData.firstName}
-                error={!!errors.firstName}
-                helperText={errors.firstName}
-                onChange={(e) => handleFormChange("firstName", e.target.value)}
+                value={formik.values.firstName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.firstName && Boolean(formik.errors.firstName)
+                }
+                // ✅ Fixed with Type Assertion (as string)
+                helperText={
+                  formik.touched.firstName && formik.errors.firstName
+                    ? (formik.errors.firstName as string)
+                    : undefined
+                }
               />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                id="lastName"
+                name="lastName"
                 label="Last Name"
-                value={formData.lastName}
-                error={!!errors.lastName}
-                helperText={errors.lastName}
-                onChange={(e) => handleFormChange("lastName", e.target.value)}
+                value={formik.values.lastName}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.lastName && Boolean(formik.errors.lastName)
+                }
+                // ✅ Fixed with Type Assertion (as string)
+                helperText={
+                  formik.touched.lastName && formik.errors.lastName
+                    ? (formik.errors.lastName as string)
+                    : undefined
+                }
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
+                id="email"
+                name="email"
                 label="Email"
-                value={formData.email}
+                value={formik.values.email}
                 disabled
-                onChange={(e) => handleFormChange("email", e.target.value)}
               />
             </Grid>
 
@@ -361,12 +270,21 @@ const AccountDetails = () => {
               <TextField
                 fullWidth
                 type="number"
+                id="phoneNumber"
+                name="phoneNumber"
                 label="Phone Number"
-                value={formData.phoneNumber}
-                error={!!errors.phoneNumber}
-                helperText={errors.phoneNumber}
-                onChange={(e) =>
-                  handleFormChange("phoneNumber", e.target.value)
+                value={formik.values.phoneNumber}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.phoneNumber &&
+                  Boolean(formik.errors.phoneNumber)
+                }
+               
+                helperText={
+                  formik.touched.phoneNumber && formik.errors.phoneNumber
+                    ? (formik.errors.phoneNumber as string)
+                    : undefined
                 }
               />
             </Grid>
@@ -374,25 +292,40 @@ const AccountDetails = () => {
               <TextField
                 fullWidth
                 type="number"
+                id="whatsappNumber"
+                name="whatsappNumber"
                 label="Whatsapp Number"
-                value={formData.whatsappNumber}
-                error={!!errors.whatsappNumber}
-                helperText={errors.whatsappNumber}
-                onChange={(e) =>
-                  handleFormChange("whatsappNumber", e.target.value)
+                value={formik.values.whatsappNumber}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={
+                  formik.touched.whatsappNumber &&
+                  Boolean(formik.errors.whatsappNumber)
+                }
+            
+                helperText={
+                  formik.touched.whatsappNumber && formik.errors.whatsappNumber
+                    ? (formik.errors.whatsappNumber as string)
+                    : undefined
                 }
               />
             </Grid>
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
-                <InputLabel>Having Passport</InputLabel>
+                <InputLabel id="passportStatus-label">
+                  Having Passport
+                </InputLabel>
                 <Select
+                  labelId="passportStatus-label"
+                  id="passportStatus"
+                  name="passportStatus"
                   label="Having Passport"
-                  value={formData.passportStatus}
+                  value={formik.values.passportStatus}
                   onChange={(e) =>
-                    handleFormChange("passportStatus", e.target.value)
+                    formik.setFieldValue("passportStatus", e.target.value)
                   }
+                  onBlur={formik.handleBlur}
                 >
                   <MenuItem value="having">Yes</MenuItem>
                   <MenuItem value="not">No</MenuItem>
@@ -401,14 +334,31 @@ const AccountDetails = () => {
               </FormControl>
             </Grid>
 
-            {formData.passportStatus === "having" && (
+            {formik.values.passportStatus === "having" && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
+                  id="passportNumber"
+                  name="passportNumber"
                   label="Passport Number"
-                  value={formData.passportNumber}
+                  value={formik.values.passportNumber}
                   onChange={(e) =>
-                    handleFormChange("passportNumber", e.target.value)
+                    formik.setFieldValue(
+                      "passportNumber",
+                      e.target.value.toUpperCase(),
+                    )
+                  }
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.passportNumber &&
+                    Boolean(formik.errors.passportNumber)
+                  }
+                 
+                  helperText={
+                    formik.touched.passportNumber &&
+                    formik.errors.passportNumber
+                      ? (formik.errors.passportNumber as string)
+                      : undefined
                   }
                 />
               </Grid>
@@ -417,11 +367,20 @@ const AccountDetails = () => {
             <Grid size={{ xs: 12, sm: 12 }}>
               <TextField
                 fullWidth
-                label="Address"
-                value={formData.address}
                 multiline
-                aria-colspan={3}
-                onChange={(e) => handleFormChange("address", e.target.value)}
+                id="address"
+                name="address"
+                label="Address"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.address && Boolean(formik.errors.address)}
+               
+                helperText={
+                  formik.touched.address && formik.errors.address
+                    ? (formik.errors.address as string)
+                    : undefined
+                }
               />
             </Grid>
 
@@ -433,7 +392,6 @@ const AccountDetails = () => {
               >
                 Professional Experience
               </Typography>
-
               <Divider sx={{ mb: 2 }} />
             </Grid>
 
@@ -441,11 +399,11 @@ const AccountDetails = () => {
               <TextField
                 fullWidth
                 type="number"
+                id="experienceInMonths"
+                name="experienceInMonths"
                 label="Experience (in months)"
-                value={formData.experienceInMonths}
-                onChange={(e) =>
-                  handleFormChange("experienceInMonths", e.target.value)
-                }
+                value={formik.values.experienceInMonths}
+                onChange={formik.handleChange}
               />
             </Grid>
 
@@ -454,9 +412,11 @@ const AccountDetails = () => {
                 fullWidth
                 multiline
                 rows={4}
+                id="bio"
+                name="bio"
                 label="Bio"
-                value={formData.bio}
-                onChange={(e) => handleFormChange("bio", e.target.value)}
+                value={formik.values.bio}
+                onChange={formik.handleChange}
               />
             </Grid>
 

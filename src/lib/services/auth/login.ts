@@ -46,6 +46,10 @@ export const login = async (body: LoginBody) => {
       id: user._id,
       email: user.email,
       phoneNumber: user.phoneNumber,
+      whatsappNumber: user.whatsappNumber,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      address: user.address,
     },
     tokens,
   };

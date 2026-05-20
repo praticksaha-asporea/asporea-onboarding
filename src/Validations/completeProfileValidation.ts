@@ -1,29 +1,32 @@
 import * as yup from "yup";
 
-export const profileValidationSchema = yup.object({
+export const completeProfileValidationSchema = yup.object({
   firstName: yup
     .string()
-    .min(2, "Enter a valid name (min 2 letters)")
+    .matches(/^[A-Za-z\s]+$/, "Only alphabets allowed (no numbers)")
+    .min(2, "Min 2 characters required")
     .required("First name is required"),
 
   lastName: yup
     .string()
-    .min(2, "Enter a valid name")
+    .matches(/^[A-Za-z\s]+$/, "Only alphabets allowed (no numbers)")
     .required("Last name is required"),
+
+  email: yup
+    .string()
+    .email("Invalid email format")
+    .required("Email is required"),
 
   phoneNumber: yup
     .string()
-    .matches(/^\d{10}$/, "Enter exactly 10 digits")
+    .matches(/^[0-9]{10}$/, "Enter exactly 10 digits (no words/letters)")
     .required("Phone number is required"),
 
   whatsappNumber: yup
     .string()
-    .matches(/^\d{10}$/, "Enter exactly 10 digits")
+    .trim()
+    .matches(/^[0-9]{10}$/, "Enter exactly 10 digits")
     .required("WhatsApp number is required"),
-
-   address: yup.string()
-  .trim()  
-  .required("Address is required"),
 
   passportStatus: yup.string(),
 
@@ -31,11 +34,13 @@ export const profileValidationSchema = yup.object({
     is: "having",
     then: (schema) =>
       schema
-        .required("Passport number is required")
         .matches(
           /^[A-Z][0-9]{7}$/,
           "Format: 1 Letter + 7 Digits (e.g., Z1234567)",
-        ),
+        )
+        .required("Passport number is required"),
     otherwise: (schema) => schema.notRequired(),
   }),
+
+  address: yup.string().required("Address is required"),
 });

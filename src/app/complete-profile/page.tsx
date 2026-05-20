@@ -4,11 +4,9 @@ import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "react-hot-toast";
 
-// Formik & Yup Imports
 import { useFormik } from "formik";
-import * as yup from "yup";
+import { completeProfileValidationSchema } from "@/Validations/completeProfileValidation";
 
-// MUI Imports
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -59,49 +57,15 @@ const initialData: Data = {
   passportNumber: "",
 };
 
-// 🛡️ STRICT YUP VALIDATION SCHEMA
-const validationSchema = yup.object({
-  firstName: yup
-    .string()
-    .matches(/^[A-Za-z\s]+$/, "Only alphabets allowed (no numbers)")
-    .min(2, "Min 2 characters required")
-    .required("First name is required"),
-  lastName: yup
-    .string()
-    .matches(/^[A-Za-z\s]+$/, "Only alphabets allowed (no numbers)")
-    .required("Last name is required"),
-  email: yup
-    .string()
-    .email("Invalid email format")
-    .required("Email is required"),
-  phoneNumber: yup
-    .string()
-    .matches(/^[0-9]{10}$/, "Enter exactly 10 digits (no words/letters)")
-    .required("Phone number is required"),
-  whatsappNumber: yup
-    .string()
-    .matches(/^[0-9]{10}$/, "Enter exactly 10 digits")
-    .notRequired(),
-  passportStatus: yup.string(),
-  passportNumber: yup.string().when("passportStatus", {
-    is: "having",
-    then: (schema) =>
-      schema
-        .matches(/^[A-Z][0-9]{7}$/, "Format: 1 Letter + 7 Digits (e.g., Z1234567)")
-        .required("Passport number is required"),
-    otherwise: (schema) => schema.notRequired(),
-  }),
-  address: yup.string().required("Address is required"),
-});
-
 export default function CompleteProfilePage() {
   const router = useRouter();
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
   const [loading, setLoading] = useState(false);
-  const [verifiedChannel, setVerifiedChannel] = useState<"email" | "sms" | "">("");
+  const [verifiedChannel, setVerifiedChannel] = useState<"email" | "sms" | "">(
+    "",
+  );
 
-  // 🚀 TERA WAPAS AAYA HUA handleRegisterUser FUNCTION
   const handleRegisterUser = async (values: Data) => {
     setLoading(true);
     const password = localStorage.getItem("temp_register_password");
@@ -134,11 +98,10 @@ export default function CompleteProfilePage() {
     }
   };
 
-  // 🚀 FORMIK SETUP
   const formik = useFormik({
     initialValues: initialData,
-    validationSchema: validationSchema,
-    onSubmit: handleRegisterUser, // Yahan humne apna function Formik ko de diya!
+    validationSchema: completeProfileValidationSchema,
+    onSubmit: handleRegisterUser,
   });
 
   useEffect(() => {
@@ -153,7 +116,6 @@ export default function CompleteProfilePage() {
     } else {
       router.push("/login");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
   const handleFileInputChange = (file: ChangeEvent) => {
@@ -239,8 +201,14 @@ export default function CompleteProfilePage() {
                   value={formik.values.firstName}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.firstName && Boolean(formik.errors.firstName)}
-                  helperText={formik.touched.firstName && formik.errors.firstName}
+                  error={
+                    formik.touched.firstName && Boolean(formik.errors.firstName)
+                  }
+                  helperText={
+                    formik.touched.firstName && formik.errors.firstName
+                      ? (formik.errors.firstName as string)
+                      : undefined
+                  }
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -253,8 +221,14 @@ export default function CompleteProfilePage() {
                   value={formik.values.lastName}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.lastName && Boolean(formik.errors.lastName)}
-                  helperText={formik.touched.lastName && formik.errors.lastName}
+                  error={
+                    formik.touched.lastName && Boolean(formik.errors.lastName)
+                  }
+                  helperText={
+                    formik.touched.lastName && formik.errors.lastName
+                      ? (formik.errors.lastName as string)
+                      : undefined
+                  }
                 />
               </Grid>
 
@@ -270,8 +244,11 @@ export default function CompleteProfilePage() {
                   onBlur={formik.handleBlur}
                   error={formik.touched.email && Boolean(formik.errors.email)}
                   helperText={
-                    (formik.touched.email && formik.errors.email) ||
-                    (verifiedChannel === "email" ? "Verified via OTP" : "")
+                    formik.touched.email && formik.errors.email
+                      ? (formik.errors.email as string)
+                      : verifiedChannel === "email"
+                        ? "Verified via OTP"
+                        : undefined
                   }
                   required={verifiedChannel !== "email"}
                 />
@@ -290,10 +267,16 @@ export default function CompleteProfilePage() {
                   disabled={verifiedChannel === "sms"}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.phoneNumber && Boolean(formik.errors.phoneNumber)}
+                  error={
+                    formik.touched.phoneNumber &&
+                    Boolean(formik.errors.phoneNumber)
+                  }
                   helperText={
-                    (formik.touched.phoneNumber && formik.errors.phoneNumber) ||
-                    (verifiedChannel === "sms" ? "Verified via OTP" : "")
+                    formik.touched.phoneNumber && formik.errors.phoneNumber
+                      ? (formik.errors.phoneNumber as string)
+                      : verifiedChannel === "sms"
+                        ? "Verified via OTP"
+                        : undefined
                   }
                 />
               </Grid>
@@ -302,6 +285,7 @@ export default function CompleteProfilePage() {
                 <TextField
                   fullWidth
                   type="tel"
+                  required
                   id="whatsappNumber"
                   name="whatsappNumber"
                   label="WhatsApp Number"
@@ -309,15 +293,26 @@ export default function CompleteProfilePage() {
                   value={formik.values.whatsappNumber}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.whatsappNumber && Boolean(formik.errors.whatsappNumber)}
-                  helperText={formik.touched.whatsappNumber && formik.errors.whatsappNumber}
+                  error={
+                    formik.touched.whatsappNumber &&
+                    Boolean(formik.errors.whatsappNumber)
+                  }
+                  helperText={
+                    formik.touched.whatsappNumber &&
+                    formik.errors.whatsappNumber
+                      ? (formik.errors.whatsappNumber as string)
+                      : undefined
+                  }
                 />
               </Grid>
 
               <Grid size={{ xs: 12, sm: 6 }}>
                 <FormControl fullWidth>
-                  <InputLabel>Having Passport</InputLabel>
+                  <InputLabel id="passportStatus-label">
+                    Having Passport
+                  </InputLabel>
                   <Select
+                    labelId="passportStatus-label"
                     id="passportStatus"
                     name="passportStatus"
                     label="Having Passport"
@@ -347,11 +342,22 @@ export default function CompleteProfilePage() {
                     placeholder="Z1234567"
                     value={formik.values.passportNumber}
                     onChange={(e) => {
-                      formik.setFieldValue("passportNumber", e.target.value.toUpperCase());
+                      formik.setFieldValue(
+                        "passportNumber",
+                        e.target.value.toUpperCase(),
+                      );
                     }}
                     onBlur={formik.handleBlur}
-                    error={formik.touched.passportNumber && Boolean(formik.errors.passportNumber)}
-                    helperText={formik.touched.passportNumber && formik.errors.passportNumber}
+                    error={
+                      formik.touched.passportNumber &&
+                      Boolean(formik.errors.passportNumber)
+                    }
+                    helperText={
+                      formik.touched.passportNumber &&
+                      formik.errors.passportNumber
+                        ? (formik.errors.passportNumber as string)
+                        : undefined
+                    }
                   />
                 </Grid>
               )}
@@ -368,8 +374,14 @@ export default function CompleteProfilePage() {
                   value={formik.values.address}
                   onChange={formik.handleChange}
                   onBlur={formik.handleBlur}
-                  error={formik.touched.address && Boolean(formik.errors.address)}
-                  helperText={formik.touched.address && formik.errors.address}
+                  error={
+                    formik.touched.address && Boolean(formik.errors.address)
+                  }
+                  helperText={
+                    formik.touched.address && formik.errors.address
+                      ? (formik.errors.address as string)
+                      : undefined
+                  }
                 />
               </Grid>
 
