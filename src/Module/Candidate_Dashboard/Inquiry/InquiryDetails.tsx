@@ -1,7 +1,7 @@
 "use client";
 
 // React Imports
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ChangeEvent } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/Redux/store";
@@ -105,6 +105,8 @@ const AccountDetails = () => {
     sms: false,
     whatsapp: false,
   });
+  // const [formData, setFormData] = useState<Data>(initialData);
+  const [branches, setBranches] = useState([]);
 
   useEffect(() => {
     if (userData?.notificationPreference) {
@@ -325,6 +327,36 @@ const AccountDetails = () => {
     preferences.whatsapp
   );
 
+  const fetchBranches = async (
+    lat: number,
+    lng: number,
+  ) => {
+    try {
+      const response = await fetch(
+        `/api/branch/list?lat=${lat}&lng=${lng}&radiusKm=5000&limit=50`
+      );
+
+      const result = await response.json();
+
+      setBranches(result?.data?.data || []);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fetchBranches(
+          position.coords.latitude,
+          position.coords.longitude,
+        );
+      },
+      (error) => {
+        console.error(error);
+        toast.error(`Please allow location access to get preffered branch list`)
+      }
+    );
+  }, []);
   return (
     <>
       <Grid container spacing={6}>
@@ -414,23 +446,29 @@ const AccountDetails = () => {
 
                       {/* Dropdown Branch */}
                       <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                        <FormControl
-                          fullWidth
-                          error={
-                            formik.submitCount > 0 &&
-                            Boolean(formik.errors.prefferedBranch)
-                          }
-                        >
-                          <InputLabel>Preffered Branch</InputLabel>
+                        <FormControl fullWidth>
+                          <InputLabel>Preferred Branch</InputLabel>
+
                           <Select
+                            label="Preferred Branch"
                             name="prefferedBranch"
-                            label="Preffered Branch"
                             value={formik.values.prefferedBranch}
                             onChange={formik.handleChange}
                           >
-                            {temporaryBranches.map((branch) => (
-                              <MenuItem key={branch._id} value={branch._id}>
+                            {branches?.map((branch: any,index:number) => (
+                              <MenuItem
+                                key={branch._id}
+                                value={branch._id}
+                              >
                                 {branch.title}
+                                {branch.distanceKm !== undefined &&
+                                  ` (
+                                  ${index==0?`Recommend - `:``}
+                                  ${branch.distanceKm < 1
+                                    ? "Within 1 Km"
+                                    : `${branch.distanceKm.toFixed(2)} Km`
+                                  }
+                                  )`}
                               </MenuItem>
                             ))}
                           </Select>
