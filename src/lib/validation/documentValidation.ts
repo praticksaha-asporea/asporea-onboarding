@@ -11,7 +11,7 @@ export const createDocumentTypeSchema = Joi.object({
       "additional"
     )
     .required(),
-  subTitle: Joi.string().trim().optional(),
+  subTitle: Joi.optional(),
   supportedExtensions: Joi.array()
     .items(Joi.string().trim())
     .optional(),
@@ -36,7 +36,7 @@ export const updateDocumentTypeSchema = Joi.object({
       "additional"
     )
     .required(),
-  subTitle: Joi.string().trim().optional(),
+  subTitle: Joi.optional(),
   supportedExtensions: Joi.array()
     .items(Joi.string().trim())
     .optional(),
