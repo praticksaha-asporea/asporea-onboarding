@@ -84,7 +84,7 @@ export default function CompleteProfilePage() {
         localStorage.removeItem("temp_register_email");
         localStorage.removeItem("temp_register_password");
         toast.success("Profile completed! Redirecting to login...", {
-          duration: 2000,
+          duration: 4000,
         });
         setTimeout(() => {
           router.push("/login");

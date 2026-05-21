@@ -36,7 +36,7 @@ const typeMapping: any = {
   });
 
   if (existingInquiry) {
-    throw new ApiError('An inquiry with this email or phone number already exists.', 409);
+    throw new ApiError(`You already inquiried. \n ID - ${existingInquiry.inqNo}`, 409);
   }
 
   const randomNo = Math.floor(1000 + Math.random() * 9000);
