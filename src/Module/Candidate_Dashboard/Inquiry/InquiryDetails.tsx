@@ -44,13 +44,7 @@ import {
   Stepper,
 } from "@mui/material";
 
-const temporaryBranches = [
-  { _id: "6a0854518d4641cbe8d9c064", title: "Siliguri" },
-  { _id: "6a0854518d4641cbe8d9c065", title: "Kalimpong" },
-  { _id: "6a0854518d4641cbe8d9c066", title: "Dehradun" },
-  { _id: "6a0854518d4641cbe8d9c067", title: "Guwahati" },
-  { _id: "6a0854518d4641cbe8d9c068", title: "Shillong" },
-];
+ 
 
 type StateType = {
   [key: string]: boolean;
@@ -68,7 +62,7 @@ const inquiryValidationSchema = Yup.object({
     .matches(/^[0-9]{10}$/, "Please Provide valid 10-digit WhatsApp number")
     .required("WhatsApp Number required"),
   prefferedBranch: Yup.string().required("Please select a preferred branch"),
-  prefferedConsultant: Yup.string().required("Please select a consultant"),
+  prefferedConsultant: Yup.string().nullable(),
   visitOption: Yup.number().required("Visit option is required"),
   fullAddress: Yup.string().trim().required("Full Address is required"),
 
@@ -105,8 +99,8 @@ const AccountDetails = () => {
     sms: false,
     whatsapp: false,
   });
-  // const [formData, setFormData] = useState<Data>(initialData);
-  const [branches, setBranches] = useState([]);
+  
+  const [branches, setBranches] = useState<any[]>([]);
 
   useEffect(() => {
     if (userData?.notificationPreference) {
@@ -154,6 +148,7 @@ const AccountDetails = () => {
           phoneNumber: String(values.phoneNumber),
           whatsappNumber: String(values.whatsappNumber),
           visitOption: Number(values.visitOption),
+          prefferedConsultant: values.prefferedConsultant === "" ? null : values.prefferedConsultant,
           referedBy: values.referedFrom === "reffer" ? values.referedBy : null,
           referedType:
             values.referedFrom === "reffer" ? values.referedType : null,
@@ -197,6 +192,9 @@ const AccountDetails = () => {
     },
   });
 
+const selectedBranchName = (branches as any[]).find((b: any) => b._id === formik.values.prefferedBranch)?.title || "our branch";
+const hasTAC = formik.values.prefferedConsultant !== "";
+
   useEffect(() => {
     if (userData) {
       formik.setValues({
@@ -223,11 +221,6 @@ const AccountDetails = () => {
         const response = await getTacListAction(formik.values.prefferedBranch);
         if (response.success) {
           setConsultants(response.data);
-          if (response.data.length > 0) {
-            formik.setFieldValue("prefferedConsultant", response.data[0]._id);
-          } else {
-            formik.setFieldValue("prefferedConsultant", "");
-          }
         }
       } catch (err) {
         console.error("TAC action error:", err);
@@ -282,11 +275,8 @@ const AccountDetails = () => {
     antoine: false,
   });
 
-  const { gilad, jason, antoine } = state;
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setState({ ...state, [event.target.name]: event.target.checked });
-  };
+  
+ 
 
   const steps = [
     { step: 1, label: "Inquiry", description: "", status: "completed" },
@@ -504,6 +494,7 @@ const AccountDetails = () => {
                             value={formik.values.prefferedConsultant}
                             onChange={formik.handleChange}
                           >
+                            <MenuItem value=""><em>None (No Consultant)</em></MenuItem>
                             {consultants.length === 0 ? (
                               <MenuItem value="" disabled>
                                 No TAC found
@@ -900,40 +891,66 @@ const AccountDetails = () => {
           </Grid>
         </Grid>
       </Grid>
+<Dialog
+  open={showInquiryPopup}
+  onClose={(event, reason) => { if (reason !== "backdropClick") setShowInquiryPopup(false); }}
+  maxWidth="sm" fullWidth
+>
+  <DialogContent className="text-center p-8">
+    <Typography variant="h4" className="mt-4">Inquiry Submitted</Typography>
+    <Typography variant="h6" className="mt-2 mb-8" color="primary">ID: {generatedInqNo}</Typography>
 
-      {/* Dialog Popup */}
-      <Dialog
-        open={showInquiryPopup}
-        onClose={(event, reason) => {
-          if (reason !== "backdropClick") {
-            setShowInquiryPopup(false);
-          }
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
-        <DialogContent className="text-center p-8">
-          <Typography variant="h4" className="mt-4">
-            Inquiry Submitted
+    <Box className="mb-8">
+      {/* --- LOGIC START --- */}
+      {formik.values.prefferedConsultant ? (
+        // CASE: Consultant Selected
+        formik.values.visitOption === 0 ? (
+          <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
+            As you are now inside our <span className="underline">{selectedBranchName}</span> Branch. <br />
+            Be ready for Pre-Counselling.
           </Typography>
-          <Typography variant="h6" className="mt-2 mb-8" color="primary">
-            ID: {generatedInqNo}
+        ) : formik.values.visitOption === 1 ? (
+          <Typography variant="body1" className="mb-4 text-red-500 leading-loose font-normal">
+            As you are visiting our <span className="underline">{selectedBranchName}</span> Branch. <br />
+            For Pre-counselling, Please reach to Reception Counter.
           </Typography>
-          <Box className="mb-8">
-            <Typography variant="body1" className="mt-2 mb-4 px-8">
-              You are assigned to a Talent Acquisition Consultant (TAC). <br />{" "}
-              Be ready for Pre-Counselling.
-            </Typography>
-            <Button
-              variant="contained"
-              className="normal-case rounded-[50px] py-[9.6px]"
-              href="/pre-counselling"
-            >
-              Schedule Pre-Counselling
-            </Button>
-          </Box>
-        </DialogContent>
-      </Dialog>
+        ) : (
+          <Typography variant="body1" className="mb-4">
+            You are assigned to a Talent Acquisition Consultant (TAC). <br /> Be ready for Pre-Counselling.
+          </Typography>
+        )
+      ) : (
+        // CASE: Consultant NOT Selected
+        <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
+          As you're in <span className="font-bold">{selectedBranchName}</span> Branch. <br />
+          For Pre-counselling, Please reach to Reception <br /> Counter. <br />
+          Receptionist will Generate a Token behalf of you.
+        </Typography>
+      )}
+      {/* --- LOGIC END --- */}
+
+      {/* --- BUTTON LOGIC START --- */}
+      {formik.values.prefferedConsultant ? (
+        <Button
+          variant="contained"
+          className="normal-case rounded-[50px] py-[9.6px] px-10"
+          href="/pre-counselling"
+        >
+          Schedule Pre-Counselling
+        </Button>
+      ) : (
+        <Button
+          variant="contained"
+          className="normal-case rounded-[50px] py-[9.6px] px-10"
+          onClick={() => setShowInquiryPopup(false)}
+        >
+          Close
+        </Button>
+      )}
+      {/* --- BUTTON LOGIC END --- */}
+    </Box>
+  </DialogContent>
+</Dialog>
     </>
   );
 };

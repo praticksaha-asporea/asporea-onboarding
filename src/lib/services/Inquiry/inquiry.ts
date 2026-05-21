@@ -40,7 +40,7 @@ const typeMapping: any = {
   }
 
   const randomNo = Math.floor(1000 + Math.random() * 9000);
-  const inqNo = `ASP-INQ-${randomNo}`;
+  const inqNo = `ASP-INQ-${randomNo}`;    // Inquiry number logic will change
 
   const leadData = {
     fullName,
@@ -52,7 +52,7 @@ const typeMapping: any = {
     address: fullAddress,
     preferences: {
       branchId: new mongoose.Types.ObjectId(prefferedBranch),
-      consultantId: new mongoose.Types.ObjectId(prefferedConsultant),
+      consultantId: prefferedConsultant ? new mongoose.Types.ObjectId(prefferedConsultant):null,
       visitType: Number(visitOption) === 2 ? 'online' : 'offline'
     },
 source: {

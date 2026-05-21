@@ -8,7 +8,7 @@ export const createInquirySchema = Joi.object({
   phoneNumber: Joi.string().trim().required(),
   whatsappNumber: Joi.string().trim().optional().allow("", null),
   prefferedBranch: objectIdSchema.required(),
-  prefferedConsultant: objectIdSchema.required(),
+  prefferedConsultant: objectIdSchema.optional().allow(null, ""),
   visitOption: Joi.number().valid(0, 1, 2).required(),
   fullAddress: Joi.string().trim().required(),
   referedFrom: Joi.string()
