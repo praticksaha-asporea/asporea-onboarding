@@ -6,6 +6,10 @@ import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middlewar
 import { applyCors } from "@/lib/cors";
 import { createPositionSchema } from "@/lib/validation/positionValidation";
 import { createPosition } from "@/lib/services/admin/position.service";
+import { parseForm, normalizeFormFields } from "@/lib/utils/parseForm";
+
+// Disable Next.js body parser — formidable handles multipart
+export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
@@ -20,7 +24,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const authUser = await verifyToken(token);
     if (authUser.role !== "admin") throw new ApiError("Admin access required", 403);
 
-    const { error, value } = createPositionSchema.validate(req.body);
+    const { fields } = await parseForm(req);
+    const body = normalizeFormFields(
+      fields,
+      ["requiredDocuments", "mandatoryDocuments"], // array fields
+    );
+
+    const { error, value } = createPositionSchema.validate(body);
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 

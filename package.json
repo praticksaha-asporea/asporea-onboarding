@@ -21,6 +21,7 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.20",
     "dotenv": "^17.3.1",
+    "formidable": "^3.5.4",
     "formik": "^2.4.9",
     "joi": "^18.0.2",
     "jsonwebtoken": "^9.0.3",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^6.0.0",
+    "@types/formidable": "^3.5.1",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.7",
