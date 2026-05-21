@@ -3,12 +3,16 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IGeneralSetting extends Document {
   lastInq?: number;
   lastFy?: string;
-  lastAssessment?: string;
+  lastCounter?: string;
 
   escalationTimelineHours?: number;
   inqResTimelineHours?: number;
   preCounsellingTimelineHours?: number;
   assessmentTimelineHours?: number;
+
+  tacAssignmentType?: "random" | "counterwise";
+
+  inquiryNumberFormat?: string;
 
   createdAt: Date;
   updatedAt: Date;
@@ -26,7 +30,7 @@ const GeneralSettingSchema = new Schema<IGeneralSetting>(
       trim: true,
     },
 
-    lastAssessment: {
+    lastCounter:{
       type: String,
       trim: true,
     },
@@ -49,6 +53,20 @@ const GeneralSettingSchema = new Schema<IGeneralSetting>(
     assessmentTimelineHours: {
       type: Number,
       default: 24,
+    },
+
+    /* TAC Assignment */
+    tacAssignmentType: {
+      type: String,
+      enum: ["random", "counterwise"],
+      default: "random",
+    },
+
+    /* Inquiry Number Format */
+    inquiryNumberFormat: {
+      type: String,
+      default: "ASP-INQ-0000",
+      trim: true,
     },
   },
   { timestamps: true }

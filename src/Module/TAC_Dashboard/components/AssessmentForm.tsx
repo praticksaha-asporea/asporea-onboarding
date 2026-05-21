@@ -311,12 +311,6 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
               </Typography>
               <TextField fullWidth defaultValue="11/11/2026" />
             </Grid>
-            <Grid size={{ xs: 12, md: 4 }}>
-              <Typography className="text-[11px] font-bold mb-1 uppercase">
-                Assessment No.
-              </Typography>
-              <TextField fullWidth defaultValue="ASF-2015-1021" />
-            </Grid>
             <Grid size={{ xs: 12, md: 8 }}>
               <Typography className="text-[11px] font-bold mb-1 uppercase">
                 Assessed By
