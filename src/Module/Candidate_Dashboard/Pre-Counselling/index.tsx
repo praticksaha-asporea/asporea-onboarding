@@ -41,7 +41,7 @@ const PreCounselling = () => {
     setState({ ...state, [event.target.name]: event.target.checked });
   };
 
-  // Demo slots array
+   
   const slots = [
     { time: "11:00-11:30", available: false },
     { time: "11:30-12:00", available: true },
