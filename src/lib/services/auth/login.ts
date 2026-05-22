@@ -50,6 +50,7 @@ export const login = async (body: LoginBody) => {
       firstName: user.firstName,
       lastName: user.lastName,
       address: user.address,
+      role: user.role
     },
     tokens,
   };

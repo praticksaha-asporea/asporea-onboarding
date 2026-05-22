@@ -11,7 +11,7 @@ import { setUserData, updateUserData, UserData } from "@/Redux/Auth/user.slice";
 import toast from "react-hot-toast";
 import { respectiveDashboard } from "@/Utils/common";
 
-export function useLogin() {
+export function useTACLogin() {
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -57,9 +57,10 @@ export function useLogin() {
           Cookies.set("refreshToken", tokens.refreshToken);
         }
 
-        // console.log(user.role,9999);
         dispatch(setUserData({ userData: user as UserData }));
+
         respectiveDashboard(user, router);
+
       }
     } catch (err: any) {
       console.error("Login Error:", err);
@@ -113,8 +114,8 @@ export function useLogin() {
 
 
           if (user) dispatch(setUserData({ userData: user as UserData }));
-          respectiveDashboard(user, router);
 
+        respectiveDashboard(user, router);
         } else {
 
           setShowSetupPassword(true);

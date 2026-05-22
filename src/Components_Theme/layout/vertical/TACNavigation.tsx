@@ -5,14 +5,15 @@ import { useRef } from 'react'
 
 // Next Imports
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 
 // MUI Imports
 import { styled, useTheme } from '@mui/material/styles'
 
 // Component Imports
 import VerticalNav, { NavHeader } from '../../../@menu/vertical-menu'
-import CandidateMenu from './CandidateMenu'
-import Logo from '../../../Components_Theme/layout/shared/Logo'
+import TacMenu from './TacMenu'
+import Logo from '../shared/Logo'
 
 // Hook Imports
 import useVerticalNav from '../../../@menu/hooks/useVerticalNav'
@@ -36,7 +37,7 @@ const StyledBoxForShadow = styled('div')(({ theme }) => ({
   }
 }))
 
-const Navigation = () => {
+const TACNavigation = () => {
   // Hooks
   const theme = useTheme()
   const { isBreakpointReached, toggleVerticalNav } = useVerticalNav()
@@ -73,10 +74,10 @@ const Navigation = () => {
       <StyledBoxForShadow ref={shadowRef} />
       
        
-        <CandidateMenu scrollMenu={scrollMenu} />
+        <TacMenu scrollMenu={scrollMenu} />
       
     </VerticalNav>
   )
 }
 
-export default Navigation
+export default TACNavigation

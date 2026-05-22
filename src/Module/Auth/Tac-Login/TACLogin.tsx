@@ -25,10 +25,10 @@ import { useImageVariant } from "@core/hooks/useImageVariant";
 import Logo from "../../../Components_Theme/layout/shared/Logo";
 import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
-import { useLogin } from "./useLogin";
+import { useTACLogin } from "./useTACLogin";
 
 
-const Login = ({ mode }: { mode: Mode }) => {
+const TACLogin = ({ mode }: { mode: Mode }) => {
   const {
     isPasswordShown,
     authMode,
@@ -51,7 +51,7 @@ const Login = ({ mode }: { mode: Mode }) => {
     handleSendOtp,
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
-  } = useLogin();
+  } = useTACLogin();
 
   const darkImg = "/images/pages/auth-v1-mask-dark.png";
   const lightImg = "/images/pages/auth-v1-mask-light.png";
@@ -281,14 +281,14 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </>
               )}
 
-              <Divider className="gap-3">or</Divider>
+              {/* <Divider className="gap-3">or</Divider>
               <div className="grid grid-cols-2 gap-3">
                 <Button
                   variant="outlined"
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("google", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-google-fill text-googlePlus" />
@@ -298,7 +298,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("facebook", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("facebook", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-facebook-fill text-facebook" />
@@ -308,7 +308,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("linkedin", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("linkedin", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-linkedin-box-fill text-linkedin" />
@@ -318,12 +318,12 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("instagram", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("instagram", { callbackUrl: "/inquiry" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-instagram-fill text-instagram" />
                 </Button>
-              </div>
+              </div> */}
             </form>
           </div>
         </CardContent>
@@ -439,4 +439,4 @@ const Login = ({ mode }: { mode: Mode }) => {
   );
 };
 
-export default Login;
+export default TACLogin;

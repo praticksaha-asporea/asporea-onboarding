@@ -24,6 +24,7 @@ import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import toast from "react-hot-toast";
+import { Avatar } from "@mui/material";
 
 const AccountDetails = () => {
   const dispatch = useDispatch();
@@ -172,13 +173,7 @@ const AccountDetails = () => {
     <Card>
       <CardContent className="mbe-5">
         <div className="flex max-sm:flex-col items-center gap-6">
-          <img
-            height={100}
-            width={100}
-            className="rounded"
-            src={imgSrc}
-            alt="Profile"
-          />
+          <Avatar alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`} src={imgSrc} />
           <div className="flex flex-grow flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
