@@ -23,40 +23,45 @@ async function handleSocialSignIn({
 }) {
   await connectToDatabase();
 
+  // 1. Check if this social account is already linked
   let socialRecord = await SocialLogins.findOne({ type: provider, providerId });
   let dbUser: any;
   let tokens;
 
   if (socialRecord) {
+    // Known social login — load linked user and refresh tokens
     dbUser = await User.findById(socialRecord.userId);
-    if (dbUser) dbUser = { ...dbUser.toObject(), registered: 1 };
-  } else if (email) {
+    // console.log(dbUser,954645);
+    
+    if (dbUser) {
+      await SocialLogins.findByIdAndUpdate(socialRecord._id, { accessToken, scopes, expiresAt });
+      tokens = await generateTokens({ _id: String(dbUser._id), role: String(dbUser.role ?? "user") });
+  // console.log({ appTokens: tokens, appUserId: String(dbUser._id), appUserRole: String(dbUser.role ?? "user"), isNewUser: false, userData: dbUser.toObject() },5345345345435);
+
+      return { appTokens: tokens, appUserId: String(dbUser._id), appUserRole: String(dbUser.role ?? "user"), isNewUser: false, userData: dbUser.toObject() };
+    }
+  }
+
+  if (email) {
+    // Check if user exists by email
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      dbUser = { ...existingUser.toObject(), registered: 1 };
-    } else {
-      dbUser = { _id: null, email, firstName, lastName, type: provider, providerId, accessToken, scopes, expiresAt, registered: 0 };
+      // Existing user — link this social account and generate tokens
+      if (!socialRecord) {
+        await SocialLogins.create({ userId: existingUser._id, type: provider, providerId, accessToken, scopes, expiresAt });
+      }
+      tokens = await generateTokens({ _id: String(existingUser._id), role: String(existingUser.role ?? "user") });
+      return { appTokens: tokens, appUserId: String(existingUser._id), appUserRole: String(existingUser.role ?? "user"), isNewUser: false, userData: existingUser.toObject() };
     }
-  } else {
-    dbUser = { _id: null, email: null, firstName, lastName, type: provider, providerId, accessToken, scopes, expiresAt, registered: 0 };
   }
-
-  if (dbUser?._id != null) {
-    if (socialRecord) {
-      await SocialLogins.findByIdAndUpdate(socialRecord._id, { accessToken, scopes, expiresAt });
-    }
-    tokens = await generateTokens({
-      _id: String(dbUser._id),
-      role: String(dbUser.role ?? "user"),
-    });
-  }
-
+  
+  // New user — not in DB yet, return profile data for complete-profile flow
   return {
-    appTokens: tokens,
-    appUserId: String(dbUser?._id),
-    appUserRole: String(dbUser?.role ?? "user"),
-    isNewUser: dbUser?.registered === 0,
-    userData: dbUser,
+    appTokens: undefined,
+    appUserId: undefined,
+    appUserRole: "user",
+    isNewUser: true,
+    userData: { email, firstName, lastName, provider, providerId },
   };
 }
 
@@ -98,6 +103,7 @@ export const authOptions: NextAuthOptions = {
         (account as any)._appTokens = result.appTokens;
         (account as any)._appUserId = result.appUserId;
         (account as any)._appUserRole = result.appUserRole;
+        (account as any)._isNewUser = result.isNewUser;
         (account as any)._userData = result.userData;
       } catch (err) {
         console.error("NextAuth signIn error:", err);
@@ -105,15 +111,6 @@ export const authOptions: NextAuthOptions = {
       }
       return true;
     },
-
-    async redirect({ url, baseUrl }) {
-      // After OAuth callback, route through our cookie-setter before going to the app
-      if (url.includes("/api/auth/callback/")) {
-        return `${baseUrl}/api/auth/social-callback`;
-      }
-      return url.startsWith(baseUrl) ? url : baseUrl;
-    },
-
     async jwt({ token, account }) {
       if (account) {
         token.provider = account.provider;
@@ -121,6 +118,7 @@ export const authOptions: NextAuthOptions = {
         token.appRefreshToken = (account as any)._appTokens?.refreshToken;
         token.appUserId = (account as any)._appUserId;
         token.appUserRole = (account as any)._appUserRole;
+        token.isNewUser = (account as any)._isNewUser;
         token.userData = (account as any)._userData;
       }
       return token;
@@ -132,6 +130,7 @@ export const authOptions: NextAuthOptions = {
       session.appRefreshToken = token.appRefreshToken as string;
       session.appUserId = token.appUserId as string;
       session.appUserRole = token.appUserRole as string;
+      session.isNewUser = token.isNewUser as boolean;
       session.userData = token.userData as object;
       return session;
     },
@@ -154,6 +153,7 @@ declare module "next-auth" {
     appRefreshToken?: string;
     appUserId?: string;
     appUserRole?: string;
+    isNewUser?: boolean;
     userData?: object;
   }
 }
@@ -165,6 +165,7 @@ declare module "next-auth/jwt" {
     appRefreshToken?: string;
     appUserId?: string;
     appUserRole?: string;
+    isNewUser?: boolean;
     userData?: object;
   }
 }

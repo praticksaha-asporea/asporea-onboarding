@@ -1,6 +1,7 @@
 import { ApiError } from "@/lib/error/api.error";
 import { Position } from "@/lib/models/Position.model";
 import mongoose from "mongoose";
+import '../../models/DocumentType.model'
 
 export const createPosition = async (body: any) => {
   const { title, details, requiredDocuments, mandatoryDocuments, positionBrochure } = body;

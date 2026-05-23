@@ -26,6 +26,7 @@ import Logo from "../../../Components_Theme/layout/shared/Logo";
 import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
 import { useLogin } from "./useLogin";
+import toast from "react-hot-toast";
 
 
 const Login = ({ mode }: { mode: Mode }) => {
@@ -91,11 +92,10 @@ const Login = ({ mode }: { mode: Mode }) => {
     validateOnBlur: false,
     validationSchema: passwordSetupSchema,
     onSubmit: (values) => {
-       
+      
       setNewPassword(values.newPassword);
       setConfirmPassword(values.confirmPassword);
-      
-      
+           
       handleSavePasswordAndRedirect();
     },
   });
@@ -288,7 +288,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("google", { callbackUrl: "/social-callback" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-google-fill text-googlePlus" />
@@ -298,7 +298,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("facebook", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("facebook", { callbackUrl: "/social-callback" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-facebook-fill text-facebook" />
@@ -308,7 +308,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("linkedin", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("linkedin", { callbackUrl: "/social-callback" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-linkedin-box-fill text-linkedin" />
@@ -318,7 +318,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("instagram", { callbackUrl: "/callback" })}
+                  onClick={() => signIn("instagram", { callbackUrl: "/social-callback" })}
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-instagram-fill text-instagram" />

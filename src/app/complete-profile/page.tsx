@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
@@ -66,23 +66,36 @@ export default function CompleteProfilePage() {
     "",
   );
 
-  const handleRegisterUser = async (values: Data) => {
+    const handleRegisterUser = async (values: Data) => {
     setLoading(true);
     const password = localStorage.getItem("temp_register_password");
+
+    // Attach social login data if the user came from OAuth
+    const socialRaw = localStorage.getItem("temp_social_profile");
+    const social = socialRaw ? JSON.parse(socialRaw) : undefined;
 
     const payload = {
       ...values,
       passportNumber:
         values.passportStatus === "having" ? values.passportNumber : "",
       password,
+      ...(social && {
+        social: {
+          type: social.provider,
+          providerId: social.providerId,
+          accessToken: social.accessToken,
+          scopes: social.scopes,
+          expiresAt: social.expiresAt,
+        },
+      }),
     };
 
     try {
       const res = await axios.post("/api/auth/register", payload);
-
       if (res.data?.success) {
         localStorage.removeItem("temp_register_email");
         localStorage.removeItem("temp_register_password");
+        localStorage.removeItem("temp_social_profile");
         toast.success("Profile completed! Redirecting to login...", {
           duration: 4000,
         });
@@ -107,14 +120,31 @@ export default function CompleteProfilePage() {
   useEffect(() => {
     const savedIdentity = localStorage.getItem("temp_register_email");
 
-    if (savedIdentity) {
-      const isEmail = savedIdentity.includes("@");
-      setVerifiedChannel(isEmail ? "email" : "sms");
-
-      formik.setFieldValue("email", isEmail ? savedIdentity : "");
-      formik.setFieldValue("phoneNumber", !isEmail ? savedIdentity : "");
-    } else {
+    if (!savedIdentity) {
       router.push("/login");
+      return;
+    }
+
+    const isEmail = savedIdentity.includes("@");
+    setVerifiedChannel(isEmail ? "email" : "sms");
+    formik.setFieldValue("email", isEmail ? savedIdentity : "");
+    formik.setFieldValue("phoneNumber", !isEmail ? savedIdentity : "");
+
+    // Pre-fill name fields from social profile if available
+    const socialRaw = localStorage.getItem("temp_social_profile");
+    if (socialRaw) {
+      try {
+        const social = JSON.parse(socialRaw);
+        if (social.firstName) formik.setFieldValue("firstName", social.firstName);
+        if (social.lastName) formik.setFieldValue("lastName", social.lastName);
+        // Email from social takes priority if it exists
+        if (social.email) {
+          formik.setFieldValue("email", social.email);
+          setVerifiedChannel("email");
+        }
+      } catch {
+        // malformed JSON — ignore
+      }
     }
   }, [router]);
 

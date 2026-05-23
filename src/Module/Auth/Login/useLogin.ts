@@ -129,9 +129,6 @@ export function useLogin() {
   };
 
   const handleSavePasswordAndRedirect = () => {
-    if (!newPassword || newPassword !== confirmPassword) {
-      return alert("Passwords do not match!");
-    }
 
     localStorage.setItem("temp_register_email", identity);
     localStorage.setItem("temp_register_password", newPassword);
