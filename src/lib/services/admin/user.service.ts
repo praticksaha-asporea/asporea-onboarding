@@ -14,7 +14,7 @@ import '../../models/User.model';
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
 export const VALID_ROLES = [
-  'admin', 'tac', 'user', 'reception', 'finance', 'coordinator',
+  'admin', 'tac', 'user', 'foe', 'finance', 'coordinator',
   'pca', 'pcra', 'institute', 'sub_pca', 'branch_head', 'tac_head',
 ] as const;
 

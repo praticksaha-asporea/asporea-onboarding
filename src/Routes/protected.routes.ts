@@ -13,5 +13,5 @@ export const protectedRoutesCandidate = [
 
 export const protectedRouteTAC = [
   'dashboard',
-  'profile',
+  'my-profile',
 ];

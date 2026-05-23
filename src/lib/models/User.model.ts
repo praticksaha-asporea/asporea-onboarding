@@ -9,7 +9,7 @@ export interface IUser extends Document {
   address?: string;
 
   password?: string;
-  role?: "admin" | "tac" | "user" | "reception" | "finance" | "coordinator" | "pca" | "pcra" | "institute" | "sub_pca" | "branch_head" | "tac_head", //employer
+  role?: "admin" | "tac" | "user" | "foe" | "finance" | "coordinator" | "pca" | "pcra" | "institute" | "sub_pca" | "branch_head" | "tac_head", //employer
   passportStatus?: "having" | "not" | "applied";
   passportNo: string;
   enquired?: "yes" | "no";
@@ -23,6 +23,8 @@ export interface IUser extends Document {
     whatsapp?: boolean;
     email?: boolean;
   };
+  experienceInMonths?: number;
+  bio?: string;
 
   reviewer?: Types.ObjectId;
   createdBy?: Types.ObjectId;

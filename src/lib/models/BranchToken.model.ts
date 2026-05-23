@@ -10,7 +10,7 @@ export interface IBranchToken extends Document {
 
   status?: "generated" | "queued" | "finished";
 
-  generatedBy?: "user" | "reception";
+  generatedBy?: "user" | "foe";
 
   createdAt: Date;
   updatedAt: Date;
@@ -52,7 +52,7 @@ const BranchTokenSchema = new Schema<IBranchToken>(
 
     generatedBy: {
       type: String,
-      enum: ["user", "reception"],
+      enum: ["user", "foe"],
       default: "user",
     },
   },

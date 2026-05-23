@@ -38,4 +38,6 @@ export const profileValidationSchema = yup.object({
         ),
     otherwise: (schema) => schema.notRequired(),
   }),
+  experienceInMonths: yup.string().nullable(),
+  bio: yup.string().nullable(),
 });

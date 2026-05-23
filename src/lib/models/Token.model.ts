@@ -17,7 +17,7 @@ const TokenSchema = new Schema<IToken>(
     },
     role: {
       type: String,
-      enum: ["admin","tac","user","reception","finance","coordinator","pca","pcra","institute","sub_pca","branch_head","tac_head"],
+      enum: ["admin","tac","user","foe","finance","coordinator","pca","pcra","institute","sub_pca","branch_head","tac_head"],
     },
     token: { type: String, required: true },
 

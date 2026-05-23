@@ -612,7 +612,7 @@ const InquiryDetails = () => {
                 <br />
                 For Pre-counselling, please reach the Reception Counter.
                 <br />
-                The Receptionist will generate a token on your behalf.
+                The FOE(Front Office Executive) will generate a token on your behalf.
               </Typography>
             )}
 

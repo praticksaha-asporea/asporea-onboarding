@@ -39,7 +39,7 @@ const AccountDetails = () => {
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-  
+
   useEffect(() => {
     const fetchAndSetData = async () => {
       if (reduxUser && (reduxUser.firstName || reduxUser.verifiedIdentity)) {
@@ -74,7 +74,7 @@ const AccountDetails = () => {
     fetchAndSetData();
   }, [reduxUser, dispatch]);
 
- 
+
   const formik = useFormik({
     initialValues: {
       firstName: reduxUser?.firstName || "",
@@ -124,9 +124,12 @@ const AccountDetails = () => {
           passportStatus: values.passportStatus,
           passportNo:
             values.passportStatus === "having" ? values.passportNumber : "",
-          enquired: "yes",
+          enquired: "yes",          
+          experienceInMonths: values?.experienceInMonths,
+          bio: values?.bio,
         };
-
+        console.log(payload,5844);
+        
         const res = await axiosClient.patch(`/user/profile-update`, payload);
 
         if (res.data?.success) {
@@ -275,7 +278,7 @@ const AccountDetails = () => {
                   formik.touched.phoneNumber &&
                   Boolean(formik.errors.phoneNumber)
                 }
-               
+
                 helperText={
                   formik.touched.phoneNumber && formik.errors.phoneNumber
                     ? (formik.errors.phoneNumber as string)
@@ -297,7 +300,7 @@ const AccountDetails = () => {
                   formik.touched.whatsappNumber &&
                   Boolean(formik.errors.whatsappNumber)
                 }
-            
+
                 helperText={
                   formik.touched.whatsappNumber && formik.errors.whatsappNumber
                     ? (formik.errors.whatsappNumber as string)
@@ -305,6 +308,7 @@ const AccountDetails = () => {
                 }
               />
             </Grid>
+            {reduxUser.role === "user" && (
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
@@ -328,8 +332,8 @@ const AccountDetails = () => {
                 </Select>
               </FormControl>
             </Grid>
-
-            {formik.values.passportStatus === "having" && (
+            )}
+            {reduxUser.role === "user" && formik.values.passportStatus === "having" && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -348,10 +352,10 @@ const AccountDetails = () => {
                     formik.touched.passportNumber &&
                     Boolean(formik.errors.passportNumber)
                   }
-                 
+
                   helperText={
                     formik.touched.passportNumber &&
-                    formik.errors.passportNumber
+                      formik.errors.passportNumber
                       ? (formik.errors.passportNumber as string)
                       : undefined
                   }
@@ -370,7 +374,7 @@ const AccountDetails = () => {
                 onChange={formik.handleChange}
                 onBlur={formik.handleBlur}
                 error={formik.touched.address && Boolean(formik.errors.address)}
-               
+
                 helperText={
                   formik.touched.address && formik.errors.address
                     ? (formik.errors.address as string)
@@ -378,43 +382,45 @@ const AccountDetails = () => {
                 }
               />
             </Grid>
+            {reduxUser.role === "tac" && (
+              <>
+                <Grid size={14}>
+                  <Typography
+                    variant="h6"
+                    color="text.primary"
+                    sx={{ mt: 4, mb: 1, fontWeight: 600 }}
+                  >
+                    Professional Experience
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                </Grid>
 
-            <Grid size={14}>
-              <Typography
-                variant="h6"
-                color="text.primary"
-                sx={{ mt: 4, mb: 1, fontWeight: 600 }}
-              >
-                Professional Experience
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    id="experienceInMonths"
+                    name="experienceInMonths"
+                    label="Experience (in months)"
+                    value={formik.values.experienceInMonths}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
-                type="number"
-                id="experienceInMonths"
-                name="experienceInMonths"
-                label="Experience (in months)"
-                value={formik.values.experienceInMonths}
-                onChange={formik.handleChange}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                id="bio"
-                name="bio"
-                label="Bio"
-                value={formik.values.bio}
-                onChange={formik.handleChange}
-              />
-            </Grid>
-
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    id="bio"
+                    name="bio"
+                    label="Bio"
+                    value={formik.values.bio}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
+              </>
+            )}
             <Grid size={12} className="flex justify-end gap-4 flex-wrap">
               <Button variant="contained" type="submit" disabled={updating}>
                 {updating ? (

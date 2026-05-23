@@ -133,7 +133,14 @@ const UserDropdown = () => {
                     </div>
                   </div>
                   <Divider className='mlb-1' />
-                  <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/profile')}>
+                  <MenuItem className='gap-3' onClick={(e) => {
+                    if (reduxUser?.role == "user") {
+                      handleDropdownClose(e, '/profile');
+                    }
+                    else if(reduxUser?.role == "tac"){
+                      handleDropdownClose(e, '/my-profile');
+                    }
+                  }}>
                     <i className='ri-user-3-line' />
                     <Typography color='text.primary'>My Profile</Typography>
                   </MenuItem>
