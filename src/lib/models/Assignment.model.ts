@@ -119,3 +119,6 @@ AssignmentSchema.index({
 AssignmentSchema.index({
   "token.number": 1,
 });
+
+ 
+export const Assignment = mongoose.models.Assignment || mongoose.model<IAssignment>("Assignment", AssignmentSchema);
