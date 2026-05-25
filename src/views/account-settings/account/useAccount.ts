@@ -12,14 +12,16 @@ export const useAccount = () => {
   const dispatch = useDispatch();
 
   const reduxUser = useSelector(
-    (state: any) => state.userSlice?.userData || state.user?.userData
-  );
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );  
+  
 
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
 
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
+
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -54,6 +56,7 @@ export const useAccount = () => {
 
     fetchAndSetData();
   }, [reduxUser, dispatch]);
+
 
   const formik = useFormik({
     initialValues: {
@@ -104,10 +107,14 @@ export const useAccount = () => {
           passportStatus: values.passportStatus,
           passportNo:
             values.passportStatus === "having" ? values.passportNumber : "",
-          enquired: "yes",
+          enquired: "yes",          
+          experienceInMonths: values?.experienceInMonths,
+          bio: values?.bio,
         };
-
+        // console.log(payload,5844);
+        
         const res = await axiosClient.patch(`/user/profile-update`, payload);
+        // console.log(res,11111);
 
         if (res.data?.success) {
           toast.success("Profile Updated Successfully!", {
@@ -123,7 +130,7 @@ export const useAccount = () => {
     },
   });
 
-   
+  // Image Upload Handlers
   const handleFileInputChange = (file: ChangeEvent) => {
     const reader = new FileReader();
     const { files } = file.target as HTMLInputElement;
@@ -140,6 +147,48 @@ export const useAccount = () => {
     setImgSrc("/images/avatars/1.png");
   };
 
+
+
+
+
+
+
+
+  useEffect(() => {
+    const fetchAndSetData = async () => {
+      if (reduxUser && (reduxUser.firstName || reduxUser.verifiedIdentity)) {
+        setFetching(false);
+        return;
+      }
+
+      try {
+        const token = Cookies.get("accessToken");
+        if (!token) {
+          setFetching(false);
+          return;
+        }
+
+        const payloadBase64 = token.split(".")[1];
+        const decodedPayload = JSON.parse(atob(payloadBase64));
+        const userId = decodedPayload.userId || decodedPayload.id;
+
+        const res = await axiosClient.get(`/user/details?id=${userId}`);
+
+        if (res.data?.success) {
+          const fullUserData = res.data.data.user;
+          dispatch(updateUserData(fullUserData));
+        }
+      } catch (error) {
+        console.error("Profile Fetch Error:", error);
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    fetchAndSetData();
+  }, [reduxUser, dispatch]);
+
+
   return {
     formik,
     fileInput,
@@ -148,5 +197,6 @@ export const useAccount = () => {
     updating,
     handleFileInputChange,
     handleFileInputReset,
+    reduxUser
   };
 };

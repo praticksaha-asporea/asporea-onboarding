@@ -21,6 +21,8 @@ import Typography from '@mui/material/Typography'
 import Divider from '@mui/material/Divider'
 import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
+import { useSelector } from 'react-redux'
+import { CamelCase } from '@/Utils/common'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -36,6 +38,9 @@ const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
 
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
@@ -60,22 +65,22 @@ const UserDropdown = () => {
 
   const handleUserLogout = async () => {
     try {
-      
+
       localStorage.clear()
 
-       
+
       const allCookies = Cookies.get()
       Object.keys(allCookies).forEach((cookieName) => {
         if (cookieName !== 'remEmail' && cookieName !== 'remPass') {
           Cookies.remove(cookieName)
-          Cookies.remove(cookieName, { path: '/' })  
+          Cookies.remove(cookieName, { path: '/' })
         }
       })
 
-      
+
       await signOut({ redirect: false })
 
-      
+
       window.location.href = '/login'
     } catch (error) {
       console.error('Logout Error:', error)
@@ -94,11 +99,11 @@ const UserDropdown = () => {
       >
         <Avatar
           ref={anchorRef}
-          alt='John Doe'
+          alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
           src='/images/avatars/1.png'
           onClick={handleDropdownOpen}
-          className='cursor-pointer bs-[38px] is-[38px]'
-        />
+          className='cursor-pointer bs-[38px] is-[38px] border-[3px] border-divider"'
+          />
       </Badge>
       <Popper
         open={open}
@@ -119,23 +124,30 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-4 gap-2' tabIndex={-1}>
-                    <Avatar alt='John Doe' src='/images/avatars/1.png' />
+                    <Avatar alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`} src='/images/avatars/1.png' />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
-                        John Doe
+                        {`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
                       </Typography>
-                      <Typography variant='caption'>Candidate</Typography>
+                      <Typography variant='caption'>{CamelCase(reduxUser?.role)}</Typography>
                     </div>
                   </div>
                   <Divider className='mlb-1' />
-                  <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/profile')}>
+                  <MenuItem className='gap-3' onClick={(e) => {
+                    if (reduxUser?.role == "user") {
+                      handleDropdownClose(e, '/profile');
+                    }
+                    else if(reduxUser?.role == "tac"){
+                      handleDropdownClose(e, '/my-profile');
+                    }
+                  }}>
                     <i className='ri-user-3-line' />
                     <Typography color='text.primary'>My Profile</Typography>
                   </MenuItem>
-                  <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/profile')}>
+                  {/* <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/profile')}>
                     <i className='ri-settings-4-line' />
                     <Typography color='text.primary'>Settings</Typography>
-                  </MenuItem>
+                  </MenuItem> */}
                   <div className='flex items-center plb-2 pli-4'>
                     <Button
                       fullWidth
@@ -143,7 +155,7 @@ const UserDropdown = () => {
                       color='error'
                       size='small'
                       endIcon={<i className='ri-logout-box-r-line' />}
-                       onClick={handleUserLogout}
+                      onClick={handleUserLogout}
                       sx={{ '& .MuiButton-endIcon': { marginInlineStart: 1.5 } }}
                     >
                       Logout

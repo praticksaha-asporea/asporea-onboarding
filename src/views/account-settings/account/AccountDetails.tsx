@@ -12,9 +12,13 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
+import toast from "react-hot-toast";
+import { Avatar } from "@mui/material";
 
  
 import { useAccount } from "./useAccount"; 
+
+
 
 const AccountDetails = () => {
   
@@ -26,6 +30,7 @@ const AccountDetails = () => {
     updating,
     handleFileInputChange,
     handleFileInputReset,
+    reduxUser
   } = useAccount();
 
   if (fetching) {
@@ -41,12 +46,10 @@ const AccountDetails = () => {
     <Card>
       <CardContent className="mbe-5">
         <div className="flex max-sm:flex-col items-center gap-6">
-          <img
-            height={100}
-            width={100}
-            className="rounded"
+          <Avatar
+            alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
             src={imgSrc}
-            alt="Profile"
+            className="w-20 h-20 border-[3px] border-divider"
           />
           <div className="flex flex-grow flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-4">
@@ -175,6 +178,7 @@ const AccountDetails = () => {
                 }
               />
             </Grid>
+            {reduxUser.role === "user" && (
 
             <Grid size={{ xs: 12, sm: 6 }}>
               <FormControl fullWidth>
@@ -198,8 +202,8 @@ const AccountDetails = () => {
                 </Select>
               </FormControl>
             </Grid>
-
-            {formik.values.passportStatus === "having" && (
+            )}
+            {reduxUser.role === "user" && formik.values.passportStatus === "having" && (
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
                   fullWidth
@@ -220,7 +224,7 @@ const AccountDetails = () => {
                   }
                   helperText={
                     formik.touched.passportNumber &&
-                    formik.errors.passportNumber
+                      formik.errors.passportNumber
                       ? (formik.errors.passportNumber as string)
                       : undefined
                   }
@@ -246,43 +250,45 @@ const AccountDetails = () => {
                 }
               />
             </Grid>
+            {reduxUser.role === "tac" && (
+              <>
+                <Grid size={14}>
+                  <Typography
+                    variant="h6"
+                    color="text.primary"
+                    sx={{ mt: 4, mb: 1, fontWeight: 600 }}
+                  >
+                    Professional Experience
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+                </Grid>
 
-            <Grid size={14}>
-              <Typography
-                variant="h6"
-                color="text.primary"
-                sx={{ mt: 4, mb: 1, fontWeight: 600 }}
-              >
-                Professional Experience
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-            </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    id="experienceInMonths"
+                    name="experienceInMonths"
+                    label="Experience (in months)"
+                    value={formik.values.experienceInMonths}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
-                type="number"
-                id="experienceInMonths"
-                name="experienceInMonths"
-                label="Experience (in months)"
-                value={formik.values.experienceInMonths}
-                onChange={formik.handleChange}
-              />
-            </Grid>
-
-            <Grid size={{ xs: 12 }}>
-              <TextField
-                fullWidth
-                multiline
-                rows={4}
-                id="bio"
-                name="bio"
-                label="Bio"
-                value={formik.values.bio}
-                onChange={formik.handleChange}
-              />
-            </Grid>
-
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={4}
+                    id="bio"
+                    name="bio"
+                    label="Bio"
+                    value={formik.values.bio}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
+              </>
+            )}
             <Grid size={12} className="flex justify-end gap-4 flex-wrap">
               <Button variant="contained" type="submit" disabled={updating}>
                 {updating ? (

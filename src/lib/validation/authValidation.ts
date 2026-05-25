@@ -44,7 +44,13 @@ export const registerSchema = Joi.object({
   address: Joi.string()
     .min(5)
     .trim()
-    .required(),
+    .required()
+    .messages({
+      "string.base": "Invalid address",
+      "string.empty": "Address is required",
+      "string.min": "Address must be at least 5 characters",
+      "any.required": "Address is required",
+    }),
   whatsappNumber: Joi.string()
     .trim()
     .pattern(/^[0-9]{10}$/)
@@ -56,24 +62,39 @@ export const registerSchema = Joi.object({
     .valid("having", "not", "applied")
     .required()
     .messages({
-      "any.only": "Passport status must be one of: having, not, applied",
+      "any.only":
+        "Passport status must be one of: having, not, applied",
+      "string.empty": "Passport status is required",
+      "any.required": "Passport status is required",
     }),
-  passportNo: Joi.string()
+
+  passportNumber: Joi.string()
     .trim()
     .max(20)
     .when("passportStatus", {
       is: "having",
-      then: Joi.required().messages({
-        "string.empty": "Passport number is required when you have passport",
-        "any.required": "Passport number is required when you have passport",
-      }),
-      otherwise: Joi.optional(),
+
+      then: Joi.string()
+        .trim()
+        .required()
+        .messages({
+          "string.empty":
+            "Passport number is required when passport status is having",
+
+          "any.required":
+            "Passport number is required when passport status is having",
+
+          "string.max":
+            "Passport number cannot exceed 20 characters",
+        }),
+
+      otherwise: Joi.string().allow("", null).optional(),
     }),
   social: Joi.object({
     providerId: Joi.string().trim().required(),
-    scopes: Joi.string().trim().required(),
-    accessToken: Joi.string().trim().required(),
-    expiresAt: Joi.string().trim().required(),
+    scopes: Joi.string().trim().optional(),
+    accessToken: Joi.string().trim().optional(),
+    expiresAt: Joi.string().trim().optional(),
     type: Joi.string().trim().required(),
   }).optional(),
 }).options({ abortEarly: false, allowUnknown: false });

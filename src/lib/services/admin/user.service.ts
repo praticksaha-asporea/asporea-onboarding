@@ -11,11 +11,11 @@ import '../../models/Branch.model'
 import '../../models/User.model';
 import { Lead } from '../../models/Lead.model';
 
- 
+
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
 export const VALID_ROLES = [
-  'admin', 'tac', 'user', 'reception', 'finance', 'coordinator',
+  'admin', 'tac', 'user', 'foe', 'finance', 'coordinator',
   'pca', 'pcra', 'institute', 'sub_pca', 'branch_head', 'tac_head',
 ] as const;
 
@@ -214,19 +214,30 @@ export const updateUser = async (userId: string, body: any) => {
   const ALLOWED = [
     'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
     'address', 'role', 'passportStatus', 'passportNo', 'status',
-    'notificationPreference', 'reviewer', 'enquired'
+    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths'
   ];
 
   const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
   }
+  console.log(update, 444444);
+  update.experienceInMonths =
+    update.experienceInMonths
+      ? Number(update.experienceInMonths)
+      : null;
 
   const updated = await UserModel.findByIdAndUpdate(
     userId,
-    { $set: update },
-    { returnDocument: 'after', runValidators: true }
-  ).select('-password');
+    {
+      $set: update,
+    },
+    {
+      new: true,
+      runValidators: true,
+    }
+  ).select("-password");
+  console.log(updated, 22222);
 
   return updated;
 };

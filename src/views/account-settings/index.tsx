@@ -1,12 +1,15 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { SyntheticEvent, ReactElement } from 'react'
 import Grid from '@mui/material/Grid'
 import Tab from '@mui/material/Tab'
 import TabContext from '@mui/lab/TabContext'
 import TabList from '@mui/lab/TabList'
 import TabPanel from '@mui/lab/TabPanel'
+// import { usePathname, useRouter } from 'next/navigation'
+// import { useSelector } from 'react-redux'
+
 
 const AccountSettings = ({ tabContentList }: { tabContentList: { [key: string]: ReactElement } }) => {
   const [activeTab, setActiveTab] = useState('account')
@@ -14,7 +17,24 @@ const AccountSettings = ({ tabContentList }: { tabContentList: { [key: string]: 
   const handleChange = (event: SyntheticEvent, value: string) => {
     setActiveTab(value)
   }
-
+  // const path = usePathname();
+  // const router = useRouter();
+  
+  // const reduxUser = useSelector(
+  //   (state: any) => state.userSlice?.userData || state.user?.userData,
+  // );
+  // // console.log(path,reduxUser?.role,5555);
+  //  useEffect(()=>{
+  //   if(reduxUser?.role=="tac" && path==="/profile")
+  //   {
+  //     router.replace('/my-profile');
+  //   }
+    
+  //   if(reduxUser?.role=="user" && path==="/my-profile")
+  //   {
+  //     router.replace('/profile');
+  //   }
+  //  },[])
   return (
     <TabContext value={activeTab}>
       <Grid container spacing={6}>

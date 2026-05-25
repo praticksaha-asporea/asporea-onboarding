@@ -78,10 +78,10 @@ const TacMenu = ({
         menuSectionStyles={menuSectionStyles(theme)}
       >
         <MenuItem
-          href="/tac-dashboard"
+          href="/dashboard"
           icon={<i className="material-symbols--dashboard-outline" />}
         >
-          TAC Dashboard
+          Dashboard
         </MenuItem>
       </Menu>
     </ScrollWrapper>
