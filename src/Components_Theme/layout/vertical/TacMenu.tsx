@@ -8,9 +8,7 @@ import type { VerticalMenuContextProps } from "../../../@menu/components/vertica
  
 import {
   Menu,
-  SubMenu,
   MenuItem,
-  MenuSection,
 } from "../../../@menu/vertical-menu";
 
 // Hook Imports
@@ -79,7 +77,7 @@ const TacMenu = ({
       >
         <MenuItem
           href="/dashboard"
-          icon={<i className="material-symbols--dashboard-outline" />}
+          icon={<i className="ri-dashboard-line" />}
         >
           Dashboard
         </MenuItem>
