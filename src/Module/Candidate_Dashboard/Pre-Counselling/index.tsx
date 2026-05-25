@@ -1,9 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import type { ChangeEvent } from "react";
+import { useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
+import { useSelector,useDispatch } from "react-redux";
+import { RootState } from "@/Redux/store";
+import { updateUserData } from "@/Redux/Auth/user.slice";  
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
-import { Dialog, DialogContent } from "@mui/material";
+import { Dialog, DialogContent, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -17,54 +23,171 @@ import Box from "@mui/material/Box";
 import LinearProgress from "@mui/material/LinearProgress";
 import Switch from "@mui/material/Switch";
 import { FormGroup, FormHelperText } from "@mui/material";
+import { getSlotsAction, bookSlotAction,checkBookingStatusAction } from "@/Services/APIs/PreCounselling/preCounselling.action";
+ 
 
-type StateType = {
-  [key: string]: boolean;
-};
-
-const PreCounselling = () => {
-  const [selectedSlot, setSelectedSlot] = useState("2:00-2:30");
+ 
+const PreCounsellingContent = () => {
+  const searchParams = useSearchParams();
+  const dispatch = useDispatch();
+ const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData
+  );
+  const reduxLeadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
+  const reduxConsultantId = reduxUser?.prefferedConsultant || reduxUser?.user?.prefferedConsultant || "";
+  const reduxVisitOption = reduxUser?.visitOption ?? reduxUser?.user?.visitOption;
+  const reduxMethod = reduxVisitOption === 2 ? "on" : "off";
+  
+  
+  const leadId = searchParams?.get("leadId") || reduxLeadId;
+  const consultantId = searchParams?.get("consultantId") || reduxConsultantId;
+  const method = searchParams?.get("method") || reduxMethod; 
+const serverNow = new Date();
+  const utcTime = serverNow.getTime() + (serverNow.getTimezoneOffset() * 60000);
+  const istTime = new Date(utcTime + (330 * 60000));
+  const todayStr = istTime.toISOString().split("T")[0];  
+   
+const [date, setDate] = useState(todayStr);
+  const [slots, setSlots] = useState<any[]>([]);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);  
+  const [existingBooking, setExistingBooking] = useState<any>(null);  
+  const [checkingStatus, setCheckingStatus] = useState(true);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [bookingLoading, setBookingLoading] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
-
-  const [isEditingChannels, setIsEditingChannels] = useState(false);
-
-  const [state, setState] = useState<StateType>({
-    gilad: true,
-    jason: false,
-    antoine: false,
+  const [checklist, setChecklist] = useState({
+    materials: true,
+    environment: true,
+    questions: true
   });
 
-  const { gilad, jason, antoine } = state;
-  const error = [gilad, jason, antoine].filter((v) => v).length !== 2;
+  
+ const [isEditingChannels, setIsEditingChannels] = useState(false);
+   const [preferences, setPreferences] = useState({
+    email: reduxUser?.notificationPreference?.email ?? true,
+    whatsapp: reduxUser?.notificationPreference?.whatsapp ?? false,
+    sms: reduxUser?.notificationPreference?.sms ?? false,
+  });
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setState({ ...state, [event.target.name]: event.target.checked });
+  useEffect(() => {
+    const checkStatus = async () => {
+      if (!leadId) {
+       
+        return;
+      }
+
+      setCheckingStatus(true);
+      
+      const res = await checkBookingStatusAction(leadId);
+      if (res?.success && res.data) {
+        setExistingBooking(res.data);
+        if (res.data.schedule?.date) {
+          setDate(new Date(res.data.schedule.date).toISOString().split("T")[0]);
+        }
+      }
+      setCheckingStatus(false);
+    };
+    checkStatus();
+  }, [leadId]);
+ 
+  useEffect(() => {
+    if (reduxUser?.notificationPreference) {
+      setPreferences({
+        email: reduxUser.notificationPreference.email ?? true,
+        whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
+        sms: reduxUser.notificationPreference.sms ?? false,
+      });
+    }
+  }, [reduxUser]);
+
+  const handlePrefChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPreferences({ ...preferences, [event.target.name]: event.target.checked });
   };
+const handleSavePreferences = async () => {
+    if (!preferences.email && !preferences.whatsapp && !preferences.sms) {
+      toast.error("Please select at least one notification channel", { id: "pref-toast" });
+      return;
+    }
 
-   
-  const slots = [
-    { time: "11:00-11:30", available: false },
-    { time: "11:30-12:00", available: true },
-    { time: "12:00-12:30", available: true },
-    { time: "12:30-01:00", available: true },
-    { time: "01:00-01:30", available: false },
-    { time: "01:30-02:00", available: true },
-    { time: "02:00-02:30", available: true },
-    { time: "02:30-03:00", available: true },
-    { time: "03:00-03:30", available: true },
-    { time: "03:30-04:00", available: true },
-    { time: "04:00-04:30", available: true },
-    { time: "04:30-05:00", available: true },
-    { time: "05:00-05:30", available: true },
-    { time: "05:30-06:00", available: true },
-  ];
+    setIsEditingChannels(false);
 
-  return (
-    <Grid container spacing={6}>
+    try {
+       
+      const res = await axiosClient.patch("/user/profile-update", {
+        notificationPreference: preferences,
+      });
+
+      if (res.data?.success) {
+       
+        dispatch(
+          updateUserData({
+            notificationPreference: res.data.data.notificationPreference,
+          })
+        );
+        toast.success("Preferences updated successfully", { id: "pref-toast" });
+      }
+    } catch (err) {
+      console.error("Preference sync failed:", err);
+      toast.error("Failed to update preferences", { id: "pref-toast" });
+    }
+  };
+ 
+  useEffect(() => {
+    const fetchSlots = async () => {
+      if (!consultantId) return; 
+
+      setLoadingSlots(true);
+      const res = await getSlotsAction(consultantId, date);
+      
+      if (res?.success) {
+        setSlots(res.data);
+      } else {
+        toast.error(res?.message || "Failed to fetch slots");
+        setSlots([]);
+      }
+      setLoadingSlots(false);
+      setSelectedSlot(null);  
+    };
+
+    fetchSlots();
+  }, [date, consultantId]);
+
+ 
+  const handleConfirm = async () => {
+    if (!leadId || !consultantId) {
+      return toast.error("Missing inquiry details. Please go back and try again.");
+    }
+    if (!selectedSlot) {
+      return toast.error("Please select an available time slot");
+    }
+    
+    setBookingLoading(true);
+    const payload = {
+      leadId,
+      consultantId,
+      date,
+      from: selectedSlot.from,
+      to: selectedSlot.to,
+      method: method
+    };
+
+    const res = await bookSlotAction(payload);
+    
+    if (res?.success) {
+      toast.success("Pre-Counselling scheduled successfully!");
+      setShowConfirmPopup(true);
+    } else {
+      
+    }
+    setBookingLoading(false);
+  };
+  const isChecklistComplete = checklist.materials && checklist.environment && checklist.questions;
+
+  return ( <Grid container spacing={6}>
       {/* Left Section   */}
       <Grid size={{ xs: 12, md: 8 }}>
-        <Card className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]">
-          <Typography variant="h4">
+       <Card className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]">
+         <Typography variant="h4">
             Confirm Your Pre-Counselling Readiness
           </Typography>
           <Typography variant="subtitle1" className="pb-5">
@@ -72,22 +195,55 @@ const PreCounselling = () => {
             preparedness for the upcoming session via phone call.
           </Typography>
 
-          <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
+          {/* 🔥 1. GREEN BANNER */}
+          {existingBooking && (
+            <Box className="mb-8 p-4 rounded-xl border border-[#e0e0e0] bg-[var(--variant-outlinedBg)] flex items-center gap-4">
+              <Box className="w-12 h-12 rounded-full bg-[var(--variant-outlinedBg)] flex items-center justify-center shrink-0">
+                <i className="ri-calendar-check-fill text-2xl  text-[var(--mui-palette-text-primary)]"></i>
+              </Box>
+              <Box>
+                <Typography variant="h6" className=" text-[var(--mui-palette-text-primary)] font-bold">
+                  Session Already Scheduled
+                </Typography>
+                <Typography variant="body2" className=" text-[var(--mui-palette-text-primary)]">
+                  Your session is booked for <strong>{new Date(existingBooking.schedule?.date).toLocaleDateString()}</strong> at <strong>{existingBooking.schedule?.from} - {existingBooking.schedule?.to}</strong> via {existingBooking.schedule?.method === "on" ? "Online Call" : "Branch Visit"}.
+                </Typography>
+              </Box>
+            </Box>
+          )}
+          
+          
+          <Card className={`rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none ${existingBooking ? 'opacity-60 pointer-events-none' : ''}`}>
             <CardContent className="p-6">
               <Typography variant="h5" fontWeight="bold" className="mb-4">
                 Readiness Checklist
               </Typography>
               <Box className="flex flex-col gap-4">
                 <FormControlLabel
-                  control={<Checkbox defaultChecked />}
+                  control={
+                    <Checkbox 
+                      checked={checklist.materials} 
+                      onChange={(e) => setChecklist({ ...checklist, materials: e.target.checked })}
+                    />
+                  }
                   label="I have reviewed the pre-counselling materials."
                 />
                 <FormControlLabel
-                  control={<Checkbox defaultChecked />}
-                  label="I will ensure a quiet environment free from distractions."
+                  control={
+                    <Checkbox 
+                      checked={checklist.environment} 
+                      onChange={(e) => setChecklist({ ...checklist, environment: e.target.checked })}
+                    />
+                  }
+                  label={method === "on" ? "I will ensure a quiet environment free from distractions." : "I will reach the branch on time."}
                 />
                 <FormControlLabel
-                  control={<Checkbox defaultChecked />}
+                  control={
+                    <Checkbox 
+                      checked={checklist.questions} 
+                      onChange={(e) => setChecklist({ ...checklist, questions: e.target.checked })}
+                    />
+                  }
                   label="I am prepared to discuss my career aspirations and questions."
                 />
               </Box>
@@ -100,46 +256,63 @@ const PreCounselling = () => {
                 Your Scheduled Session
               </Typography>
 
+              
               <Typography variant="subtitle2" className="mb-2 font-bold">
                 Counselling Date
               </Typography>
               <TextField
                 type="date"
-                defaultValue="2026-02-27"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                inputProps={{ min: todayStr }}
+                disabled={!!existingBooking}
                 className="w-full max-w-[300px] mb-10"
               />
 
               <Typography variant="subtitle2" className="mb-2 font-bold">
                 Available Time Slots
               </Typography>
-              <Box className="flex flex-wrap gap-1.5 mb-4">
-                {/*  */}
-                {slots.map((slot, index) => (
-                  <Button
-                    key={index}
-                    disabled={!slot.available}
-                    variant={
-                      selectedSlot === slot.time ? "contained" : "outlined"
-                    }
-                    onClick={() => slot.available && setSelectedSlot(slot.time)}
-                    className={`
-                    normal-case rounded-[20px] px-6
-                    ${
-                      selectedSlot === slot.time
-                        ? "bg-primary border-primary text-white"
-                        : slot.available
-                          ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
-                          : "bg-[#f5f5f5] border-[#e0e0e0]"
-                    }
-                    disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
-                  `}
-                  >
-                    {slot.time}
+              
+             
+              {existingBooking ? (
+                <Box className="flex flex-wrap gap-1.5 mb-4">
+                  <Button variant="contained" disabled className="bg-[var(--mui-palette-primary-main)] text-white normal-case rounded-[20px] px-6 !opacity-100">
+                    {existingBooking.schedule?.from} - {existingBooking.schedule?.to}
                   </Button>
-                ))}
-              </Box>
+                </Box>
+              ) : loadingSlots ? (
+                <Typography className="mb-4 text-gray-500">Loading slots...</Typography>
+              ) : (
+                <Box className="flex flex-wrap gap-1.5 mb-4">
+                  {slots.length === 0 ? (
+                    <Typography className="text-gray-500">No slots available for this date.</Typography>
+                  ) : (
+                    slots.map((slot, index) => (
+                      <Button
+                        key={index}
+                        disabled={!slot.available}
+                        variant={selectedSlot?.time === slot.time ? "contained" : "outlined"}
+                        onClick={() => slot.available && setSelectedSlot(slot)}
+                        className={`
+                        normal-case rounded-[20px] px-6
+                        ${
+                          selectedSlot?.time === slot.time
+                            ? "bg-primary border-primary text-white"
+                            : slot.available
+                              ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                              : "bg-[#f5f5f5] border-[#e0e0e0]"
+                        }
+                        disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
+                        `}
+                      >
+                        {slot.time}
+                      </Button>
+                    ))
+                  )}
+                </Box>
+              )}
 
-              <Box className="flex flex-wrap gap-6 mb-6">
+              <Box className="flex flex-wrap gap-6 mb-6 mt-4">
                 <Box className="flex items-center gap-2">
                   <Box className="w-4 h-4 rounded-[4px] bg-[#1976d2]" />
                   <Typography variant="body2">Selected</Typography>
@@ -156,31 +329,42 @@ const PreCounselling = () => {
                 </Box>
               </Box>
 
-              <Box className="mt-8 p-4 rounded-[10px] border-l-4 border-l-[#1976d2]">
-                <Typography variant="body2">
+              <Box className="mt-8 p-4 rounded-[10px] border-l-4  border-l-[#1976d2] bg-[var(--variant-outlinedBg)]">
+                <Typography variant="body2" >
                   Please ensure you have reviewed the pre-counselling materials
-                  before your session. Ensure you are ready to receive a call at
-                  your scheduled time. Your TAC will contact you via your
-                  preferred communication method.
+                  before your session. Ensure you are ready at your scheduled time. Your TAC will contact you via your preferred communication method.
                 </Typography>
               </Box>
             </CardContent>
           </Card>
-        <Box className="flex justify-end gap-4">
-
-          <Button
-            // fullWidth
-            variant="contained"
-            size="small"
-            onClick={() => setShowConfirmPopup(true)}
-            className="rounded-xl mt-10 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
-          >
-            Confirm Readiness
-          </Button>
+          
+          
+          <Box className="flex justify-end gap-4 mt-10">
+            {existingBooking ? (
+              <Button
+                variant="contained"
+                size="large"
+                href="/document-upload"
+                className="rounded-xl normal-case text-sm shadow-md bg-[var(--mui-palette-primary-main)] border-[var(--mui-palette-primary-main)]    text-white hover:bg-blue-50 px-8"
+              >
+                Go to Documents
+              </Button>
+            ) : (
+              <Button
+                variant="contained"
+                size="large"
+                disabled={!selectedSlot || bookingLoading || !isChecklistComplete || checkingStatus}
+                onClick={handleConfirm}
+                className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg px-8"
+              >
+                {bookingLoading || checkingStatus ? <CircularProgress size={24} color="inherit" /> : "Confirm Readiness"}
+              </Button>
+            )}
           </Box>
         </Card>
       </Grid>
 
+       
       <Grid size={{ xs: 12, md: 4 }}>
         <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
           <CardContent className="p-6">
@@ -201,6 +385,7 @@ const PreCounselling = () => {
           </CardContent>
         </Card>
 
+         
         <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
           <CardContent className="p-6">
             <Box className="flex justify-between items-center mb-8">
@@ -220,29 +405,35 @@ const PreCounselling = () => {
               />
             </Box>
 
-            {!isEditingChannels ? (
+           {!isEditingChannels ? (
               <Box>
-                <Box className="flex gap-4 items-start mb-8">
-                  <i
-                    className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"
-                  ></i>
-                  <Typography
-                    variant="body2"                  >
-                    <span className="font-bold">WhatsApp:</span>{" "}
-                    Enabled for timely updates and session reminders.
-                  </Typography>
-                </Box>
-                <Box className="flex gap-4 items-start">
-                  <i
-                    className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"
-                  ></i>
-                  <Typography
-                    variant="body2"
-                  >
-                    <span className="font-bold">Email:</span> Enabled
-                    for detailed session information and important documents.
-                  </Typography>
-                </Box>
+                
+                {preferences.whatsapp && (
+                  <Box className="flex gap-4 items-start mb-8">
+                    <i className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"></i>
+                    <Typography variant="body2">
+                      <span className="font-bold">WhatsApp:</span> Enabled for timely updates and session reminders.
+                    </Typography>
+                  </Box>
+                )}
+                
+                {preferences.email && (
+                  <Box className="flex gap-4 items-start mb-8">
+                    <i className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"></i>
+                    <Typography variant="body2">
+                      <span className="font-bold">Email:</span> Enabled for detailed session information and important documents.
+                    </Typography>
+                  </Box>
+                )}
+
+                {preferences.sms && (
+                  <Box className="flex gap-4 items-start mb-8">
+                    <i className="ri-message-2-line text-[24px] text-gray-600 mt-[2px]"></i>
+                    <Typography variant="body2">
+                      <span className="font-bold">SMS:</span> Enabled for quick alerts and notifications.
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             ) : (
               <Box>
@@ -250,33 +441,15 @@ const PreCounselling = () => {
                   <FormGroup>
                     <FormControlLabel
                       label="Receive updates via Email"
-                      control={
-                        <Checkbox
-                          checked={gilad}
-                          onChange={handleChange}
-                          name="gilad"
-                        />
-                      }
+                      control={<Checkbox checked={preferences.email} onChange={handlePrefChange} name="email" />}
                     />
                     <FormControlLabel
                       label="Receive updates via WhatsApp"
-                      control={
-                        <Checkbox
-                          checked={jason}
-                          onChange={handleChange}
-                          name="jason"
-                        />
-                      }
+                      control={<Checkbox checked={preferences.whatsapp} onChange={handlePrefChange} name="whatsapp" />}
                     />
                     <FormControlLabel
                       label="Receive updates via SMS"
-                      control={
-                        <Checkbox
-                          checked={antoine}
-                          onChange={handleChange}
-                          name="antoine"
-                        />
-                      }
+                      control={<Checkbox checked={preferences.sms} onChange={handlePrefChange} name="sms" />}
                     />
                   </FormGroup>
                   <FormHelperText className="pt-2">At least One</FormHelperText>
@@ -286,7 +459,7 @@ const PreCounselling = () => {
                   <Button
                     variant="contained"
                     size="small"
-                    onClick={() => setIsEditingChannels(false)}
+                    onClick={handleSavePreferences} 
                     className="rounded-[8px] normal-case font-bold px-6 bg-[#1976d2] shadow-none"
                   >
                     Save
@@ -297,22 +470,24 @@ const PreCounselling = () => {
           </CardContent>
         </Card>
       </Grid>
+      
+     
       <Dialog
         open={showConfirmPopup}
-        onClose={() => setShowConfirmPopup(false)}
+      onClose={(event, reason) => {
+          if (reason === "backdropClick" || reason === "escapeKeyDown") {
+            return; 
+          }
+          setShowConfirmPopup(false);
+        }}
         maxWidth="sm"
         fullWidth
-        PaperProps={{
-          className: "rounded-[20px] p-8 relative",
-        }}
+        PaperProps={{ className: "rounded-[20px] p-8 relative" }}
       >
         <DialogContent className="flex flex-col items-center">
           <Typography variant="h4">Request Submitted</Typography>
 
-          <Typography
-            variant="body1"
-            className="text-[--mui-palette-error-light] mt-5 leading-[1.9] text-center"
-          >
+          <Typography variant="body1" className="text-[--mui-palette-error-light] mt-5 leading-[1.9] text-center">
             Please be ready for your pre-counselling held on mentioned date and
             time. A Talent Acquisition Consultant(TAC) will connect with you.
           </Typography>
@@ -327,7 +502,7 @@ const PreCounselling = () => {
 
           <Box className="flex gap-4 justify-center w-full mt-5">
             <Button
-              variant="outlined"
+              variant="contained"
               disableRipple
               disableElevation
               className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-white hover:border-gray-900 hover:text-black hover:bg-white"
@@ -339,6 +514,15 @@ const PreCounselling = () => {
         </DialogContent>
       </Dialog>
     </Grid>
+  );
+};
+
+ 
+const PreCounselling = () => {
+  return (
+    <Suspense fallback={<CircularProgress />}>
+      <PreCounsellingContent />
+    </Suspense>
   );
 };
 

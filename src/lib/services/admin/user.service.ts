@@ -9,6 +9,7 @@ import mongoose from 'mongoose';
 import '../../models/Shift.model'
 import '../../models/Branch.model'
 import '../../models/User.model';
+import { Lead } from '../../models/Lead.model';
 
 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
@@ -161,7 +162,25 @@ export const viewUser = async (userId: string) => {
       .lean();
   }
 
-  return { user, socialLogins, branchShifts, externalSource };
+  let userDataToReturn = { ...user } as any;  
+
+  const existingLead = await Lead.findOne({ 
+    "createdBy.id": new mongoose.Types.ObjectId(userId) 
+  }).lean();
+
+  if (existingLead) {
+    userDataToReturn.leadId = existingLead._id?.toString();
+    userDataToReturn.prefferedConsultant = existingLead.preferences?.consultantId?.toString() || "";
+    if (existingLead.preferences?.visitType === "online") {
+      userDataToReturn.visitOption = 2;  
+    } else if (existingLead.preferences?.visitType === "offline") {
+      userDataToReturn.visitOption = 1;  
+    } else {
+      userDataToReturn.visitOption = 0;  
+    }
+  }
+
+ return { user: userDataToReturn, socialLogins, branchShifts, externalSource };
 };
 
 // ─── Update ───────────────────────────────────────────────────────────────────

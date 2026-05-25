@@ -82,7 +82,7 @@ export const inquirySteps = [
   { label: "Technical Round", description: "Start now", status: "pending" },
 ];
 
-// ─── Form field helpers ───────────────────────────────────────────────────────
+ 
 
 export function makeFieldHelpers(errors: Record<string, any>, submitCount: number) {
   return {
@@ -91,11 +91,32 @@ export function makeFieldHelpers(errors: Record<string, any>, submitCount: numbe
   };
 }
 
-// ─── Hook ─────────────────────────────────────────────────────────────────────
+ 
 
 export function useInquiry() {
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => (state as any).user);
+  useEffect(() => {
+    const fetchFreshProfile = async () => {
+      const userId = userData?.id || userData?._id;
+       
+      if (!userId || userData?.leadId) return;
+
+      try {
+      
+       const res = await axiosClient.get(`/user/details?id=${userId}`);
+        
+        if (res.data?.success && res.data?.data) {
+           const actualProfileData = res.data.data.user || res.data.data;
+          dispatch(updateUserData(actualProfileData));
+        }
+      } catch (err) {
+        console.error("Fresh profile fetch error:", err);
+      }
+    };
+
+    fetchFreshProfile();
+  }, [userData?.id, userData?._id, userData?.leadId, dispatch]);
 
   // ── Branches ────────────────────────────────────────────────────────────────
   const [branches, setBranches] = useState<any[]>([]);
@@ -205,6 +226,7 @@ export function useInquiry() {
   const [submitting, setSubmitting] = useState(false);
   const [showInquiryPopup, setShowInquiryPopup] = useState(false);
   const [generatedInqNo, setGeneratedInqNo] = useState("");
+   const [generatedLeadId, setGeneratedLeadId] = useState("");
 
   const handleSubmit = async (
     values: InquiryFormValues,
@@ -235,9 +257,10 @@ export function useInquiry() {
       if (response.success) {
         toast.success(response.message);
         setGeneratedInqNo(response.data.inqNo);
+        setGeneratedLeadId(response.data._id);
         setShowInquiryPopup(true);
 
-        // Sync notification preferences to profile
+         
         const userId = userData?.id || userData?._id;
         if (userId) {
           try {
@@ -293,6 +316,7 @@ export function useInquiry() {
     showInquiryPopup,
     setShowInquiryPopup,
     generatedInqNo,
+    generatedLeadId,
     loadingConsultants,
     loadingSources,
     userData,

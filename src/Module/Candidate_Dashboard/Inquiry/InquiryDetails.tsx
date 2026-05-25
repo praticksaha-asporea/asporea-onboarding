@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useFormik } from "formik";
+import { useRouter } from "next/navigation";  
+import toast from "react-hot-toast";
 
 import { Dialog, DialogContent, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid";
@@ -40,6 +42,7 @@ import {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const InquiryDetails = () => {
+  const router = useRouter();
   const {
     branches,
     consultants,
@@ -50,6 +53,7 @@ const InquiryDetails = () => {
     showInquiryPopup,
     setShowInquiryPopup,
     generatedInqNo,
+    generatedLeadId,
     loadingConsultants,
     loadingSources,
     userData,
@@ -59,6 +63,27 @@ const InquiryDetails = () => {
     handleSubmit,
     getInitialValues,
   } = useInquiry();
+  console.log("REDUX USER DATA:", userData);
+
+  const [hasExistingData, setHasExistingData] = useState(false)
+useEffect(() => {
+     
+    const existingLeadId = userData?.leadId || userData?.user?.leadId;
+    const existingVisitOption = userData?.visitOption ?? userData?.user?.visitOption;
+    const existingConsultant = userData?.prefferedConsultant || userData?.user?.prefferedConsultant;
+
+     
+    if (existingLeadId) {
+      setHasExistingData(true);  
+      toast("Redirecting to pending Pre-Counselling...", { icon: "⏳", id: "redirect-toast" });
+      const timer = setTimeout(() => {
+        const method = existingVisitOption === 2 ? "on" : "off";
+        router.push(`/pre-counselling?leadId=${existingLeadId}&consultantId=${existingConsultant || ""}&method=${method}`);
+      }, 3500);
+
+      return () => clearTimeout(timer);
+    }
+  }, [userData, router]);
 
   const formik = useFormik({
     initialValues: getInitialValues(),
@@ -69,13 +94,13 @@ const InquiryDetails = () => {
     },
   });
 
-  // Fetch consultants when branch changes
+   
   useEffect(() => {
     fetchConsultants(formik.values.prefferedBranch);
     formik.setFieldValue("prefferedConsultant", "");
   }, [formik.values.prefferedBranch]);
 
-  // Fetch external sources when referral type changes
+   
   useEffect(() => {
     fetchExternalSources(formik.values.referedType, formik.setFieldValue);
   }, [formik.values.referedType]);
@@ -88,11 +113,11 @@ const InquiryDetails = () => {
     formik.errors as Record<string, any>,
     formik.submitCount,
   );
-
+const isFormDisabled = hasExistingData || generatedInqNo !== "";
   return (
     <>
       <Grid container spacing={6}>
-        {/* ── Left: Form ─────────────────────────────────────────────────── */}
+        
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
@@ -102,7 +127,14 @@ const InquiryDetails = () => {
               </Typography>
 
               <form onSubmit={formik.handleSubmit}>
-                {/* Personal Details */}
+
+               <div 
+                  className={`transition-all duration-500 ease-in-out ${
+                    isFormDisabled 
+                      ? "blur-[2.5px] opacity-60 pointer-events-none select-none" 
+                      : ""
+                  }`}
+                > 
                 <Card>
                   <CardContent className="mbe-5">
                     <Grid container spacing={5}>
@@ -288,8 +320,11 @@ const InquiryDetails = () => {
                     </Grid>
                   </CardContent>
                 </Card>
+                 
+                 
 
                 {/* Referral */}
+               
                 <Card className="mt-5">
                   <CardContent className="mbe-5">
                     <Grid container spacing={5}>
@@ -440,29 +475,28 @@ const InquiryDetails = () => {
                       )}
                     </Grid>
                   </CardContent>
-
-                  <CardContent className="mbe-5">
-                    <Grid container spacing={5}>
-                      <Grid
-                        size={{ xs: 12 }}
-                        className="flex gap-4 flex-wrap justify-end"
-                      >
-                        <Button
-                          variant="contained"
-                          type="submit"
-                          disabled={submitting || formik.isSubmitting}
-                          className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
-                        >
-                          {submitting || formik.isSubmitting ? (
-                            <CircularProgress size={24} color="inherit" />
-                          ) : (
-                            "Submit"
-                          )}
-                        </Button>
-                      </Grid>
-                    </Grid>
-                  </CardContent>
                 </Card>
+                </div>
+                <CardContent className="mbe-5 mt-4">
+                  <Grid container spacing={5}>
+                    <Grid size={{ xs: 12 }} className="flex gap-4 flex-wrap justify-end">
+                      <Button
+                        variant="contained"
+                        type="submit"
+                        disabled={submitting || formik.isSubmitting || isFormDisabled}  
+                        className="rounded-xl normal-case text-sm shadow-md"
+                      >
+                        {submitting || formik.isSubmitting ? (
+                          <CircularProgress size={24} color="inherit" />
+                        ) : (
+                          "Submit"
+                        )}
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </CardContent>
+                 
+             
               </form>
             </CardContent>
           </Card>
@@ -620,7 +654,7 @@ const InquiryDetails = () => {
               <Button
                 variant="contained"
                 className="normal-case rounded-[50px] py-[9.6px] px-10"
-                href="/pre-counselling"
+                href={`/pre-counselling?leadId=${generatedLeadId}&consultantId=${formik.values.prefferedConsultant}&method=${formik.values.visitOption === 2 ? 'on' : 'off'}`}
               >
                 Schedule Pre-Counselling
               </Button>

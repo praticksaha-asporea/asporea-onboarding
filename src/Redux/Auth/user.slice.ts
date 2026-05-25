@@ -34,6 +34,9 @@ export interface UserData {
     whatsapp: boolean;
     email: boolean;
   };
+  leadId?: string;
+  visitOption?: number; 
+  prefferedConsultant?: string;
 }
 
 interface UserState {
