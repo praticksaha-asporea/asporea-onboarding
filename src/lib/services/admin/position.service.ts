@@ -1,12 +1,22 @@
 import { ApiError } from "@/lib/error/api.error";
 import { Position } from "@/lib/models/Position.model";
+import "../../models/DocumentType.model";
 import mongoose from "mongoose";
 
 export const createPosition = async (body: any) => {
-  const { title, details, requiredDocuments, mandatoryDocuments, positionBrochure } = body;
+  const {
+    title,
+    details,
+    requiredDocuments,
+    mandatoryDocuments,
+    positionBrochure,
+  } = body;
 
-  const existing = await Position.findOne({ title: { $regex: new RegExp(`^${title}$`, "i") } });
-  if (existing) throw new ApiError("Position with this title already exists", 409);
+  const existing = await Position.findOne({
+    title: { $regex: new RegExp(`^${title}$`, "i") },
+  });
+  if (existing)
+    throw new ApiError("Position with this title already exists", 409);
 
   return await Position.create({
     title,
@@ -75,6 +85,28 @@ export const viewPosition = async (positionId: string) => {
   return position;
 };
 
+export const viewPositionForUser = async (positionId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(positionId))
+    throw new ApiError("Invalid position ID", 400);
+
+  const position = await Position.findById(positionId)
+
+    .populate(
+      "requiredDocuments",
+      "title section subTitle supportedExtensions multiple required",
+    )
+    .populate(
+      "mandatoryDocuments",
+      "title section subTitle supportedExtensions multiple required",
+    )
+    .populate("positionBrochure", "url")
+    .lean();
+
+  if (!position) throw new ApiError("Position not found", 404);
+
+  return position;
+};
+
 export const updatePosition = async (positionId: string, body: any) => {
   if (!mongoose.Types.ObjectId.isValid(positionId))
     throw new ApiError("Invalid position ID", 400);
@@ -87,10 +119,17 @@ export const updatePosition = async (positionId: string, body: any) => {
       title: { $regex: new RegExp(`^${body.title}$`, "i") },
       _id: { $ne: positionId },
     });
-    if (collision) throw new ApiError("Position with this title already exists", 409);
+    if (collision)
+      throw new ApiError("Position with this title already exists", 409);
   }
 
-  const ALLOWED = ["title", "details", "requiredDocuments", "mandatoryDocuments", "positionBrochure"];
+  const ALLOWED = [
+    "title",
+    "details",
+    "requiredDocuments",
+    "mandatoryDocuments",
+    "positionBrochure",
+  ];
   const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];

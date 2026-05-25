@@ -79,7 +79,7 @@ export const updateUserSchema = Joi.object({
   status: Joi.string().valid('active', 'inactive', 'deleted').optional(),
   reviewer: objectIdSchema.optional(),
   notificationPreference: notificationPreferenceSchema,
-  id: Joi.string().trim().required(),
+  id: Joi.optional(),
   enquired: Joi.string(),
   password: Joi.string().pattern(passwordRegex).optional().messages({
     'string.pattern.base':

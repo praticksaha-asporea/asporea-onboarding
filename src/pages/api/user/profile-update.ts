@@ -15,13 +15,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method !== 'PUT' && req.method !== 'PATCH')
         return ResponseHandler.sendError(res, 'Method not allowed', 405);
 
-    try {
+    try {  
         const token = getTokenFromHeader(req);
         if (!token) throw new ApiError('Unauthenticated user', 401);
         // Any authenticated user can update their own profile
         const authUser = await verifyToken(token);
         let decodedJwt = decodedToken(token) as JwtPayload;
-        if (decodedJwt?.userId !== req.body.id) throw new ApiError('You are not authorized to update another profile', 401);
+        
+        if (req.body.id && decodedJwt?.userId !== req.body.id) throw new ApiError('You are not authorized to update another profile', 401);
 
         // User can only update their own profile — id comes from the token, not the body
         const userId = authUser.id;

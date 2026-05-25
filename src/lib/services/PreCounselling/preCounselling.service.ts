@@ -88,10 +88,12 @@ export const getConsultantSlots = async (consultantId: string, targetDateStr: st
 
   const bookedFromTimes = existingBookings.map((b) => b.schedule?.from);
 
-  const now = new Date();
-  const isToday = targetDate.toDateString() === now.toDateString();
-  const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
+  const serverNow = new Date();
+  const utcTime = serverNow.getTime() + (serverNow.getTimezoneOffset() * 60000);
+  const istTime = new Date(utcTime + (330 * 60000));
+  const todayStr = istTime.toISOString().split("T")[0];  
+  const isToday = targetDateStr === todayStr;
+  const currentMinutes = istTime.getHours() * 60 + istTime.getMinutes();
   let startMins = timeToMinutes(schedule.startTime); 
   let endMins = timeToMinutes(schedule.endTime);     
   
@@ -141,6 +143,30 @@ export const savePreCounsellingBooking = async (body: any) => {
     throw new ApiError("Missing required fields for booking", 400);
   }
 
+  const targetDate = new Date(date);
+  const serverNow = new Date();
+  const utcTime = serverNow.getTime() + (serverNow.getTimezoneOffset() * 60000);
+  const istTime = new Date(utcTime + (330 * 60000)); // Current IST Time
+
+  const targetDateStr = targetDate.toISOString().split("T")[0];
+  const todayStr = istTime.toISOString().split("T")[0];
+
+  
+  if (targetDateStr < todayStr) {
+    throw new ApiError("Please Choose Another Slot , This Slot unavailable Now.", 400);
+  }
+
+   
+  if (targetDateStr === todayStr) {
+     
+    const requestedMins = timeToMinutes(from);
+    const currentMins = istTime.getHours() * 60 + istTime.getMinutes();
+
+    if (requestedMins <= currentMins) {
+      throw new ApiError("Cannot book a slot in the past. Please select a future time.", 400);
+    }
+  }
+
   const startOfDay = new Date(date);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(date);
@@ -176,4 +202,21 @@ export const savePreCounsellingBooking = async (body: any) => {
   );
 
   return updatedAssignment;
+};
+
+ 
+export const getPreCounsellingBooking = async (leadId: string) => {
+  if (!mongoose.Types.ObjectId.isValid(leadId)) {
+    throw new ApiError("Invalid Lead ID", 400);
+  }
+
+  const AssignmentModel = mongoose.models.Assignment || mongoose.model("Assignment");
+  
+  const existingBooking = await AssignmentModel.findOne({
+    leadId: new mongoose.Types.ObjectId(leadId),
+    phase: "pre",
+    status: { $ne: "rejected" }  
+  }).lean();
+
+  return existingBooking;  
 };
