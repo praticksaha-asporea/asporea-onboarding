@@ -79,6 +79,9 @@ const UserSchema = new Schema<IUser>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    experienceInMonths: Number,
+    bio: String
+
   },
   { timestamps: true }
 );

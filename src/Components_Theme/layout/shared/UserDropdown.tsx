@@ -102,8 +102,8 @@ const UserDropdown = () => {
           alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
           src='/images/avatars/1.png'
           onClick={handleDropdownOpen}
-          className='cursor-pointer bs-[38px] is-[38px]'
-        />
+          className='cursor-pointer bs-[38px] is-[38px] border-[3px] border-divider"'
+          />
       </Badge>
       <Popper
         open={open}

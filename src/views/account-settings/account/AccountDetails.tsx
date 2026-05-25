@@ -128,9 +128,10 @@ const AccountDetails = () => {
           experienceInMonths: values?.experienceInMonths,
           bio: values?.bio,
         };
-        console.log(payload,5844);
+        // console.log(payload,5844);
         
         const res = await axiosClient.patch(`/user/profile-update`, payload);
+        console.log(res,11111);
 
         if (res.data?.success) {
           toast.success("Profile Updated Successfully!", {
@@ -176,7 +177,11 @@ const AccountDetails = () => {
     <Card>
       <CardContent className="mbe-5">
         <div className="flex max-sm:flex-col items-center gap-6">
-          <Avatar alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`} src={imgSrc} />
+          <Avatar
+            alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
+            src={imgSrc}
+            className="w-20 h-20 border-[3px] border-divider"
+          />
           <div className="flex flex-grow flex-col gap-4">
             <div className="flex flex-col sm:flex-row gap-4">
               <Button
