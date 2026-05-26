@@ -1,8 +1,12 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Button,
   Card,
+  Chip,
   FormControl,
   FormControlLabel,
   FormLabel,
@@ -17,6 +21,8 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { CamelCase } from "@/Utils/common";
+import dayjs from "dayjs";
 
 interface CandidateDetailProps {
   selectedCandidate: any;
@@ -29,27 +35,56 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   setSelectedCandidate,
   setCurrentView,
 }) => {
+  const router = useRouter();
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
+
   const [resumeFile, setResumeFile] = useState<File | null>(null);
 
+  const handleBack = () => {
+    if (window.history.length > 1) {
+      router.back();
+    } else {
+      setSelectedCandidate(null);
+      setCurrentView("dashboard");
+    }
+  };
+
+  // ── Destructure API response shape ────────────────────────────────────────
+  const c = selectedCandidate ?? {};
+  const contact = c.contact ?? {};
+  const preferences = c.preferences ?? {};
+  const source = c.source ?? {};
+  const passport = c.passport ?? {};
+  const branchId = preferences.branchId ?? {};
+  const consultantId = preferences.consultantId ?? {};
+
   return (
-    <Box className="w-full min-h-screen p-4 md:p-6 ">
+    <Box className="w-full min-h-screen p-4 md:p-6">
       {/* Header */}
       <Box className="flex items-center gap-4 mb-6">
         <IconButton
-          onClick={() => {
-            setSelectedCandidate(null);
-            setCurrentView("dashboard");
-          }}
+          onClick={handleBack}
           className="bg-white border border-gray-200 rounded-lg shadow-sm"
         >
           <i className="mdi--arrow-back text-gray-600" />
         </IconButton>
-        <Typography className="text-[22px] font-bold">
-          Candidate Details
-        </Typography>
+        <Box>
+          <Typography className="text-[22px] font-bold leading-tight">
+            {c.name ?? c.fullName ?? "Candidate Details"}
+          </Typography>
+          <Typography className="text-[13px] text-gray-500">{c.inqNo}</Typography>
+        </Box>
+        {c.status && (
+          <Chip
+            label={CamelCase(c.status)}
+            size="small"
+            className="ml-2"
+            sx={{ fontWeight: 600, fontSize: 12 }}
+          />
+        )}
       </Box>
 
       {/* MAIN 2-COLUMN LAYOUT */}
@@ -57,59 +92,82 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         {/* LEFT */}
         <Grid size={{ xs: 12, lg: 9 }}>
           <Stack spacing={3}>
-            {/* Inquiry Details */}
+
+            {/* ── SECTION 1: Inquiry Details ─────────────────────────────── */}
             <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
-              <Typography className="text-[18px] font-medium mb-5">
-                Inquiry Details ( ASP-EINQ-XXXX )
-              </Typography>
               <Grid container spacing={5}>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
-                    label="Full Name *"
-                    defaultValue={selectedCandidate.name}
+                    label="Full Name"
+                    defaultValue={c.name ?? c.fullName ?? ""}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <TextField
                     fullWidth
                     label="Email Address"
-                    defaultValue="alina.smith@example.com"
+                    defaultValue={contact.email ?? ""}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                  <TextField fullWidth label="Phone Number *" />
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Phone Number"
+                    defaultValue={contact.phone ?? ""}
+                  />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                  <TextField fullWidth label="WhatsApp Number" />
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="WhatsApp Number"
+                    defaultValue={contact.whatsapp ?? ""}
+                  />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
+                <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl fullWidth>
                     <InputLabel>Passport Status</InputLabel>
-                    <Select label="Passport Status">
+                    <Select
+                      label="Passport Status"
+                      defaultValue={passport.status ?? ""}
+                    >
                       <MenuItem value="having">Having</MenuItem>
-                      <MenuItem value="not">Not Having</MenuItem>
+                      <MenuItem value="applied">Applied</MenuItem>
+                      <MenuItem value="no">Not Having</MenuItem>
                     </Select>
                   </FormControl>
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                  <TextField fullWidth label="Passport No" />
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Passport No"
+                    defaultValue={passport.no ?? ""}
+                  />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 12 }}>
+                <Grid size={{ xs: 12 }}>
                   <TextField
                     fullWidth
                     multiline
                     rows={3}
-                    label="Full Address *"
+                    label="Full Address"
+                    defaultValue={c.address ?? ""}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6, sm: 12 }}>
-                  <FormControl fullWidth>
-                    <InputLabel>Status</InputLabel>
-                    <Select label="Status">
-                      <MenuItem>Waiting For Pre-Counselling</MenuItem>
-                    </Select>
-                  </FormControl>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Status"
+                    disabled
+                    value={CamelCase(c.status ?? "")}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, md: 6 }}>
+                  <TextField
+                    fullWidth
+                    label="Visit Type"
+                    disabled
+                    value={CamelCase(preferences.visitType ?? "")}
+                  />
                 </Grid>
               </Grid>
               <Box className="flex justify-end mt-6">
@@ -119,32 +177,20 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               </Box>
             </Card>
 
-            {/* SECTION 2: PRE-COUNSELLING */}
+            {/* ── SECTION 2: Pre-Counselling ─────────────────────────────── */}
             <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
               <Typography className="text-[20px] font-bold text-center mb-5">
                 Pre-Counselling
               </Typography>
               <Stack spacing={3}>
                 <Grid container spacing={5}>
-                  <Grid size={{ xs: 12, md: 12 }}>
+                  <Grid size={{ xs: 12 }}>
                     <FormControl>
                       <FormLabel>Status</FormLabel>
                       <RadioGroup row defaultValue="not">
-                        <FormControlLabel
-                          value="not"
-                          control={<Radio />}
-                          label="Not Scheduled"
-                        />
-                        <FormControlLabel
-                          value="progress"
-                          control={<Radio />}
-                          label="In Progress"
-                        />
-                        <FormControlLabel
-                          value="done"
-                          control={<Radio />}
-                          label="Finished"
-                        />
+                        <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
+                        <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
+                        <FormControlLabel value="done" control={<Radio />} label="Finished" />
                       </RadioGroup>
                     </FormControl>
                   </Grid>
@@ -152,17 +198,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   <Grid size={{ xs: 12, md: 6 }}>
                     <FormControl>
                       <FormLabel>Visit Opinion</FormLabel>
-                      <RadioGroup row defaultValue="office">
-                        <FormControlLabel
-                          value="office"
-                          control={<Radio />}
-                          label="In-Office"
-                        />
-                        <FormControlLabel
-                          value="remote"
-                          control={<Radio />}
-                          label="Remote"
-                        />
+                      <RadioGroup row defaultValue={preferences.visitType === "online" ? "remote" : "office"}>
+                        <FormControlLabel value="office" control={<Radio />} label="In-Office" />
+                        <FormControlLabel value="remote" control={<Radio />} label="Remote" />
                       </RadioGroup>
                     </FormControl>
                   </Grid>
@@ -172,43 +210,75 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       fullWidth
                       label="Branch"
                       disabled
-                      value="Siliguri"
+                      value={branchId.title ?? "—"}
                     />
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth>
-                      <InputLabel>Hear From</InputLabel>
-                      <Select label="Hear From" defaultValue="PCRA" disabled>
-                        <MenuItem value="PCRA">PCRA</MenuItem>
-                        <MenuItem value="LinkedIn">LinkedIn</MenuItem>
-                        <MenuItem value="Referral">Referral</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      label="Assigned Consultant"
+                      disabled
+                      value={
+                        consultantId.firstName
+                          ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim()
+                          : "—"
+                      }
+                    />
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <FormControl fullWidth disabled>
-                      <InputLabel>Referred By</InputLabel>
-                      <Select label="Referred By" defaultValue="PCRA">
-                        <MenuItem value="PCRA">PCRA</MenuItem>
-                      </Select>
-                    </FormControl>
+                    <TextField
+                      fullWidth
+                      label="Source"
+                      disabled
+                      value={CamelCase(source.type ?? "")}
+                    />
+                  </Grid>
+
+                  {source.refType && (
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <TextField
+                        fullWidth
+                        label="Referred By (Type)"
+                        disabled
+                        value={CamelCase(source.refType ?? "")}
+                      />
+                    </Grid>
+                  )}
+
+                  {source.refName && (
+                    <Grid size={{ xs: 12, md: 6 }}>
+                      <TextField
+                        fullWidth
+                        label="Referred By (Name)"
+                        disabled
+                        value={source.refName}
+                      />
+                    </Grid>
+                  )}
+
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <TextField
+                      fullWidth
+                      label="Token No"
+                      value={c.token ?? "—"}
+                      disabled={!c.token}
+                    />
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField fullWidth label="Token No" defaultValue="T001" />
-                  </Grid>
-
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <TextField fullWidth label="Token Generated" />
+                    <TextField
+                      fullWidth
+                      label="Inquiry Created"
+                      disabled
+                      value={c.lastActivity ? dayjs(c.lastActivity).format("DD/MM/YYYY hh:mm A") : "—"}
+                    />
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 12 }}>
                     <Box className="flex justify-end gap-3">
-                      <Button disabled variant="contained">
-                        Call
-                      </Button>
+                      <Button disabled variant="contained">Call</Button>
                       <Button variant="contained">Queue</Button>
                     </Box>
                   </Grid>
@@ -216,392 +286,231 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography className="text-[13px] font-semibold mb-1.5">
                       Additional Details of Candidate{" "}
-                      <span className="text-[var(--mui-palette-error-light)]">
-                        *
-                      </span>
+                      <span className="text-[var(--mui-palette-error-light)]">*</span>
                     </Typography>
-                    <TextField
-                      multiline
-                      rows={3}
-                      defaultValue="Worked in sales from 2-3 years, etc..."
-                      fullWidth
-                      InputProps={{ className: "text-[14px]" }}
-                    />
+                    <TextField multiline rows={3} fullWidth slotProps={{ input: { className: "text-[14px]" } }} />
                   </Grid>
 
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography className="text-[13px] font-semibold mb-1.5">
                       Specific Notes (During Pre-Counselling)
                     </Typography>
-                    <TextField
-                      multiline
-                      rows={3}
-                      defaultValue="Not wants to work in Europe"
-                      fullWidth
-                      InputProps={{ className: "text-[14px]" }}
-                    />
+                    <TextField multiline rows={3} fullWidth slotProps={{ input: { className: "text-[14px]" } }} />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 12 }}>
-                    <Typography className="text-[13px] font-semibold mb-1.5">
-                      Advice
-                    </Typography>
-                    <TextField
-                      multiline
-                      rows={3}
-                      defaultValue="German Nurse Opportunity and details shared with candidate"
-                      fullWidth
-                      InputProps={{ className: "text-[13px]" }}
-                    />
+                  <Grid size={{ xs: 12 }}>
+                    <Typography className="text-[13px] font-semibold mb-1.5">Advice</Typography>
+                    <TextField multiline rows={3} fullWidth slotProps={{ input: { className: "text-[13px]" } }} />
                   </Grid>
 
-                  <Grid size={{ xs: 12, md: 12 }}>
-                    <Typography className="text-[12px] font-semibold mb-1.5">
-                      Resume
-                    </Typography>
+                  <Grid size={{ xs: 12 }}>
+                    <Typography className="text-[12px] font-semibold mb-1.5">Resume</Typography>
                     <Box
                       component="label"
-                      className="w-full md:w-1/2 border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-centerhover:bg-gray-50 transition-colors cursor-pointer"
+                      className="w-full md:w-1/2 border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
                     >
                       <input
                         type="file"
                         hidden
-                        accept=".pdf, .jpg, .jpeg"
+                        accept=".pdf,.jpg,.jpeg"
                         onChange={(e) => {
-                          if (e.target.files && e.target.files.length > 0) {
-                            setResumeFile(e.target.files[0]);
-                          }
+                          if (e.target.files?.length) setResumeFile(e.target.files[0]);
                         }}
                       />
                       {resumeFile ? (
                         <Box className="flex flex-col items-center text-center">
                           <i className="mdi--check-circle-outline text-green-500 mb-2" />
-                          <Typography className="text-[13px] font-bold text-gray-800">
-                            {resumeFile.name}
-                          </Typography>
-                          <Typography className="text-[11px] text-gray-500">
-                            Click to change file
-                          </Typography>
+                          <Typography className="text-[13px] font-bold text-gray-800">{resumeFile.name}</Typography>
+                          <Typography className="text-[11px] text-gray-500">Click to change file</Typography>
                         </Box>
                       ) : (
                         <Box className="flex flex-col items-center text-center">
                           <Box className="w-10 h-10 bg-[var(--mui-overlays-1)] border border-gray-200 rounded-full flex items-center justify-center mb-2 shadow-sm">
-                            <i className="ri-upload-cloud-2-line text-xl text-[var(--mui-palette-primary-main)]"></i>
+                            <i className="ri-upload-cloud-2-line text-xl text-[var(--mui-palette-primary-main)]" />
                           </Box>
                           <Typography className="text-xs font-semibold">
                             Drop your files here or{" "}
-                            <span className="text-[var(--mui-palette-primary-main)] font-extrabold">
-                              browse
-                            </span>
+                            <span className="text-[var(--mui-palette-primary-main)] font-extrabold">browse</span>
                           </Typography>
                         </Box>
                       )}
                     </Box>
                   </Grid>
                 </Grid>
+
                 <Box className="flex justify-end gap-3 mt-4 pt-6">
-                  <Button
-                    variant="contained"
-                    className="!bg-red-300 hover:!bg-red-400 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                  >
+                  <Button variant="contained" className="!bg-red-300 hover:!bg-red-400 !text-white !text-[13px] !font-bold !rounded-lg !normal-case">
                     Not Responded
                   </Button>
-                  <Button
-                    variant="contained"
-                    className="!bg-blue-500 hover:!bg-blue-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                  >
+                  <Button variant="contained" className="!bg-blue-500 hover:!bg-blue-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case">
                     Send As Prescription
                   </Button>
                 </Box>
               </Stack>
             </Card>
 
-            {/* SECTION 3: ASSESSMENT */}
+            {/* ── SECTION 3: Assessment ──────────────────────────────────── */}
             <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
-              <Typography className="text-[24px] text-center mb-5">
-                Assessment
-              </Typography>
+              <Typography className="text-[24px] text-center mb-5">Assessment</Typography>
               <Grid container spacing={5}>
-                <Grid size={{ xs: 12, md: 12 }}>
+                <Grid size={{ xs: 12 }}>
                   <FormControl>
                     <FormLabel>Status</FormLabel>
-                    <RadioGroup row defaultValue="progress">
-                      <FormControlLabel
-                        value="not"
-                        control={<Radio />}
-                        label="Not Scheduled"
-                      />
-                      <FormControlLabel
-                        value="progress"
-                        control={<Radio />}
-                        label="In Progress"
-                      />
-                      <FormControlLabel
-                        value="done"
-                        control={<Radio />}
-                        label="Finished"
-                      />
+                    <RadioGroup row defaultValue="not">
+                      <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
+                      <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
+                      <FormControlLabel value="done" control={<Radio />} label="Finished" />
                     </RadioGroup>
                   </FormControl>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
                   <FormControl>
-                    <Typography>Visit Opinion</Typography>
+                    <FormLabel>Visit Opinion</FormLabel>
                     <RadioGroup row defaultValue="office">
-                      <FormControlLabel
-                        value="office"
-                        control={<Radio />}
-                        label={<span className="">In-Office</span>}
-                      />
-                      <FormControlLabel
-                        value="remote"
-                        control={<Radio />}
-                        label={<span className="">Remote</span>}
-                      />
+                      <FormControlLabel value="office" control={<Radio />} label="In-Office" />
+                      <FormControlLabel value="remote" control={<Radio />} label="Remote" />
                     </RadioGroup>
                   </FormControl>
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <FormControl fullWidth disabled>
-                    <InputLabel>Branch</InputLabel>
-                    <Select defaultValue="Siliguri" label="Branch">
-                      <MenuItem value="Siliguri">Siliguri</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <TextField fullWidth label="Branch" disabled value={branchId.title ?? "—"} />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography className="text-[13px] font-medium mb-1.5">
-                    Token No
-                  </Typography>
-                  <TextField fullWidth defaultValue="T001" />
-                </Grid>
-
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography className="text-[13px] font-medium mb-1.5">
-                    Token Generated
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    defaultValue="25/02/2026 11:16 AM"
-                    InputProps={{
-                      startAdornment: (
-                        <i className="mdi--access-time mr-2 text-gray-400" />
-                      ),
-                    }}
-                  />
+                  <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled={!c.token} />
                 </Grid>
 
                 <Grid size={{ xs: 12, md: 12 }}>
                   <Box className="flex justify-center md:justify-end gap-3 mt-2 mb-4">
-                    <Button
-                      variant="contained"
-                      disabled
-                      className="!bg-blue-300 !text-white !rounded-lg !normal-case !opacity-100"
-                    >
+                    <Button variant="contained" disabled className="!bg-blue-300 !text-white !rounded-lg !normal-case !opacity-100">
                       Call for Assessment
                     </Button>
-                    <Button
-                      variant="contained"
-                      className="!bg-blue-500 hover:!bg-blue-600 !rounded-lg !normal-case"
-                    >
+                    <Button variant="contained" className="!bg-blue-500 hover:!bg-blue-600 !rounded-lg !normal-case">
                       Queue for Assessment
                     </Button>
                   </Box>
                 </Grid>
               </Grid>
 
-              {/* DOCUMENTS */}
+              {/* Documents */}
               <Box className="border border-gray-200 rounded-xl p-5 mb-2">
-                <Typography className=" mb-2">Documents</Typography>
-                <RadioGroup row>
-                  <FormControlLabel
-                    value="uploaded"
-                    control={<Radio />}
-                    label="Uploaded"
-                  />
-                  <FormControlLabel
-                    value="verified"
-                    control={<Radio />}
-                    label="Verified"
-                  />
+                <Typography className="mb-2">Documents</Typography>
+                <RadioGroup row defaultValue={c.documents?.status ?? "na"}>
+                  <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
+                  <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+                  <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
                 </RadioGroup>
-
-                <Typography className="mt-4 mb-2">Applied Job Role</Typography>
-                <RadioGroup row>
-                  <FormControlLabel
-                    value="nurse"
-                    control={<Radio size="small" />}
-                    label="Nurse"
-                  />
-                  <FormControlLabel
-                    value="caregiver"
-                    control={<Radio size="small" />}
-                    label="Caregiver"
-                  />
-                </RadioGroup>
-
                 <Box className="flex flex-wrap gap-3 mt-4 mb-5">
-                  {["Resume", "Documents", "Experience", "Academic"].map(
-                    (item) => (
-                      <Button
-                        key={item}
-                        variant="contained"
-                        size="small"
-                        className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case !text-[12px]"
-                      >
-                        {item}
-                      </Button>
-                    ),
-                  )}
+                  {["Resume", "Documents", "Experience", "Academic"].map((item) => (
+                    <Button key={item} variant="contained" size="small" className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case !text-[12px]">
+                      {item}
+                    </Button>
+                  ))}
                 </Box>
-
                 <Box className="flex justify-end gap-3">
-                  <Button
-                    variant="contained"
-                    className="!bg-red-300 hover:!bg-red-400 !text-white !rounded-lg !normal-case"
-                  >
-                    Rejected
-                  </Button>
-                  <Button
-                    variant="contained"
-                    className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case"
-                  >
-                    Verified
-                  </Button>
+                  <Button variant="contained" className="!bg-red-300 hover:!bg-red-400 !text-white !rounded-lg !normal-case">Rejected</Button>
+                  <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Verified</Button>
                 </Box>
               </Box>
 
-              {/* EXPERIENCE */}
+              {/* Experience */}
               <Box className="border border-gray-200 rounded-xl p-5 mb-2">
-                <Typography className=" mb-2">Experience</Typography>
-                <RadioGroup row defaultValue="selected">
-                  <FormControlLabel
-                    value="selected"
-                    control={<Radio />}
-                    label="Selected"
-                  />
-                  <FormControlLabel
-                    value="verified"
-                    control={<Radio />}
-                    label="Verified"
-                  />
+                <Typography className="mb-2">Experience</Typography>
+                <RadioGroup row defaultValue={c.experience?.type ? "selected" : "not"}>
+                  <FormControlLabel value="not" control={<Radio />} label="Not Selected" />
+                  <FormControlLabel value="selected" control={<Radio />} label="Selected" />
+                  <FormControlLabel value="verified" control={<Radio />} label="Verified" />
                 </RadioGroup>
                 <FormControl fullWidth className="mt-4 md:w-1/2">
-                  <InputLabel>Experience Choosen</InputLabel>
-                  <Select defaultValue="Domestic" label="Experience Choosen">
-                    <MenuItem value="Domestic">Domestic</MenuItem>
+                  <InputLabel>Experience Type</InputLabel>
+                  <Select label="Experience Type" defaultValue={c.experience?.type ?? ""}>
+                    <MenuItem value="fresher">Fresher</MenuItem>
+                    <MenuItem value="domestic">Domestic</MenuItem>
+                    <MenuItem value="abroad">Abroad</MenuItem>
+                    <MenuItem value="free">Freelance</MenuItem>
                   </Select>
                 </FormControl>
                 <Box className="flex justify-end gap-3 mt-5">
-                  <Button
-                    variant="contained"
-                    className="!bg-yellow-300 hover:!bg-yellow-400 !text-white !rounded-lg !normal-case"
-                  >
-                    TL Verified
-                  </Button>
-                  <Button
-                    variant="contained"
-                    className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case"
-                  >
-                    Save
-                  </Button>
+                  <Button variant="contained" className="!bg-yellow-300 hover:!bg-yellow-400 !text-white !rounded-lg !normal-case">TL Verified</Button>
+                  <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Save</Button>
                 </Box>
               </Box>
 
-              {/* SUB-SECTION: ASSESSMENT FLOW */}
+              {/* Assessment Flow */}
               <Card className="p-6 rounded-xl border border-gray-200 shadow-sm mt-4">
-                <Typography className="text-[24px] text-center mb-5">
-                  Assessment
-                </Typography>
+                <Typography className="text-[24px] text-center mb-5">Assessment</Typography>
                 <FormControl>
                   <FormLabel>Status</FormLabel>
-                  <RadioGroup row defaultValue="progress">
-                    <FormControlLabel
-                      value="not"
-                      control={<Radio />}
-                      label="Not Scheduled"
-                    />
-                    <FormControlLabel
-                      value="progress"
-                      control={<Radio />}
-                      label="In Progress"
-                    />
-                    <FormControlLabel
-                      value="done"
-                      control={<Radio />}
-                      label="Finished"
-                    />
+                  <RadioGroup row defaultValue="not">
+                    <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
+                    <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
+                    <FormControlLabel value="done" control={<Radio />} label="Finished" />
                   </RadioGroup>
                 </FormControl>
                 <Box className="flex justify-end gap-3 mt-4">
                   <Button variant="outlined">Refer Technical</Button>
-                  <Button
-                    variant="contained"
-                    onClick={() => setCurrentView("assessment")}
-                  >
-                    Start
-                  </Button>
-                  <Button variant="contained" color="success">
-                    Save
-                  </Button>
+                  <Button variant="contained" onClick={() => setCurrentView("assessment")}>Start</Button>
+                  <Button variant="contained" color="success">Save</Button>
                 </Box>
               </Card>
 
-              {/* SUB-SECTION: TECHNICAL ROUND */}
+              {/* Technical Round */}
               <Box className="border border-gray-200 rounded-xl p-5 mt-4">
                 <FormControl className="mb-4">
                   <Typography className="mb-2">Technical Round</Typography>
-                  <RadioGroup row defaultValue="finished">
-                    <FormControlLabel
-                      value="referred"
-                      control={<Radio />}
-                      label={<span>Referred</span>}
-                    />
-                    <FormControlLabel
-                      value="progress"
-                      control={<Radio />}
-                      label={<span>In Progress</span>}
-                    />
-                    <FormControlLabel
-                      value="finished"
-                      control={<Radio />}
-                      label={<span>Finished</span>}
-                    />
+                  <RadioGroup row defaultValue={c.technical?.status ?? "na"}>
+                    <FormControlLabel value="na" control={<Radio />} label="Not Referred" />
+                    <FormControlLabel value="refered" control={<Radio />} label="Referred" />
+                    <FormControlLabel value="passed" control={<Radio />} label="Passed" />
+                    <FormControlLabel value="failed" control={<Radio />} label="Failed" />
                   </RadioGroup>
                 </FormControl>
                 <FormControl fullWidth className="mb-5 md:w-1/2">
                   <InputLabel>Classify Experience</InputLabel>
-                  <Select defaultValue="Domestic" label="Classify Experience">
-                    <MenuItem value="Domestic">Domestic</MenuItem>
-                    <MenuItem value="International">International</MenuItem>
+                  <Select defaultValue="" label="Classify Experience">
+                    <MenuItem value="domestic">Domestic</MenuItem>
+                    <MenuItem value="abroad">International</MenuItem>
                   </Select>
                 </FormControl>
                 <Box className="flex justify-end gap-3">
-                  <Button
-                    variant="contained"
-                    className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case"
-                  >
-                    Save
-                  </Button>
+                  <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Save</Button>
                 </Box>
               </Box>
             </Card>
+
           </Stack>
         </Grid>
-        {/* RIGHT COLUMN: PROGRESS CARD */}
+
+        {/* RIGHT: Progress / Escalation */}
         <Grid size={{ xs: 12, lg: 3 }}>
           <Card className="p-5 sticky top-6 rounded-xl border border-gray-200 shadow-sm">
-            <Typography className="text-[16px] font-semibold mb-4">
-              Progress
-            </Typography>
+            <Typography className="text-[16px] font-semibold mb-4">Progress</Typography>
+
+            {/* Quick info */}
+            <Box className="mb-4 space-y-2">
+              <Typography className="text-[12px] text-gray-500">
+                Branch: <span className="font-semibold text-gray-800">{branchId.title ?? "—"}</span>
+              </Typography>
+              <Typography className="text-[12px] text-gray-500">
+                Consultant:{" "}
+                <span className="font-semibold text-gray-800">
+                  {consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}
+                </span>
+              </Typography>
+              <Typography className="text-[12px] text-gray-500">
+                Status: <span className="font-semibold text-gray-800">{CamelCase(c.status ?? "")}</span>
+              </Typography>
+              <Typography className="text-[12px] text-gray-500">
+                Experience: <span className="font-semibold text-gray-800">{CamelCase(c.experience?.type ?? "Not set")}</span>
+              </Typography>
+            </Box>
 
             <FormControl fullWidth className="mb-4">
               <InputLabel>Escalate</InputLabel>
               <Select label="Escalate">
-                <MenuItem>-- Talent Acquisition Consultant --</MenuItem>
+                <MenuItem value="">-- Select TAC --</MenuItem>
               </Select>
             </FormControl>
 
@@ -612,7 +521,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
               label="Reason *"
               placeholder="Enter reason for escalation..."
               className="mb-4"
-              InputProps={{ className: "text-[14px]" }}
+              slotProps={{ input: { className: "text-[14px]" } }}
             />
 
             <Typography className="text-[12px] text-[var(--mui-palette-error-light)] mb-4">
@@ -620,9 +529,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </Typography>
 
             <Box className="flex justify-center">
-              <Button disabled variant="contained">
-                Submit
-              </Button>
+              <Button disabled variant="contained">Submit</Button>
             </Box>
           </Card>
         </Grid>
