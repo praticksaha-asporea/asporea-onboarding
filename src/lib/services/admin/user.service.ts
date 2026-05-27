@@ -208,7 +208,7 @@ export const updateUser = async (userId: string, body: any) => {
     if (whatsappExists) throw new ApiError('WhatsApp number already exists', 401);
   }
 
-  // Never allow password update through this endpoint
+   
   delete body.password;
 
   const ALLOWED = [

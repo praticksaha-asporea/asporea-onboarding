@@ -26,7 +26,7 @@ export default async function handler(
     const token = getTokenFromHeader(req);
     const user = token ? await verifyToken(token) : null;
 
-    //  create uploads directory if  AWS S3 Bucket doesn't exist
+     
     const uploadDir = path.join(process.cwd(), "public/uploads");
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });

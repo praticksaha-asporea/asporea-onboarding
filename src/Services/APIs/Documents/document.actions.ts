@@ -56,3 +56,12 @@ export const saveMappedDocumentsAction = async (payload: any) => {
     };
   }
 };
+
+export const checkDocumentStatusAction = async (leadId: string): Promise<any> => {
+  try {
+    const response = await axiosClient.get(`/document/status?leadId=${leadId}`);
+    return response.data;
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.message || "Failed to check status" };
+  }
+};
