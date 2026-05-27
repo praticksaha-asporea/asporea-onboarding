@@ -52,5 +52,37 @@ export const getTacCandidatesAction = async (params: {
 
 export const getTacCandidateDetailAction = async (id: string) => {
   const res = await axiosClient.get(`/tac/candidate/${id}`);
-  return res.data.data as { lead: any; branchToken: any };
+  return res.data.data as {
+    lead: any;
+    branchToken: any;
+    assignments: any[];
+    assignmentByPhase: Record<string, any>;
+  };
+};
+
+export const updateAssignmentAction = async (payload: {
+  assignmentId: string;
+  status?: string;
+  additionalDetails?: string;
+  specificNotes?: string;
+  advice?: string;
+  attended?: boolean;
+}) => {
+  
+  const res = await axiosClient.patch("/tac/assignment/update", payload);
+  return res.data;
+};
+
+export const updateLeadAction = async (payload: {
+  id: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  address?: string;
+  passportStatus?: string;
+  passportNo?: string;
+}) => {
+  const res = await axiosClient.patch("/tac/lead/update", payload);
+  return res.data;
 };

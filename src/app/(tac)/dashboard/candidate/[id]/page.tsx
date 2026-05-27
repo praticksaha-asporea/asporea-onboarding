@@ -7,10 +7,16 @@ import CandidateDetail from "@/Module/TAC_Dashboard/components/CandidateDetail";
 import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
 
 export default function CandidateDetailPage() {
-  const { id } = useParams<{ id: string }>();
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
   const router = useRouter();
 
-  const [data, setData] = useState<{ lead: any; branchToken: any } | null>(null);
+  const [data, setData] = useState<{
+    lead: any;
+    branchToken: any;
+    assignments: any[];
+    assignmentByPhase: Record<string, any>;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -22,7 +28,8 @@ export default function CandidateDetailPage() {
       .catch((err) => setError(err?.response?.data?.message ?? "Failed to load candidate"))
       .finally(() => setLoading(false));
   }, [id]);
-
+  // console.log(data,45425);
+  
   if (loading) {
     return (
       <Box className="flex items-center justify-center min-h-screen">
@@ -56,8 +63,11 @@ export default function CandidateDetailPage() {
     passport: data.lead.passport,
     token: data.branchToken?.tokenNo ?? null,
     lastActivity: data.lead.updatedAt,
+    assignmentByPhase: data.assignmentByPhase ?? {},
   };
 
+  // console.log(data,5855);
+  
   return (
     <CandidateDetail
       selectedCandidate={candidate}

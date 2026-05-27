@@ -12,8 +12,8 @@ import { parseForm, normalizeFormFields } from "@/lib/utils/parseForm";
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  await connectToDatabase();
   if (applyCors(req, res)) return;
+  await connectToDatabase();
 
   if (req.method !== "POST")
     return ResponseHandler.sendError(res, "Method not allowed", 405);

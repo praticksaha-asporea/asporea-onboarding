@@ -13,7 +13,7 @@ export interface IAssignment extends Document {
     method?: "on" | "off";
   };
 
-  status?: "assigned" | "contacted" | "na" | "queued" | "completed" | "rejected";
+  status?: "assigned" | "contacted" | "na" | "queued" | "completed" | "rejected" | "not_responded";
 
   token?: {
     generated?: boolean;
@@ -68,7 +68,7 @@ const AssignmentSchema = new Schema<IAssignment>(
 
     status: {
       type: String,
-      enum: ["assigned", "contacted", "na", "queued", "completed", "rejected"],
+      enum: ["assigned", "contacted", "na", "queued", "completed", "rejected","not_responded"],
       default: "assigned",
       index: true,
     },
