@@ -624,7 +624,7 @@ const isFormDisabled = hasExistingData || generatedInqNo !== "";
                   className="mb-4 text-red-500 leading-loose font-normal"
                 >
                   As you are visiting our{" "}
-                  <span className="underline">{selectedBranchName}</span>{" "}
+                  <span className="underline font-bold">{selectedBranchName}</span>{" "}
                   Branch.
                   <br />
                   For Pre-counselling, please reach the Reception Counter.

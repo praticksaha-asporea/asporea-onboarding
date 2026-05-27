@@ -37,8 +37,8 @@ export function proxy(req: NextRequest) {
     if (!isLoggedIn) {
       
       const isProtected =
-        protectedRoutesCandidate.includes(normalizedPath) ||
-        protectedRouteTAC.includes(normalizedPath);
+        protectedRoutesCandidate.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/')) ||
+        protectedRouteTAC.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/'));
 
     // console.log('non',protectedRouteTAC,normalizedPath, 22222);
       if (isProtected) {
@@ -72,8 +72,11 @@ export function proxy(req: NextRequest) {
     }
 
     if (role === 'tac') {
-      // If trying to access a path not in instructor routes → redirect
-      if (!protectedRouteTAC.includes(normalizedPath)) {
+      // If trying to access a path not in TAC routes → redirect
+      const isTacRoute = protectedRouteTAC.some(
+        (r) => normalizedPath === r || normalizedPath.startsWith(r + '/')
+      );
+      if (!isTacRoute) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
       }
     }
