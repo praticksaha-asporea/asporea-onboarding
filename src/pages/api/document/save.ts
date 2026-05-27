@@ -6,6 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
+import mongoose from "mongoose";
 
 export default async function handler(
   req: NextApiRequest,
@@ -39,6 +40,17 @@ export default async function handler(
         status: "uploaded",
       });
       savedDocs.push(newDoc);
+    }
+
+    if (savedDocs.length > 0) {
+      const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
+
+      await LeadModel.findByIdAndUpdate(leadId, {
+        status: "doc_submitted",
+        "documents.status": "uploaded",
+
+        "documents.submittedOn": new Date(),
+      });
     }
 
     return ResponseHandler.sendSuccess(

@@ -139,7 +139,7 @@ export function useInquiry() {
         fetchBranches(position.coords.latitude, position.coords.longitude);
       },
       () => {
-        toast.error("Please allow location access to get preferred branch list");
+        // toast.error("Please allow location access to get preferred branch list");
       },
     );
   }, []);
