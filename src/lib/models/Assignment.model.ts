@@ -97,20 +97,11 @@ const AssignmentSchema = new Schema<IAssignment>(
         default: null,
         index: true,
       },
-
-      from: {
-        type: String,
-        trim: true,
-      },
-
-      to: {
-        type: String,
-        trim: true,
-      },
-
+      from: String,  
+      to: String,
       method: {
         type: String,
-        enum: ["on", "off"],
+        enum: ["on", "off"], 
       },
     },
 

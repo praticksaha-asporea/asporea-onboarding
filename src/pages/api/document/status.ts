@@ -43,7 +43,7 @@ export default async function handler(
 
     if (documentCount === 0) {
       return ResponseHandler.sendSuccess(res, {
-        status: "pre_scheduled",  
+        status:lead.status,  
         documentStatus: "na",
         realDocsCount: 0
       }, "No documents found");

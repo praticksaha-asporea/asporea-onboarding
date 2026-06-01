@@ -457,7 +457,7 @@ const DocumentUploadPage = () => {
       const res = await checkDocumentStatusAction(leadId);
       if (res?.success && res.data) {
         const currentStatus = res.data.status;
-        const allowedStatuses = ["pre_scheduled", "doc_submitted", "exp_submitted", "assessment_submitted"];
+      const allowedStatuses = ["pre_scheduled", "doc_submitted", "exp_submitted", "assessment_scheduled", "assessment_submitted"];
         if (!allowedStatuses.includes(currentStatus)) {
           router.push('/precounselling');  
           return;
