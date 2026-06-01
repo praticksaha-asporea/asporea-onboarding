@@ -10,6 +10,7 @@ import { Assignment } from "@/lib/models/Assignment.model";
 import mongoose from "mongoose";
 import "@/lib/models/User.model";
 import "@/lib/models/Branch.model";
+import "@/lib/models/Upload.model";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
@@ -51,10 +52,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     // All assignments for this lead, keyed by phase
     const assignments = await Assignment.find({ leadId: id })
-      .select("phase status schedule token attended escalation assignedTo createdAt updatedAt")
+      .select("phase status schedule token attended escalation assignedTo createdAt updatedAt pre")
+      .populate({
+    path: "pre.initialCV",
+    model: "Upload",
+    select: "path",
+  })
       .lean();
-    // console.log(assignments,5844444444444);
-    
+
     // Build a phase map for easy lookup on the frontend
     const assignmentByPhase: Record<string, any> = {};
     for (const a of assignments) {

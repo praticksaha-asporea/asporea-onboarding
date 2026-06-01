@@ -1,8 +1,38 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import mongoose, {
+  Schema,
+  Document,
+  Types,
+  model,
+  models,
+} from "mongoose";
+
+export const ASSIGNMENT_PHASES = [
+  "inq",
+  "pre",
+  "assess",
+  "tech",
+] as const;
+
+export const ASSIGNMENT_STATUS = [
+  "assigned",
+  "contacted",
+  "na",
+  "queued",
+  "completed",
+  "rejected",
+  "not_responded",
+] as const;
+
+export type AssignmentPhase =
+  typeof ASSIGNMENT_PHASES[number];
+
+export type AssignmentStatus =
+  typeof ASSIGNMENT_STATUS[number];
 
 export interface IAssignment extends Document {
   leadId: Types.ObjectId;
-  phase: "inq" | "pre" | "assess" | "tech";
+
+  phase: AssignmentPhase;
 
   assignedTo?: Types.ObjectId;
 
@@ -13,17 +43,24 @@ export interface IAssignment extends Document {
     method?: "on" | "off";
   };
 
-  status?: "assigned" | "contacted" | "na" | "queued" | "completed" | "rejected" | "not_responded";
+  status: AssignmentStatus;
 
   token?: {
-    generated?: boolean;
+    generated: boolean;
     number?: string;
   };
 
-  attended?: boolean;
+  attended: boolean;
+
+  pre?: {
+    additionalDetails?: string;
+    advice?: string;
+    specificNotes?: string;
+    initialCV?: Types.ObjectId;
+  };
 
   escalation?: {
-    requested?: boolean;
+    requested: boolean;
     escalatedTo?: Types.ObjectId;
   };
 
@@ -42,7 +79,7 @@ const AssignmentSchema = new Schema<IAssignment>(
 
     phase: {
       type: String,
-      enum: ["inq", "pre", "assess", "tech"],
+      enum: ASSIGNMENT_PHASES,
       required: true,
       index: true,
     },
@@ -50,25 +87,36 @@ const AssignmentSchema = new Schema<IAssignment>(
     assignedTo: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null,
       index: true,
     },
 
     schedule: {
       date: {
         type: Date,
+        default: null,
         index: true,
       },
-      from: String, // "10:30 AM"
-      to: String,
+
+      from: {
+        type: String,
+        trim: true,
+      },
+
+      to: {
+        type: String,
+        trim: true,
+      },
+
       method: {
         type: String,
-        enum: ["on", "off"], // on-site / off-site
+        enum: ["on", "off"],
       },
     },
 
     status: {
       type: String,
-      enum: ["assigned", "contacted", "na", "queued", "completed", "rejected","not_responded"],
+      enum: ASSIGNMENT_STATUS,
       default: "assigned",
       index: true,
     },
@@ -78,8 +126,10 @@ const AssignmentSchema = new Schema<IAssignment>(
         type: Boolean,
         default: false,
       },
+
       number: {
         type: String,
+        trim: true,
         index: true,
       },
     },
@@ -89,22 +139,54 @@ const AssignmentSchema = new Schema<IAssignment>(
       default: false,
     },
 
+    pre: {
+      additionalDetails: {
+        type: String,
+        trim: true,
+      },
+
+      advice: {
+        type: String,
+        trim: true,
+      },
+
+      specificNotes: {
+        type: String,
+        trim: true,
+      },
+
+      initialCV: {
+        type: Schema.Types.ObjectId,
+        ref: "Upload",
+      },
+    },
+
     escalation: {
       requested: {
         type: Boolean,
         default: false,
       },
+
       escalatedTo: {
         type: Schema.Types.ObjectId,
         ref: "User",
       },
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
+/**
+ * Compound Indexes
+ */
 
-AssignmentSchema.index({ leadId: 1, phase: 1 });
+AssignmentSchema.index(
+  { leadId: 1, phase: 1 },
+  { unique: true }
+);
 
 AssignmentSchema.index({
   assignedTo: 1,
@@ -120,5 +202,15 @@ AssignmentSchema.index({
   "token.number": 1,
 });
 
- 
-export const Assignment = mongoose.models.Assignment || mongoose.model<IAssignment>("Assignment", AssignmentSchema);
+/**
+ * Optional:
+ * Automatically remove empty nested objects
+ */
+
+AssignmentSchema.set("minimize", true);
+
+export const Assignment =
+  models.Assignment ||
+  model<IAssignment>("Assignment", AssignmentSchema);
+
+  

@@ -1,3 +1,4 @@
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export const respectiveDashboard = (
@@ -16,3 +17,21 @@ export const CamelCase = (text: string) => {
     ?.replace(/_/g, " ")
     ?.replace(/\b\w/g, (char) => char.toUpperCase())
 }
+
+
+export const uploadFileAction = async (file: File) => {
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await axiosClient.post("/upload/local", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return response.data;
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Upload failed",
+    };
+  }
+};

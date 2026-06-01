@@ -60,17 +60,31 @@ export const getTacCandidateDetailAction = async (id: string) => {
   };
 };
 
-export const updateAssignmentAction = async (payload: {
-  assignmentId: string;
-  status?: string;
-  additionalDetails?: string;
-  specificNotes?: string;
-  advice?: string;
-  attended?: boolean;
-}) => {
-  
-  const res = await axiosClient.patch("/tac/assignment/update", payload);
-  return res.data;
+type UpdateAssignmentPayload =
+  | FormData
+  | {
+      assignmentId: string;
+      status?: string;
+      additionalDetails?: string;
+      specificNotes?: string;
+      advice?: string;
+      attended?: boolean;
+    };
+
+export const updateAssignmentAction = async (
+  payload: UpdateAssignmentPayload
+) => {
+  return axiosClient.patch(
+    "/tac/assignment/update",
+    payload,
+    payload instanceof FormData
+      ? {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      : undefined
+  );
 };
 
 export const updateLeadAction = async (payload: {

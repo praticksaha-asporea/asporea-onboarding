@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useFormik } from "formik";
 import * as Yup from "yup";
@@ -46,9 +46,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const router = useRouter();
   const currentUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
 
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // }, []);
 
 
   // ── Destructure API response shape — must be before any hooks that use these ──
@@ -62,10 +62,27 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const abp = c.assignmentByPhase ?? {};   // assignments keyed by phase
   const inqAssign = abp["pre"] ?? null;           // inquiry phase assignment
 
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [tacList, setTacList] = useState<any[]>([]);
   const [escalateTo, setEscalateTo] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
 
+  // const [enablePreSubmit, setEnablePreSubmit] = useState(false);
+  const [isPreLocked, setIsPreLocked] = useState(true);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // existing file from backend
+  const existingResume = inqAssign?.pre?.initialCV
+    ?.path;
+
+  const currentPreview =
+    resumeFile
+      ? URL.createObjectURL(resumeFile)
+      : existingResume;
+
+  const isPdf =
+    resumeFile?.type === "application/pdf" ||
+    existingResume?.toLowerCase().includes(".pdf");
   // Fetch TAC list for the candidate's branch
   useEffect(() => {
     const branchObjectId =
@@ -81,6 +98,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         }
       })
       .catch(() => { });
+    if (inqAssign?.status === "completed" || inqAssign?.status === "rejected") {
+      // setEnablePreSubmit(false);
+      setIsPreLocked(true);
+    }
   }, [preferences.branchId]);
   // ── Inquiry Details form ──────────────────────────────────────────────────
   const inquiryForm = useFormik({
@@ -150,37 +171,119 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       setCurrentView("dashboard");
     }
   };
-  // console.log(inqAssign, 8888);
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
+
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+
+    if (e.dataTransfer.files?.length) {
+      const file = e.dataTransfer.files[0];
+
+      setResumeFile(file);
+
+      preForm.setFieldValue("resumeFile", file);
+    }
+  };
+
+  const handleFileChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (e.target.files?.length) {
+      const file = e.target.files[0];
+
+      setResumeFile(file);
+
+      preForm.setFieldValue("resumeFile", file);
+    }
+  };
 
 
   // ── Pre-Counselling form ─────────────────────────────────────────────────
   const preForm = useFormik({
     initialValues: {
-      preStatus: inqAssign?.status,
-      additionalDetails: inqAssign?.additionalDetails ?? "",
-      specificNotes: inqAssign?.specificNotes ?? "",
-      advice: inqAssign?.advice ?? "",
-
+      preStatus: inqAssign?.status ?? "na",
+      additionalDetails: inqAssign?.pre?.additionalDetails ?? "",
+      specificNotes: inqAssign?.pre?.specificNotes ?? "",
+      advice: inqAssign?.pre?.advice ?? "",
+      resumeFile: null as File | null,
     },
     enableReinitialize: true,
+
     validationSchema: Yup.object({
-      preStatus: Yup.string().trim().required("Status is required"),
-      additionalDetails: Yup.string().trim().required("Additional details are required"),
-      specificNotes: Yup.string().trim().optional(),
-      advice: Yup.string().trim().optional(),
+      preStatus: Yup.string()
+        .trim()
+        .required("Status is required"),
+
+      additionalDetails: Yup.string()
+        .trim()
+        .required("Additional details are required"),
+
+      specificNotes: Yup.string()
+        .trim()
+        .optional(),
+
+      advice: Yup.string()
+        .trim()
+        .optional(),
+
+      resumeFile: Yup.mixed<File>()
+        .nullable()
+        .optional(),
     }),
+
     onSubmit: async (values, { setSubmitting }) => {
       if (!inqAssign?._id) {
         toast.error("No pre-counselling assignment found");
         setSubmitting(false);
         return;
       }
+
+      if (values.preStatus === "completed") {
+        const confirmed = await confirmToast(`Are you sure Pre-Counselling is Completed!`)
+        if (!confirmed) return;
+      }
+      if (values.preStatus === "rejected") {
+        const confirmed = await confirmToast(`Are you sure Candidate is Rejected!`)
+        if (!confirmed) return;
+      }
+
       try {
-        await updateAssignmentAction({
-          assignmentId: inqAssign._id,
-          ...values,
-        });
-        toast.success("Pre-counselling saved as prescription");
+        const formData = new FormData();
+
+        formData.append("assignmentId", inqAssign._id);
+
+        formData.append("status", values.preStatus);
+        formData.append("additionalDetails", values.additionalDetails);
+        formData.append("specificNotes", values.specificNotes);
+        formData.append("advice", values.advice);
+
+        if (values.resumeFile) {
+          formData.append("resume", values.resumeFile);
+        }
+
+        const preResult = await updateAssignmentAction(formData);
+
+        if (preResult?.data?.data?.status === "completed" || preResult?.data?.data?.status === "rejected") {
+          setIsPreLocked(true);
+        }
+
+        toast.success("Status Updated and will be sent to Candidate via Email");
+
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
       } catch (err: any) {
         toast.error(err?.response?.data?.message ?? "Save failed");
       } finally {
@@ -189,13 +292,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     },
   });
 
+
+
+
   const updateAssignmentStatus = async (status: string) => {
     if (!inqAssign?._id) return;
-        const textStatus=status=="contacted"?`Are you sure ? \n You contacted with ${inquiryForm?.values?.phone}`:(status=="not_responded"?`You contacted with ${inquiryForm?.values?.phone} \nbut not responded by candidate?`:``)
-        const confirmed = await confirmToast(textStatus);
+    const textStatus = status == "contacted" ? `Are you sure ? \n You contacted with ${inquiryForm?.values?.phone}` : (status == "not_responded" ? `You contacted with ${inquiryForm?.values?.phone} \nbut not responded by candidate?` : ``)
+    const confirmed = await confirmToast(textStatus);
     if (!confirmed) return;
     try {
-      await updateAssignmentAction({ assignmentId: inqAssign._id, status });
+      const formData = new FormData();
+
+      formData.append("assignmentId", inqAssign._id);
+      formData.append("status", status);
+
+      await updateAssignmentAction(formData);
       // preForm.values.preStatus(status)
       toast.success(`Status updated to ${CamelCase(status)}`);
       preForm.setValues({
@@ -206,6 +317,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       console.log(err?.response?.data?.message ?? "Update failed");
     }
   };
+
+  // console.log((preForm.isSubmitting || isWithinSchedule(inqAssign)) , (preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected") , (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected"), enablePreSubmit, 3584);
+
   return (
     <Box className="w-full min-h-screen p-4 md:p-6">
       {/* Header */}
@@ -377,354 +491,447 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             </Card>
 
             {/* ── SECTION 2: Pre-Counselling ─────────────────────────────── */}
-            <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
-              <form onSubmit={preForm.handleSubmit}>
-                <Typography className="text-[20px] font-bold text-center mb-5">
-                  Pre-Counselling
-                </Typography>
-                <Stack spacing={3}>
-                  <Grid container spacing={5}>
+            {
+              !!Object.keys(abp).length && (
+                <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
+                  <form onSubmit={preForm.handleSubmit}>
+                    <Typography className="text-[20px] font-bold text-center mb-5">
+                      Pre-Counselling
+                    </Typography>
+                    <Stack spacing={3}>
+                      <Grid container spacing={5}>
 
-                    {/* Status — read-only display */}
-                    <Grid size={{ xs: 12 }}>
-                      <FormControl>
-                        <FormLabel>Status</FormLabel>
-                        <RadioGroup row
-                          name="preStatus"
-                          value={preForm.values.preStatus}
-                          onChange={preForm.handleChange}>
-                          <FormControlLabel value="assigned" control={<Radio />} label="Scheduled" disabled={preForm.values.preStatus!=='assigned' }/>
-                          {inqAssign?.schedule?.method === "on" && (
-                            <FormControlLabel value="contacted" control={<Radio />} label="Contacted" />
-                          )}
-                          {inqAssign?.schedule?.method === "off" && (
-                            <FormControlLabel value="queued" control={<Radio />} label="Queued" />
-                          )}
-                          <FormControlLabel value="completed" control={<Radio />} label="Completed" />
-                          <FormControlLabel value="not_responded" control={<Radio />} label="Not Responded" />
-                          <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
-                          <FormControlLabel value="na" control={<Radio />} label="N/A" />
-                        </RadioGroup>
-                      </FormControl>
-                    </Grid>
+                        {/* Status — read-only display */}
+                        <Grid size={{ xs: 12 }}>
+                          <FormControl>
+                            <FormLabel>Status</FormLabel>
+                            <RadioGroup row
+                              name="preStatus"
+                              value={preForm.values.preStatus}
+                              onChange={(e, value) => {
+                                // setEnablePreSubmit(((preForm.isSubmitting || isWithinSchedule(inqAssign)) && (value === "completed" || value === "rejected") && (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected")));
 
-                    {/* Visit method */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <FormControl>
-                        <FormLabel>Visit Method</FormLabel>
-                        <RadioGroup row value={inqAssign?.schedule?.method === "on" ? "remote" : "office"}>
-                          <FormControlLabel value="office" control={<Radio />} label="In-Office" />
-                          <FormControlLabel value="remote" control={<Radio />} label="Remote" />
-                        </RadioGroup>
-                      </FormControl>
-                    </Grid>
+                                setIsPreLocked(!((preForm.isSubmitting || isWithinSchedule(inqAssign)) && (value === "completed" || value === "rejected") && (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected")));
+                                return preForm.handleChange(e);
+                              }}>
+                              <FormControlLabel value="assigned" control={<Radio />} label="Scheduled" disabled={preForm.values.preStatus !== 'assigned'} />
+                              {inqAssign?.schedule?.method === "on" && (
+                                <FormControlLabel value="contacted" control={<Radio readOnly />} label="Contacted" disabled />
+                              )}
+                              {inqAssign?.schedule?.method === "off" && (
+                                <FormControlLabel value="queued" control={<Radio />} label="Queued" />
+                              )}
+                              <FormControlLabel
+                                value="completed"
+                                control={<Radio />}
+                                label="Completed"
+                                disabled={
+                                  inqAssign?.status === "rejected"
+                                }
+                              />
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField fullWidth label="Branch" disabled value={branchId.title ?? "—"} />
-                    </Grid>
+                              <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded" disabled />
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField
-                        fullWidth label="Assigned Consultant" disabled
-                        value={consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}
-                      />
-                    </Grid>
+                              <FormControlLabel
+                                value="rejected"
+                                control={<Radio />}
+                                label="Rejected"
+                                disabled={
+                                  inqAssign?.status === "completed"
+                                }
+                              />
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField fullWidth label="Source" disabled value={CamelCase(source.type ?? "")} />
-                    </Grid>
+                              {/* <FormControlLabel value="na" control={<Radio />} label="N/A" /> */}
+                            </RadioGroup>
+                          </FormControl>
+                        </Grid>
 
-                    {source.refType && (
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField fullWidth label="Referred By (Type)" disabled value={CamelCase(source.refType ?? "")} />
-                      </Grid>
-                    )}
-                    {source.refName && (
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField fullWidth label="Referred By (Name)" disabled value={source.refName} />
-                      </Grid>
-                    )}
+                        {/* Visit method */}
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <FormControl>
+                            <FormLabel>Visit Method</FormLabel>
+                            <RadioGroup row value={inqAssign?.schedule?.method === "on" ? "remote" : "office"}>
+                              <FormControlLabel value="office" control={<Radio />} label="In-Office" disabled={inqAssign?.schedule?.method === "on" ? true : false}/>
+                              <FormControlLabel value="remote" control={<Radio />} label="Remote" disabled={inqAssign?.schedule?.method === "off" ? true : false}/>
+                            </RadioGroup>
+                          </FormControl>
+                        </Grid>
 
-                    {preferences.visitType === "offline" && (
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled={!c.token} />
-                      </Grid>
-                    )}
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField fullWidth label="Branch" disabled value={branchId.title ?? "—"} />
+                        </Grid>
 
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField fullWidth label="Inquiry Created" disabled
-                        value={c.lastActivity ? dayjs(c.lastActivity).format("DD/MM/YYYY hh:mm A") : "—"}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField fullWidth label="Scheduled Date" disabled
-                        value={inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("DD/MM/YYYY") : "—"}
-                      />
-                    </Grid>
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <TextField fullWidth label="Scheduled Time" disabled
-                        value={
-                          inqAssign?.schedule?.from
-                            ? inqAssign.schedule.from + (inqAssign.schedule.to ? " – " + inqAssign.schedule.to : "")
-                            : "—"
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField
+                            fullWidth label="Assigned Consultant" disabled
+                            value={consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}
+                          />
+                        </Grid>
+
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField fullWidth label="Source" disabled value={CamelCase(source.type ?? "")} />
+                        </Grid>
+
+                        {source.refType && (
+                          <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField fullWidth label="Referred By (Type)" disabled value={CamelCase(source.refType ?? "")} />
+                          </Grid>
+                        )}
+                        {source.refName && (
+                          <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField fullWidth label="Referred By (Name)" disabled value={source.refName} />
+                          </Grid>
+                        )}
+
+                        {preferences.visitType === "offline" && (
+                          <Grid size={{ xs: 12, md: 6 }}>
+                            <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled={!c.token} />
+                          </Grid>
+                        )}
+
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField fullWidth label="Inquiry Created" disabled
+                            value={c.lastActivity ? dayjs(c.lastActivity).format("DD/MM/YYYY hh:mm A") : "—"}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField fullWidth label="Scheduled Date" disabled
+                            value={inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("DD/MM/YYYY") : "—"}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField fullWidth label="Scheduled Time" disabled
+                            value={
+                              inqAssign?.schedule?.from
+                                ? inqAssign.schedule.from + (inqAssign.schedule.to ? " – " + inqAssign.schedule.to : "")
+                                : "—"
+                            }
+                          />
+                        </Grid>
+
+                        {/* Action buttons — status updates */}
+                        <Grid size={{ xs: 12 }}>
+                          <Box className="flex justify-end gap-3">
+                            {inqAssign && inqAssign.schedule?.method === "on" && (
+                              <>
+                                <Button
+                                  variant="contained"
+                                  className="!bg-red-300 hover:!bg-red-400 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                                  disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"}
+                                  onClick={() => updateAssignmentStatus("not_responded")}
+                                >
+                                  Not Responded
+                                </Button>
+                                <Button
+                                  variant="contained"
+                                  className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                                  disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"}
+                                  onClick={() => updateAssignmentStatus("contacted")}
+                                >
+                                  Call
+                                </Button>
+                              </>
+                            )}
+                            {inqAssign && inqAssign.schedule?.method === "off" && (
+                              <Button
+                                variant="contained"
+                                className="!bg-orange-400 hover:!bg-orange-500 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                                disabled={!(inqAssign.status === "assigned" && isWithinSchedule(inqAssign))}
+                                onClick={() => updateAssignmentStatus("queued")}
+                              >
+                                Queue
+                              </Button>
+                            )}
+                          </Box>
+                        </Grid>
+                        {
+
+
+                          (preForm?.values?.preStatus == "completed" || preForm?.values?.preStatus == "rejected")
+                            ?
+                            (
+                              <>
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <Typography className="text-[13px] font-semibold mb-1.5">
+                                    Additional Details of Candidate{" "}
+                                  </Typography>
+                                  <TextField
+                                    multiline rows={3} fullWidth
+                                    name="additionalDetails"
+                                    value={preForm.values.additionalDetails}
+                                    onChange={preForm.handleChange}
+                                    onBlur={preForm.handleBlur}
+                                    error={preForm.submitCount > 0 && Boolean(preForm.errors.additionalDetails)}
+                                    helperText={preForm.submitCount > 0 ? preForm.errors.additionalDetails as string : undefined}
+                                    slotProps={{ input: { className: "text-[14px]" } }}
+                                    disabled={isPreLocked}
+                                  />
+                                </Grid>
+
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <Typography className="text-[13px] font-semibold mb-1.5">
+                                    Specific Notes (During Pre-Counselling)
+                                  </Typography>
+                                  <TextField
+                                    multiline rows={3} fullWidth
+                                    name="specificNotes"
+                                    value={preForm.values.specificNotes}
+                                    onChange={preForm.handleChange}
+                                    onBlur={preForm.handleBlur}
+                                    slotProps={{ input: { className: "text-[14px]" } }}
+                                    disabled={isPreLocked}
+                                  />
+                                </Grid>
+
+                                <Grid size={{ xs: 12 }}>
+                                  <Typography className="text-[13px] font-semibold mb-1.5">Advice</Typography>
+                                  <TextField
+                                    multiline rows={3} fullWidth
+                                    name="advice"
+                                    value={preForm.values.advice}
+                                    onChange={preForm.handleChange}
+                                    onBlur={preForm.handleBlur}
+                                    slotProps={{ input: { className: "text-[13px]" } }}
+                                    disabled={isPreLocked}
+                                  />
+                                </Grid>
+                                {/* /make this thumbnail and remove view then submit properly, will use a place later for history  */}
+                                {/* <Grid container spacing={2}> */}
+                                {/* Upload Area */}
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <Typography className="text-[12px] font-semibold mb-1.5">
+                                    Upload Resume
+                                  </Typography>
+
+                                  <Box
+                                    onDragOver={handleDragOver}
+                                    onDragLeave={handleDragLeave}
+                                    onDrop={handleDrop}
+                                    onClick={() => fileInputRef.current?.click()}
+                                    className={`
+                          border-2 border-dashed rounded-xl p-8
+                          flex flex-col items-center justify-center
+                          cursor-pointer transition-all
+                          h-[220px]
+                          ${isDragging
+                                        ? "border-blue-500 bg-blue-50"
+                                        : "border-gray-300 hover:bg-gray-50"
+                                      }
+                        `}
+                                  >
+                                    <input
+                                      ref={fileInputRef}
+                                      hidden
+                                      type="file"
+                                      accept=".pdf,.jpg,.jpeg,.png"
+                                      onChange={handleFileChange}
+                                      disabled={isPreLocked}
+                                    />
+
+                                    <i className="ri-upload-cloud-2-line text-4xl text-blue-500 mb-3" />
+
+                                    <Typography className="font-semibold text-sm">
+                                      Drag & Drop Resume
+                                    </Typography>
+
+                                    <Typography className="text-xs text-gray-500 mt-1">
+                                      PDF, JPG, JPEG, PNG
+                                    </Typography>
+                                  </Box>
+                                </Grid>
+                                {currentPreview && (
+
+                                  <Grid size={{ xs: 12, md: 6 }}>
+                                    <Typography className="text-[12px] font-semibold mb-1.5">
+                                      Resume Preview
+                                    </Typography>
+
+                                    <Box className="border rounded-xl h-[220px] bg-gray-50 overflow-hidden relative">
+                                      {isPdf ? (
+                                        <Box className="h-full flex flex-col items-center justify-center p-4">
+                                          <i className="ri-file-pdf-2-line text-6xl text-red-500 mb-3" />
+
+                                          <Typography className="text-sm font-semibold mb-1">
+                                            PDF Resume
+                                          </Typography>
+
+                                          <Typography className="text-xs text-gray-500 mb-3 text-center">
+                                            Click below to preview document
+                                          </Typography>
+
+                                          <a
+                                            href={currentPreview}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="text-blue-600 underline text-sm"
+                                          >
+                                            Open PDF
+                                          </a>
+                                        </Box>
+                                      ) : (
+                                        <Box className="w-full h-full flex items-center justify-center bg-white">
+                                          <img
+                                            src={currentPreview}
+                                            alt="Resume Preview"
+                                            className="w-full h-full object-contain"
+                                          />
+                                        </Box>
+                                      )}
+                                    </Box>
+                                  </Grid>
+                                )}
+                              </>
+                            ) : ``
                         }
-                      />
-                    </Grid>
+                      </Grid>
+                      {/* Send as Prescription — submits the form */}
+                      {
+                        (preForm?.values?.preStatus == "completed" || preForm?.values?.preStatus == "rejected")
+                          ?
+                          (
+                            <Box className="flex justify-end gap-3 mt-4 pt-6">
 
-                    {/* Action buttons — status updates */}
-                    <Grid size={{ xs: 12 }}>
-                      <Box className="flex justify-end gap-3">
-                        {inqAssign && inqAssign.schedule?.method === "on" && (
-                          <>
-                            <Button
-                              variant="contained"
-                              className="!bg-red-300 hover:!bg-red-400 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                              disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign)}
-                              onClick={() => updateAssignmentStatus("not_responded")}
-                            >
-                              Not Responded
-                            </Button>
-                            <Button
-                              variant="contained"
-                              className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                              disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign)}
-                              onClick={() => updateAssignmentStatus("contacted")}
-                            >
-                              Call
-                            </Button>
-                          </>
-                        )}
-                        {inqAssign && inqAssign.schedule?.method === "off" && (
-                          <Button
-                            variant="contained"
-                            className="!bg-orange-400 hover:!bg-orange-500 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                            disabled={!(inqAssign.status === "assigned" && isWithinSchedule(inqAssign))}
-                            onClick={() => updateAssignmentStatus("queued")}
-                          >
-                            Queue
-                          </Button>
-                        )}
-                      </Box>
-                    </Grid>
-
-                    {/* Editable notes */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography className="text-[13px] font-semibold mb-1.5">
-                        Additional Details of Candidate{" "}
-                      </Typography>
-                      <TextField
-                        multiline rows={3} fullWidth
-                        name="additionalDetails"
-                        value={preForm.values.additionalDetails}
-                        onChange={preForm.handleChange}
-                        onBlur={preForm.handleBlur}
-                        error={preForm.submitCount > 0 && Boolean(preForm.errors.additionalDetails)}
-                        helperText={preForm.submitCount > 0 ? preForm.errors.additionalDetails as string : undefined}
-                        slotProps={{ input: { className: "text-[14px]" } }}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12, md: 6 }}>
-                      <Typography className="text-[13px] font-semibold mb-1.5">
-                        Specific Notes (During Pre-Counselling)
-                      </Typography>
-                      <TextField
-                        multiline rows={3} fullWidth
-                        name="specificNotes"
-                        value={preForm.values.specificNotes}
-                        onChange={preForm.handleChange}
-                        onBlur={preForm.handleBlur}
-                        slotProps={{ input: { className: "text-[14px]" } }}
-                      />
-                    </Grid>
-
-                    <Grid size={{ xs: 12 }}>
-                      <Typography className="text-[13px] font-semibold mb-1.5">Advice</Typography>
-                      <TextField
-                        multiline rows={3} fullWidth
-                        name="advice"
-                        value={preForm.values.advice}
-                        onChange={preForm.handleChange}
-                        onBlur={preForm.handleBlur}
-                        slotProps={{ input: { className: "text-[13px]" } }}
-                      />
-                    </Grid>
-                        {/* /make this thumbnail and remove view then submit properly, will use a place later for history  */}
-                    <Grid size={{ xs: 12 }}>
-                      <Typography className="text-[12px] font-semibold mb-1.5">Resume</Typography>
-                      <Box
-                        component="label"
-                        className="w-full md:w-1/2 border-2 border-dashed border-gray-300 rounded-xl p-6 flex flex-col items-center justify-center hover:bg-gray-50 transition-colors cursor-pointer"
-                      >
-                        <input type="file" hidden accept=".pdf,.jpg,.jpeg"
-                          onChange={(e) => { if (e.target.files?.length) setResumeFile(e.target.files[0]); }}
-                        />
-                        {resumeFile ? (
-                          <Box className="flex flex-col items-center text-center">
-                            <i className="mdi--check-circle-outline text-green-500 mb-2" />
-                            <Typography className="text-[13px] font-bold text-gray-800">{resumeFile.name}</Typography>
-                            <Typography className="text-[11px] text-gray-500">Click to change file</Typography>
-                          </Box>
-                        ) : (
-                          <Box className="flex flex-col items-center text-center">
-                            <Box className="w-10 h-10 bg-[var(--mui-overlays-1)] border border-gray-200 rounded-full flex items-center justify-center mb-2 shadow-sm">
-                              <i className="ri-upload-cloud-2-line text-xl text-[var(--mui-palette-primary-main)]" />
+                              <Button
+                                variant="contained"
+                                type="submit"
+                                disabled={isPreLocked}
+                                className="!bg-blue-500 hover:!bg-blue-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                              >
+                                {preForm.isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Send As Prescription"}
+                              </Button>
                             </Box>
-                            <Typography className="text-xs font-semibold">
-                              Drop your files here or{" "}
-                              <span className="text-[var(--mui-palette-primary-main)] font-extrabold">browse</span>
-                            </Typography>
-                          </Box>
-                        )}
-                      </Box>
-                    </Grid>
-                  </Grid>
+                          ) : ``}
+                    </Stack>
+                  </form>
+                </Card>
+                // {/* ── SECTION 3: Assessment ──────────────────────────────────── */}
+                // {/* <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
+                //   <Typography className="text-[24px] text-center mb-5">Assessment</Typography>
+                //   <Grid container spacing={5}>
+                //     <Grid size={{ xs: 12 }}>
+                //       <FormControl>
+                //         <FormLabel>Status</FormLabel>
+                //         <RadioGroup row defaultValue="not">
+                //           <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
+                //           <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
+                //           <FormControlLabel value="done" control={<Radio />} label="Finished" />
+                //         </RadioGroup>
+                //       </FormControl>
+                //     </Grid>
 
-                  {/* Send as Prescription — submits the form */}
-                  <Box className="flex justify-end gap-3 mt-4 pt-6">
-                    <Button
-                      variant="contained"
-                      type="submit"
-                      // disabled={preForm.isSubmitting || !(inqAssign?.status === "assigned" && isWithinSchedule(inqAssign))}
-                      className="!bg-blue-500 hover:!bg-blue-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                    >
-                      {preForm.isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Send As Prescription"}
-                    </Button>
-                  </Box>
-                </Stack>
-              </form>
-            </Card>
-            {/* ── SECTION 3: Assessment ──────────────────────────────────── */}
-            <Card className="p-6 rounded-xl border border-gray-200 shadow-sm">
-              <Typography className="text-[24px] text-center mb-5">Assessment</Typography>
-              <Grid container spacing={5}>
-                <Grid size={{ xs: 12 }}>
-                  <FormControl>
-                    <FormLabel>Status</FormLabel>
-                    <RadioGroup row defaultValue="not">
-                      <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
-                      <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
-                      <FormControlLabel value="done" control={<Radio />} label="Finished" />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
+                //     <Grid size={{ xs: 12, md: 6 }}>
+                //       <FormControl>
+                //         <FormLabel>Visit Opinion</FormLabel>
+                //         <RadioGroup row defaultValue="office">
+                //           <FormControlLabel value="office" control={<Radio />} label="In-Office" />
+                //           <FormControlLabel value="remote" control={<Radio />} label="Remote" />
+                //         </RadioGroup>
+                //       </FormControl>
+                //     </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <FormControl>
-                    <FormLabel>Visit Opinion</FormLabel>
-                    <RadioGroup row defaultValue="office">
-                      <FormControlLabel value="office" control={<Radio />} label="In-Office" />
-                      <FormControlLabel value="remote" control={<Radio />} label="Remote" />
-                    </RadioGroup>
-                  </FormControl>
-                </Grid>
+                //     <Grid size={{ xs: 12, md: 6 }}>
+                //       <TextField fullWidth label="Branch" disabled value={branchId.title ?? "—"} />
+                //     </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField fullWidth label="Branch" disabled value={branchId.title ?? "—"} />
-                </Grid>
+                //     <Grid size={{ xs: 12, md: 6 }}>
+                //       <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled={!c.token} />
+                //     </Grid>
 
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled={!c.token} />
-                </Grid>
+                //     <Grid size={{ xs: 12 }}>
+                //       <Box className="flex justify-center md:justify-end gap-3 mt-2 mb-4">
+                //         <Button variant="contained" disabled className="!bg-blue-300 !text-white !rounded-lg !normal-case !opacity-100">
+                //           Call for Assessment
+                //         </Button>
+                //         <Button variant="contained" className="!bg-blue-500 hover:!bg-blue-600 !rounded-lg !normal-case">
+                //           Queue for Assessment
+                //         </Button>
+                //       </Box>
+                //     </Grid>
+                //   </Grid>
 
-                <Grid size={{ xs: 12 }}>
-                  <Box className="flex justify-center md:justify-end gap-3 mt-2 mb-4">
-                    <Button variant="contained" disabled className="!bg-blue-300 !text-white !rounded-lg !normal-case !opacity-100">
-                      Call for Assessment
-                    </Button>
-                    <Button variant="contained" className="!bg-blue-500 hover:!bg-blue-600 !rounded-lg !normal-case">
-                      Queue for Assessment
-                    </Button>
-                  </Box>
-                </Grid>
-              </Grid>
+                //   <Box className="border border-gray-200 rounded-xl p-5 mb-2">
+                //     <Typography className="mb-2">Documents</Typography>
+                //     <RadioGroup row defaultValue={c.documents?.status ?? "na"}>
+                //       <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
+                //       <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+                //       <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
+                //     </RadioGroup>
+                //     <Box className="flex flex-wrap gap-3 mt-4 mb-5">
+                //       {["Resume", "Documents", "Experience", "Academic"].map((item) => (
+                //         <Button key={item} variant="contained" size="small" className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case !text-[12px]">
+                //           {item}
+                //         </Button>
+                //       ))}
+                //     </Box>
+                //     <Box className="flex justify-end gap-3">
+                //       <Button variant="contained" className="!bg-red-300 hover:!bg-red-400 !text-white !rounded-lg !normal-case">Rejected</Button>
+                //       <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Verified</Button>
+                //     </Box>
+                //   </Box>
 
-              {/* Documents */}
-              <Box className="border border-gray-200 rounded-xl p-5 mb-2">
-                <Typography className="mb-2">Documents</Typography>
-                <RadioGroup row defaultValue={c.documents?.status ?? "na"}>
-                  <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
-                  <FormControlLabel value="verified" control={<Radio />} label="Verified" />
-                  <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
-                </RadioGroup>
-                <Box className="flex flex-wrap gap-3 mt-4 mb-5">
-                  {["Resume", "Documents", "Experience", "Academic"].map((item) => (
-                    <Button key={item} variant="contained" size="small" className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case !text-[12px]">
-                      {item}
-                    </Button>
-                  ))}
-                </Box>
-                <Box className="flex justify-end gap-3">
-                  <Button variant="contained" className="!bg-red-300 hover:!bg-red-400 !text-white !rounded-lg !normal-case">Rejected</Button>
-                  <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Verified</Button>
-                </Box>
-              </Box>
+                //   <Box className="border border-gray-200 rounded-xl p-5 mb-2">
+                //     <Typography className="mb-2">Experience</Typography>
+                //     <RadioGroup row defaultValue={c.experience?.type ? "selected" : "not"}>
+                //       <FormControlLabel value="not" control={<Radio />} label="Not Selected" />
+                //       <FormControlLabel value="selected" control={<Radio />} label="Selected" />
+                //       <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+                //     </RadioGroup>
+                //     <FormControl fullWidth className="mt-4 md:w-1/2">
+                //       <InputLabel>Experience Type</InputLabel>
+                //       <Select label="Experience Type" defaultValue={c.experience?.type ?? ""}>
+                //         <MenuItem value="fresher">Fresher</MenuItem>
+                //         <MenuItem value="domestic">Domestic</MenuItem>
+                //         <MenuItem value="abroad">Abroad</MenuItem>
+                //         <MenuItem value="free">Freelance</MenuItem>
+                //       </Select>
+                //     </FormControl>
+                //     <Box className="flex justify-end gap-3 mt-5">
+                //       <Button variant="contained" className="!bg-yellow-300 hover:!bg-yellow-400 !text-white !rounded-lg !normal-case">TL Verified</Button>
+                //       <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Save</Button>
+                //     </Box>
+                //   </Box>
 
-              {/* Experience */}
-              <Box className="border border-gray-200 rounded-xl p-5 mb-2">
-                <Typography className="mb-2">Experience</Typography>
-                <RadioGroup row defaultValue={c.experience?.type ? "selected" : "not"}>
-                  <FormControlLabel value="not" control={<Radio />} label="Not Selected" />
-                  <FormControlLabel value="selected" control={<Radio />} label="Selected" />
-                  <FormControlLabel value="verified" control={<Radio />} label="Verified" />
-                </RadioGroup>
-                <FormControl fullWidth className="mt-4 md:w-1/2">
-                  <InputLabel>Experience Type</InputLabel>
-                  <Select label="Experience Type" defaultValue={c.experience?.type ?? ""}>
-                    <MenuItem value="fresher">Fresher</MenuItem>
-                    <MenuItem value="domestic">Domestic</MenuItem>
-                    <MenuItem value="abroad">Abroad</MenuItem>
-                    <MenuItem value="free">Freelance</MenuItem>
-                  </Select>
-                </FormControl>
-                <Box className="flex justify-end gap-3 mt-5">
-                  <Button variant="contained" className="!bg-yellow-300 hover:!bg-yellow-400 !text-white !rounded-lg !normal-case">TL Verified</Button>
-                  <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Save</Button>
-                </Box>
-              </Box>
+                //   <Card className="p-6 rounded-xl border border-gray-200 shadow-sm mt-4">
+                //     <Typography className="text-[24px] text-center mb-5">Assessment</Typography>
+                //     <FormControl>
+                //       <FormLabel>Status</FormLabel>
+                //       <RadioGroup row defaultValue="not">
+                //         <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
+                //         <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
+                //         <FormControlLabel value="done" control={<Radio />} label="Finished" />
+                //       </RadioGroup>
+                //     </FormControl>
+                //     <Box className="flex justify-end gap-3 mt-4">
+                //       <Button variant="outlined">Refer Technical</Button>
+                //       <Button variant="contained" onClick={() => setCurrentView("assessment")}>Start</Button>
+                //       <Button variant="contained" color="success">Save</Button>
+                //     </Box>
+                //   </Card>
 
-              {/* Assessment Flow */}
-              <Card className="p-6 rounded-xl border border-gray-200 shadow-sm mt-4">
-                <Typography className="text-[24px] text-center mb-5">Assessment</Typography>
-                <FormControl>
-                  <FormLabel>Status</FormLabel>
-                  <RadioGroup row defaultValue="not">
-                    <FormControlLabel value="not" control={<Radio />} label="Not Scheduled" />
-                    <FormControlLabel value="progress" control={<Radio />} label="In Progress" />
-                    <FormControlLabel value="done" control={<Radio />} label="Finished" />
-                  </RadioGroup>
-                </FormControl>
-                <Box className="flex justify-end gap-3 mt-4">
-                  <Button variant="outlined">Refer Technical</Button>
-                  <Button variant="contained" onClick={() => setCurrentView("assessment")}>Start</Button>
-                  <Button variant="contained" color="success">Save</Button>
-                </Box>
-              </Card>
-
-              {/* Technical Round */}
-              <Box className="border border-gray-200 rounded-xl p-5 mt-4">
-                <FormControl className="mb-4">
-                  <Typography className="mb-2">Technical Round</Typography>
-                  <RadioGroup row defaultValue={c.technical?.status ?? "na"}>
-                    <FormControlLabel value="na" control={<Radio />} label="Not Referred" />
-                    <FormControlLabel value="refered" control={<Radio />} label="Referred" />
-                    <FormControlLabel value="passed" control={<Radio />} label="Passed" />
-                    <FormControlLabel value="failed" control={<Radio />} label="Failed" />
-                  </RadioGroup>
-                </FormControl>
-                <FormControl fullWidth className="mb-5 md:w-1/2">
-                  <InputLabel>Classify Experience</InputLabel>
-                  <Select defaultValue="" label="Classify Experience">
-                    <MenuItem value="domestic">Domestic</MenuItem>
-                    <MenuItem value="abroad">International</MenuItem>
-                  </Select>
-                </FormControl>
-                <Box className="flex justify-end gap-3">
-                  <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Save</Button>
-                </Box>
-              </Box>
-            </Card>
-
+                //   <Box className="border border-gray-200 rounded-xl p-5 mt-4">
+                //     <FormControl className="mb-4">
+                //       <Typography className="mb-2">Technical Round</Typography>
+                //       <RadioGroup row defaultValue={c.technical?.status ?? "na"}>
+                //         <FormControlLabel value="na" control={<Radio />} label="Not Referred" />
+                //         <FormControlLabel value="refered" control={<Radio />} label="Referred" />
+                //         <FormControlLabel value="passed" control={<Radio />} label="Passed" />
+                //         <FormControlLabel value="failed" control={<Radio />} label="Failed" />
+                //       </RadioGroup>
+                //     </FormControl>
+                //     <FormControl fullWidth className="mb-5 md:w-1/2">
+                //       <InputLabel>Classify Experience</InputLabel>
+                //       <Select defaultValue="" label="Classify Experience">
+                //         <MenuItem value="domestic">Domestic</MenuItem>
+                //         <MenuItem value="abroad">International</MenuItem>
+                //       </Select>
+                //     </FormControl>
+                //     <Box className="flex justify-end gap-3">
+                //       <Button variant="contained" className="!bg-green-300 hover:!bg-green-400 !text-white !rounded-lg !normal-case">Save</Button>
+                //     </Box>
+                //   </Box>
+                // </Card> */}
+              )
+            }
           </Stack>
         </Grid>
 
