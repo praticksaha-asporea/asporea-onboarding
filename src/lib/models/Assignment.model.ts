@@ -58,11 +58,11 @@ const AssignmentSchema = new Schema<IAssignment>(
         type: Date,
         index: true,
       },
-      from: String, // "10:30 AM"
+      from: String,  
       to: String,
       method: {
         type: String,
-        enum: ["on", "off"], // on-site / off-site
+        enum: ["on", "off"], 
       },
     },
 

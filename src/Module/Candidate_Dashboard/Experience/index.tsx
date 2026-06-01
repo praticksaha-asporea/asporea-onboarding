@@ -310,13 +310,13 @@ const ExperienceContent = () => {
       const res = await checkDocumentStatusAction(leadId);
       if (res?.success && res.data) {
         const currentStatus = res.data.status;
-        const allowedStatuses = ["doc_submitted", "exp_submitted", "assessment_submitted"];
+        const allowedStatuses = ["doc_submitted", "exp_submitted", "assessment_submitted","assessment_scheduled"];
         if (!allowedStatuses.includes(currentStatus) && res.data.documentStatus !== "uploaded") {
 
           router.push('/document-upload');
           return;  
         }
-        const submittedStages = ["exp_submitted", "assessment_submitted"];
+        const submittedStages = ["exp_submitted", "assessment_submitted","assessment_scheduled"];
         if (submittedStages.includes(res.data.status)) {
           setIsAlreadySubmitted(true);
           if (res.data.experienceType) {
