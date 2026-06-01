@@ -87,7 +87,7 @@ export function proxy(req: NextRequest) {
       response.headers.set('Access-Control-Allow-Origin', origin || '*');
       response.headers.set(
         'Access-Control-Allow-Methods',
-        'GET, POST, PUT, DELETE, OPTIONS',
+        'GET, POST, PUT, DELETE, OPTIONS, PATCH',
       );
       response.headers.set(
         'Access-Control-Allow-Headers',

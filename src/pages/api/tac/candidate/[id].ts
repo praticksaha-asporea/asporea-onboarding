@@ -6,6 +6,7 @@ import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middlewar
 import { applyCors } from "@/lib/cors";
 import { Lead } from "@/lib/models/Lead.model";
 import { BranchTokenModel } from "@/lib/models/BranchToken.model";
+import { Assignment } from "@/lib/models/Assignment.model";
 import mongoose from "mongoose";
 import "@/lib/models/User.model";
 import "@/lib/models/Branch.model";
@@ -48,7 +49,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       .select("tokenNo status generateDate")
       .lean();
 
-    return ResponseHandler.sendSuccess(res, { lead, branchToken }, "Candidate fetched");
+    // All assignments for this lead, keyed by phase
+    const assignments = await Assignment.find({ leadId: id })
+      .select("phase status schedule token attended escalation assignedTo createdAt updatedAt")
+      .lean();
+    // console.log(assignments,5844444444444);
+    
+    // Build a phase map for easy lookup on the frontend
+    const assignmentByPhase: Record<string, any> = {};
+    for (const a of assignments) {
+      assignmentByPhase[(a as any).phase] = a;
+    }
+
+    return ResponseHandler.sendSuccess(
+      res,
+      { lead, branchToken, assignments, assignmentByPhase },
+      "Candidate fetched",
+    );
   } catch (error: unknown) {
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);

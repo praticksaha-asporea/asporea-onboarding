@@ -46,12 +46,12 @@ interface Kpis {
 
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case "inquiry_submitted":    return "bg-blue-100 text-blue-600";
-    case "pre_scheduled":        return "bg-indigo-100 text-indigo-700";
-    case "doc_submitted":        return "bg-yellow-100 text-yellow-700";
-    case "exp_submitted":        return "bg-orange-100 text-orange-700";
+    case "inquiry_submitted": return "bg-blue-100 text-blue-600";
+    case "pre_scheduled": return "bg-indigo-100 text-indigo-700";
+    case "doc_submitted": return "bg-yellow-100 text-yellow-700";
+    case "exp_submitted": return "bg-orange-100 text-orange-700";
     case "assessment_submitted": return "bg-green-100 text-green-700";
-    default:                     return "bg-gray-100 text-gray-600";
+    default: return "bg-gray-100 text-gray-600";
   }
 };
 
@@ -105,25 +105,22 @@ const responsiveTableSx = {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-const DashboardView: React.FC<DashboardProps> = ({
-  setCurrentView,
-  setSelectedCandidate,
-}) => {
+const DashboardView: React.FC<DashboardProps> = () => {
   const router = useRouter();
 
-  const [search, setSearch]                     = useState("");
-  const [searchInput, setSearchInput]           = useState("");
-  const [statusFilter, setStatusFilter]         = useState("");
+  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const [experienceFilter, setExperienceFilter] = useState("");
-  const [page, setPage]                         = useState(1);
+  const [page, setPage] = useState(1);
   const LIMIT = 10;
 
-  const [rows, setRows]             = useState<CandidateRow[]>([]);
+  const [rows, setRows] = useState<CandidateRow[]>([]);
   const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal]           = useState(0);
-  const [kpis, setKpis]             = useState<Kpis | null>(null);
-  const [loading, setLoading]       = useState(false);
-  const [error, setError]           = useState<string | null>(null);
+  const [total, setTotal] = useState(0);
+  const [kpis, setKpis] = useState<Kpis | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 400);
@@ -157,10 +154,10 @@ const DashboardView: React.FC<DashboardProps> = ({
   useEffect(() => { fetchCandidates(); }, [fetchCandidates]);
 
   const kpiCards = [
-    { title: "Open Cases",              value: kpis?.openCases ?? "—",          desc: "Candidates actively managed" },
+    { title: "Open Cases", value: kpis?.openCases ?? "—", desc: "Candidates actively managed" },
     { title: "Pending Pre-Counselling", value: kpis?.pendingCounselling ?? "—", desc: "Currently undergoing pre-counselling" },
-    { title: "Pending Assessments",     value: kpis?.pendingAssessment ?? "—",  desc: "Documents or experience checks" },
-    { title: "Total Assigned",          value: total,                            desc: "All assigned candidates" },
+    { title: "Pending Assessments", value: kpis?.pendingAssessment ?? "—", desc: "Documents or experience checks" },
+    { title: "Total Assigned", value: total, desc: "All assigned candidates" },
   ];
 
   const COLS = ["Candidate Name", "Stage", "Visit Type", "Token", "Status", "Last Activity", "Actions"];
@@ -242,9 +239,8 @@ const DashboardView: React.FC<DashboardProps> = ({
               {COLS.map((head, i) => (
                 <TableCell
                   key={i}
-                  className={`py-4 px-4 font-semibold border-b border-gray-200 text-[var(--mui-palette-secondary-main)] whitespace-nowrap ${
-                    head === "Status" ? "text-center" : ""
-                  } ${head === "Actions" ? "text-right" : ""}`}
+                  className={`py-4 px-4 font-semibold border-b border-gray-200 text-[var(--mui-palette-secondary-main)] whitespace-nowrap ${head === "Status" ? "text-center" : ""
+                    } ${head === "Actions" ? "text-right" : ""}`}
                 >
                   {head}
                 </TableCell>

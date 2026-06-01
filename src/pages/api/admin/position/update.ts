@@ -3,17 +3,18 @@ import connectToDatabase from "@/lib/mongodb";
 import ResponseHandler from "@/lib/utils/responseUtil";
 import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
-import { applyCors } from "@/lib/cors";
 import { updatePositionSchema } from "@/lib/validation/positionValidation";
 import { updatePosition } from "@/lib/services/admin/position.service";
 import { parseForm, normalizeFormFields } from "@/lib/utils/parseForm";
+import { applyCors } from "@/lib/cors";
 
 // Disable Next.js body parser — formidable handles multipart
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  await connectToDatabase();
+ 
   if (applyCors(req, res)) return;
+  await connectToDatabase();
 
   if (req.method !== "PUT" && req.method !== "PATCH")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
