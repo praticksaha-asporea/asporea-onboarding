@@ -131,8 +131,9 @@ export function useLogin() {
   const handleSavePasswordAndRedirect = () => {
 
     localStorage.setItem("temp_register_email", identity);
-    localStorage.setItem("temp_register_password", newPassword);
-
+    // localStorage.setItem("temp_register_password", );
+    // console.log(newPassword,identity,2884);
+    
     setShowSetupPassword(false);
     router.push("/complete-profile");
   };
@@ -146,10 +147,10 @@ export function useLogin() {
     setPassword,
     otp,
     handleOtpChange,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
+    // newPassword,
+    // setNewPassword,
+    // confirmPassword,
+    // setConfirmPassword,
     sendOtp,
     enableVerifyOTP,
     showSetupPassword,

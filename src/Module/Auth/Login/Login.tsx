@@ -39,8 +39,8 @@ const Login = ({ mode }: { mode: Mode }) => {
     setPassword,
     otp,
     handleOtpChange,
-    setNewPassword,
-    setConfirmPassword,
+    // setNewPassword,
+    // setConfirmPassword,
     sendOtp,
     enableVerifyOTP,
     showSetupPassword,
@@ -57,26 +57,26 @@ const Login = ({ mode }: { mode: Mode }) => {
   const darkImg = "/images/pages/auth-v1-mask-dark.png";
   const lightImg = "/images/pages/auth-v1-mask-light.png";
   const authBackground = useImageVariant(mode, lightImg, darkImg);
-   
+
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  
+
   const formik = useFormik({
     initialValues: {
       identity: identity || "",
       password: password || "",
     },
     enableReinitialize: true,
-    
-    validateOnBlur: false, 
+
+    validateOnBlur: false,
     validationSchema: getLoginValidationSchema(authMode),
     onSubmit: (values) => {
       setIdentity(values.identity);
-      
+
       if (authMode === "password") {
         setPassword(values.password);
-        const dummyEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
+        const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
         handlePasswordLogin(dummyEvent);
       } else {
         handleSendOtp();
@@ -92,19 +92,21 @@ const Login = ({ mode }: { mode: Mode }) => {
     validateOnBlur: false,
     validationSchema: passwordSetupSchema,
     onSubmit: (values) => {
-      
-      setNewPassword(values.newPassword);
-      setConfirmPassword(values.confirmPassword);
-           
+      // console.log(passwordFormik.values,values.newPassword,144);
+      localStorage.setItem("temp_register_password", values.newPassword);
+
+      // setNewPassword(values.newPassword);
+      // setConfirmPassword(values.confirmPassword);
+
       handleSavePasswordAndRedirect();
     },
   });
 
-   
+
   const handleToggleAuthMode = () => {
     formik.resetForm({
       values: {
-        identity: formik.values.identity,  
+        identity: formik.values.identity,
         password: "",
       },
     });
@@ -116,7 +118,7 @@ const Login = ({ mode }: { mode: Mode }) => {
     setShowSetupPassword(false);
   };
 
- 
+
 
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
@@ -148,7 +150,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                 label="Phone Number or Email"
                 value={formik.values.identity}
                 onBlur={formik.handleBlur}
-                
+
                 error={formik.submitCount > 0 && Boolean(formik.errors.identity)}
                 helperText={formik.submitCount > 0 && formik.errors.identity ? (formik.errors.identity as string) : undefined}
                 onChange={(e) => {
@@ -230,7 +232,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                   fullWidth
                   variant="contained"
                   className="btn btn-success"
-                  type="submit" 
+                  type="submit"
                   disabled={sendOtp || loading}
                 >
                   {loading ? (
@@ -329,7 +331,7 @@ const Login = ({ mode }: { mode: Mode }) => {
         </CardContent>
       </Card>
 
-     <Dialog
+      <Dialog
         open={showSetupPassword}
         onClose={handleCloseDialog}
         maxWidth="xs"
@@ -343,7 +345,7 @@ const Login = ({ mode }: { mode: Mode }) => {
 
           {/* Form wrapper for popup formik */}
           <form onSubmit={passwordFormik.handleSubmit} className="w-full">
-            
+
             {/* NEW PASSWORD FIELD */}
             <Box className="w-full mb-6">
               <Typography variant="subtitle2" fontWeight="600" className="mb-2">
