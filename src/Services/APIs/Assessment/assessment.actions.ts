@@ -33,3 +33,12 @@ export const scheduleAssessmentAction = async (data: {
     };
   }
 };
+
+export const getTechnicalResultAction = async (leadId: string) => {
+  try {
+    const res = await axiosClient.get(`/Assessments/technical-result?leadId=${leadId}`);
+    return res.data;
+  } catch (err) {
+    return { success: false, message: "Network Error" };
+  }
+};

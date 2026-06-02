@@ -12,7 +12,7 @@ export interface ITechnicalDetail extends Document {
   timeTaken?: string;
 
   questions?: number;
-  answered?: number;
+  answered?: number; 
 
   feedback?: string;
 

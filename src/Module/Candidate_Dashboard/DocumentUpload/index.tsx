@@ -34,21 +34,17 @@ import {
 } from "@/Services/APIs/Documents/document.actions";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";  
 
-const Stepper_Steps = () => {
-  const steps = [
-    { label: "Inquiry", status: "completed" },
-    { label: "Counselling", status: "completed" },
-    { label: "Documents", status: "active" },
-    { label: "Experience", status: "pending" },
-    { label: "Assessment", status: "pending" },
-  ];
+const Stepper_Steps = ({ activeStep }: { activeStep: number }) => {
+  const steps = ["Inquiry", "Counselling", "Documents", "Experience", "Assessment"];
 
   const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
     [`&.${stepConnectorClasses.alternativeLabel}`]: { top: 22 },
     [`&.${stepConnectorClasses.active}`]: {
       [`& .${stepConnectorClasses.line}`]: {
-        backgroundImage: `linear-gradient(270deg, ${lighten(theme.palette.primary.main, 0.5)}, var(--mui-palette-primary-main) 100%)`,
+        backgroundColor: "#eaeaf0",
+        backgroundImage: "none", // Active phase line stays clean gray
       },
     },
     [`&.${stepConnectorClasses.completed}`]: {
@@ -84,21 +80,23 @@ const Stepper_Steps = () => {
       {
         props: ({ ownerState }) => ownerState.active,
         style: {
-          backgroundImage: `linear-gradient(270deg, ${lighten(theme.palette.primary.main, 0.5)}, var(--mui-palette-primary-main) 100%)`,
-          boxShadow: "0 4px 10px 0 rgba(0,0,0,.25)",
+          backgroundColor: "#ccc",
+          backgroundImage: "none",
+          boxShadow: "0 0 0 5px rgba(204, 204, 204, 0.3)",
         },
       },
       {
         props: ({ ownerState }) => ownerState.completed,
         style: {
           backgroundImage: `linear-gradient(270deg, ${lighten(theme.palette.primary.main, 0.5)}, var(--mui-palette-primary-main) 100%)`,
+          boxShadow: "none",
         },
       },
     ],
   }));
 
   function ColorlibStepIcon(props: StepIconProps) {
-    const { active, completed, className } = props;
+    const { active, completed, className, icon } = props;
     const icons: { [index: string]: React.ReactElement<unknown> } = {
       1: <i className="material-symbols--help-outline" />,
       2: <i className="material-symbols--check-circle-outline" />,
@@ -107,11 +105,8 @@ const Stepper_Steps = () => {
       5: <i className="material-symbols--emoji-events" />,
     };
     return (
-      <ColorlibStepIconRoot
-        ownerState={{ completed, active }}
-        className={className}
-      >
-        {icons[String(props.icon)]}
+      <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
+        {icons[String(icon)]}
       </ColorlibStepIconRoot>
     );
   }
@@ -126,12 +121,8 @@ const Stepper_Steps = () => {
         </Typography>
         <Card className="p-2 sm:p-6 rounded-xl shadow-md">
           <Stack className="w-full" spacing={4}>
-            <Stepper
-              alternativeLabel
-              activeStep={2}
-              connector={<ColorlibConnector />}
-            >
-              {steps.map(({ label }) => (
+            <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />}>
+              {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel StepIconComponent={ColorlibStepIcon}>
                     <span className="hidden md:inline">{label}</span>
@@ -415,6 +406,7 @@ const DocumentUploadPage = () => {
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
   const leadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
+  const [activeStep, setActiveStep] = useState<number>(2);
   const [positions, setPositions] = useState<any[]>([]);
   const [selectedPosition, setSelectedPosition] = useState<string>("");
   const [loadingPositions, setLoadingPositions] = useState(true);
@@ -454,10 +446,20 @@ const DocumentUploadPage = () => {
       if (!leadId) return;
       setCheckingStatus(true);
 
+      try {
+        
+        const timelineRes = await getJourneyTimelineAction(leadId);
+        if (timelineRes?.success && timelineRes.data) {
+          setActiveStep(timelineRes.data.activeStep);
+        }
+      } catch (err) {
+        console.error("Error pulling timeline index", err);
+      }
+
       const res = await checkDocumentStatusAction(leadId);
       if (res?.success && res.data) {
         const currentStatus = res.data.status;
-      const allowedStatuses = ["pre_scheduled", "doc_submitted", "exp_submitted", "assessment_scheduled", "assessment_submitted"];
+        const allowedStatuses = ["pre_scheduled", "doc_submitted", "exp_submitted", "assessment_scheduled", "assessment_submitted"];
         if (!allowedStatuses.includes(currentStatus)) {
           router.push('/precounselling');  
           return;
@@ -467,18 +469,14 @@ const DocumentUploadPage = () => {
           "exp_submitted",
           "assessment_submitted",
         ];
-        if (
-          submittedStages.includes(res.data.status) ||
-          res.data.documentStatus === "uploaded"
-        ) {
+        if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
           setIsAlreadySubmitted(true);
         }
       }
       setCheckingStatus(false);
     };
     checkStatus();
-  }, [leadId]);
-
+  }, [leadId, router]);
   const handleFilesUpdate = (typeId: string, files: File[]) => {
     setSelectedFilesMap((prev) => ({ ...prev, [typeId]: files }));
   };
@@ -623,7 +621,7 @@ const DocumentUploadPage = () => {
   return (
     <Box className="w-full flex justify-center">
       <Card className="w-full p-3 md:p-6 rounded-3xl shadow-md">
-        <Stepper_Steps />
+       <Stepper_Steps activeStep={activeStep} />
 
         <Box
           className={`${isAlreadySubmitted ? "opacity-60 pointer-events-none" : ""}`}

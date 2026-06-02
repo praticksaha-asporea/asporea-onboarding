@@ -1,9 +1,9 @@
 "use client";
 import React, { useState } from "react";
 import { Box } from "@mui/material";
-import DashboardView from "./components/DashboardView";
-import CandidateDetail from "./components/CandidateDetail";
-import AssessmentForm from "./components/AssessmentForm";
+import DashboardView from "./src/Module/TAC_Dashboard/components/DashboardView";
+import CandidateDetail from "./src/Module/TAC_Dashboard/components/CandidateDetail";
+import AssessmentForm from "./src/Module/TAC_Dashboard/components/AssessmentForm";
 
 const TACDashboard = () => {
   const [currentView, setCurrentView] = useState<

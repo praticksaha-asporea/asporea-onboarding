@@ -26,7 +26,7 @@ import {
   getSlotsAction,
   bookSlotAction,
   checkBookingStatusAction,
-} from "@/Services/APIs/PreCounselling/preCounselling.action";
+} from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 
 const PreCounsellingContent = () => {
   const searchParams = useSearchParams();

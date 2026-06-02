@@ -56,16 +56,38 @@ export default async function handler(
     if (techAssignment) {
     }
 
-    let activeStep = 0;
-    if (isPreCompleted) activeStep = 1;
+    let activeStep = 1;
+    if (
+      preAssignment ||
+      [
+        "pre_scheduled",
+        "doc_submitted",
+        "exp_submitted",
+        "assessment_submitted",
+      ].includes(lead.status)
+    ) {
+      activeStep = 2;
+    }
     if (
       lead.documents?.status === "uploaded" ||
       lead.documents?.status === "verified"
     )
-      activeStep = 2;
-    if (lead.experience?.submittedOn) activeStep = 3;
-    if (isAssessScheduled) activeStep = 4;
-    if (isAssessCompleted) activeStep = 5;
+      activeStep = 3;
+    if (lead.experience?.submittedOn || lead.status === "exp_submitted") {
+      activeStep = 4;
+    }
+
+    if (lead.status === "assessment_submitted" || isAssessScheduled) {
+      activeStep = 5;
+    }
+
+    if (
+      lead.technical?.status === "passed" ||
+      lead.technical?.status === "failed" ||
+      techAssignment
+    ) {
+      activeStep = 6;
+    }
 
     const formatDate = (date: any) =>
       date
@@ -75,6 +97,9 @@ export default async function handler(
             year: "numeric",
           })
         : null;
+
+   const techStatus = lead.technical?.status;
+   const isTechVisible = ['refered', 'passed', 'failed'].includes(techStatus);
 
     const journeyData = {
       activeStep,
@@ -95,8 +120,13 @@ export default async function handler(
         date: formatDate(lead.documents?.submittedOn),
       },
       experience: {
-        status: lead.experience?.submittedOn ? "Filled" : "Pending",
-        type: lead.experience?.type,
+        status:
+          lead.experience?.submittedOn ||
+          lead.status === "exp_submitted" ||
+          isAssessScheduled
+            ? "Filled"
+            : "Pending",
+        type: lead.experience?.type || null,
         date: formatDate(lead.experience?.submittedOn),
       },
       assessment: {
@@ -105,28 +135,17 @@ export default async function handler(
           : isAssessScheduled
             ? "Scheduled"
             : "Pending",
-
         date: isAssessScheduled
           ? `${formatDate(assessAssignment?.schedule?.date)} (${assessAssignment?.schedule?.from} - ${assessAssignment?.schedule?.to})`
           : null,
-
-        canSchedule:
-          isPreCompleted &&
-          !isAssessScheduled &&
-          lead.preferences?.consultantId != null,
+        canSchedule: isPreCompleted && !isAssessScheduled,
         hasResult: isAssessCompleted,
       },
       technical: {
-        status:
-          lead.technical?.status === "passed"
-            ? "Passed"
-            : lead.technical?.status === "failed"
-              ? "Failed"
-              : "Pending",
-        hasResult:
-          lead.technical?.status === "passed" ||
-          lead.technical?.status === "failed",
-        date: formatDate(techAssignment?.schedule?.date),
+       status: techStatus === "passed" ? "Passed" : (techStatus === "failed" ? "Failed" : (techStatus === "refered" ? "Refered" : "Pending")),
+    hasResult: techStatus === "passed" || techStatus === "failed",
+    isVisible: isTechVisible, 
+    date: formatDate(techAssignment?.schedule?.date) || formatDate(new Date())
       },
     };
 
@@ -136,6 +155,7 @@ export default async function handler(
       "Journey fetched successfully",
     );
   } catch (error: any) {
+    console.error("JOURNEY API ERROR:", error);
     return ResponseHandler.sendError(res, "Unknown error occurred", 500);
   }
 }
