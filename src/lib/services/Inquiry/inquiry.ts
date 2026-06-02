@@ -53,8 +53,19 @@ export const createInquiry = async (body: any, createdById: string) => {
 
   const inqNo = await generateInquiryNo();
   const currentFYear = currentFy();
-  // Assign tac for no choice of consultant couter wise as per branch
+  // if online
+    // no consultant chosen
+      // Assign tac -generalSettings tacAssignmentType "random" 
+        // random choose within branchTACCounters[1,2,3,4] (-EmployeeBranchShift counterNo s, Counter is used by tac role user), other than branch lastCounter if more than 1 tac counter
+      // Assign tac -generalSettings tacAssignmentType "counterwise" , 
+        // -branch lastCounter choose within like 0 index +1 index and if last index use again from  0 branchTACCounters[1,2,3] (-EmployeeBranchShift counterNo s, Counter is used by tac role user), other than branch lastCounter if more than 1 tac counter
+    // consultant chosen - prefferedConsultant
 
+  // if offline 
+    // no consultant chosen 
+      // then candidate will reach reception - receptionist will generate token and assignment
+    // consultant chosen - prefferedConsultant
+        
   const leadData = {
     fullName,
     contact: {

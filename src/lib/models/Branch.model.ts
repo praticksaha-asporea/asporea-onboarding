@@ -11,6 +11,7 @@ export interface IBranch extends Document {
     type: "Point";
     coordinates: [number, number];
   };
+  lastUsedCounter: number;
 
   createdAt: Date;
   updatedAt: Date;
@@ -23,7 +24,7 @@ const BranchSchema = new Schema<IBranch>(
     location: { type: String, trim: true },
 
     counters: { type: Number, default: 0 },
-
+    lastUsedCounter: { type: Number, default: 0 },
     timeZone: { type: String, default: "Asia/Kolkata" },
 
     workDays: [
