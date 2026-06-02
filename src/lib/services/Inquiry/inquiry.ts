@@ -4,7 +4,8 @@ import UserModel from "../../models/User.model";
 import { ApiError } from "../../error/api.error";
 import mongoose from "mongoose";
 
-import "../../models/Branch.model";
+import { BranchModel } from "../../models/Branch.model";
+import { GeneralSettingModel } from "../../models/GeneralSetting.model";
 import { generateInquiryNo } from "@/Utils/generateInquiryNo";
 import { currentFy } from "@/Utils/common";
 
@@ -53,19 +54,85 @@ export const createInquiry = async (body: any, createdById: string) => {
 
   const inqNo = await generateInquiryNo();
   const currentFYear = currentFy();
-  // if online
-    // no consultant chosen
-      // Assign tac -generalSettings tacAssignmentType "random" 
-        // random choose within branchTACCounters[1,2,3,4] (-EmployeeBranchShift counterNo s, Counter is used by tac role user), other than branch lastCounter if more than 1 tac counter
-      // Assign tac -generalSettings tacAssignmentType "counterwise" , 
-        // -branch lastCounter choose within like 0 index +1 index and if last index use again from  0 branchTACCounters[1,2,3] (-EmployeeBranchShift counterNo s, Counter is used by tac role user), other than branch lastCounter if more than 1 tac counter
-    // consultant chosen - prefferedConsultant
 
-  // if offline 
-    // no consultant chosen 
-      // then candidate will reach reception - receptionist will generate token and assignment
-    // consultant chosen - prefferedConsultant
+  const isOnline = Number(visitOption) === 2;
+
+  // ── Resolve which TAC (consultantId) to assign ──────────────────────────────
+  let resolvedConsultantId: mongoose.Types.ObjectId | null = null;
+
+  if (prefferedConsultant) {
+    // Consultant explicitly chosen — always honour it regardless of visit type
+    resolvedConsultantId = new mongoose.Types.ObjectId(prefferedConsultant);
+  } else if (isOnline) {
+    // Online visit with no preferred consultant → auto-assign a TAC
+    const [generalSettings, branch] = await Promise.all([
+      GeneralSettingModel.findOne().lean(),
+      BranchModel.findById(prefferedBranch).lean(),
+    ]);
+
+    if (!branch) {
+      throw new ApiError("Selected branch not found", 404);
+    }
+
+    // Fetch all EmployeeBranchShift records for this branch where the
+    // linked user has role "tac", and collect their counterNo values.
+    const tacShifts = await EmployeeBranchShiftModel.find({
+      branchId: new mongoose.Types.ObjectId(prefferedBranch),
+    })
+      .populate<{ employeeId: { _id: mongoose.Types.ObjectId; role: string } }>(
+        "employeeId",
+        "role"
+      )
+      .lean();
+
+    // Build list of { employeeId, counterNo } for active TAC users only
+    const tacEntries = tacShifts
+      .filter((s: any) => s.employeeId && s.employeeId.role === "tac" && s.counterNo != null)
+      .map((s: any) => ({
+        employeeId: s.employeeId._id as mongoose.Types.ObjectId,
+        counterNo: s.counterNo as number,
+      }));
+
+    if (tacEntries.length > 0) {
+      const assignmentType = generalSettings?.tacAssignmentType ?? "random";
+      const lastUsedCounter: number = (branch as any).lastUsedCounter ?? 0;
+
+      // When there is more than one TAC counter, exclude the branch's
+      // lastUsedCounter from the candidate pool to avoid repeating it.
+      const eligibleEntries =
+        tacEntries.length > 1
+          ? tacEntries.filter((e) => e.counterNo !== lastUsedCounter)
+          : tacEntries;
+      
+      if (assignmentType === "random") {
+        // Pick a random TAC from the eligible pool
+        const pick = eligibleEntries[Math.floor(Math.random() * eligibleEntries.length)];
+        resolvedConsultantId = pick.employeeId;
         
+        // Update branch lastUsedCounter to the chosen counter
+        await BranchModel.findByIdAndUpdate(prefferedBranch, {
+          lastUsedCounter: pick.counterNo,
+        });
+      } else {
+        // counterwise — advance one step from lastUsedCounter (round-robin by index)
+        // Sort entries by counterNo for deterministic ordering
+        const sorted = [...tacEntries].sort((a, b) => a.counterNo - b.counterNo);
+        const lastIdx = sorted.findIndex((e) => e.counterNo === lastUsedCounter);
+        const nextIdx = lastIdx === -1 ? 0 : (lastIdx + 1) % sorted.length;
+        const pick = sorted[nextIdx];
+        resolvedConsultantId = pick.employeeId;
+
+        // Persist the new lastUsedCounter on the branch
+        await BranchModel.findByIdAndUpdate(prefferedBranch, {
+          lastUsedCounter: pick.counterNo,
+        });
+      }
+    }
+    // If no TAC entries found, resolvedConsultantId stays null — graceful degradation
+  }
+  // Offline + no consultant → resolvedConsultantId stays null (reception handles assignment)
+  // ────────────────────────────────────────────────────────────────────────────
+
   const leadData = {
     fullName,
     contact: {
@@ -76,10 +143,8 @@ export const createInquiry = async (body: any, createdById: string) => {
     address: fullAddress,
     preferences: {
       branchId: new mongoose.Types.ObjectId(prefferedBranch),
-      consultantId: prefferedConsultant
-        ? new mongoose.Types.ObjectId(prefferedConsultant)
-        : null,
-      visitType: Number(visitOption) === 2 ? "online" : "offline",
+      consultantId: resolvedConsultantId,
+      visitType: isOnline ? "online" : "offline",
     },
     source: {
       type: typeMapping[referedFrom] || "none",

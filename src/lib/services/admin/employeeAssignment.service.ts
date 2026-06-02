@@ -11,6 +11,15 @@ async function enforceCounterLimit(branchId: string, counterNo: number | undefin
   const branch = await BranchModel.findById(branchId).select("counters").lean();
   if (!branch) throw new ApiError("Branch not found", 404);
 
+  const branchCounterOccupied = await EmployeeBranchShiftModel.exists({
+    branchId,
+    counterNo,
+  });
+
+  if (branchCounterOccupied) {
+    throw new ApiError("Counter is already occupied by other employee",404);
+  }
+
   const limit = (branch as any).counters ?? 0;
   if (limit > 0 && counterNo > limit) {
     throw new ApiError(

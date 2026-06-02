@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFormik } from "formik";
-import { useRouter } from "next/navigation";  
+import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
 import { Dialog, DialogContent, CircularProgress } from "@mui/material";
@@ -62,18 +62,19 @@ const InquiryDetails = () => {
     handlePreferenceToggle,
     handleSubmit,
     getInitialValues,
+    assignedTAC
   } = useInquiry();
 
   const [hasExistingData, setHasExistingData] = useState(false)
-useEffect(() => {
-     
+  useEffect(() => {
+
     const existingLeadId = userData?.leadId || userData?.user?.leadId;
     const existingVisitOption = userData?.visitOption ?? userData?.user?.visitOption;
     const existingConsultant = userData?.prefferedConsultant || userData?.user?.prefferedConsultant;
 
-     
+
     if (existingLeadId) {
-      setHasExistingData(true);  
+      setHasExistingData(true);
       toast("Redirecting to pending Pre-Counselling...", { icon: "⏳", id: "redirect-toast" });
       const timer = setTimeout(() => {
         const method = existingVisitOption === 2 ? "on" : "off";
@@ -93,15 +94,20 @@ useEffect(() => {
     },
   });
 
-   
+
   useEffect(() => {
     fetchConsultants(formik.values.prefferedBranch);
     formik.setFieldValue("prefferedConsultant", "");
   }, [formik.values.prefferedBranch]);
 
-   
+
   useEffect(() => {
-    fetchExternalSources(formik.values.referedType, formik.setFieldValue);
+    if (!formik.values.referedType) return;
+
+    fetchExternalSources(
+      formik.values.referedType,
+      formik.setFieldValue
+    );
   }, [formik.values.referedType]);
 
   const selectedBranchName =
@@ -112,11 +118,11 @@ useEffect(() => {
     formik.errors as Record<string, any>,
     formik.submitCount,
   );
-const isFormDisabled = hasExistingData || generatedInqNo !== "";
+  const isFormDisabled = hasExistingData || generatedInqNo !== "";
   return (
     <>
       <Grid container spacing={6}>
-        
+
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
@@ -127,354 +133,352 @@ const isFormDisabled = hasExistingData || generatedInqNo !== "";
 
               <form onSubmit={formik.handleSubmit}>
 
-               <div 
-                  className={`transition-all duration-500 ease-in-out ${
-                    isFormDisabled 
-                      ? "blur-[2.5px] opacity-60 pointer-events-none select-none" 
+                <div
+                  className={`transition-all duration-500 ease-in-out ${isFormDisabled
+                      ? "blur-[2.5px] opacity-60 pointer-events-none select-none"
                       : ""
-                  }`}
-                > 
-                <Card>
-                  <CardContent className="mbe-5">
-                    <Grid container spacing={5}>
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField
-                          fullWidth
-                          name="fullName"
-                          label="Full Name"
-                          value={formik.values.fullName}
-                          placeholder="Kunal Chettri"
-                          onChange={formik.handleChange}
-                          error={err("fullName")}
-                          helperText={helperText("fullName")}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField
-                          fullWidth
-                          name="email"
-                          label="Email Address"
-                          value={formik.values.email}
-                          placeholder="kunal.chettri@gmail.com"
-                          onChange={formik.handleChange}
-                          error={err("email")}
-                          helperText={helperText("email")}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField
-                          fullWidth
-                          type="tel"
-                          name="phoneNumber"
-                          label="Phone Number"
-                          value={formik.values.phoneNumber}
-                          placeholder="9876543210"
-                          onChange={formik.handleChange}
-                          error={err("phoneNumber")}
-                          helperText={helperText("phoneNumber")}
-                        />
-                      </Grid>
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <TextField
-                          fullWidth
-                          type="tel"
-                          name="whatsappNumber"
-                          label="WhatsApp Number"
-                          value={formik.values.whatsappNumber}
-                          placeholder="9876543210"
-                          onChange={formik.handleChange}
-                          error={err("whatsappNumber")}
-                          helperText={helperText("whatsappNumber")}
-                        />
-                      </Grid>
-
-                      {/* Branch */}
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <FormControl
-                          fullWidth
-                          error={err("prefferedBranch")}
-                        >
-                          <InputLabel>Preferred Branch</InputLabel>
-                          <Select
-                            label="Preferred Branch"
-                            name="prefferedBranch"
-                            value={formik.values.prefferedBranch}
+                    }`}
+                >
+                  <Card>
+                    <CardContent className="mbe-5">
+                      <Grid container spacing={5}>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField
+                            fullWidth
+                            name="fullName"
+                            label="Full Name"
+                            value={formik.values.fullName}
+                            placeholder="Kunal Chettri"
                             onChange={formik.handleChange}
+                            error={err("fullName")}
+                            helperText={helperText("fullName")}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField
+                            fullWidth
+                            name="email"
+                            label="Email Address"
+                            value={formik.values.email}
+                            placeholder="kunal.chettri@gmail.com"
+                            onChange={formik.handleChange}
+                            error={err("email")}
+                            helperText={helperText("email")}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField
+                            fullWidth
+                            type="tel"
+                            name="phoneNumber"
+                            label="Phone Number"
+                            value={formik.values.phoneNumber}
+                            placeholder="9876543210"
+                            onChange={formik.handleChange}
+                            error={err("phoneNumber")}
+                            helperText={helperText("phoneNumber")}
+                          />
+                        </Grid>
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <TextField
+                            fullWidth
+                            type="tel"
+                            name="whatsappNumber"
+                            label="WhatsApp Number"
+                            value={formik.values.whatsappNumber}
+                            placeholder="9876543210"
+                            onChange={formik.handleChange}
+                            error={err("whatsappNumber")}
+                            helperText={helperText("whatsappNumber")}
+                          />
+                        </Grid>
+
+                        {/* Branch */}
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <FormControl
+                            fullWidth
+                            error={err("prefferedBranch")}
                           >
-                            {branches.map((branch: any, index: number) => (
-                              <MenuItem key={branch._id} value={branch._id}>
-                                {branch.title}
-                                {branch.distanceKm !== undefined &&
-                                  ` (${index === 0 ? "Recommend - " : ""}${
-                                    branch.distanceKm < 1
+                            <InputLabel>Preferred Branch</InputLabel>
+                            <Select
+                              label="Preferred Branch"
+                              name="prefferedBranch"
+                              value={formik.values.prefferedBranch}
+                              onChange={formik.handleChange}
+                            >
+                              {branches.map((branch: any, index: number) => (
+                                <MenuItem key={branch._id} value={branch._id}>
+                                  {branch.title}
+                                  {branch.distanceKm !== undefined &&
+                                    ` (${index === 0 ? "Recommend - " : ""}${branch.distanceKm < 1
                                       ? "Within 1 Km"
                                       : `${branch.distanceKm.toFixed(2)} Km`
-                                  })`}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                          
-                          {err("prefferedBranch") && (
-                            <FormHelperText>
-                              {helperText("prefferedBranch")}
-                            </FormHelperText>
-                          )}
-                        </FormControl>
-                      </Grid>
-
-                      {/* Consultant */}
-                      <Grid size={{ xs: 12, md: 6 }}>
-                        <FormControl
-                          fullWidth
-                          disabled={
-                            loadingConsultants || !formik.values.prefferedBranch
-                          }
-                          error={err("prefferedConsultant")}
-                        >
-                          <InputLabel>
-                            {loadingConsultants
-                              ? "Loading..."
-                              : "Preferred Consultant"}
-                          </InputLabel>
-                          <Select
-                            name="prefferedConsultant"
-                            label="Preferred Consultant"
-                            value={formik.values.prefferedConsultant}
-                            onChange={formik.handleChange}
-                          >
-                            <MenuItem value="">
-                              <em>None (No Consultant)</em>
-                            </MenuItem>
-                            {consultants.length === 0 ? (
-                              <MenuItem value="" disabled>
-                                No TAC found
-                              </MenuItem>
-                            ) : (
-                              consultants.map((tac) => (
-                                <MenuItem key={tac._id} value={tac._id}>
-                                  {`${tac.firstName} ${tac.lastName}`}
+                                    })`}
                                 </MenuItem>
-                              ))
+                              ))}
+                            </Select>
+
+                            {err("prefferedBranch") && (
+                              <FormHelperText>
+                                {helperText("prefferedBranch")}
+                              </FormHelperText>
                             )}
-                          </Select>
-                          {err("prefferedConsultant") && (
-                            <FormHelperText>
-                              {helperText("prefferedConsultant")}
-                            </FormHelperText>
-                          )}
-                        </FormControl>
-                      </Grid>
+                          </FormControl>
+                        </Grid>
 
-                      {/* Visit Option */}
-                      <Grid size={{ xs: 12 }}>
-                        <FormControl fullWidth error={err("visitOption")}>
-                          <RadioGroup
-                            name="visitOption"
-                            value={Number(formik.values.visitOption)}
-                            onChange={(e) =>
-                              formik.setFieldValue(
-                                "visitOption",
-                                Number(e.target.value),
-                              )
+                        {/* Consultant */}
+                        <Grid size={{ xs: 12, md: 6 }}>
+                          <FormControl
+                            fullWidth
+                            disabled={
+                              loadingConsultants || !formik.values.prefferedBranch
                             }
+                            error={err("prefferedConsultant")}
                           >
-                            <FormControlLabel
-                              value={0}
-                              control={<Radio />}
-                              label="Are you currently now in this branch? (Only use while you are in branch premises)"
-                            />
-                            <FormControlLabel
-                              value={1}
-                              control={<Radio />}
-                              label="Are you visiting this branch? (Only use while you are outside and willing to visit in-person)"
-                            />
-                            <FormControlLabel
-                              value={2}
-                              control={<Radio />}
-                              label="Want to visit online rather than in-person branch visit"
-                            />
-                          </RadioGroup>
-                          <FormHelperText className="py-2">
-                            NOTE: Online Schedule you can choose from next
-                            screen, if you have a preferred consultant.
-                          </FormHelperText>
-                        </FormControl>
-                      </Grid>
-
-                      {/* Address */}
-                      <Grid size={{ xs: 12 }}>
-                        <TextField
-                          fullWidth
-                          name="fullAddress"
-                          label="Full Address"
-                          value={formik.values.fullAddress}
-                          placeholder={`123 Talent Lane, Darjeeling,\nWest Bengal,\n700001`}
-                          multiline
-                          rows={3}
-                          onChange={formik.handleChange}
-                          error={err("fullAddress")}
-                          helperText={helperText("fullAddress")}
-                        />
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-                 
-                 
-
-                {/* Referral */}
-               
-                <Card className="mt-5">
-                  <CardContent className="mbe-5">
-                    <Grid container spacing={5}>
-                      <Grid size={{ xs: 12 }}>
-                        <FormControl fullWidth error={err("referedFrom")}>
-                          <FormLabel component="legend">
-                            How did you hear about us?
-                          </FormLabel>
-                          <RadioGroup
-                            row
-                            name="referedFrom"
-                            value={formik.values.referedFrom}
-                            onChange={(e) => {
-                              formik.handleChange(e);
-                              if (e.target.value !== "reffer") {
-                                formik.setFieldValue("referedType", "");
-                                formik.setFieldValue("referedBy", "");
-                                formik.setFieldValue("otherReferedBy", "");
-                              }
-                            }}
-                          >
-                            <FormControlLabel
-                              value="web-app"
-                              control={<Radio />}
-                              label="Asporea Website/App"
-                            />
-                            <FormControlLabel
-                              value="call"
-                              control={<Radio />}
-                              label="Tele Caller"
-                            />
-                            <FormControlLabel
-                              value="social"
-                              control={<Radio />}
-                              label="Social Media"
-                            />
-                            <FormControlLabel
-                              value="reffer"
-                              control={<Radio />}
-                              label="Referral"
-                            />
-                          </RadioGroup>
-                          {err("referedFrom") && (
-                            <FormHelperText>
-                              {helperText("referedFrom")}
-                            </FormHelperText>
-                          )}
-                        </FormControl>
-                      </Grid>
-
-                      {formik.values.referedFrom === "reffer" && (
-                        <>
-                          <Grid size={{ xs: 12, md: 6 }}>
-                            <FormControl fullWidth error={err("referedType")}>
-                              <FormLabel component="legend">
-                                Referred By
-                              </FormLabel>
-                              <RadioGroup
-                                row
-                                name="referedType"
-                                value={formik.values.referedType || ""}
-                                onChange={formik.handleChange}
-                              >
-                                <FormControlLabel
-                                  value="pca"
-                                  control={<Radio />}
-                                  label="PCA"
-                                />
-                                <FormControlLabel
-                                  value="pcra"
-                                  control={<Radio />}
-                                  label="PCRA"
-                                />
-                                <FormControlLabel
-                                  value="institution"
-                                  control={<Radio />}
-                                  label="Institution"
-                                />
-                                <FormControlLabel
-                                  value="other"
-                                  control={<Radio />}
-                                  label="Other"
-                                />
-                              </RadioGroup>
-                              {err("referedType") && (
-                                <FormHelperText>
-                                  {helperText("referedType")}
-                                </FormHelperText>
-                              )}
-                            </FormControl>
-                          </Grid>
-
-                          <Grid size={{ xs: 12, md: 6 }}>
-                            <FormControl
-                              fullWidth
-                              disabled={
-                                loadingSources ||
-                                formik.values.referedType === "other"
-                              }
-                              error={err("referedBy")}
+                            <InputLabel>
+                              {loadingConsultants
+                                ? "Loading..."
+                                : "Preferred Consultant"}
+                            </InputLabel>
+                            <Select
+                              name="prefferedConsultant"
+                              label="Preferred Consultant"
+                              value={formik.values.prefferedConsultant}
+                              onChange={formik.handleChange}
                             >
-                              <InputLabel>
-                                {loadingSources
-                                  ? "Loading..."
-                                  : `Name of ${capitalize(formik.values.referedType || "Referrer")}`}
-                              </InputLabel>
-                              <Select
-                                name="referedBy"
-                                label={`Name of ${capitalize(formik.values.referedType || "Referrer")}`}
-                                value={formik.values.referedBy}
-                                onChange={(e) => {
-                                  formik.handleChange(e);
-                                  if (e.target.value === "other") {
-                                    formik.setFieldValue("referedType", "other");
-                                  }
-                                }}
-                              >
-                                <MenuItem value=""><em>None</em></MenuItem>
-                                {externalSources.map((src) => (
-                                  <MenuItem key={src._id} value={src._id}>
-                                    {`${src.firstName} ${src.lastName || ""}`}
+                              <MenuItem value="">
+                                <em>None (No Consultant)</em>
+                              </MenuItem>
+                              {consultants.length === 0 ? (
+                                <MenuItem value="" disabled>
+                                  No TAC found
+                                </MenuItem>
+                              ) : (
+                                consultants.map((tac) => (
+                                  <MenuItem key={tac._id} value={tac._id}>
+                                    {`${tac.firstName} ${tac.lastName}`}
                                   </MenuItem>
-                                ))}
-                              </Select>
-                              {err("referedBy") && (
-                                <FormHelperText>
-                                  {helperText("referedBy")}
-                                </FormHelperText>
+                                ))
                               )}
-                            </FormControl>
-                          </Grid>
+                            </Select>
+                            {err("prefferedConsultant") && (
+                              <FormHelperText>
+                                {helperText("prefferedConsultant")}
+                              </FormHelperText>
+                            )}
+                          </FormControl>
+                        </Grid>
 
-                          {formik.values.referedType === "other" && (
-                            <Grid size={{ xs: 12 }}>
-                              <TextField
-                                fullWidth
-                                name="otherReferedBy"
-                                label="Please specify referrer name"
-                                value={formik.values.otherReferedBy || ""}
-                                placeholder="Eg: John Singh"
-                                onChange={formik.handleChange}
-                                error={err("otherReferedBy")}
-                                helperText={helperText("otherReferedBy")}
+                        {/* Visit Option */}
+                        <Grid size={{ xs: 12 }}>
+                          <FormControl fullWidth error={err("visitOption")}>
+                            <RadioGroup
+                              name="visitOption"
+                              value={Number(formik.values.visitOption)}
+                              onChange={(e) =>
+                                formik.setFieldValue(
+                                  "visitOption",
+                                  Number(e.target.value),
+                                )
+                              }
+                            >
+                              <FormControlLabel
+                                value={0}
+                                control={<Radio />}
+                                label="Are you currently now in this branch? (Only use while you are in branch premises)"
                               />
+                              <FormControlLabel
+                                value={1}
+                                control={<Radio />}
+                                label="Are you visiting this branch? (Only use while you are outside and willing to visit in-person)"
+                              />
+                              <FormControlLabel
+                                value={2}
+                                control={<Radio />}
+                                label="Want to visit online rather than in-person branch visit"
+                              />
+                            </RadioGroup>
+                            <FormHelperText className="py-2">
+                              NOTE: Online Schedule you can choose from next
+                              screen, if you have a preferred consultant.
+                            </FormHelperText>
+                          </FormControl>
+                        </Grid>
+
+                        {/* Address */}
+                        <Grid size={{ xs: 12 }}>
+                          <TextField
+                            fullWidth
+                            name="fullAddress"
+                            label="Full Address"
+                            value={formik.values.fullAddress}
+                            placeholder={`123 Talent Lane, Darjeeling,\nWest Bengal,\n700001`}
+                            multiline
+                            rows={3}
+                            onChange={formik.handleChange}
+                            error={err("fullAddress")}
+                            helperText={helperText("fullAddress")}
+                          />
+                        </Grid>
+                      </Grid>
+                    </CardContent>
+                  </Card>
+
+
+
+                  {/* Referral */}
+
+                  <Card className="mt-5">
+                    <CardContent className="mbe-5">
+                      <Grid container spacing={5}>
+                        <Grid size={{ xs: 12 }}>
+                          <FormControl fullWidth error={err("referedFrom")}>
+                            <FormLabel component="legend">
+                              How did you hear about us?
+                            </FormLabel>
+                            <RadioGroup
+                              row
+                              name="referedFrom"
+                              value={formik.values.referedFrom}
+                              onChange={(e) => {
+                                formik.handleChange(e);
+                                if (e.target.value !== "reffer") {
+                                  formik.setFieldValue("referedType", "");
+                                  formik.setFieldValue("referedBy", "");
+                                  formik.setFieldValue("otherReferedBy", "");
+                                }
+                              }}
+                            >
+                              <FormControlLabel
+                                value="web-app"
+                                control={<Radio />}
+                                label="Asporea Website/App"
+                              />
+                              <FormControlLabel
+                                value="call"
+                                control={<Radio />}
+                                label="Tele Caller"
+                              />
+                              <FormControlLabel
+                                value="social"
+                                control={<Radio />}
+                                label="Social Media"
+                              />
+                              <FormControlLabel
+                                value="reffer"
+                                control={<Radio />}
+                                label="Referral"
+                              />
+                            </RadioGroup>
+                            {err("referedFrom") && (
+                              <FormHelperText>
+                                {helperText("referedFrom")}
+                              </FormHelperText>
+                            )}
+                          </FormControl>
+                        </Grid>
+
+                        {formik.values.referedFrom === "reffer" && (
+                          <>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FormControl fullWidth error={err("referedType")}>
+                                <FormLabel component="legend">
+                                  Referred By
+                                </FormLabel>
+                                <RadioGroup
+                                  row
+                                  name="referedType"
+                                  value={formik.values.referedType || ""}
+                                  onChange={formik.handleChange}
+                                >
+                                  <FormControlLabel
+                                    value="pca"
+                                    control={<Radio />}
+                                    label="PCA"
+                                  />
+                                  <FormControlLabel
+                                    value="pcra"
+                                    control={<Radio />}
+                                    label="PCRA"
+                                  />
+                                  <FormControlLabel
+                                    value="institution"
+                                    control={<Radio />}
+                                    label="Institution"
+                                  />
+                                  <FormControlLabel
+                                    value="other"
+                                    control={<Radio />}
+                                    label="Other"
+                                  />
+                                </RadioGroup>
+                                {err("referedType") && (
+                                  <FormHelperText>
+                                    {helperText("referedType")}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
                             </Grid>
-                          )}
-                        </>
-                      )}
-                    </Grid>
-                  </CardContent>
-                </Card>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FormControl
+                                fullWidth
+                                disabled={
+                                  loadingSources ||
+                                  formik.values.referedType === "other"
+                                }
+                                error={err("referedBy")}
+                              >
+                                <InputLabel>
+                                  {loadingSources
+                                    ? "Loading..."
+                                    : `Name of ${capitalize(formik.values.referedType || "Referrer")}`}
+                                </InputLabel>
+                                <Select
+                                  name="referedBy"
+                                  label={`Name of ${capitalize(formik.values.referedType || "Referrer")}`}
+                                  value={formik.values.referedBy}
+                                  onChange={(e) => {
+                                    formik.handleChange(e);
+                                    if (e.target.value === "other") {
+                                      formik.setFieldValue("referedType", "other");
+                                    }
+                                  }}
+                                >
+                                  <MenuItem value=""><em>None</em></MenuItem>
+                                  {externalSources.map((src) => (
+                                    <MenuItem key={src._id} value={src._id}>
+                                      {`${src.firstName} ${src.lastName || ""}`}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                                {err("referedBy") && (
+                                  <FormHelperText>
+                                    {helperText("referedBy")}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            </Grid>
+
+                            {formik.values.referedType === "other" && (
+                              <Grid size={{ xs: 12 }}>
+                                <TextField
+                                  fullWidth
+                                  name="otherReferedBy"
+                                  label="Please specify referrer name"
+                                  value={formik.values.otherReferedBy || ""}
+                                  placeholder="Eg: John Singh"
+                                  onChange={formik.handleChange}
+                                  error={err("otherReferedBy")}
+                                  helperText={helperText("otherReferedBy")}
+                                />
+                              </Grid>
+                            )}
+                          </>
+                        )}
+                      </Grid>
+                    </CardContent>
+                  </Card>
                 </div>
                 <CardContent className="mbe-5 mt-4">
                   <Grid container spacing={5}>
@@ -482,7 +486,7 @@ const isFormDisabled = hasExistingData || generatedInqNo !== "";
                       <Button
                         variant="contained"
                         type="submit"
-                        disabled={submitting || formik.isSubmitting || isFormDisabled}  
+                        disabled={submitting || formik.isSubmitting || isFormDisabled}
                         className="rounded-xl normal-case text-sm shadow-md"
                       >
                         {submitting || formik.isSubmitting ? (
@@ -494,8 +498,8 @@ const isFormDisabled = hasExistingData || generatedInqNo !== "";
                     </Grid>
                   </Grid>
                 </CardContent>
-                 
-             
+
+
               </form>
             </CardContent>
           </Card>
@@ -605,7 +609,7 @@ const isFormDisabled = hasExistingData || generatedInqNo !== "";
           </Typography>
 
           <Box className="mb-8">
-            {formik.values.prefferedConsultant ? (
+            {formik.values.prefferedConsultant || assignedTAC != null ? (
               formik.values.visitOption === 0 ? (
                 <Typography
                   variant="body1"
