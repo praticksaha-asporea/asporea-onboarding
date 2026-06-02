@@ -63,7 +63,6 @@ const InquiryDetails = () => {
     handleSubmit,
     getInitialValues,
   } = useInquiry();
-  console.log("REDUX USER DATA:", userData);
 
   const [hasExistingData, setHasExistingData] = useState(false)
 useEffect(() => {

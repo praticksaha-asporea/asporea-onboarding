@@ -111,10 +111,8 @@ export const useAccount = () => {
           experienceInMonths: values?.experienceInMonths,
           bio: values?.bio,
         };
-        // console.log(payload,5844);
         
         const res = await axiosClient.patch(`/user/profile-update`, payload);
-        // console.log(res,11111);
 
         if (res.data?.success) {
           toast.success("Profile Updated Successfully!", {

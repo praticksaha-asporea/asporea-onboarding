@@ -3,7 +3,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 export interface IAssessment extends Document {
   leadId: Types.ObjectId;
 
-  assessmentNo?: string;
+  // assessmentNo?: string;
   passportNo?: string;
   date?: Date;
 
@@ -19,18 +19,18 @@ export interface IAssessment extends Document {
     createdAt?: Date;
   }[];
 
-  technical?: {
-    totalScore?: number;
-    achievedScore?: number;
+  // technical?: {
+  //   totalScore?: number;
+  //   achievedScore?: number;
 
-    breakdownPdf?: Types.ObjectId;
+  //   breakdownPdf?: Types.ObjectId;
 
-    timeTaken?: string;
-    questions?: number;
-    answered?: number;
+  //   timeTaken?: string;
+  //   questions?: number;
+  //   answered?: number;
 
-    feedback?: string;
-  };
+  //   feedback?: string;
+  // };
 
   signatures?: {
     assessor?: Types.ObjectId;
@@ -51,11 +51,11 @@ const AssessmentSchema = new Schema<IAssessment>(
       index: true,
     },
 
-    assessmentNo: {
-      type: String,
-      unique: true,
-      sparse: true,
-    },
+    // assessmentNo: {
+    //   type: String,
+    //   unique: true,
+    //   sparse: true,
+    // },
 
     passportNo: {
       type: String,
@@ -86,21 +86,21 @@ const AssessmentSchema = new Schema<IAssessment>(
       },
     ],
 
-    technical: {
-      totalScore: Number,
-      achievedScore: Number,
+    // technical: {
+    //   totalScore: Number,
+    //   achievedScore: Number,
 
-      breakdownPdf: {
-        type: Schema.Types.ObjectId,
-        ref: "Upload",
-      },
+    //   breakdownPdf: {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "Upload",
+    //   },
 
-      timeTaken: String,
-      questions: Number,
-      answered: Number,
+    //   timeTaken: String,
+    //   questions: Number,
+    //   answered: Number,
 
-      feedback: String,
-    },
+    //   feedback: String,
+    // },
 
     signatures: {
       assessor: {

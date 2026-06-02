@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IGeneralSetting extends Document {
   lastInq?: number;
   lastFy?: string;
-  lastCounter?: string;
+  // lastCounter?: string;
 
   escalationTimelineHours?: number;
   inqResTimelineHours?: number;
@@ -30,10 +30,10 @@ const GeneralSettingSchema = new Schema<IGeneralSetting>(
       trim: true,
     },
 
-    lastCounter:{
-      type: String,
-      trim: true,
-    },
+    // lastCounter:{
+    //   type: String,
+    //   trim: true,
+    // },
 
     escalationTimelineHours: {
       type: Number,

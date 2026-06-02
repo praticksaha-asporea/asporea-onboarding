@@ -221,7 +221,6 @@ export const updateUser = async (userId: string, body: any) => {
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
   }
-  console.log(update, 444444);
   update.experienceInMonths =
     update.experienceInMonths
       ? Number(update.experienceInMonths)
@@ -237,7 +236,6 @@ export const updateUser = async (userId: string, body: any) => {
       runValidators: true,
     }
   ).select("-password");
-  console.log(updated, 22222);
 
   return updated;
 };

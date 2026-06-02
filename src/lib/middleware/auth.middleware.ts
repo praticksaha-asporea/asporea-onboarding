@@ -51,7 +51,6 @@ export const verifyToken = (token: string | null): Promise<AuthUser> =>
         userId?: string;
         role?: UserRole;
       };
-      // console.log(decoded,888);
       
 
       const id = sub || userId;

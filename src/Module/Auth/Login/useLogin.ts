@@ -57,7 +57,6 @@ export function useLogin() {
           Cookies.set("refreshToken", tokens.refreshToken);
         }
 
-        // console.log(user.role,9999);
         dispatch(setUserData({ userData: user as UserData }));
         respectiveDashboard(user, router);
       }
@@ -131,8 +130,8 @@ export function useLogin() {
   const handleSavePasswordAndRedirect = () => {
 
     localStorage.setItem("temp_register_email", identity);
-    localStorage.setItem("temp_register_password", newPassword);
-
+    // localStorage.setItem("temp_register_password", );
+    
     setShowSetupPassword(false);
     router.push("/complete-profile");
   };
@@ -146,10 +145,10 @@ export function useLogin() {
     setPassword,
     otp,
     handleOtpChange,
-    newPassword,
-    setNewPassword,
-    confirmPassword,
-    setConfirmPassword,
+    // newPassword,
+    // setNewPassword,
+    // confirmPassword,
+    // setConfirmPassword,
     sendOtp,
     enableVerifyOTP,
     showSetupPassword,

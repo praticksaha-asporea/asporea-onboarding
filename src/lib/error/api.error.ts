@@ -5,7 +5,6 @@ export class ApiError<
   data: T;
 
   constructor(message: string, statusCode: number = 500, data?: T) {
-    // console.log("hhhh")
     super(message);
     this.statusCode = statusCode;
     this.data = (data ?? {}) as T; // Ensures default is {}

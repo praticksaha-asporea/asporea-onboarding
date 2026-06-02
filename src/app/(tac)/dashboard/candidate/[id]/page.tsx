@@ -28,7 +28,6 @@ export default function CandidateDetailPage() {
       .catch((err) => setError(err?.response?.data?.message ?? "Failed to load candidate"))
       .finally(() => setLoading(false));
   }, [id]);
-  // console.log(data,45425);
   
   if (loading) {
     return (
@@ -66,7 +65,6 @@ export default function CandidateDetailPage() {
     assignmentByPhase: data.assignmentByPhase ?? {},
   };
 
-  // console.log(data,5855);
   
   return (
     <CandidateDetail

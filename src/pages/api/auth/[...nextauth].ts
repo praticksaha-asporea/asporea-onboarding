@@ -31,12 +31,10 @@ async function handleSocialSignIn({
   if (socialRecord) {
     // Known social login — load linked user and refresh tokens
     dbUser = await User.findById(socialRecord.userId);
-    // console.log(dbUser,954645);
     
     if (dbUser) {
       await SocialLogins.findByIdAndUpdate(socialRecord._id, { accessToken, scopes, expiresAt });
       tokens = await generateTokens({ _id: String(dbUser._id), role: String(dbUser.role ?? "user") });
-  // console.log({ appTokens: tokens, appUserId: String(dbUser._id), appUserRole: String(dbUser.role ?? "user"), isNewUser: false, userData: dbUser.toObject() },5345345345435);
 
       return { appTokens: tokens, appUserId: String(dbUser._id), appUserRole: String(dbUser.role ?? "user"), isNewUser: false, userData: dbUser.toObject() };
     }

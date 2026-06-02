@@ -203,7 +203,7 @@ export const savePreCounsellingBooking = async (body: any) => {
         attended: false,
       },
     },
-    { new: true, upsert: true },
+    { newreturnDocument: 'after', upsert: true },
   );
 
   if (updatedAssignment) {

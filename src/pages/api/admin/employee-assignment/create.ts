@@ -38,7 +38,6 @@ export default async function handler(
       "Employee assigned successfully",
     );
   } catch (error: unknown) {
-    // console.log("ACTUAL ERROR: ", error)
     if (error instanceof ApiError)
       return ResponseHandler.sendError(
         res,

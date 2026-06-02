@@ -106,7 +106,6 @@ export const updateShift = async (shiftId: string, body: any) => {
   }
 
   if (body.schedules && body.schedules.length > 0) {
-    // console.log(body.schedules);
     
     await ShiftScheduleModel.deleteMany({ shiftId });
 
