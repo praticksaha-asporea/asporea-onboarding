@@ -5,6 +5,8 @@ import { ApiError } from "../../error/api.error";
 import mongoose from "mongoose";
 
 import "../../models/Branch.model";
+import { generateInquiryNo } from "@/Utils/generateInquiryNo";
+import { currentFy } from "@/Utils/common";
 
 export const createInquiry = async (body: any, createdById: string) => {
   const {
@@ -49,8 +51,9 @@ export const createInquiry = async (body: any, createdById: string) => {
     );
   }
 
-  const randomNo = Math.floor(1000 + Math.random() * 9000);
-  const inqNo = `ASP-INQ-${randomNo}`; // Inquiry number logic will change
+  const inqNo = await generateInquiryNo();
+  const currentFYear = currentFy();
+  // Assign tac for no choice of consultant couter wise as per branch
 
   const leadData = {
     fullName,
@@ -81,11 +84,12 @@ export const createInquiry = async (body: any, createdById: string) => {
             : referedBy
           : undefined,
     },
-   status: 'inquiry_submitted',
-   documents: {
+    status: 'inquiry_submitted',
+    documents: {
       status: 'na'
     },
     inqNo,
+    inqFy: currentFYear,
     createdBy: {
       id: new mongoose.Types.ObjectId(createdById),
       type: "self",

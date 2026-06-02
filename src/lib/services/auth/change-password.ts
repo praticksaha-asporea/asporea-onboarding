@@ -21,7 +21,6 @@ export const changePassword = async (payload: changePasswordPayload) => {
 
   // Find user and include password
   const user = await UserModel.findById(userId).select('+password');
-  // console.log(payload,9877);
   
   if (!user || !user.password) {
     throw new ApiError('User not found or password not set', 400);

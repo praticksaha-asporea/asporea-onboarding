@@ -84,7 +84,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       assignedTo: new mongoose.Types.ObjectId(authUser.id),
     });
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
-    // console.log(value,req?.body,3333);
     // need to work on file upload
     type UploadResult = {
       uploadId: string;
@@ -100,7 +99,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         userId: authUser?.id,
       });
     }
-    // console.log(value,69555);
 
     // need to work here for update fields
     const update: Record<string, any> = {
@@ -146,7 +144,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       rejected: "pre_rejected",
     };
     if (updatableStatus) {
-      console.log(updatableStatus?.[status],3333);
       
       await Lead.findByIdAndUpdate(
         assignment?.leadId,
@@ -157,7 +154,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return ResponseHandler.sendSuccess(res, updated, "Assignment updated");
   } catch (error: unknown) {
-    // console.log(error, 2844);
 
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);

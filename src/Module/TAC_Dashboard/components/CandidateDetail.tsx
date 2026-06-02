@@ -318,7 +318,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
     }
   };
 
-  // console.log((preForm.isSubmitting || isWithinSchedule(inqAssign)) , (preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected") , (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected"), enablePreSubmit, 3584);
 
   return (
     <Box className="w-full min-h-screen p-4 md:p-6">

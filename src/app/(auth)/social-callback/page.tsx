@@ -45,7 +45,6 @@ export default function SocialCallbackPage() {
       router.replace("/complete-profile");
     } else {
       // ── Existing user: set cookies + Redux + redirect ─────────────────
-      // console.log(session?.appUserRole,5844);
 
       if (session?.appUserRole != "user") {
         toast.error(`Sorry ! This feature only available for Candidates`);

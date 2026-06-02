@@ -40,7 +40,6 @@ export function proxy(req: NextRequest) {
         protectedRoutesCandidate.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/')) ||
         protectedRouteTAC.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/'));
 
-    // console.log('non',protectedRouteTAC,normalizedPath, 22222);
       if (isProtected) {
         // Redirect to login if trying to access protected route
         return NextResponse.redirect(new URL('/', req.url));
@@ -96,7 +95,6 @@ export function proxy(req: NextRequest) {
       response.headers.set('Access-Control-Allow-Credentials', 'true');
       return response;
     }
-    // console.log(origin);
     // Handle actual requests
     response.headers.set('Access-Control-Allow-Origin', '*');
     response.headers.set(

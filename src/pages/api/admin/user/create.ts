@@ -29,7 +29,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const user = await createUser(req.body, authUser.id);
     return ResponseHandler.sendSuccess(res, user, 'User created successfully');
   } catch (error: unknown) {
-    // console.log(error,588);
     
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);

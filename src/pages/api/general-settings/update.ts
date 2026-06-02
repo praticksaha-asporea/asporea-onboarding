@@ -27,7 +27,7 @@ const updateGeneralSettingsSchema = Joi.object({
   tacAssignmentType:          Joi.string().valid('random', 'counterwise').optional(),
   inquiryNumberFormat:        Joi.string().trim().optional(),
   lastFy:                     Joi.string().trim().optional(),
-  lastCounter:             Joi.string().trim().optional(),
+  // lastCounter:             Joi.string().trim().optional(),
   // lastInq is system-managed — not updatable via this endpoint
 }).options({ abortEarly: false, allowUnknown: false });
 
@@ -51,7 +51,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const updated = await GeneralSettingModel.findOneAndUpdate(
       {},
       { $set: value },
-      { new: true, upsert: true, runValidators: true },
+      { returnDocument: 'after', upsert: true, runValidators: true },
     ).lean();
 
     return ResponseHandler.sendSuccess(res, updated, 'General settings updated');

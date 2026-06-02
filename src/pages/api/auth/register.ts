@@ -20,7 +20,6 @@ export default async function handler(
       allowUnknown: false,
       stripUnknown: true,
     });
-  // console.log(error,2222);
     if (error) {
       const message = error.details.map((detail) => detail.message).join(", ");
       throw new ApiError(message, 400);
@@ -28,7 +27,6 @@ export default async function handler(
     const newUser = await register(req.body);
     return ResponseHandler.sendSuccess(res, newUser, "Signup Successfull");
   } catch (error: unknown) {
-    // console.log("register error", error);
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(
         res,

@@ -27,7 +27,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await viewUser(userId);
     return ResponseHandler.sendSuccess(res, data, 'User fetched successfully');
   } catch (error: unknown) {
-    // console.log(error,5844);
     
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);

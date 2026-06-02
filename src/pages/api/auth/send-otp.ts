@@ -12,7 +12,6 @@ export default async function handler(
   try {
     const { error, value } = phoneLoginSchema.validate(req.body);
     if (error) {
-      // console.log(error);
       
       return ResponseHandler.sendError(res, error.details[0].message, 400);
     }

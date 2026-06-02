@@ -9,7 +9,6 @@ export async function sendSms({
 }) {
   // Placeholder SMS sender.
   // Replace with a real provider integration when ready.
-  // console.log(`Sending SMS to ${to}: ${body}`);
   return {
     success: true,
     channel: "sms",
@@ -26,7 +25,6 @@ export async function sendWhatsApp({
 }) {
   // Placeholder WhatsApp sender.
   // Replace with a real provider integration when ready.
-  // console.log(`Sending WhatsApp to ${to}: ${body}`);
   return {
     success: true,
     channel: "whatsapp",

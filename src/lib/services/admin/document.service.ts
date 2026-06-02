@@ -5,7 +5,6 @@ import mongoose from "mongoose";
 export const createDocumentType = async (body: any) => {
     const { title, section, subTitle, supportedExtensions, required, multiple } = body;
 
-    // console.log(body,8777);
 
     const branch = await DocumentType.create({
         title,

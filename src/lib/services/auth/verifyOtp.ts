@@ -40,7 +40,6 @@ export const verifyOtpService = async (identity: string, otp: string) => {
     throw new ApiError("OTP expired", 400);
   }
 
-  // console.log(otpData,58666);
   
   await Otp.deleteOne({ _id: otpData._id });
 

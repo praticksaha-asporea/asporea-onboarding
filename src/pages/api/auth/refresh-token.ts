@@ -12,7 +12,6 @@ export default async function handler(
   if (applyCors(req, res)) return;
   try {
     const { refreshToken } = req.body;
-    // console.log(req.body,699655);
 
     if (!refreshToken || typeof refreshToken !== "string") {
       return ResponseHandler.sendError(

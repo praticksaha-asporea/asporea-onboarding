@@ -57,7 +57,6 @@ export function useLogin() {
           Cookies.set("refreshToken", tokens.refreshToken);
         }
 
-        // console.log(user.role,9999);
         dispatch(setUserData({ userData: user as UserData }));
         respectiveDashboard(user, router);
       }
@@ -132,7 +131,6 @@ export function useLogin() {
 
     localStorage.setItem("temp_register_email", identity);
     // localStorage.setItem("temp_register_password", );
-    // console.log(newPassword,identity,2884);
     
     setShowSetupPassword(false);
     router.push("/complete-profile");

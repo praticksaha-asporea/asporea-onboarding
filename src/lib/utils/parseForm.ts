@@ -2,6 +2,7 @@ import formidable, { Fields, Files } from "formidable";
 import { NextApiRequest } from "next";
 import fs from "fs";
 import path from "path";
+
 export type ParsedForm = {
   fields: Record<string, string | string[]>;
   files: Files;
@@ -64,28 +65,49 @@ export const parseForm = (
  * - Converts numeric strings to numbers for specified keys
  */
 export function normalizeFormFields(
-  fields: Record<string, string | string[]>,
+  fields: Fields,
   arrayKeys: string[] = [],
   boolKeys: string[] = [],
   numberKeys: string[] = [],
 ): Record<string, unknown> {
   const result: Record<string, unknown> = {};
 
+  // for (const [key, val] of Object.entries(fields)) {
+  //   if (arrayKeys.includes(key)) {
+  //     // Accept repeated fields (already array) or comma-separated string
+  //     const arr = Array.isArray(val)
+  //       ? val
+  //       : val.split(",").map((s) => s.trim()).filter(Boolean);
+  //     result[key] = arr;
+  //   } else if (boolKeys.includes(key)) {
+  //     result[key] = val === "true" || val === "1";
+  //   } else if (numberKeys.includes(key)) {
+  //     result[key] = Number(val);
+  //   } else {
+  //     result[key] = Array.isArray(val) ? val[0] : val;
+  //   }
+  // }
   for (const [key, val] of Object.entries(fields)) {
+    if (!val || val.length === 0) continue;
+
+    const value = val.length === 1 ? val[0] : val;
+
     if (arrayKeys.includes(key)) {
-      // Accept repeated fields (already array) or comma-separated string
-      const arr = Array.isArray(val)
-        ? val
-        : val.split(",").map((s) => s.trim()).filter(Boolean);
+      const arr = Array.isArray(value)
+        ? value
+        : value
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+
       result[key] = arr;
     } else if (boolKeys.includes(key)) {
-      result[key] = val === "true" || val === "1";
+      result[key] = value === "true" || value === "1";
     } else if (numberKeys.includes(key)) {
-      result[key] = Number(val);
+      result[key] = Number(value);
     } else {
-      result[key] = Array.isArray(val) ? val[0] : val;
+      result[key] = Array.isArray(value) ? value[0] : value;
     }
   }
-
   return result;
 }

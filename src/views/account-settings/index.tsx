@@ -23,7 +23,6 @@ const AccountSettings = ({ tabContentList }: { tabContentList: { [key: string]: 
   // const reduxUser = useSelector(
   //   (state: any) => state.userSlice?.userData || state.user?.userData,
   // );
-  // // console.log(path,reduxUser?.role,5555);
   //  useEffect(()=>{
   //   if(reduxUser?.role=="tac" && path==="/profile")
   //   {

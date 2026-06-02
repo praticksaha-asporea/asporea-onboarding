@@ -25,6 +25,7 @@ export interface ILead extends Document {
 
   status?: string;
   inqNo?: string;
+  inqFy?: string;
 
   experience?: {
     type?: "fresher" | "domestic" | "abroad" | "free";
@@ -97,7 +98,11 @@ const LeadSchema = new Schema<ILead>(
 
     inqNo: {
       type: String,
-      unique: true,
+      sparse: true,
+    },
+
+    inqFy: {
+      type: String,
       sparse: true,
     },
 
@@ -154,6 +159,10 @@ const LeadSchema = new Schema<ILead>(
     },
   },
   { timestamps: true }
+);
+LeadSchema.index(
+  { inqNo: 1, inqFy: 1 },
+  { unique: true }
 );
 
 export const Lead =

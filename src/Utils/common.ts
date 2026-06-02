@@ -35,3 +35,12 @@ export const uploadFileAction = async (file: File) => {
     };
   }
 };
+
+
+export const currentFy = () => {
+  const now = new Date();
+  return now.getMonth() >= 3
+    ? `${now.getFullYear()}-${String(now.getFullYear() + 1).slice(-2)}`
+    : `${now.getFullYear() - 1}-${String(now.getFullYear()).slice(-2)}`;
+
+}

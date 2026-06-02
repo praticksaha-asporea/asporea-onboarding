@@ -92,7 +92,6 @@ const Login = ({ mode }: { mode: Mode }) => {
     validateOnBlur: false,
     validationSchema: passwordSetupSchema,
     onSubmit: (values) => {
-      // console.log(passwordFormik.values,values.newPassword,144);
       localStorage.setItem("temp_register_password", values.newPassword);
 
       // setNewPassword(values.newPassword);
