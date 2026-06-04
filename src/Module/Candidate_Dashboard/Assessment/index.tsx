@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef, Suspense } from "react";
+import { useState, useEffect, useRef, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
@@ -18,7 +18,6 @@ import {
   Dialog,
   DialogContent,
   Divider,
-  IconButton,
   CircularProgress,
 } from "@mui/material";
 import Grid from "@mui/material/Grid";
@@ -171,20 +170,24 @@ const AssessmentContent = () => {
     fetchTechData();
   }, [isTechnicalResult, leadId]);
 
-const calculateScorePercentage = (achieved: number, total: number) => {
-  if (!total) return 0;
-  return Math.round((achieved / total) * 100);
-};
+  const calculateScorePercentage = (achieved: number, total: number) => {
+    if (!total) return 0;
+    return Math.round((achieved / total) * 100);
+  };
 
+  const calculateAccuracyRate = (
+    achieved: number,
+    total: number,
+    questions: number,
+    answered: number,
+  ) => {
+    if (!answered || !questions || !total) return 0;
 
-const calculateAccuracyRate = (achieved: number, total: number, questions: number, answered: number) => {
-  if (!answered || !questions || !total) return 0;
-  
-  const marksPerQuestion = total / questions;
-  const correctAnswers = achieved / marksPerQuestion;
-  
-  return Math.round((correctAnswers / answered) * 100);
-};
+    const marksPerQuestion = total / questions;
+    const correctAnswers = achieved / marksPerQuestion;
+
+    return Math.round((correctAnswers / answered) * 100);
+  };
 
   const handleScheduleAssessment = async () => {
     if (!leadId || !consultantId)
@@ -275,7 +278,7 @@ const calculateAccuracyRate = (achieved: number, total: number, questions: numbe
                           />
                         }
                         label={
-                          visitMethod === "on"
+                          visitMethod === "off"
                             ? "I will reach the branch on time."
                             : "I will ensure a quiet environment free from distractions."
                         }
@@ -312,7 +315,6 @@ const calculateAccuracyRate = (achieved: number, total: number, questions: numbe
                   </CardContent>
                 </Card>
 
-                {/* SCHEDULING SELECTION */}
                 <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
                   <CardContent className="p-6">
                     <Typography variant="h5" fontWeight="bold" className="mb-4">
@@ -325,20 +327,29 @@ const calculateAccuracyRate = (achieved: number, total: number, questions: numbe
                     <Box className="flex flex-wrap gap-4 mb-8">
                       <Button
                         variant={
-                          visitMethod === "off" ? "contained" : "outlined"
+                          visitMethod === "on" ? "contained" : "outlined"
                         }
-                        onClick={() => setVisitMethod("off")}
-                        className={`rounded-xl px-6 normal-case ${visitMethod === "off" ? "bg-[#1976d2] text-white shadow-md" : "border-[#ccc] text-gray-700"}`}
+                        onClick={() => setVisitMethod("on")}
+                        className={`rounded-xl px-6 normal-case ${
+                          visitMethod === "on"
+                            ? "bg-[#1976d2] text-white shadow-md"
+                            : "border-[#ccc] text-[var(--mui-palette-text-primary)]"
+                        }`}
                       >
                         <i className="ri-vidicon-line mr-2 text-lg"></i> Online
                         (Video Call)
                       </Button>
+
                       <Button
                         variant={
-                          visitMethod === "on" ? "contained" : "outlined"
+                          visitMethod === "off" ? "contained" : "outlined"
                         }
-                        onClick={() => setVisitMethod("on")}
-                        className={`rounded-xl px-6 normal-case ${visitMethod === "on" ? "bg-[#1976d2] text-white shadow-md" : "border-[#ccc] text-gray-700"}`}
+                        onClick={() => setVisitMethod("off")}
+                        className={`rounded-xl px-6 normal-case ${
+                          visitMethod === "off"
+                            ? "bg-[#1976d2] text-white shadow-md"
+                            : "border-[#ccc] text-[var(--mui-palette-text-primary)]"
+                        }`}
                       >
                         <i className="ri-building-4-line mr-2 text-lg"></i>{" "}
                         Branch Visit (On-Site)
@@ -485,61 +496,97 @@ const calculateAccuracyRate = (achieved: number, total: number, questions: numbe
         )}
 
         {/* TECHNICAL RESULT SECTION */}
-         {isTechnicalResult && (
-  <Box ref={statusCardRef} className="flex flex-col gap-6 w-full">
-    {loadingTech || !techData ? (
-      <Box className="flex justify-center p-10"><CircularProgress /></Box>
-    ) : (
-      <>
-        <Card className="p-5 rounded-xl shadow-sm">
-          <Box className="flex items-center gap-4">
-            <i className={`text-[28px] ${techData.achievedScore >= (techData.totalScore / 2) ? 'material-symbols-light--check-circle-outline  text-[var(--mui-palette-text-primary)]' : 'material-symbols-light--cancel-outline text-red-500'}`} />
-            <Box>
-              <Typography className="text-[22px] font-extrabold tracking-tight leading-tight">
-                {techData.achievedScore >= (techData.totalScore / 2) ? 'Congratulations!' : 'Assessment Reviewed'}
-              </Typography>
-              <Typography className="text-[15px] mt-2">
-                Your technical round evaluation is complete.
-              </Typography>
-            </Box>
+        {isTechnicalResult && (
+          <Box ref={statusCardRef} className="flex flex-col gap-6 w-full">
+            {loadingTech || !techData ? (
+              <Box className="flex justify-center p-10">
+                <CircularProgress />
+              </Box>
+            ) : (
+              <>
+                <Card className="p-5 rounded-xl shadow-sm">
+                  <Box className="flex items-center gap-4">
+                    <i
+                      className={`text-[28px] ${techData.achievedScore >= techData.totalScore / 2 ? "material-symbols-light--check-circle-outline  text-[var(--mui-palette-text-primary)]" : "material-symbols-light--cancel-outline text-red-500"}`}
+                    />
+                    <Box>
+                      <Typography className="text-[22px] font-extrabold tracking-tight leading-tight">
+                        {techData.achievedScore >= techData.totalScore / 2
+                          ? "Congratulations!"
+                          : "Assessment Reviewed"}
+                      </Typography>
+                      <Typography className="text-[15px] mt-2">
+                        Your technical round evaluation is complete.
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Card>
+
+                <Card className="p-7 rounded-xl shadow-sm">
+                  <Box className="flex justify-between items-center mb-8">
+                    <Typography className="text-[18px] font-bold">
+                      Score Summary
+                    </Typography>
+                  </Box>
+                  <Box className="grid grid-cols-2 gap-y-8 gap-x-6">
+                    <Box>
+                      <Typography className="text-[13px] font-medium mb-1.5">
+                        Overall Score
+                      </Typography>
+                      <Typography className="text-[32px] font-semibold leading-none text-[var(--mui-palette-text-primary)]">
+                        {calculateScorePercentage(
+                          techData.achievedScore,
+                          techData.totalScore,
+                        )}
+                        %
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography className="text-[13px] font-medium mb-1.5">
+                        Questions Answered
+                      </Typography>
+                      <Typography className="text-[16px] font-medium">
+                        {techData.answered} / {techData.questions}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography className="text-[13px] font-medium mb-1.5">
+                        Time Taken
+                      </Typography>
+                      <Typography className="text-[16px] font-medium">
+                        {techData.timeTaken}
+                      </Typography>
+                    </Box>
+                    <Box>
+                      <Typography className="text-[13px] font-medium mb-1.5">
+                        Accuracy Rate
+                      </Typography>
+                      <Typography className="text-[16px] font-medium text-[var(--mui-palette-text-primary)]">
+                        {calculateAccuracyRate(
+                          techData.achievedScore,
+                          techData.totalScore,
+                          techData.questions,
+                          techData.answered,
+                        )}
+                        %
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Divider className="my-7" />
+                  <Button
+                    fullWidth
+                    disableRipple
+                    disableElevation
+                    variant="contained"
+                    className="py-[10px] text-[14px] font-bold rounded-lg normal-case hover:bg-blue-500 bg-[#1877F2]"
+                  >
+                    View Detailed Breakdown (PDF)
+                  </Button>
+                </Card>
+              </>
+            )}
           </Box>
-        </Card>
-        
-        <Card className="p-7 rounded-xl shadow-sm">
-          <Box className="flex justify-between items-center mb-8">
-            <Typography className="text-[18px] font-bold">Score Summary</Typography>
-          </Box>
-          <Box className="grid grid-cols-2 gap-y-8 gap-x-6">
-            <Box>
-              <Typography className="text-[13px] font-medium mb-1.5">Overall Score</Typography>
-              <Typography className="text-[32px] font-semibold leading-none text-[var(--mui-palette-text-primary)]">
-                {calculateScorePercentage(techData.achievedScore, techData.totalScore)}%
-              </Typography>
-            </Box>
-            <Box>
-              <Typography className="text-[13px] font-medium mb-1.5">Questions Answered</Typography>
-              <Typography className="text-[16px] font-medium">{techData.answered} / {techData.questions}</Typography>
-            </Box>
-            <Box>
-              <Typography className="text-[13px] font-medium mb-1.5">Time Taken</Typography>
-              <Typography className="text-[16px] font-medium">{techData.timeTaken}</Typography>
-            </Box>
-            <Box>
-              <Typography className="text-[13px] font-medium mb-1.5">Accuracy Rate</Typography>
-              <Typography className="text-[16px] font-medium text-[var(--mui-palette-text-primary)]">
-                {calculateAccuracyRate(techData.achievedScore, techData.totalScore, techData.questions, techData.answered)}%
-              </Typography>
-            </Box>
-          </Box>
-          <Divider className="my-7" />
-          <Button fullWidth disableRipple disableElevation variant="contained" className="py-[10px] text-[14px] font-bold rounded-lg normal-case hover:bg-blue-500 bg-[#1877F2]">
-            View Detailed Breakdown (PDF)
-          </Button>
-        </Card>
-      </>
-    )}
-  </Box>
-         )}
+        )}
       </Grid>
 
       {/* RIGHT COLUMN - NOTIFICATIONS & PROGRESS */}
@@ -685,9 +732,9 @@ const calculateAccuracyRate = (achieved: number, total: number, questions: numbe
               keep necessary original documents handy.
             </Typography>
             <Button
-              variant="outlined"
+              variant="contained"
               onClick={() => router.push("/applicationtracking")}
-              className="mt-8 rounded-full px-8 py-2 normal-case border-[#1976d2] text-[#1976d2] font-bold"
+              className="mt-8 rounded-full px-8 py-2 normal-case border-[#1976d2] text-[var(--mui-palette-primary-main)] text-white font-bold"
             >
               Back to Timeline
             </Button>

@@ -260,6 +260,13 @@ export function useInquiry() {
         setGeneratedLeadId(response.data._id);
         setShowInquiryPopup(true);
 
+      dispatch(
+        updateUserData({
+          leadId: response.data._id,
+          visitOption: Number(values.visitOption),
+          prefferedConsultant: values.prefferedConsultant === "" ? undefined : values.prefferedConsultant,
+        })
+      );
          
         const userId = userData?.id || userData?._id;
         if (userId) {

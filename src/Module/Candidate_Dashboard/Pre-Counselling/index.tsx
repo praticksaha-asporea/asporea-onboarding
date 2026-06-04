@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
 import type { ChangeEvent } from "react";
-import { useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
 import { useSelector, useDispatch } from "react-redux";
 import { updateUserData } from "@/Redux/Auth/user.slice";
@@ -30,6 +30,7 @@ import {
 
 const PreCounsellingContent = () => {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const dispatch = useDispatch();
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -58,6 +59,7 @@ const PreCounsellingContent = () => {
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [loadingSlots, setLoadingSlots] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [isReduxReady, setIsReduxReady] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [checklist, setChecklist] = useState({
     materials: true,
@@ -71,6 +73,23 @@ const PreCounsellingContent = () => {
     whatsapp: reduxUser?.notificationPreference?.whatsapp ?? false,
     sms: reduxUser?.notificationPreference?.sms ?? false,
   });
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReduxReady(true);
+    }, 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isReduxReady) return;  
+
+    
+    if (!leadId) {
+      toast.error("Please generate inquiry first");
+      router.push("/inquiry");
+    }
+  }, [isReduxReady, leadId, router]);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -193,9 +212,17 @@ const PreCounsellingContent = () => {
     <Grid container spacing={6}>
       {/* Left Section   */}
       <Grid size={{ xs: 12, md: 8 }}>
-        {!consultantId && !existingBooking ? (
-          <Card className="p-10 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)] text-center   bg-var(--mui-overlays-1)  border-2 border-dashed border-[#e0e0e0] flex flex-col items-center justify-center min-h-[400px]">
-            <Box className="w-20 h-20  bg-var(--mui-overlays-1)  rounded-full flex items-center justify-center mb-6">
+        
+        {!isReduxReady ? (
+          <Card className="p-10 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)] text-center bg-var(--mui-overlays-1) flex flex-col items-center justify-center min-h-[400px]">
+            <CircularProgress size={40} />
+            <Typography className="mt-4 text-[var(--mui-palette-text-secondary)] font-medium">
+              Fetching your details...
+            </Typography>
+          </Card>
+        ) : !consultantId && !existingBooking ? (
+          <Card className="p-10 rounded-[15px]   text-center bg-var(--mui-overlays-1)   shadow-[0_4px_24px_rgba(0,0,0,0.04)] flex flex-col items-center justify-center min-h-[400px]">
+            <Box className="w-20 h-20 bg-var(--mui-overlays-1) rounded-full flex items-center justify-center mb-6">
               <i className="ri-user-unfollow-line text-4xl text-[var(--mui-palette-primary-main)]"></i>
             </Box>
             <Typography
@@ -261,7 +288,9 @@ const PreCounsellingContent = () => {
             )}
 
             <Card
-              className={`rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none ${existingBooking ? "opacity-60 pointer-events-none" : ""}`}
+              className={`rounded-[15px] mb-12  shadow-[0_4px_24px_rgba(0,0,0,0.04)]    ${
+                existingBooking ? "opacity-60 pointer-events-none" : ""
+              }`}
             >
               <CardContent className="p-6">
                 <Typography variant="h5" fontWeight="bold" className="mb-4">
@@ -318,7 +347,7 @@ const PreCounsellingContent = () => {
               </CardContent>
             </Card>
 
-            <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+            <Card className="rounded-[15px]    shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
               <CardContent className="p-6">
                 <Typography variant="h5" fontWeight="bold" className="mb-4">
                   Your Scheduled Session
@@ -455,7 +484,7 @@ const PreCounsellingContent = () => {
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
+        <Card className="rounded-[15px] mb-12  shadow-none">
           <CardContent className="p-6">
             <Typography variant="h6" fontWeight="bold" className="mb-3">
               Your Application Progress
@@ -474,7 +503,7 @@ const PreCounsellingContent = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
+        <Card className="rounded-[15px]   shadow-none">
           <CardContent className="p-6">
             <Box className="flex justify-between items-center mb-8">
               <Typography variant="h6" fontWeight="bold">
@@ -617,8 +646,8 @@ const PreCounsellingContent = () => {
               variant="contained"
               disableRipple
               disableElevation
-              className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-white hover:border-gray-900 hover:text-black hover:bg-white"
-              href="/document-upload"
+              className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-[var(--mui-palette-primary-contrastText)]   hover:text-white   shadow-md"
+            href={`/document-upload?leadId=${leadId}`}
             >
               Go to Documents
             </Button>
@@ -628,7 +657,6 @@ const PreCounsellingContent = () => {
     </Grid>
   );
 };
-
 const PreCounselling = () => {
   return (
     <Suspense fallback={<CircularProgress />}>
