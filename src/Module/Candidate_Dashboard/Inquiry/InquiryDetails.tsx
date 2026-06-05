@@ -63,6 +63,7 @@ const InquiryDetails = () => {
     handlePreferenceToggle,
     handleSubmit,
     getInitialValues,
+    assignedTAC
   } = useInquiry();
 
   const [hasExistingData, setHasExistingData] = useState(false);
@@ -123,7 +124,12 @@ useEffect(() => {
   }, [formik.values.prefferedBranch]);
 
   useEffect(() => {
-    fetchExternalSources(formik.values.referedType, formik.setFieldValue);
+    if (!formik.values.referedType) return;
+
+    fetchExternalSources(
+      formik.values.referedType,
+      formik.setFieldValue
+    );
   }, [formik.values.referedType]);
 
   const selectedBranchName =
@@ -702,7 +708,7 @@ useEffect(() => {
           </Typography>
 
           <Box className="mb-8">
-            {formik.values.prefferedConsultant ? (
+            {formik.values.prefferedConsultant || assignedTAC != null ? (
               formik.values.visitOption === 0 ? (
                 <Typography
                   variant="body1"

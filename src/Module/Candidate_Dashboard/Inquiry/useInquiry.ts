@@ -12,23 +12,12 @@ import {
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
+import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
+import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export interface InquiryFormValues {
-  fullName: string;
-  email: string;
-  phoneNumber: string;
-  whatsappNumber: string;
-  prefferedBranch: string;
-  prefferedConsultant: string;
-  visitOption: number;
-  fullAddress: string;
-  referedFrom: string;
-  referedType: string;
-  referedBy: string;
-  otherReferedBy: string;
-}
+
 
 export interface NotificationPreferences {
   email: boolean;
@@ -226,6 +215,7 @@ export function useInquiry() {
   const [submitting, setSubmitting] = useState(false);
   const [showInquiryPopup, setShowInquiryPopup] = useState(false);
   const [generatedInqNo, setGeneratedInqNo] = useState("");
+  const [assignedTAC, setAssignedTAC] = useState<string | null>(null);
    const [generatedLeadId, setGeneratedLeadId] = useState("");
 
   const handleSubmit = async (
@@ -254,11 +244,12 @@ export function useInquiry() {
 
       const response = await createInquiryAction(payload);
 
-      if (response.success) {
-        toast.success(response.message);
-        setGeneratedInqNo(response.data.inqNo);
-        setGeneratedLeadId(response.data._id);
+      if (response?.data?.success) {
+        toast.success(response?.data?.message);
+        setGeneratedInqNo(response?.data?.data.inqNo);
+        setGeneratedLeadId(response?.data?.data._id);
         setShowInquiryPopup(true);
+        setAssignedTAC(response?.data?.data?.preferences?.consultantId)
 
       dispatch(
         updateUserData({
@@ -333,5 +324,6 @@ export function useInquiry() {
     handlePreferenceToggle,
     handleSubmit,
     getInitialValues,
+    assignedTAC
   };
 }
