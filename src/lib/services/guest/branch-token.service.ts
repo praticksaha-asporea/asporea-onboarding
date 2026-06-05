@@ -123,6 +123,11 @@ export const generateBranchToken = async (
     const endOfDay = new Date();
     endOfDay.setHours(23, 59, 59, 999);
 
+    const scheduleDate = new Date(assignment?.schedule?.date);
+
+    if (scheduleDate < startOfDay || scheduleDate > endOfDay) {
+        throw new ApiError('Scheduled date is not valid for today.', 401);
+    }
     // Find latest token generated today for this branch & prefix
     const lastToken: IBranchToken = await BranchTokenModel.findOne({
         branchId,
@@ -179,11 +184,11 @@ export const generateBranchToken = async (
     }
     else {
         if (assignment?.token?.generated === true) {
-                // const lastGeneratedtoken = await BranchTokenModel.findOne({
-                //     branchId,
-                //     userId,
-                // }).lean();
-                // ,lastGeneratedtoken
+            // const lastGeneratedtoken = await BranchTokenModel.findOne({
+            //     branchId,
+            //     userId,
+            // }).lean();
+            // ,lastGeneratedtoken
             throw new ApiError('Token already generated', 401);
         }
     }

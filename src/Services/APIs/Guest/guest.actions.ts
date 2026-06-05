@@ -6,9 +6,7 @@ export const createBranchTokenAction = async (payload: {
   try {
     const response = await axiosClient.post("/branch-token/create", payload);
     return response.data;
-  } catch (error: any) {
-    console.log(error,2944);
-    
+  } catch (error: any) {    
     return {
       success: false,
       message: error.response?.data?.message || "Failed to save experience",
