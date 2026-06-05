@@ -75,7 +75,8 @@ const CandidateMenu = ({ scrollMenu }: { scrollMenu: (container: any, isPerfectS
           <MenuItem href='/applicationtracking'  icon={<i className='material-symbols--format-list-bulleted' />}>
             Application Status
           </MenuItem>
-          <MenuItem href='/assessment'  icon={<i className='material-symbols--emoji-events' />}>
+          <MenuItem disabled href='/assessment'  icon={<i className='material-symbols--emoji-events' /> }>
+          
              Assessment
           </MenuItem>
         {/* <SubMenu

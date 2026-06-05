@@ -249,7 +249,7 @@ const ExperienceContent = () => {
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
   const leadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
-  // const positionId = searchParams?.get('positionId') || "";
+  
   const [selectedExperience, setSelectedExperience] = useState<string | null>(
     null,
   );
@@ -260,6 +260,7 @@ const ExperienceContent = () => {
     Record<string, File[]>
   >({});
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
+  const [isReduxReady, setIsReduxReady] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [positionId, setPositionId] = useState<string>("");
   const experienceTypes = [
@@ -302,32 +303,66 @@ const ExperienceContent = () => {
     }
   }, [searchParams]);
 
+  
   useEffect(() => {
-    const checkStatus = async () => {
-      if (!leadId) return;
+    const timer = setTimeout(() => setIsReduxReady(true), 800);
+    return () => clearTimeout(timer);
+  }, []);
+
+   
+  useEffect(() => {
+    const checkAccessAndStatus = async () => {
+      if (!isReduxReady) return;
+
+      
+      if (!leadId) {
+        toast.error("Please generate inquiry first", { id: "guard-toast" });
+        router.push("/inquiry");
+        return;
+      }
+
       setCheckingStatus(true);
+      try {
+        const res = await checkDocumentStatusAction(leadId);
+        
+        if (res?.success && res.data) {
+          const currentStatus = res.data.status;
 
-      const res = await checkDocumentStatusAction(leadId);
-      if (res?.success && res.data) {
-        const currentStatus = res.data.status;
-        const allowedStatuses = ["doc_submitted", "exp_submitted", "assessment_submitted","assessment_scheduled"];
-        if (!allowedStatuses.includes(currentStatus) && res.data.documentStatus !== "uploaded") {
+          
+          if (currentStatus === "inquiry_pending" || currentStatus === "inquiry_submitted") {
+            toast.error("Please schedule pre-counselling first", { id: "guard-toast" });
+            router.push(`/pre-counselling?leadId=${leadId}`);
+            return;
+          }
 
-          router.push('/document-upload');
-          return;  
-        }
-        const submittedStages = ["exp_submitted", "assessment_submitted","assessment_scheduled"];
-        if (submittedStages.includes(res.data.status)) {
-          setIsAlreadySubmitted(true);
-          if (res.data.experienceType) {
-            setSelectedExperience(res.data.experienceType);
+         
+          const docCompletedStatuses = ["doc_submitted", "exp_submitted", "assessment_submitted", "assessment_scheduled"];
+          const isDocUploaded = res.data.documentStatus === "uploaded" || docCompletedStatuses.includes(currentStatus);
+
+          if (!isDocUploaded) {
+            toast.error("Please upload documents first", { id: "guard-toast" });
+          router.push(`/document-upload?leadId=${leadId}`);
+            return;
+          }
+
+      
+          const submittedStages = ["exp_submitted", "assessment_submitted", "assessment_scheduled"];
+          if (submittedStages.includes(currentStatus)) {
+            setIsAlreadySubmitted(true);
+            if (res.data.experienceType) {
+              setSelectedExperience(res.data.experienceType);
+            }
           }
         }
+      } catch (error) {
+        console.error("Status check failed:", error);
+      } finally {
+        setCheckingStatus(false);
       }
-      setCheckingStatus(false);
     };
-    checkStatus();
-  }, [leadId]);
+
+    checkAccessAndStatus();
+  }, [isReduxReady, leadId, router]);
 
   useEffect(() => {
     const fetchDynamicDocs = async () => {
@@ -415,6 +450,18 @@ const ExperienceContent = () => {
     }
   };
 
+  if (!isReduxReady || checkingStatus) {
+    return (
+      <Box className="w-full flex justify-center items-center min-h-[500px]">
+        <CircularProgress size={40} />
+        <Typography className="ml-4 text-gray-500 font-medium">Verifying ...</Typography>
+      </Box>
+    );
+  }
+
+  
+  if (!leadId) return null;
+
   return (
     <Box className="w-full flex  justify-center">
       <Card className="w-full max-w-[1000px] p-6 md:p-12 rounded-[24px] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
@@ -466,7 +513,7 @@ const ExperienceContent = () => {
                     )}
                   >
                     <i
-                      className={`${type.icon} text-[var(--mui-palette-primary)] text-[28px]`}
+                      className={`${type.icon} text-[var(--mui-palette-primary-main)] text-[28px]`}
                     ></i>
                   </Box>
                   <Typography variant="h6" className="font-extrabold mb-3">

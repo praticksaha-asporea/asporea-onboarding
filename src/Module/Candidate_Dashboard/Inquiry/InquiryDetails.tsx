@@ -16,6 +16,7 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import {
   Box,
   capitalize,
@@ -65,25 +66,48 @@ const InquiryDetails = () => {
     assignedTAC
   } = useInquiry();
 
-  const [hasExistingData, setHasExistingData] = useState(false)
+  const [hasExistingData, setHasExistingData] = useState(false);
+const [activeStepperStep, setActiveStepperStep] = useState<number>(0);  
+
+useEffect(() => {
+    const fetchRealProgress = async () => {
+      const existingLeadId = userData?.leadId || userData?.user?.leadId;
+      
+      if (!existingLeadId) {
+        setActiveStepperStep(0);  
+        return;
+      }
+
+      try {
+        
+        const res = await getJourneyTimelineAction(existingLeadId);
+        if (res?.success && res?.data) {
+           
+           setActiveStepperStep(res.data.activeStep);
+        } else {
+           setActiveStepperStep(1);  
+        }
+      } catch (error) {
+        console.error("Failed to sync actual stepper progress:", error);
+        setActiveStepperStep(1);
+      }
+    };
+
+    fetchRealProgress();
+  }, [userData?.leadId]);
+ 
+
   useEffect(() => {
-
     const existingLeadId = userData?.leadId || userData?.user?.leadId;
-    const existingVisitOption = userData?.visitOption ?? userData?.user?.visitOption;
-    const existingConsultant = userData?.prefferedConsultant || userData?.user?.prefferedConsultant;
-
 
     if (existingLeadId) {
+      
       setHasExistingData(true);
-      toast("Redirecting to pending Pre-Counselling...", { icon: "⏳", id: "redirect-toast" });
-      const timer = setTimeout(() => {
-        const method = existingVisitOption === 2 ? "on" : "off";
-        router.push(`/pre-counselling?leadId=${existingLeadId}&consultantId=${existingConsultant || ""}&method=${method}`);
-      }, 3500);
 
-      return () => clearTimeout(timer);
+      
+       
     }
-  }, [userData, router]);
+  }, [userData]);  
 
   const formik = useFormik({
     initialValues: getInitialValues(),
@@ -94,12 +118,10 @@ const InquiryDetails = () => {
     },
   });
 
-
   useEffect(() => {
     fetchConsultants(formik.values.prefferedBranch);
     formik.setFieldValue("prefferedConsultant", "");
   }, [formik.values.prefferedBranch]);
-
 
   useEffect(() => {
     if (!formik.values.referedType) return;
@@ -119,10 +141,10 @@ const InquiryDetails = () => {
     formik.submitCount,
   );
   const isFormDisabled = hasExistingData || generatedInqNo !== "";
+  const currentStepperStep = isFormDisabled ? 1 : 0;
   return (
     <>
       <Grid container spacing={6}>
-
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
@@ -132,12 +154,65 @@ const InquiryDetails = () => {
               </Typography>
 
               <form onSubmit={formik.handleSubmit}>
+                 
+                {isFormDisabled && (
+                  <Box
+                    className="mb-6 p-4 rounded-xl bg-[var(--mui-palette-primary-dark)]   flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in"
+                    style={{
+                      backgroundColor: "rgba(25, 118, 210, 0.08)",
+                      borderColor: "rgba(25, 118, 210, 0.3)",
+                    }}
+                  >
+                    <Box className="flex items-center gap-3 text-left">
+                      <Box className="w-14 h-14 rounded-full  bg-[var(--mui-palette-primary)] flex items-center justify-center text-[var(--mui-palette-text-secondary)] shrink-0 shadow-sm">
+                        <i className="ri-information-line text-xl"></i>
+                      </Box>
+                      <Box>
+                        <Typography
+                          variant="h6"
+                          className="font-bold text-[var(--mui-palette-text-primary)] leading-tight"
+                        >
+                          Inquiry Already Submitted!
+                        </Typography>
+                        <Typography
+                          variant="body2"
+                          className="text-[var(--mui-palette-text-primary)] mt-2 font-medium  "
+                        >
+                             Please proceed to the Pre-Counselling section.
+                        </Typography>
+                      </Box>
+                    </Box>
+
+                    
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        const existingLeadId =
+                          userData?.leadId || userData?.user?.leadId;
+                        const existingVisitOption =
+                          userData?.visitOption ?? userData?.user?.visitOption;
+                        const existingConsultant =
+                          userData?.prefferedConsultant ||
+                          userData?.user?.prefferedConsultant;
+                        const method = existingVisitOption === 2 ? "on" : "off";
+
+                        router.push(
+                          `/pre-counselling?leadId=${existingLeadId}&consultantId=${existingConsultant || ""}&method=${method}`,
+                        );
+                      }}
+                      className="rounded-xl normal-case bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 shrink-0 shadow-none text-xs sm:text-sm"
+                    >
+                      Go to Pre-Counselling
+                    </Button>
+                  </Box>
+                )}
 
                 <div
-                  className={`transition-all duration-500 ease-in-out ${isFormDisabled
+                  className={`transition-all duration-500 ease-in-out ${
+                    isFormDisabled
                       ? "blur-[2.5px] opacity-60 pointer-events-none select-none"
                       : ""
-                    }`}
+                  }`}
                 >
                   <Card>
                     <CardContent className="mbe-5">
@@ -150,6 +225,7 @@ const InquiryDetails = () => {
                             value={formik.values.fullName}
                             placeholder="Kunal Chettri"
                             onChange={formik.handleChange}
+                            disabled={isFormDisabled}
                             error={err("fullName")}
                             helperText={helperText("fullName")}
                           />
@@ -162,6 +238,7 @@ const InquiryDetails = () => {
                             value={formik.values.email}
                             placeholder="kunal.chettri@gmail.com"
                             onChange={formik.handleChange}
+                            disabled={isFormDisabled}
                             error={err("email")}
                             helperText={helperText("email")}
                           />
@@ -175,6 +252,7 @@ const InquiryDetails = () => {
                             value={formik.values.phoneNumber}
                             placeholder="9876543210"
                             onChange={formik.handleChange}
+                            disabled={isFormDisabled}
                             error={err("phoneNumber")}
                             helperText={helperText("phoneNumber")}
                           />
@@ -188,6 +266,7 @@ const InquiryDetails = () => {
                             value={formik.values.whatsappNumber}
                             placeholder="9876543210"
                             onChange={formik.handleChange}
+                            disabled={isFormDisabled}
                             error={err("whatsappNumber")}
                             helperText={helperText("whatsappNumber")}
                           />
@@ -195,24 +274,23 @@ const InquiryDetails = () => {
 
                         {/* Branch */}
                         <Grid size={{ xs: 12, md: 6 }}>
-                          <FormControl
-                            fullWidth
-                            error={err("prefferedBranch")}
-                          >
+                          <FormControl fullWidth error={err("prefferedBranch")}>
                             <InputLabel>Preferred Branch</InputLabel>
                             <Select
                               label="Preferred Branch"
                               name="prefferedBranch"
                               value={formik.values.prefferedBranch}
                               onChange={formik.handleChange}
+                              disabled={isFormDisabled}
                             >
                               {branches.map((branch: any, index: number) => (
                                 <MenuItem key={branch._id} value={branch._id}>
                                   {branch.title}
                                   {branch.distanceKm !== undefined &&
-                                    ` (${index === 0 ? "Recommend - " : ""}${branch.distanceKm < 1
-                                      ? "Within 1 Km"
-                                      : `${branch.distanceKm.toFixed(2)} Km`
+                                    ` (${index === 0 ? "Recommend - " : ""}${
+                                      branch.distanceKm < 1
+                                        ? "Within 1 Km"
+                                        : `${branch.distanceKm.toFixed(2)} Km`
                                     })`}
                                 </MenuItem>
                               ))}
@@ -231,7 +309,8 @@ const InquiryDetails = () => {
                           <FormControl
                             fullWidth
                             disabled={
-                              loadingConsultants || !formik.values.prefferedBranch
+                              loadingConsultants ||
+                              !formik.values.prefferedBranch
                             }
                             error={err("prefferedConsultant")}
                           >
@@ -245,6 +324,7 @@ const InquiryDetails = () => {
                               label="Preferred Consultant"
                               value={formik.values.prefferedConsultant}
                               onChange={formik.handleChange}
+                              disabled={isFormDisabled}
                             >
                               <MenuItem value="">
                                 <em>None (No Consultant)</em>
@@ -255,7 +335,7 @@ const InquiryDetails = () => {
                                 </MenuItem>
                               ) : (
                                 consultants.map((tac) => (
-                                  <MenuItem key={tac._id} value={tac._id}>
+                                  <MenuItem key={tac._id} value={tac._id} disabled={isFormDisabled}>
                                     {`${tac.firstName} ${tac.lastName}`}
                                   </MenuItem>
                                 ))
@@ -286,16 +366,19 @@ const InquiryDetails = () => {
                                 value={0}
                                 control={<Radio />}
                                 label="Are you currently now in this branch? (Only use while you are in branch premises)"
+                                disabled={isFormDisabled}
                               />
                               <FormControlLabel
                                 value={1}
                                 control={<Radio />}
                                 label="Are you visiting this branch? (Only use while you are outside and willing to visit in-person)"
+                                disabled={isFormDisabled}
                               />
                               <FormControlLabel
                                 value={2}
                                 control={<Radio />}
                                 label="Want to visit online rather than in-person branch visit"
+                                disabled={isFormDisabled}
                               />
                             </RadioGroup>
                             <FormHelperText className="py-2">
@@ -316,6 +399,7 @@ const InquiryDetails = () => {
                             multiline
                             rows={3}
                             onChange={formik.handleChange}
+                            disabled={isFormDisabled}
                             error={err("fullAddress")}
                             helperText={helperText("fullAddress")}
                           />
@@ -323,8 +407,6 @@ const InquiryDetails = () => {
                       </Grid>
                     </CardContent>
                   </Card>
-
-
 
                   {/* Referral */}
 
@@ -348,26 +430,31 @@ const InquiryDetails = () => {
                                   formik.setFieldValue("otherReferedBy", "");
                                 }
                               }}
+                              
                             >
                               <FormControlLabel
                                 value="web-app"
                                 control={<Radio />}
                                 label="Asporea Website/App"
+                                disabled={isFormDisabled}
                               />
                               <FormControlLabel
                                 value="call"
                                 control={<Radio />}
                                 label="Tele Caller"
+                                disabled={isFormDisabled}
                               />
                               <FormControlLabel
                                 value="social"
                                 control={<Radio />}
                                 label="Social Media"
+                                disabled={isFormDisabled}
                               />
                               <FormControlLabel
                                 value="reffer"
                                 control={<Radio />}
                                 label="Referral"
+                                disabled={isFormDisabled}
                               />
                             </RadioGroup>
                             {err("referedFrom") && (
@@ -441,11 +528,16 @@ const InquiryDetails = () => {
                                   onChange={(e) => {
                                     formik.handleChange(e);
                                     if (e.target.value === "other") {
-                                      formik.setFieldValue("referedType", "other");
+                                      formik.setFieldValue(
+                                        "referedType",
+                                        "other",
+                                      );
                                     }
                                   }}
                                 >
-                                  <MenuItem value=""><em>None</em></MenuItem>
+                                  <MenuItem value="">
+                                    <em>None</em>
+                                  </MenuItem>
                                   {externalSources.map((src) => (
                                     <MenuItem key={src._id} value={src._id}>
                                       {`${src.firstName} ${src.lastName || ""}`}
@@ -482,11 +574,16 @@ const InquiryDetails = () => {
                 </div>
                 <CardContent className="mbe-5 mt-4">
                   <Grid container spacing={5}>
-                    <Grid size={{ xs: 12 }} className="flex gap-4 flex-wrap justify-end">
+                    <Grid
+                      size={{ xs: 12 }}
+                      className="flex gap-4 flex-wrap justify-end"
+                    >
                       <Button
                         variant="contained"
                         type="submit"
-                        disabled={submitting || formik.isSubmitting || isFormDisabled}
+                        disabled={
+                          submitting || formik.isSubmitting || isFormDisabled
+                        }
                         className="rounded-xl normal-case text-sm shadow-md"
                       >
                         {submitting || formik.isSubmitting ? (
@@ -498,8 +595,6 @@ const InquiryDetails = () => {
                     </Grid>
                   </Grid>
                 </CardContent>
-
-
               </form>
             </CardContent>
           </Card>
@@ -514,24 +609,28 @@ const InquiryDetails = () => {
                   <Typography variant="h4" className="mb-5">
                     Application Progress
                   </Typography>
-                  <Stepper activeStep={0} orientation="vertical">
-                    {inquirySteps.map((step, index) => (
-                      <Step key={step.label}>
-                        <StepLabel
-                          optional={
-                            index !== 0 ? (
-                              <Typography variant="caption">Pending</Typography>
-                            ) : null
-                          }
-                        >
-                          {step.label}
-                        </StepLabel>
-                        <StepContent>
-                          <Typography>{step.description}</Typography>
-                        </StepContent>
-                      </Step>
-                    ))}
-                  </Stepper>
+              <Stepper activeStep={activeStepperStep} orientation="vertical">
+  {inquirySteps.map((step, index) => (
+    <Step key={step.label}>
+      <StepLabel
+        optional={
+          index < activeStepperStep ? (
+            <Typography variant="caption" className="text-[var(--mui-palette-success-main)] text-[12px] font-bold">Completed</Typography>
+          ) : index === activeStepperStep ? (
+            <Typography variant="caption" className="text-[var(--mui-palette-primary-main)] text-[12px] font-bold">Active</Typography>
+          ) : (
+            <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] text-[12px]">Pending</Typography>
+          )
+        }
+      >
+        {step.label}
+      </StepLabel>
+      <StepContent>
+        <Typography>{step.description}</Typography>
+      </StepContent>
+    </Step>
+  ))}
+</Stepper>
                 </CardContent>
               </Card>
             </Grid>
@@ -627,7 +726,9 @@ const InquiryDetails = () => {
                   className="mb-4 text-red-500 leading-loose font-normal"
                 >
                   As you are visiting our{" "}
-                  <span className="underline font-bold">{selectedBranchName}</span>{" "}
+                  <span className="underline font-bold">
+                    {selectedBranchName}
+                  </span>{" "}
                   Branch.
                   <br />
                   For Pre-counselling, please reach the Reception Counter.
@@ -649,7 +750,8 @@ const InquiryDetails = () => {
                 <br />
                 For Pre-counselling, please reach the Reception Counter.
                 <br />
-                The FOE(Front Office Executive) will generate a token on your behalf.
+                The FOE(Front Office Executive) will generate a token on your
+                behalf.
               </Typography>
             )}
 
@@ -657,7 +759,7 @@ const InquiryDetails = () => {
               <Button
                 variant="contained"
                 className="normal-case rounded-[50px] py-[9.6px] px-10"
-                href={`/pre-counselling?leadId=${generatedLeadId}&consultantId=${formik.values.prefferedConsultant}&method=${formik.values.visitOption === 2 ? 'on' : 'off'}`}
+                href={`/pre-counselling?leadId=${generatedLeadId}&consultantId=${formik.values.prefferedConsultant}&method=${formik.values.visitOption === 2 ? "on" : "off"}`}
               >
                 Schedule Pre-Counselling
               </Button>

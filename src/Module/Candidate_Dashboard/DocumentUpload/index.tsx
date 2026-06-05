@@ -34,17 +34,23 @@ import {
 } from "@/Services/APIs/Documents/document.actions";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";  
+import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 
 const Stepper_Steps = ({ activeStep }: { activeStep: number }) => {
-  const steps = ["Inquiry", "Counselling", "Documents", "Experience", "Assessment"];
+  const steps = [
+    "Inquiry",
+    "Counselling",
+    "Documents",
+    "Experience",
+    "Assessment",
+  ];
 
   const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
     [`&.${stepConnectorClasses.alternativeLabel}`]: { top: 22 },
     [`&.${stepConnectorClasses.active}`]: {
       [`& .${stepConnectorClasses.line}`]: {
         backgroundColor: "#eaeaf0",
-        backgroundImage: "none", // Active phase line stays clean gray
+        backgroundImage: "none",
       },
     },
     [`&.${stepConnectorClasses.completed}`]: {
@@ -105,7 +111,10 @@ const Stepper_Steps = ({ activeStep }: { activeStep: number }) => {
       5: <i className="material-symbols--emoji-events" />,
     };
     return (
-      <ColorlibStepIconRoot ownerState={{ completed, active }} className={className}>
+      <ColorlibStepIconRoot
+        ownerState={{ completed, active }}
+        className={className}
+      >
         {icons[String(icon)]}
       </ColorlibStepIconRoot>
     );
@@ -121,7 +130,11 @@ const Stepper_Steps = ({ activeStep }: { activeStep: number }) => {
         </Typography>
         <Card className="p-2 sm:p-6 rounded-xl shadow-md">
           <Stack className="w-full" spacing={4}>
-            <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />}>
+            <Stepper
+              alternativeLabel
+              activeStep={activeStep}
+              connector={<ColorlibConnector />}
+            >
               {steps.map((label) => (
                 <Step key={label}>
                   <StepLabel StepIconComponent={ColorlibStepIcon}>
@@ -412,6 +425,7 @@ const DocumentUploadPage = () => {
   const [loadingPositions, setLoadingPositions] = useState(true);
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [hasDocuments, setHasDocuments] = useState(true);
+  const [isReduxReady, setIsReduxReady] = useState(false);
 
   const [groupedDocs, setGroupedDocs] = useState<any>({
     resume: [],
@@ -428,55 +442,70 @@ const DocumentUploadPage = () => {
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
 
-  useEffect(() => {
-    const savedPos = sessionStorage.getItem("selectedPositionId");
-    if (savedPos) {
-      setSelectedPosition(savedPos);
-    }
+  // useEffect(() => {
+  //   const savedPos = sessionStorage.getItem("selectedPositionId");
+  //   if (savedPos) {
+  //     setSelectedPosition(savedPos);
+  //   }
+  // }, []);
+
+  // useEffect(() => {
+  //   if (selectedPosition) {
+  //     sessionStorage.setItem("selectedPositionId", selectedPosition);
+  //   }
+  // }, [selectedPosition]);
+
+   useEffect(() => {
+    const timer = setTimeout(() => setIsReduxReady(true), 800);
+    return () => clearTimeout(timer);
   }, []);
+  
+ useEffect(() => {
+    const checkAccessAndStatus = async () => {
+      if (!isReduxReady) return;
 
-  useEffect(() => {
-    if (selectedPosition) {
-      sessionStorage.setItem("selectedPositionId", selectedPosition);
-    }
-  }, [selectedPosition]);
+       
+      if (!leadId) {
+        toast.error("Please generate inquiry first", { id: "doc-guard-inquiry" });
+        router.push("/inquiry");
+        return;
+      }
 
-  useEffect(() => {
-    const checkStatus = async () => {
-      if (!leadId) return;
       setCheckingStatus(true);
-
       try {
-        
+         
         const timelineRes = await getJourneyTimelineAction(leadId);
+        
         if (timelineRes?.success && timelineRes.data) {
-          setActiveStep(timelineRes.data.activeStep);
+          const currentActiveStep = timelineRes.data.activeStep;
+          setActiveStep(currentActiveStep);
+
+           
+          if (currentActiveStep < 2) { 
+            toast.error("Please schedule pre-counselling first", { id: "doc-guard-precoun" });
+             
+            router.push(`/pre-counselling?leadId=${leadId}`); 
+            return;
+          }
+        }
+
+        
+        const res = await checkDocumentStatusAction(leadId);
+        if (res?.success && res.data) {
+          const submittedStages = ["doc_submitted", "exp_submitted", "assessment_submitted", "assessment_scheduled"];
+          if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
+            setIsAlreadySubmitted(true);
+          }
         }
       } catch (err) {
-        console.error("Error pulling timeline index", err);
+        console.error("Error pulling timeline or status", err);
+      } finally {
+        setCheckingStatus(false);
       }
-
-      const res = await checkDocumentStatusAction(leadId);
-      if (res?.success && res.data) {
-        const currentStatus = res.data.status;
-        const allowedStatuses = ["pre_scheduled", "doc_submitted", "exp_submitted", "assessment_scheduled", "assessment_submitted"];
-        if (!allowedStatuses.includes(currentStatus)) {
-          router.push('/precounselling');  
-          return;
-        }
-        const submittedStages = [
-          "doc_submitted",
-          "exp_submitted",
-          "assessment_submitted",
-        ];
-        if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
-          setIsAlreadySubmitted(true);
-        }
-      }
-      setCheckingStatus(false);
     };
-    checkStatus();
-  }, [leadId, router]);
+
+    checkAccessAndStatus();
+  }, [isReduxReady, leadId, router]);
   const handleFilesUpdate = (typeId: string, files: File[]) => {
     setSelectedFilesMap((prev) => ({ ...prev, [typeId]: files }));
   };
@@ -521,7 +550,6 @@ const DocumentUploadPage = () => {
           setHasDocuments(true);
         }
 
-        
         const docMap = new Map();
         required.forEach((d: any) =>
           docMap.set(d._id, { ...d, isMandatory: false }),
@@ -531,7 +559,6 @@ const DocumentUploadPage = () => {
         );
         const allUniqueDocs = Array.from(docMap.values());
 
-       
         setGroupedDocs({
           resume: allUniqueDocs.filter((d: any) => d.section === "resume"),
           document: allUniqueDocs.filter((d: any) => d.section === "document"),
@@ -558,10 +585,9 @@ const DocumentUploadPage = () => {
       ...groupedDocs.document,
       ...groupedDocs.experience,
       ...groupedDocs.academic,
-      // ...groupedDocs.additional,
+      
     ];
 
-   
     const missingMandatory = allRequiredDocs.filter(
       (d) =>
         d.isMandatory &&
@@ -618,215 +644,234 @@ const DocumentUploadPage = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (!isReduxReady || checkingStatus) {
+    return (
+      <Box className="flex justify-center items-center mt-20 mb-20 h-40">
+         <CircularProgress size={40} />
+         <Typography className="ml-4 text-gray-500 font-medium">Verifying...</Typography>
+      </Box>
+    );
+  }
+
+ 
+  if (!leadId || activeStep < 2) return null;
   return (
     <Box className="w-full flex justify-center">
       <Card className="w-full p-3 md:p-6 rounded-3xl shadow-md">
-       <Stepper_Steps activeStep={activeStep} />
+        <Stepper_Steps activeStep={activeStep} />
 
-        <Box
-          className={`${isAlreadySubmitted ? "opacity-60 pointer-events-none" : ""}`}
-        >
-          <PositionSelector
-            positions={positions}
-            selected={selectedPosition}
-            onSelect={setSelectedPosition}
-            loading={loadingPositions}
-          />
-        </Box>
-
-        {loadingDocs || checkingStatus ? (
-          <Box className="flex justify-center items-center mt-10 mb-10">
+        {/* 🔥 Loader jab tak Redux & Status check ho raha hai */}
+        {checkingStatus ? (
+          <Box className="flex justify-center items-center mt-10 mb-10 h-40">
             <CircularProgress />
           </Box>
-        ) : !hasDocuments && selectedPosition ? (
-          <Box className="mt-8 mb-8 p-10 text-center  rounded-xl border-2 border-dashed border-[#ccc]">
-            <Typography
-              variant="h5"
-              className="text-[var(--mui-palette-text-primary)] font-medium tracking-wider"
-            >
-              COMING SOON
-            </Typography>
-            <Typography
-              variant="body2"
-              className="text-[var(--mui-palette-text-primary)] mt-2 font-medium"
-            >
-              Document requirements for this position are currently being
-              updated. Please check back later.
-            </Typography>
-          </Box>
         ) : (
-          <Box
-            className={`mt-5 ${isAlreadySubmitted ? "opacity-60 pointer-events-none" : ""}`}
-          >
-            {/* Section 1: Resume */}
-            {groupedDocs.resume.length > 0 && (
-              <SectionAccordion title="Resume" defaultExpanded={true}>
-                <Grid container spacing={3}>
-                  {groupedDocs.resume.map((doc: any) => (
-                    <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
-                      <UploadCard
-                        title={doc.title}
-                        subtitle={
-                          doc.subTitle ||
-                          (doc.supportedExtensions?.length
-                            ? `Supported format: ${doc.supportedExtensions.join(", ")}`
-                            : "")
-                        }
-                        allowedFormats={doc.supportedExtensions}
-                        isMandatory={doc.isMandatory}
-                        multiple={doc.multiple}
-                        onFilesChange={(files) =>
-                          handleFilesUpdate(doc._id, files)
-                        }
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              </SectionAccordion>
-            )}
+          <Box>
+            {/* ORIGINAL FORM CONTENT STARTS HERE */}
+            <Box
+              className={`${isAlreadySubmitted ? "opacity-60 pointer-events-none" : ""}`}
+            >
+              <PositionSelector
+                positions={positions}
+                selected={selectedPosition}
+                onSelect={setSelectedPosition}
+                loading={loadingPositions}
+              />
+            </Box>
 
-            {/* Section 2: Documents */}
-            {groupedDocs.document.length > 0 && (
-              <SectionAccordion title="Documents" defaultExpanded={true}>
-                <Grid container spacing={3}>
-                  {groupedDocs.document.map((doc: any) => (
-                    <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
-                      <UploadCard
-                        title={doc.title}
-                        subtitle={
-                          doc.subTitle ||
-                          (doc.supportedExtensions?.length
-                            ? `Supported format: ${doc.supportedExtensions.join(", ")}`
-                            : "")
-                        }
-                        allowedFormats={doc.supportedExtensions}
-                        isMandatory={doc.isMandatory}
-                        multiple={doc.multiple}
-                        onFilesChange={(files) =>
-                          handleFilesUpdate(doc._id, files)
-                        }
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              </SectionAccordion>
-            )}
-
-            {/* Section 3: Experience Certificates */}
-            {groupedDocs.experience.length > 0 && (
-              <SectionAccordion
-                title="Experience Certificates"
-                defaultExpanded={true}
+            {loadingDocs ? (
+              <Box className="flex justify-center items-center mt-10 mb-10">
+                <CircularProgress />
+              </Box>
+            ) : !hasDocuments && selectedPosition ? (
+              <Box className="mt-8 mb-8 p-10 text-center  rounded-xl border-2 border-dashed border-[#ccc]">
+                <Typography
+                  variant="h5"
+                  className="text-[var(--mui-palette-text-primary)] font-medium tracking-wider"
+                >
+                  COMING SOON
+                </Typography>
+                <Typography
+                  variant="body2"
+                  className="text-[var(--mui-palette-text-primary)] mt-2 font-medium"
+                >
+                  Document requirements for this position are currently being
+                  updated. Please check back later.
+                </Typography>
+              </Box>
+            ) : (
+              <Box
+                className={`mt-5 ${isAlreadySubmitted ? "opacity-60 pointer-events-none" : ""}`}
               >
-                <Grid container spacing={3}>
-                  {groupedDocs.experience.map((doc: any) => (
-                    <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
-                      <UploadCard
-                        title={doc.title}
-                        subtitle={
-                          doc.subTitle ||
-                          (doc.supportedExtensions?.length
-                            ? `Supported format: ${doc.supportedExtensions.join(", ")}`
-                            : "")
-                        }
-                        allowedFormats={doc.supportedExtensions}
-                        isMandatory={doc.isMandatory}
-                        multiple={doc.multiple}
-                        onFilesChange={(files) =>
-                          handleFilesUpdate(doc._id, files)
-                        }
-                      />
+                {/* Section 1: Resume */}
+                {groupedDocs.resume.length > 0 && (
+                  <SectionAccordion title="Resume" defaultExpanded={true}>
+                    <Grid container spacing={3}>
+                      {groupedDocs.resume.map((doc: any) => (
+                        <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
+                          <UploadCard
+                            title={doc.title}
+                            subtitle={
+                              doc.subTitle ||
+                              (doc.supportedExtensions?.length
+                                ? `Supported format: ${doc.supportedExtensions.join(", ")}`
+                                : "")
+                            }
+                            allowedFormats={doc.supportedExtensions}
+                            isMandatory={doc.isMandatory}
+                            multiple={doc.multiple}
+                            onFilesChange={(files) =>
+                              handleFilesUpdate(doc._id, files)
+                            }
+                          />
+                        </Grid>
+                      ))}
                     </Grid>
-                  ))}
-                </Grid>
-              </SectionAccordion>
+                  </SectionAccordion>
+                )}
+
+                {/* Section 2: Documents */}
+                {groupedDocs.document.length > 0 && (
+                  <SectionAccordion title="Documents" defaultExpanded={true}>
+                    <Grid container spacing={3}>
+                      {groupedDocs.document.map((doc: any) => (
+                        <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
+                          <UploadCard
+                            title={doc.title}
+                            subtitle={
+                              doc.subTitle ||
+                              (doc.supportedExtensions?.length
+                                ? `Supported format: ${doc.supportedExtensions.join(", ")}`
+                                : "")
+                            }
+                            allowedFormats={doc.supportedExtensions}
+                            isMandatory={doc.isMandatory}
+                            multiple={doc.multiple}
+                            onFilesChange={(files) =>
+                              handleFilesUpdate(doc._id, files)
+                            }
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </SectionAccordion>
+                )}
+
+                {/* Section 3: Experience Certificates */}
+                {groupedDocs.experience.length > 0 && (
+                  <SectionAccordion
+                    title="Experience Certificates"
+                    defaultExpanded={true}
+                  >
+                    <Grid container spacing={3}>
+                      {groupedDocs.experience.map((doc: any) => (
+                        <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
+                          <UploadCard
+                            title={doc.title}
+                            subtitle={
+                              doc.subTitle ||
+                              (doc.supportedExtensions?.length
+                                ? `Supported format: ${doc.supportedExtensions.join(", ")}`
+                                : "")
+                            }
+                            allowedFormats={doc.supportedExtensions}
+                            isMandatory={doc.isMandatory}
+                            multiple={doc.multiple}
+                            onFilesChange={(files) =>
+                              handleFilesUpdate(doc._id, files)
+                            }
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </SectionAccordion>
+                )}
+
+                {/* Section 4: Academic Certificates */}
+                {groupedDocs.academic.length > 0 && (
+                  <SectionAccordion
+                    title="Academic Certificates"
+                    defaultExpanded={true}
+                  >
+                    <Grid container spacing={3}>
+                      {groupedDocs.academic.map((doc: any) => (
+                        <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
+                          <UploadCard
+                            title={doc.title}
+                            subtitle={
+                              doc.subTitle ||
+                              (doc.supportedExtensions?.length
+                                ? `Supported format: ${doc.supportedExtensions.join(", ")}`
+                                : "")
+                            }
+                            allowedFormats={doc.supportedExtensions}
+                            isMandatory={doc.isMandatory}
+                            multiple={doc.multiple}
+                            onFilesChange={(files) =>
+                              handleFilesUpdate(doc._id, files)
+                            }
+                          />
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </SectionAccordion>
+                )}
+              </Box>
             )}
 
-            {/* Section 4: Academic Certificates */}
-            {groupedDocs.academic.length > 0 && (
-              <SectionAccordion
-                title="Academic Certificates"
-                defaultExpanded={true}
-              >
-                <Grid container spacing={3}>
-                  {groupedDocs.academic.map((doc: any) => (
-                    <Grid size={{ xs: 12, md: 6, lg: 4 }} key={doc._id}>
-                      <UploadCard
-                        title={doc.title}
-                        subtitle={
-                          doc.subTitle ||
-                          (doc.supportedExtensions?.length
-                            ? `Supported format: ${doc.supportedExtensions.join(", ")}`
-                            : "")
-                        }
-                        allowedFormats={doc.supportedExtensions}
-                        isMandatory={doc.isMandatory}
-                        multiple={doc.multiple}
-                        onFilesChange={(files) =>
-                          handleFilesUpdate(doc._id, files)
-                        }
-                      />
-                    </Grid>
-                  ))}
-                </Grid>
-              </SectionAccordion>
-            )}
+            <Box className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
+              <Box>
+                {isAlreadySubmitted && (
+                  <Typography
+                    variant="body2"
+                    className="text-[var(--mui-palette-text-primary)] font-medium text-sm flex items-center gap-2"
+                  >
+                    <i className="ri-checkbox-circle-fill text-xl"></i>
+                    Documents already submitted and are under review.
+                  </Typography>
+                )}
+              </Box>
+
+              <Box className="flex gap-3 items-center">
+                {isAlreadySubmitted && (
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                       const activePos = selectedPosition || "";  ;
+                      router.push(`/experience?positionId=${activePos}`);
+                    }}
+                    className="rounded-xl px-6 py-2 normal-case text-sm bg-[var(--mui-palette-primary-main)] border border-[var(--mui-palette-primary-main)]   hover:bg-[var(--mui-palette-primary-dark)] font-medium tracking-wide"
+                  >
+                    Go to Experience
+                  </Button>
+                )}
+
+                <Button
+                  variant="contained"
+                  disabled={
+                    !hasDocuments ||
+                    loadingDocs ||
+                    !selectedPosition ||
+                    isSubmitting ||
+                    isAlreadySubmitted ||
+                    checkingStatus
+                  }
+                  onClick={handleSubmit}
+                  className="rounded-xl px-6 py-2 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
+                >
+                  {isSubmitting || checkingStatus ? (
+                    <CircularProgress size={24} color="inherit" />
+                  ) : isAlreadySubmitted ? (
+                    "Submitted"
+                  ) : (
+                    "Save & Continue"
+                  )}
+                </Button>
+              </Box>
+            </Box>
           </Box>
         )}
-
-        <Box className="flex justify-between items-center mt-6 pt-4 border-t border-gray-100">
-          <Box>
-            {isAlreadySubmitted && (
-              <Typography
-                variant="body2"
-                className="text-[var(--mui-palette-text-primary)] font-medium text-sm flex items-center gap-2"
-              >
-                <i className="ri-checkbox-circle-fill text-xl"></i>
-                Documents already submitted and are under review.
-              </Typography>
-            )}
-          </Box>
-
-          <Box className="flex gap-3 items-center">
-            {isAlreadySubmitted && (
-              <Button
-                variant="contained"
-                onClick={() => {
-                  const activePos =
-                    selectedPosition ||
-                    sessionStorage.getItem("selectedPositionId") ||
-                    "";
-                  router.push(`/experience?positionId=${activePos}`);
-                }}
-                className="rounded-xl px-6 py-2 normal-case text-sm bg-[var(--mui-palette-primary-main)] border border-[var(--mui-palette-primary-main)]   hover:bg-[var(--mui-palette-primary-dark)] font-medium tracking-wide"
-              >
-                Go to Experience
-              </Button>
-            )}
-
-            <Button
-              variant="contained"
-              disabled={
-                !hasDocuments ||
-                loadingDocs ||
-                !selectedPosition ||
-                isSubmitting ||
-                isAlreadySubmitted ||
-                checkingStatus
-              }
-              onClick={handleSubmit}
-              className="rounded-xl px-6 py-2 normal-case text-sm shadow-md hover:bg-blue-700 hover:shadow-lg"
-            >
-              {isSubmitting || checkingStatus ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : isAlreadySubmitted ? (
-                "Submitted"
-              ) : (
-                "Save & Continue"
-              )}
-            </Button>
-          </Box>
-        </Box>
       </Card>
     </Box>
   );

@@ -12,7 +12,7 @@ import {
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
-import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
+  import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -251,6 +251,14 @@ export function useInquiry() {
         setShowInquiryPopup(true);
         setAssignedTAC(response?.data?.data?.preferences?.consultantId)
 
+      dispatch(
+        updateUserData({
+          leadId:response?.data?.data._id,
+          visitOption: Number(values.visitOption),
+          prefferedConsultant: response?.data?.data?.preferences?.consultantId
+          // values.prefferedConsultant === "" ? undefined : values.prefferedConsultant,
+        })
+      );
          
         const userId = userData?.id || userData?._id;
         if (userId) {

@@ -191,7 +191,7 @@ const JourneyCard = ({
   return (
     <Card
       variant="outlined"
-      className={`mb-6 p-6 sm:p-8 rounded-[16px] border border-[#e5e7eb] shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200 ${disabledCard ? "opacity-50 pointer-events-none" : "hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"}`}
+      className={`mb-6 p-6 sm:p-8 rounded-[16px]   shadow-[0_2px_8px_rgba(0,0,0,0.02)] transition-all duration-200 ${disabledCard ? "opacity-50 pointer-events-none" : "hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)]"}`}
     >
       <Box className="flex justify-between items-start mb-6">
         <Typography variant="h6" className="text-[0.9rem] mt-1">
@@ -260,6 +260,14 @@ const ApplicationTracking = () => {
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [journeyData, setJourneyData] = useState<any>(null);
+  const [isReduxReady, setIsReduxReady] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsReduxReady(true);
+    }, 500); 
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const fetchJourney = async () => {
@@ -284,6 +292,35 @@ const ApplicationTracking = () => {
     fetchJourney();
   }, [leadId]);
 
+  if (!isReduxReady) {
+    return (
+      <Box className="w-full flex justify-center p-10">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!leadId) {
+    return (
+      <Box className="w-full flex justify-center p-4 sm:p-10">
+        <Card className="w-full max-w-[600px] p-10 text-center rounded-[24px] shadow-sm   min-h-[300px] flex flex-col justify-center items-center mt-10">
+          <i className="ri-folder-info-line text-6xl text-gray-400 mb-4"></i>
+          
+          <Typography variant="body1" className="text-[var(--mui-palette-secondary)] mb-6">
+            Please generate an inquiry first to see your application status.
+          </Typography>
+          <Button
+            variant="contained"
+            onClick={() => router.push('/inquiry')}
+            className="rounded-xl px-8 py-2.5 normal-case bg-[var(--mui-palette-primary-main)] shadow-none"
+          >
+            Generate Inquiry
+          </Button>
+        </Card>
+      </Box>
+    );
+  }
+
   if (loading || !journeyData) {
     return (
       <Box className="w-full flex justify-center p-10">
@@ -293,8 +330,9 @@ const ApplicationTracking = () => {
   }
 
   return (
+    
     <Box className="w-full flex justify-center">
-      <Card className="w-full max-w-[900px] p-6 md:p-12 rounded-[24px] border border-[#f3f4f6] shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
+      <Card className="w-full max-w-[900px] p-6 md:p-12 rounded-[24px]   shadow-[0_4px_24px_rgba(0,0,0,0.04)]">
         <Typography variant="h4" className="mb-6">
           Application Status Tracking
         </Typography>
@@ -440,7 +478,7 @@ const ApplicationTracking = () => {
                 setIsPopupOpen(false);
                 router.push("/assessment");
               }}
-              className="bg-[#1877F2] hover:bg-[--mui-palette-secondary-main] text-white rounded-full text-[16px] normal-case"
+              className="bg-[var(--mui-palette-primary-main)] hover:bg-[--mui-palette-primary-main] text-white rounded-full text-[16px] normal-case"
             >
               Request e-Assessment
             </Button>
