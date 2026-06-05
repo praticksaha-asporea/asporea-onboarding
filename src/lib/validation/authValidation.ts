@@ -131,6 +131,9 @@ export const verifyOtpSchema = Joi.object({
     }),
 }).options({ abortEarly: false, allowUnknown: false });
 
+export const guestTokenSchema = Joi.object({
+  identity: Joi.string().trim().required()
+}).options({ abortEarly: false, allowUnknown: false });
 
 export const adminLoginSchema = Joi.object({
   email: emailSchema,

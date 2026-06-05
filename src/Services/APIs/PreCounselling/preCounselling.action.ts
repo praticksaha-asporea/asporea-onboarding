@@ -27,3 +27,12 @@ export const checkBookingStatusAction = async (leadId: string) => {
     return { success: false, message: error.response?.data?.message || "Failed to check booking status" };
   }
 };
+
+export const checkBranchView = async (branchId: string) => {
+  try {
+    const response = await axiosClient.get(`/branch/view?id=${branchId}`);
+    return response.data;
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.message || "Failed to check branch details" };
+  }
+};
