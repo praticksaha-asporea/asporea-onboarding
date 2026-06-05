@@ -5,7 +5,7 @@ export const respectiveDashboard = (
   user: { role: string },
   router: AppRouterInstance,
 ) => {
-  if (user.role === "tac") {
+  if (user.role === "tac" || user.role === "foe") {
     router.push("/dashboard");
   } else if (user.role === "user") {
     router.push("/inquiry");

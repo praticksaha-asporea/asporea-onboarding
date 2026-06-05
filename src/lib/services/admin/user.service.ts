@@ -213,7 +213,7 @@ export const updateUser = async (userId: string, body: any) => {
   }
 
 
-  delete body.password;
+  // delete body.password;
 
   const ALLOWED = [
     'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
@@ -224,6 +224,12 @@ export const updateUser = async (userId: string, body: any) => {
   const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
+  }
+  if(body.password)
+  {
+    
+  const hashedPassword = await hashPassword(body.password);
+    update['password'] = hashedPassword;
   }
   update.experienceInMonths =
     update.experienceInMonths
