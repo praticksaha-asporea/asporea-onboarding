@@ -111,5 +111,5 @@ export function proxy(req: NextRequest) {
 
 // ✅ Apply to all routes except API and static files
 export const config = {
-  matcher: [`/((?!.next|fonts|examples|assets|uploads|[\\w-]+\\.\\w+).*)`],
+  matcher: [`/((?!.next|fonts|examples|assets|uploads|images|[\\w-]+\\.\\w+).*)`],
 };

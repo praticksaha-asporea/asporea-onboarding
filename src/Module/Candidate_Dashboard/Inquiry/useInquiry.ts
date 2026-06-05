@@ -96,7 +96,7 @@ export function useInquiry() {
        const res = await axiosClient.get(`/user/details?id=${userId}`);
         
         if (res.data?.success && res.data?.data) {
-           const actualProfileData = res.data.data.user || res.data.data;
+           const actualProfileData = res.data.data.user || res.data.data;          
           dispatch(updateUserData(actualProfileData));
         }
       } catch (err) {

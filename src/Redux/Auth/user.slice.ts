@@ -37,6 +37,10 @@ export interface UserData {
   leadId?: string;
   visitOption?: number; 
   prefferedConsultant?: string;
+  branch?:{
+    _id: string;
+    title: string;
+  };
 }
 
 interface UserState {

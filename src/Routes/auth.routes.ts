@@ -7,4 +7,5 @@ export const authRoutes = [
 export const publicRoutes = [
   'social-callback',
   'complete-profile',
+  'guest'
 ];

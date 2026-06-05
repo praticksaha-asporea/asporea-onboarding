@@ -129,12 +129,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { $set: update },
       { returnDocument: "after", runValidators: true },
     ).lean();
-    // pre_scheduled <=  assigned
-    // pre_contacted <= contacted
-    // pre_queued <= queued
-    // pre_not_responded <= not_responded
-    // pre_completed <= completed
-    // pre_rejected <= rejected
     const updatableStatus: Record<string, string> = {
       assigned: "pre_scheduled",
       contacted: "pre_contacted",

@@ -27,6 +27,7 @@ import {
   bookSlotAction,
   checkBookingStatusAction,
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { checkBranchView } from "@/Services/APIs/PreCounselling/preCounselling.action";
 
 const PreCounsellingContent = () => {
   const searchParams = useSearchParams();
@@ -93,13 +94,31 @@ const PreCounsellingContent = () => {
   }, [leadId]);
 
   useEffect(() => {
-    if (reduxUser?.notificationPreference) {
-      setPreferences({
-        email: reduxUser.notificationPreference.email ?? true,
-        whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
-        sms: reduxUser.notificationPreference.sms ?? false,
-      });
+    const updatePreferences = async () => {
+      if (reduxUser?.notificationPreference) {
+        setPreferences({
+          email: reduxUser.notificationPreference.email ?? true,
+          whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
+          sms: reduxUser.notificationPreference.sms ?? false,
+        });
+      }
+      if (reduxUser?.branch?._id && !reduxUser?.branch?.title) {
+
+        const res = await checkBranchView(reduxUser?.branch?._id);
+
+        dispatch(
+          updateUserData({
+            branch: {
+              _id: reduxUser?.branch?._id,
+              title: res?.data?.title
+            },
+          }),
+        );
+
+      }
     }
+    updatePreferences()
+
   }, [reduxUser]);
 
   const handlePrefChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -188,7 +207,6 @@ const PreCounsellingContent = () => {
   };
   const isChecklistComplete =
     checklist.materials && checklist.environment && checklist.questions;
-
   return (
     <Grid container spacing={6}>
       {/* Left Section   */}
@@ -208,8 +226,10 @@ const PreCounsellingContent = () => {
               variant="subtitle1"
               className="text-[var(--mui-palette-text-primary)] max-w-md"
             >
-              TAC (Talent Acquisition Consultant) Not assigned yet. Please try
-              after sometime.
+              {/* {} */}
+              TAC (Talent Acquisition Consultant) not assigned yet. 
+              <br />Please reach to the reception counter of <strong>{reduxUser?.branch?.title}</strong> branch.
+              <br />Receptionist will assign a TAC for you.
             </Typography>
           </Card>
         ) : (
@@ -376,13 +396,12 @@ const PreCounsellingContent = () => {
                           }
                           className={`
                         normal-case rounded-[20px] px-6
-                        ${
-                          selectedSlot?.time === slot.time
-                            ? "bg-primary border-primary text-white"
-                            : slot.available
-                              ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
-                              : "bg-[#f5f5f5] border-[#e0e0e0]"
-                        }
+                        ${selectedSlot?.time === slot.time
+                              ? "bg-primary border-primary text-white"
+                              : slot.available
+                                ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                                : "bg-[#f5f5f5] border-[#e0e0e0]"
+                            }
                         disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
                         `}
                         >
