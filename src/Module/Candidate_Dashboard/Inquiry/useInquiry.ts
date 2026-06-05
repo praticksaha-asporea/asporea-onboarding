@@ -12,7 +12,7 @@ import {
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
-import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
+  import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -253,9 +253,10 @@ export function useInquiry() {
 
       dispatch(
         updateUserData({
-          leadId: response.data._id,
+          leadId:response?.data?.data._id,
           visitOption: Number(values.visitOption),
-          prefferedConsultant: values.prefferedConsultant === "" ? undefined : values.prefferedConsultant,
+          prefferedConsultant: response?.data?.data?.preferences?.consultantId
+          // values.prefferedConsultant === "" ? undefined : values.prefferedConsultant,
         })
       );
          
