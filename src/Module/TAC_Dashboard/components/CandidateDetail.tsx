@@ -44,7 +44,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   setCurrentView,
 }) => {
   const router = useRouter();
- const currentUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
+  const currentUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
   const isFoe = currentUser?.role === "foe" || currentUser?.user?.role === "foe";
 
   // useEffect(() => {
@@ -285,9 +285,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         toast.success("Status Updated and will be sent to Candidate via Email");
 
-        // setTimeout(() => {
-        //   location.reload();
-        // }, 3000);
+        setTimeout(() => {
+          location.reload();
+        }, 3000);
       } catch (err: any) {
         toast.error(err?.response?.data?.message ?? "Save failed");
       } finally {
@@ -530,7 +530,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 <FormControlLabel value="contacted" control={<Radio readOnly />} label="Contacted" disabled />
                               )}
                               {inqAssign?.schedule?.method === "off" && (
-                                <FormControlLabel value="queued" control={<Radio />} label="Queued" disabled={preForm.values.preStatus === 'rejected' || preForm.values.preStatus === 'completed'}  />
+                                <FormControlLabel value="queued" control={<Radio />} label="Queued" disabled={preForm.values.preStatus === 'rejected' || preForm.values.preStatus === 'completed'} />
                               )}
                               <FormControlLabel
                                 value="completed"
@@ -961,7 +961,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <Card className="p-5 sticky top-6 rounded-xl border border-gray-200 shadow-sm">
             <Typography className="text-[16px] font-semibold mb-4">Progress</Typography>
 
-           
+
             {isFoe ? (
               <Box className="mb-4 space-y-2">
                 <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
@@ -991,7 +991,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                     Branch: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{branchId.title ?? "—"}</span>
                   </Typography>
                   <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
-                    Consultant: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}</span>
+                    Consultant: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{consultantId?._id === currentUser?.id ? "You" : consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}</span>
                   </Typography>
                   <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
                     Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{CamelCase(c.status ?? "")}</span>

@@ -131,14 +131,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       else if (status === "not_responded") {
         update['attended']= false;
         // update['status']= status;
-
       }
-
+      
     const updated = await Assignment.findByIdAndUpdate(
       assignmentId,
       { $set: update },
       { returnDocument: "after", runValidators: true },
     ).lean();
+      // console.log(update,updated,assignmentId,18444);
 
     const updatableStatus: Record<string, string> = {
       assigned: "pre_scheduled",
@@ -157,17 +157,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       );
       if (updatableStatus?.[status] === "pre_queued") {
 
+        // only work when offline - later
         await BranchTokenModel.findOneAndUpdate(
-          { userId: updatedLead?.createdBy?.id, branchId: updatedLead?.preferences?.branchId },
+          { tokenNo:updated?.token?.number },
           { $set: { status: 'queued' } },
           { returnDocument: 'after', upsert: true, runValidators: true },
         ).lean();
 
       }
       else if (updatableStatus?.[status] === "pre_completed" || updatableStatus?.[status] === "pre_rejected") {
-
+        // only work when offline - later
         await BranchTokenModel.findOneAndUpdate(
-          { userId: updatedLead?.createdBy?.id, branchId: updatedLead?.preferences?.branchId },
+          { tokenNo:updated?.token?.number },
           { $set: { status: 'finished' } },
           { returnDocument: 'after', upsert: true, runValidators: true },
         ).lean();

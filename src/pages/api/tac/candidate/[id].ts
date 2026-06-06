@@ -55,6 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       userId: (lead as any).createdBy.id,
       generateDate: { $gte: today },
     })
+    .sort({ generateDate: -1, _id: -1 })
       .select("tokenNo status generateDate")
       .lean();
 
