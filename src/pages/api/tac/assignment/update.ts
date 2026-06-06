@@ -10,6 +10,7 @@ import Joi from "joi";
 import { normalizeFormFields, parseForm } from "@/lib/utils/parseForm";
 import { uploadFileService } from "@/lib/services/upload.service";
 import { Lead } from "@/lib/models/Lead.model";
+import { BranchTokenModel } from "@/lib/models/BranchToken.model";
 
 
 const updateAssignmentSchema = Joi.object({
@@ -123,12 +124,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     };
 
+      if (status=== "completed" || status === "rejected") {
+        update['attended']= true;
+        // update['status']= status;
+      }
+      else if (status === "not_responded") {
+        update['attended']= false;
+        // update['status']= status;
+
+      }
 
     const updated = await Assignment.findByIdAndUpdate(
       assignmentId,
       { $set: update },
       { returnDocument: "after", runValidators: true },
     ).lean();
+
     const updatableStatus: Record<string, string> = {
       assigned: "pre_scheduled",
       contacted: "pre_contacted",
@@ -138,12 +149,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       rejected: "pre_rejected",
     };
     if (updatableStatus) {
-      
-      await Lead.findByIdAndUpdate(
+
+      const updatedLead = await Lead.findByIdAndUpdate(
         assignment?.leadId,
         { $set: { status: updatableStatus?.[status] } },
-        {  returnDocument: "after",  runValidators: true }
+        { returnDocument: "after", runValidators: true }
       );
+      if (updatableStatus?.[status] === "pre_queued") {
+
+        await BranchTokenModel.findOneAndUpdate(
+          { userId: updatedLead?.createdBy?.id, branchId: updatedLead?.preferences?.branchId },
+          { $set: { status: 'queued' } },
+          { returnDocument: 'after', upsert: true, runValidators: true },
+        ).lean();
+
+      }
+      else if (updatableStatus?.[status] === "pre_completed" || updatableStatus?.[status] === "pre_rejected") {
+
+        await BranchTokenModel.findOneAndUpdate(
+          { userId: updatedLead?.createdBy?.id, branchId: updatedLead?.preferences?.branchId },
+          { $set: { status: 'finished' } },
+          { returnDocument: 'after', upsert: true, runValidators: true },
+        ).lean();
+        //email/ notification for prescription wlll add later
+
+      }
     }
 
     return ResponseHandler.sendSuccess(res, updated, "Assignment updated");

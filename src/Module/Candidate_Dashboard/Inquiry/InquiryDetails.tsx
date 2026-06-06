@@ -67,25 +67,25 @@ const InquiryDetails = () => {
   } = useInquiry();
 
   const [hasExistingData, setHasExistingData] = useState(false);
-const [activeStepperStep, setActiveStepperStep] = useState<number>(0);  
+  const [activeStepperStep, setActiveStepperStep] = useState<number>(0);
 
-useEffect(() => {
+  useEffect(() => {
     const fetchRealProgress = async () => {
       const existingLeadId = userData?.leadId || userData?.user?.leadId;
-      
+
       if (!existingLeadId) {
-        setActiveStepperStep(0);  
+        setActiveStepperStep(0);
         return;
       }
 
       try {
-        
+
         const res = await getJourneyTimelineAction(existingLeadId);
         if (res?.success && res?.data) {
-           
-           setActiveStepperStep(res.data.activeStep);
+
+          setActiveStepperStep(res.data.activeStep);
         } else {
-           setActiveStepperStep(1);  
+          setActiveStepperStep(1);
         }
       } catch (error) {
         console.error("Failed to sync actual stepper progress:", error);
@@ -95,19 +95,19 @@ useEffect(() => {
 
     fetchRealProgress();
   }, [userData?.leadId]);
- 
+
 
   useEffect(() => {
     const existingLeadId = userData?.leadId || userData?.user?.leadId;
 
     if (existingLeadId) {
-      
+
       setHasExistingData(true);
 
-      
-       
+
+
     }
-  }, [userData]);  
+  }, [userData]);
 
   const formik = useFormik({
     initialValues: getInitialValues(),
@@ -154,7 +154,7 @@ useEffect(() => {
               </Typography>
 
               <form onSubmit={formik.handleSubmit}>
-                 
+
                 {isFormDisabled && (
                   <Box
                     className="mb-6 p-4 rounded-xl bg-[var(--mui-palette-primary-dark)]   flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in"
@@ -178,12 +178,12 @@ useEffect(() => {
                           variant="body2"
                           className="text-[var(--mui-palette-text-primary)] mt-2 font-medium  "
                         >
-                             Please proceed to the Pre-Counselling section.
+                          Please proceed to the Pre-Counselling section.
                         </Typography>
                       </Box>
                     </Box>
 
-                    
+
                     <Button
                       variant="contained"
                       onClick={() => {
@@ -208,11 +208,10 @@ useEffect(() => {
                 )}
 
                 <div
-                  className={`transition-all duration-500 ease-in-out ${
-                    isFormDisabled
+                  className={`transition-all duration-500 ease-in-out ${isFormDisabled
                       ? "blur-[2.5px] opacity-60 pointer-events-none select-none"
                       : ""
-                  }`}
+                    }`}
                 >
                   <Card>
                     <CardContent className="mbe-5">
@@ -287,10 +286,9 @@ useEffect(() => {
                                 <MenuItem key={branch._id} value={branch._id}>
                                   {branch.title}
                                   {branch.distanceKm !== undefined &&
-                                    ` (${index === 0 ? "Recommend - " : ""}${
-                                      branch.distanceKm < 1
-                                        ? "Within 1 Km"
-                                        : `${branch.distanceKm.toFixed(2)} Km`
+                                    ` (${index === 0 ? "Recommend - " : ""}${branch.distanceKm < 1
+                                      ? "Within 1 Km"
+                                      : `${branch.distanceKm.toFixed(2)} Km`
                                     })`}
                                 </MenuItem>
                               ))}
@@ -430,7 +428,7 @@ useEffect(() => {
                                   formik.setFieldValue("otherReferedBy", "");
                                 }
                               }}
-                              
+
                             >
                               <FormControlLabel
                                 value="web-app"
@@ -609,28 +607,28 @@ useEffect(() => {
                   <Typography variant="h4" className="mb-5">
                     Application Progress
                   </Typography>
-              <Stepper activeStep={activeStepperStep} orientation="vertical">
-  {inquirySteps.map((step, index) => (
-    <Step key={step.label}>
-      <StepLabel
-        optional={
-          index < activeStepperStep ? (
-            <Typography variant="caption" className="text-[var(--mui-palette-success-main)] text-[12px] font-bold">Completed</Typography>
-          ) : index === activeStepperStep ? (
-            <Typography variant="caption" className="text-[var(--mui-palette-primary-main)] text-[12px] font-bold">Active</Typography>
-          ) : (
-            <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] text-[12px]">Pending</Typography>
-          )
-        }
-      >
-        {step.label}
-      </StepLabel>
-      <StepContent>
-        <Typography>{step.description}</Typography>
-      </StepContent>
-    </Step>
-  ))}
-</Stepper>
+                  <Stepper activeStep={activeStepperStep} orientation="vertical">
+                    {inquirySteps.map((step, index) => (
+                      <Step key={step.label}>
+                        <StepLabel
+                          optional={
+                            index < activeStepperStep ? (
+                              <Typography variant="caption" className="text-[var(--mui-palette-success-main)] text-[12px] font-bold">Completed</Typography>
+                            ) : index === activeStepperStep ? (
+                              <Typography variant="caption" className="text-[var(--mui-palette-primary-main)] text-[12px] font-bold">Active</Typography>
+                            ) : (
+                              <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] text-[12px]">Pending</Typography>
+                            )
+                          }
+                        >
+                          {step.label}
+                        </StepLabel>
+                        {/* <StepContent>
+                          <Typography>{step.description}</Typography>
+                        </StepContent> */}
+                      </Step>
+                    ))}
+                  </Stepper>
                 </CardContent>
               </Card>
             </Grid>

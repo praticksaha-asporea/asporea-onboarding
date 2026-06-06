@@ -44,7 +44,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const branchToken = await BranchTokenModel.findOne({
-      userId: (lead as any)._id,
+      userId: (lead as any).createdBy.id,
       generateDate: { $gte: today },
     })
       .select("tokenNo status generateDate")

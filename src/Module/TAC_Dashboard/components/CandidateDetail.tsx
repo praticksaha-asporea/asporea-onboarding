@@ -102,6 +102,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       // setEnablePreSubmit(false);
       setIsPreLocked(true);
     }
+    else if (inqAssign?.status === "queued" && (isWithinSchedule(inqAssign) && inqAssign?.schedule?.from != "" && inqAssign?.schedule?.to != "")) {
+      setIsPreLocked(false);
+    }
   }, [preferences.branchId]);
   // ── Inquiry Details form ──────────────────────────────────────────────────
   const inquiryForm = useFormik({
@@ -281,9 +284,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
         toast.success("Status Updated and will be sent to Candidate via Email");
 
-        setTimeout(() => {
-          location.reload();
-        }, 3000);
+        // setTimeout(() => {
+        //   location.reload();
+        // }, 3000);
       } catch (err: any) {
         toast.error(err?.response?.data?.message ?? "Save failed");
       } finally {
@@ -297,7 +300,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
   const updateAssignmentStatus = async (status: string) => {
     if (!inqAssign?._id) return;
-    const textStatus = status == "contacted" ? `Are you sure ? \n You contacted with ${inquiryForm?.values?.phone}` : (status == "not_responded" ? `You contacted with ${inquiryForm?.values?.phone} \nbut not responded by candidate?` : ``)
+    const textStatus =
+      status === "contacted"
+        ? `Are you sure?\nYou contacted ${inquiryForm?.values?.phone}`
+        : status === "not_responded"
+          ? `You contacted ${inquiryForm?.values?.phone},\nbut the candidate did not respond?`
+          : "Are you sure you are available to talk with this candidate now?";
     const confirmed = await confirmToast(textStatus);
     if (!confirmed) return;
     try {
@@ -313,6 +321,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ...preForm.values,
         preStatus: status,
       });
+      if (status === "queued") {
+        setIsPreLocked(false)
+      }
     } catch (err: any) {
       console.log(err?.response?.data?.message ?? "Update failed");
     }
@@ -510,7 +521,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                               onChange={(e, value) => {
                                 // setEnablePreSubmit(((preForm.isSubmitting || isWithinSchedule(inqAssign)) && (value === "completed" || value === "rejected") && (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected")));
 
-                                setIsPreLocked(!((preForm.isSubmitting || isWithinSchedule(inqAssign)) && (value === "completed" || value === "rejected") && (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected")));
+                                setIsPreLocked(!(preForm.isSubmitting || isWithinSchedule(inqAssign)) && (value === "completed" || value === "rejected" || value === "queued") && (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected" && inqAssign?.status !== "queued"));
                                 return preForm.handleChange(e);
                               }}>
                               <FormControlLabel value="assigned" control={<Radio />} label="Scheduled" disabled={preForm.values.preStatus !== 'assigned'} />
@@ -518,7 +529,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 <FormControlLabel value="contacted" control={<Radio readOnly />} label="Contacted" disabled />
                               )}
                               {inqAssign?.schedule?.method === "off" && (
-                                <FormControlLabel value="queued" control={<Radio />} label="Queued" />
+                                <FormControlLabel value="queued" control={<Radio />} label="Queued" disabled={preForm.values.preStatus === 'rejected' || preForm.values.preStatus === 'completed'}  />
                               )}
                               <FormControlLabel
                                 value="completed"
@@ -529,7 +540,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                                 }
                               />
 
-                              <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded" disabled />
+                              <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded / Unattened" disabled />
 
                               <FormControlLabel
                                 value="rejected"
@@ -550,8 +561,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                           <FormControl>
                             <FormLabel>Visit Method</FormLabel>
                             <RadioGroup row value={inqAssign?.schedule?.method === "on" ? "remote" : "office"}>
-                              <FormControlLabel value="office" control={<Radio />} label="In-Office" disabled={inqAssign?.schedule?.method === "on" ? true : false}/>
-                              <FormControlLabel value="remote" control={<Radio />} label="Remote" disabled={inqAssign?.schedule?.method === "off" ? true : false}/>
+                              <FormControlLabel value="office" control={<Radio />} label="In-Office" disabled={inqAssign?.schedule?.method === "on" ? true : false} />
+                              <FormControlLabel value="remote" control={<Radio />} label="Remote" disabled={inqAssign?.schedule?.method === "off" ? true : false} />
                             </RadioGroup>
                           </FormControl>
                         </Grid>
@@ -584,7 +595,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 
                         {preferences.visitType === "offline" && (
                           <Grid size={{ xs: 12, md: 6 }}>
-                            <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled={!c.token} />
+                            <TextField fullWidth label="Token No" value={c.token ?? "—"} disabled />
                           </Grid>
                         )}
 
@@ -615,7 +626,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                               <>
                                 <Button
                                   variant="contained"
-                                  className="!bg-red-300 hover:!bg-red-400 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                                  className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
                                   disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"}
                                   onClick={() => updateAssignmentStatus("not_responded")}
                                 >
@@ -635,18 +646,29 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                               <Button
                                 variant="contained"
                                 className="!bg-orange-400 hover:!bg-orange-500 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
-                                disabled={!(inqAssign.status === "assigned" && isWithinSchedule(inqAssign))}
+                                disabled={!(inqAssign.status === "assigned" && isWithinSchedule(inqAssign)) || preForm.values.preStatus === "queued" || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected" || preForm.values.preStatus === "queued"}
                                 onClick={() => updateAssignmentStatus("queued")}
                               >
                                 Queue
                               </Button>
                             )}
+
+                            {preForm?.values?.preStatus == "queued" && (
+                              <Button
+                                variant="contained"
+                                type="button"
+                                // disabled={isPreLocked}
+                                className="bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
+                                disabled={isPreLocked || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"}
+                                onClick={() => updateAssignmentStatus("not_responded")}
+                              >
+                                Absent
+                              </Button>
+                            )}
                           </Box>
                         </Grid>
                         {
-
-
-                          (preForm?.values?.preStatus == "completed" || preForm?.values?.preStatus == "rejected")
+                          (preForm?.values?.preStatus == "completed" || preForm?.values?.preStatus == "rejected" || preForm?.values?.preStatus == "queued")
                             ?
                             (
                               <>
@@ -785,15 +807,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                       </Grid>
                       {/* Send as Prescription — submits the form */}
                       {
-                        (preForm?.values?.preStatus == "completed" || preForm?.values?.preStatus == "rejected")
+                        (preForm?.values?.preStatus == "completed" || preForm?.values?.preStatus == "rejected" || preForm?.values?.preStatus == "queued")
                           ?
                           (
                             <Box className="flex justify-end gap-3 mt-4 pt-6">
-
                               <Button
                                 variant="contained"
                                 type="submit"
-                                disabled={isPreLocked}
+                                disabled={isPreLocked || preForm?.values?.preStatus === "queued"}
                                 className="!bg-blue-500 hover:!bg-blue-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case"
                               >
                                 {preForm.isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Send As Prescription"}

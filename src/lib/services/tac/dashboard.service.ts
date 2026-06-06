@@ -79,7 +79,7 @@ export const getTacCandidates = async ({
     stage: resolveStage(lead),
     status: lead.status ?? "pending",
     experience: lead.experience?.type ?? null,
-    token: tokenMap.get(String(lead._id)) ?? null,
+    token: tokenMap.get(String(lead.createdBy.id)) ?? null,
     lastActivity: lead.updatedAt,
     branchId: lead.preferences?.branchId ?? null,
     visitType: lead.preferences?.visitType ?? null,

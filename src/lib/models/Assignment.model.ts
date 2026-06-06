@@ -16,7 +16,7 @@ export const ASSIGNMENT_PHASES = [
 export const ASSIGNMENT_STATUS = [
   "assigned",
   "contacted",
-  "na",
+  // "na",
   "queued",
   "completed",
   "rejected",
