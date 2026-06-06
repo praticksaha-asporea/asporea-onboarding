@@ -7,6 +7,7 @@ import { applyCors } from "@/lib/cors";
 import { Lead } from "@/lib/models/Lead.model";
 import { BranchTokenModel } from "@/lib/models/BranchToken.model";
 import { Assignment } from "@/lib/models/Assignment.model";
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";  
 import mongoose from "mongoose";
 import "@/lib/models/User.model";
 import "@/lib/models/Branch.model";
@@ -24,16 +25,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    if (authUser.role !== "tac") throw new ApiError("TAC access required", 403);
+    if (authUser.role !== "tac" && authUser.role !== "foe") throw new ApiError("TAC or FOE access required", 403);
 
     const { id } = req.query;
     if (!id || typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id))
       throw new ApiError("Invalid candidate ID", 400);
-
-    const lead = await Lead.findOne({
-      _id: id,
-      "preferences.consultantId": new mongoose.Types.ObjectId(authUser.id),
-    })
+     let leadFilter: Record<string, unknown> = { _id: new mongoose.Types.ObjectId(id) };
+     if (authUser.role === "foe") {
+        
+      const shift = await EmployeeBranchShiftModel.findOne({ employeeId: new mongoose.Types.ObjectId(authUser.id) }).lean();
+      if (!shift) throw new ApiError("FOE branch assignment not found", 404);
+      
+      leadFilter["preferences.branchId"] = shift.branchId;
+    } else {
+       
+      leadFilter["preferences.consultantId"] = new mongoose.Types.ObjectId(authUser.id);
+    }
+     const lead = await Lead.findOne(leadFilter)
       .populate("preferences.branchId", "title location timeZone")
       .populate("preferences.consultantId", "firstName lastName")
       .lean();

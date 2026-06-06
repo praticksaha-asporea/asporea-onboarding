@@ -210,6 +210,7 @@ export const savePreCounsellingBooking = async (body: any) => {
     const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
     await LeadModel.findByIdAndUpdate(leadId, {
       status: "pre_scheduled",
+      "preferences.consultantId": new mongoose.Types.ObjectId(consultantId)
     });
   }
 
