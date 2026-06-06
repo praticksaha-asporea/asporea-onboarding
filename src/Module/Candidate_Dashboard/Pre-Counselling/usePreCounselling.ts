@@ -15,6 +15,8 @@ import {
   ChecklistState,
   NotificationPreferences,
 } from "@/Types/Frontend_Payload/precounselling.types";
+import { checkBranchView } from "@/Services/APIs/PreCounselling/preCounselling.action";
+
 
 export const usePreCounselling = () => {
   const searchParams = useSearchParams();
@@ -95,13 +97,31 @@ export const usePreCounselling = () => {
   }, [leadId]);
 
   useEffect(() => {
-    if (reduxUser?.notificationPreference) {
-      setPreferences({
-        email: reduxUser.notificationPreference.email ?? true,
-        whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
-        sms: reduxUser.notificationPreference.sms ?? false,
-      });
+    const updatePreferences = async () => {
+      if (reduxUser?.notificationPreference) {
+        setPreferences({
+          email: reduxUser.notificationPreference.email ?? true,
+          whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
+          sms: reduxUser.notificationPreference.sms ?? false,
+        });
+      }
+      if (reduxUser?.branch?._id && !reduxUser?.branch?.title) {
+
+        const res = await checkBranchView(reduxUser?.branch?._id);
+
+        dispatch(
+          updateUserData({
+            branch: {
+              _id: reduxUser?.branch?._id,
+              title: res?.data?.title
+            },
+          }),
+        );
+
+      }
     }
+    updatePreferences()
+
   }, [reduxUser]);
 
   useEffect(() => {
@@ -205,5 +225,6 @@ export const usePreCounselling = () => {
     handleSavePreferences,
     handleConfirm,
     isChecklistComplete,
+    reduxUser
   };
 };

@@ -41,6 +41,7 @@ const PreCounsellingContent = () => {
     handleSavePreferences,
     handleConfirm,
     isChecklistComplete,
+    reduxUser
   } = usePreCounselling();
 
   return (
@@ -68,8 +69,9 @@ const PreCounsellingContent = () => {
               variant="subtitle1"
               className="text-[var(--mui-palette-text-primary)] max-w-md"
             >
-              TAC (Talent Acquisition Consultant) Not assigned yet. Please try
-              after sometime.
+              TAC (Talent Acquisition Consultant) not assigned yet. 
+              <br />Please reach to the reception counter of <strong>{reduxUser?.branch?.title}</strong> branch.
+              <br />Receptionist will assign a TAC for you.
             </Typography>
           </Card>
         ) : (
