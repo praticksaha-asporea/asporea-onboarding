@@ -10,6 +10,7 @@ export interface CandidateRow {
   visitType: string | null;
   token: string | null;
   lastActivity: string;
+  branchId?: string | null
   contact: { phone?: string; email?: string; whatsapp?: string };
 }
 

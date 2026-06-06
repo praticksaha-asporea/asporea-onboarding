@@ -3,9 +3,11 @@ import { Lead } from "../../models/Lead.model";
 import { BranchTokenModel } from "../../models/BranchToken.model";
 import "../../models/User.model";
 import "../../models/Branch.model";
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 
 export interface CandidateListParams {
-  tacId: string;
+  userId: string;  
+  role: string;     
   search?: string;
   status?: string;
   experience?: string;
@@ -14,19 +16,31 @@ export interface CandidateListParams {
 }
 
 export const getTacCandidates = async ({
-  tacId,
+  userId,
+  role,
   search,
   status,
   experience,
   page = 1,
   limit = 10,
 }: CandidateListParams) => {
-  const tacObjectId = new mongoose.Types.ObjectId(tacId);
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+  let filter: Record<string, unknown> = {};
 
-  // Base filter — leads assigned to this TAC
-  const filter: Record<string, unknown> = {
-    "preferences.consultantId": tacObjectId,
-  };
+   
+  if (role === "foe") {
+     
+    const shift = await EmployeeBranchShiftModel.findOne({ employeeId: userObjectId });
+    if (shift) {
+      filter["preferences.branchId"] = shift.branchId;
+    } else {
+      
+      filter["preferences.branchId"] = null; 
+    }
+  } else {
+    
+    filter["preferences.consultantId"] = userObjectId;
+  }
 
   if (status) filter.status = status;
   if (experience) filter["experience.type"] = experience;
@@ -40,7 +54,6 @@ export const getTacCandidates = async ({
       { "contact.phone": regex },
     ];
   }
-
   const skip = (page - 1) * limit;
 
   const [leads, total] = await Promise.all([
@@ -56,11 +69,8 @@ export const getTacCandidates = async ({
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const leadIds = leads
-    .map((l) => (l as any)._id)
-    .filter(Boolean);
-
-  // BranchToken links userId → Lead's contact user — we match by lead's preferred branch + today
+  
+ 
   const tokens = await BranchTokenModel.find({
     generateDate: { $gte: today },
   })
@@ -101,9 +111,16 @@ export const getTacCandidates = async ({
 
 // ─── KPI counts for the TAC ───────────────────────────────────────────────────
 
-export const getTacKpis = async (tacId: string) => {
-  const tacObjectId = new mongoose.Types.ObjectId(tacId);
-  const base = { "preferences.consultantId": tacObjectId };
+export const getTacKpis = async (userId: string, role: string) => {
+  const userObjectId = new mongoose.Types.ObjectId(userId);
+  let base: any = {};
+
+  if (role === "foe") {
+    const shift = await EmployeeBranchShiftModel.findOne({ employeeId: userObjectId });
+    if (shift) base["preferences.branchId"] = shift.branchId;
+  } else {
+    base["preferences.consultantId"] = userObjectId;
+  }
 
   const [openCases, pendingCounselling, pendingAssessment] = await Promise.all([
     Lead.countDocuments({ ...base }),

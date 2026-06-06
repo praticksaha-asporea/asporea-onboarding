@@ -44,7 +44,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   setCurrentView,
 }) => {
   const router = useRouter();
-  const currentUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
+ const currentUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
+  const isFoe = currentUser?.role === "foe" || currentUser?.user?.role === "foe";
 
   // useEffect(() => {
   //   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -960,62 +961,61 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
           <Card className="p-5 sticky top-6 rounded-xl border border-gray-200 shadow-sm">
             <Typography className="text-[16px] font-semibold mb-4">Progress</Typography>
 
-            <Box className="mb-4 space-y-2">
-              <Typography className="text-[12px] text-gray-500">
-                Branch: <span className="font-semibold text-gray-800">{branchId.title ?? "—"}</span>
-              </Typography>
-              <Typography className="text-[12px] text-gray-500">
-                Consultant:{" "}
-                <span className="font-semibold text-gray-800">
-                  {consultantId.firstName
-                    ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim()
-                    : "—"}
-                </span>
-              </Typography>
-              <Typography className="text-[12px] text-gray-500">
-                Status: <span className="font-semibold text-gray-800">{CamelCase(c.status ?? "")}</span>
-              </Typography>
-              <Typography className="text-[12px] text-gray-500">
-                Experience:{" "}
-                <span className="font-semibold text-gray-800">
-                  {CamelCase(c.experience?.type ?? "Not set")}
-                </span>
-              </Typography>
-            </Box>
+           
+            {isFoe ? (
+              <Box className="mb-4 space-y-2">
+                <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
+                  Branch: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{branchId.title ?? "—"}</span>
+                </Typography>
+                <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
+                  Consultant:{" "}
+                  <span className="font-semibold text-[var(--mui-palette-text-primary)]">
+                    {consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}
+                  </span>
+                </Typography>
+                <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
+                  Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{CamelCase(c.status ?? "")}</span>
+                </Typography>
+                <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
+                  Experience:{" "}
+                  <span className="font-semibold text-[var(--mui-palette-text-primary)]">
+                    {CamelCase(c.experience?.type ?? "Not set")}
+                  </span>
+                </Typography>
+              </Box>
+            ) : (
+              /* 🔹 For TAC: Show Summary + Escalation feature */
+              <>
+                <Box className="mb-4 space-y-2">
+                  <Typography className="text-[12px] text-gray-500">
+                    Branch: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{branchId.title ?? "—"}</span>
+                  </Typography>
+                  <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
+                    Consultant: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}</span>
+                  </Typography>
+                  <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
+                    Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{CamelCase(c.status ?? "")}</span>
+                  </Typography>
+                  <Typography className="text-[12px] text-gray-500">
+                    Experience: <span className="font-semibold text-gray-800">{CamelCase(c.experience?.type ?? "Not set")}</span>
+                  </Typography>
+                </Box>
 
-            <FormControl fullWidth className="mb-4">
-              <InputLabel>Escalate</InputLabel>
-              <Select
-                label="Escalate"
-                value={escalateTo}
-                onChange={(e) => setEscalateTo(e.target.value)}
-              >
-                <MenuItem value="">-- Select TAC --</MenuItem>
-                {tacList.map((tac) => (
-                  <MenuItem key={tac._id} value={tac._id}>
-                    {`${tac.firstName} ${tac.lastName ?? ""}`.trim()}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                <FormControl fullWidth className="mb-4">
+                  <InputLabel>Escalate</InputLabel>
+                  <Select label="Escalate" value={escalateTo} onChange={(e) => setEscalateTo(e.target.value)}>
+                    <MenuItem value="">-- Select TAC --</MenuItem>
+                    {tacList.map((tac) => (
+                      <MenuItem key={tac._id} value={tac._id}>{`${tac.firstName} ${tac.lastName ?? ""}`.trim()}</MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
 
-            <TextField
-              fullWidth
-              multiline
-              rows={3}
-              label="Reason *"
-              placeholder="Enter reason for escalation..."
-              className="mb-4"
-              slotProps={{ input: { className: "text-[14px]" } }}
-            />
-
-            <Typography className="text-[12px] text-[var(--mui-palette-error-light)] mb-4">
-              NOTE: This will need approval of your manager.
-            </Typography>
-
-            <Box className="flex justify-center">
-              <Button disabled variant="contained">Submit</Button>
-            </Box>
+                <TextField fullWidth multiline rows={3} label="Reason *" placeholder="Enter reason for escalation..." className="mb-4" slotProps={{ input: { className: "text-[14px]" } }} />
+                <Typography className="text-[12px] text-[var(--mui-palette-error-light)] mb-4">NOTE: This will need approval of your manager.</Typography>
+                <Box className="flex justify-center"><Button disabled variant="contained">Submit</Button></Box>
+              </>
+            )}
           </Card>
         </Grid>
       </Grid>

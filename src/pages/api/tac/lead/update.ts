@@ -5,6 +5,7 @@ import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 import { applyCors } from "@/lib/cors";
 import { Lead } from "@/lib/models/Lead.model";
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";  
 import mongoose from "mongoose";
 import Joi from "joi";
 
@@ -39,7 +40,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    if (authUser.role !== "tac") throw new ApiError("TAC access required", 403);
+    if (authUser.role !== "tac" && authUser.role !== "foe") throw new ApiError("TAC or FOE   access required", 403);
 
     const { error, value } = updateLeadSchema.validate(req.body);
     if (error)
@@ -50,12 +51,19 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new ApiError("Invalid lead ID", 400);
 
+    let leadFilter: Record<string, unknown> = { _id: new mongoose.Types.ObjectId(id) };
+
+    if (authUser.role === "foe") {
+      const shift = await EmployeeBranchShiftModel.findOne({ employeeId: new mongoose.Types.ObjectId(authUser.id) }).lean();
+      if (!shift) throw new ApiError("FOE branch assignment not found", 404);
+      leadFilter["preferences.branchId"] = shift.branchId;
+    } else {
+      leadFilter["preferences.consultantId"] = new mongoose.Types.ObjectId(authUser.id);
+    }
+
     // Ensure this lead is assigned to the requesting TAC
-    const lead = await Lead.findOne({
-      _id: id,
-      "preferences.consultantId": new mongoose.Types.ObjectId(authUser.id),
-    });
-    if (!lead) throw new ApiError("Lead not found or not assigned to you", 404);
+    const lead = await Lead.findOne(leadFilter);
+    if (!lead) throw new ApiError("Lead not found or not accessible to you", 404);
 
     const update: Record<string, unknown> = {};
     if (fullName !== undefined)      update.fullName = fullName;

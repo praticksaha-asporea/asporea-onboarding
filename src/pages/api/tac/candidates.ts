@@ -18,7 +18,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    if (authUser.role !== "tac") throw new ApiError("TAC access required", 403);
+    if (authUser.role !== "tac" && authUser.role !== "foe") throw new ApiError("TAC or FOE access required", 403);
 
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
@@ -34,8 +34,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const includeKpis = req.query.kpis === "true";
 
     const [candidates, kpis] = await Promise.all([
-      getTacCandidates({ tacId: authUser.id, search, status, experience, page, limit }),
-      includeKpis ? getTacKpis(authUser.id) : Promise.resolve(null),
+      getTacCandidates({ userId: authUser.id, role: authUser.role, search, status, experience, page, limit }),
+      includeKpis ? getTacKpis(authUser.id, authUser.role) : Promise.resolve(null),
     ]);
 
     return ResponseHandler.sendSuccess(res, { ...candidates, kpis }, "Candidates fetched");
