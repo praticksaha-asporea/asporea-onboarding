@@ -48,11 +48,13 @@ export const getTacCandidatesAction = async (params: {
   if (params.kpis) query.set("kpis", "true");
 
   const res = await axiosClient.get(`/tac/candidates?${query.toString()}`);
+  console.log("Fetched candidate data:", res.data);
   return res.data.data;
 };
 
 export const getTacCandidateDetailAction = async (id: string) => {
   const res = await axiosClient.get(`/tac/candidate/${id}`);
+  console.log("Fetched candidate detail:", res.data);
   return res.data.data as {
     lead: any;
     branchToken: any;

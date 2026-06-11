@@ -34,6 +34,7 @@ export const useDocumentUpload = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
+  const [isPreLocked, setIsPreLocked] = useState(false);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReduxReady(true), 800);
@@ -51,11 +52,18 @@ export const useDocumentUpload = () => {
       setCheckingStatus(true);
       try {
         const timelineRes = await getJourneyTimelineAction(leadId);
+        console.log("Journey Timeline Data:", timelineRes);
         if (timelineRes?.success && timelineRes.data) {
           const currentActiveStep = timelineRes.data.activeStep;
+          const preCounsellingStatus = timelineRes.data?.preCounselling?.status;
           setActiveStep(currentActiveStep);
-          if (currentActiveStep < 2) {
-            toast.error("Please schedule pre-counselling first", { id: "doc-guard-precoun" });
+          if (preCounsellingStatus !== "Completed") {
+        setIsPreLocked(true);
+      } else {
+        setIsPreLocked(false);  
+      }
+          if (currentActiveStep < 2 && preCounsellingStatus !== "Completed") {
+            toast.error("Please schedule pre-counselling first and wait for completion", { id: "doc-guard-precoun" });
             router.push(`/pre-counselling?leadId=${leadId}`);
             return;
           }
@@ -63,6 +71,7 @@ export const useDocumentUpload = () => {
         const res = await checkDocumentStatusAction(leadId);
         if (res?.success && res.data) {
           const submittedStages = ["doc_submitted", "exp_submitted", "assessment_submitted", "assessment_scheduled"];
+          
           if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
             setIsAlreadySubmitted(true);
           }
@@ -169,6 +178,6 @@ export const useDocumentUpload = () => {
   return {
     router, leadId, activeStep, positions, selectedPosition, setSelectedPosition,
     loadingPositions, loadingDocs, hasDocuments, groupedDocs, isSubmitting,
-    isAlreadySubmitted, checkingStatus, handleFilesUpdate, handleSubmit, isReduxReady
+    isAlreadySubmitted, checkingStatus, isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady
   };
 };

@@ -187,7 +187,32 @@ export const savePreCounsellingBooking = async (body: any) => {
       409,
     );
   }
+ 
+  const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
+  const currentLead = await LeadModel.findById(leadId).lean();
+  
+   
+  if (currentLead && currentLead.status === "pre_not_responded") {
+  
+    await Assignment.deleteMany({
+      leadId: new mongoose.Types.ObjectId(leadId),
+      phase: "pre"
+    });
 
+     
+    const BranchTokenModel = mongoose.models.BranchToken || mongoose.model("BranchToken");
+    const creatorId = currentLead.createdBy?.id || currentLead.createdBy?._id || currentLead.createdBy;
+   if (creatorId && currentLead.preferences?.branchId) {
+      await BranchTokenModel.deleteMany({
+        userId: creatorId, 
+        branchId: currentLead.preferences.branchId,
+        status: { $in: ["generated", "queued"] }
+      });
+    }
+  }
+  
+
+   
   const updatedAssignment = await Assignment.findOneAndUpdate(
     { leadId: new mongoose.Types.ObjectId(leadId), phase: "pre" },
     {
@@ -201,13 +226,16 @@ export const savePreCounsellingBooking = async (body: any) => {
         },
         status: "assigned",
         attended: false,
+        token: {
+          generated: false,  
+          number: null
+        }
       },
     },
-   { new: true, upsert: true },
+    { new: true, upsert: true },
   );
 
   if (updatedAssignment) {
-    const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
     await LeadModel.findByIdAndUpdate(leadId, {
       status: "pre_scheduled",
       "preferences.consultantId": new mongoose.Types.ObjectId(consultantId)

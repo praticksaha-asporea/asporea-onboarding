@@ -187,8 +187,14 @@ export const getTacListByBranch = async (branchId: string) => {
     .lean();
 
   const tacList = assignments
-    .map((a: any) => a.employeeId)
-    .filter((emp: any) => emp && emp.role === "tac");
+    .filter((a: any) => a.employeeId && a.employeeId.role === "tac")
+    .map((a: any) => ({
+      _id: a.employeeId._id.toString(), 
+      firstName: a.employeeId.firstName,
+      lastName: a.employeeId.lastName,
+      role: a.employeeId.role,
+      counterNo: a.counterNo ?? null, 
+    }));
 
   return tacList;
 };

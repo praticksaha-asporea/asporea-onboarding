@@ -18,7 +18,7 @@ const DocumentUploadPage = () => {
   const {
     router, leadId, activeStep, positions, selectedPosition, setSelectedPosition,
     loadingPositions, loadingDocs, hasDocuments, groupedDocs, isSubmitting,
-    isAlreadySubmitted, checkingStatus, handleFilesUpdate, handleSubmit, isReduxReady
+    isAlreadySubmitted, checkingStatus,isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady
   } = useDocumentUpload();
 
   if (!isReduxReady || checkingStatus) {
@@ -70,6 +70,25 @@ const DocumentUploadPage = () => {
 
         {checkingStatus ? (
           <Box className="flex justify-center items-center mt-10 mb-10 h-40"><CircularProgress /></Box>
+        ) : isPreLocked ? (
+          
+          <Box className="mt-8 mb-8 p-10 text-center rounded-xl bg-[var(--mui-palette-background-paper)]   shadow-sm">
+            <i className="ri-lock-line text-5xl text-[var(--mui-palette-text-primary)] mb-3 block" />
+            <Typography variant="h5" className="text-[var(--mui-palette-text-primary)]  tracking-wide">
+              Access Restricted
+            </Typography>
+            <Typography variant="body1" className="text-[var(--mui-palette-text-primary)] mt-2 font-medium">
+            Please wait for the TAC to update your Pre-Counselling status as <strong>"Completed"</strong>.
+            </Typography>
+            <Button
+              variant="contained"
+              onClick={() => router.push(`/pre-counselling?leadId=${leadId}`)}
+              className="mt-6 rounded-xl px-8 py-2.5 normal-case text-sm shadow-md font-bold"
+            >
+              Go to Pre-Counselling
+            </Button>
+          </Box>
+        
         ) : (
           <Box>
             <Box className={`${isAlreadySubmitted ? "opacity-60 pointer-events-none" : ""}`}>

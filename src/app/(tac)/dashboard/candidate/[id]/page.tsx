@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Box, CircularProgress, Typography } from "@mui/material";
-import CandidateDetail from "@/Module/TAC_Dashboard/components/CandidateDetail";
+import CandidateDetail from "@/Module/TAC_Dashboard/components/CandidateDetail/CandidateDetail";
 import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
 
 export default function CandidateDetailPage() {

@@ -65,7 +65,7 @@ export const getTacCandidates = async ({
     Lead.countDocuments(filter),
   ]);
 
-  // Batch-fetch today's tokens for all lead user IDs
+  
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -77,24 +77,33 @@ export const getTacCandidates = async ({
     .select("tokenNo userId branchId status")
     .lean();
 
-  const tokenMap = new Map<string, string>();
+ const tokenMap = new Map<string, string>();
   for (const t of tokens) {
     if (t.userId) tokenMap.set(String(t.userId), t.tokenNo);
   }
 
-  const rows = leads.map((lead: any) => ({
-    _id: String(lead._id),
-    name: lead.fullName ?? "—",
-    inqNo: lead.inqNo ?? "—",
-    stage: resolveStage(lead),
-    status: lead.status ?? "pending",
-    experience: lead.experience?.type ?? null,
-    token: tokenMap.get(String(lead.createdBy.id)) ?? null,
-    lastActivity: lead.updatedAt,
-    branchId: lead.preferences?.branchId ?? null,
-    visitType: lead.preferences?.visitType ?? null,
-    contact: lead.contact,
-  }));
+  const rows = leads.map((lead: any) => {
+   
+    const creatorId = lead.createdBy?.id || lead.createdBy?._id || lead.createdBy;
+
+    return {
+      _id: String(lead._id),
+      name: lead.fullName ?? "—",
+      inqNo: lead.inqNo ?? "—",
+      stage: resolveStage(lead),
+      status: lead.status ?? "pending",
+      experience: lead.experience?.type ?? null,
+      
+     
+      token: creatorId ? (tokenMap.get(String(creatorId)) ?? null) : null,
+      
+      lastActivity: lead.updatedAt,
+      branchId: lead.preferences?.branchId ?? null,
+      visitType: lead.preferences?.visitType ?? null,
+      contact: lead.contact,
+      consultantId: lead.preferences?.consultantId ?? null,
+    };
+  });
 
   return {
     data: rows,
