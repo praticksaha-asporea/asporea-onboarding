@@ -9,6 +9,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+import Link from "next/link";
 
 interface SessionSchedulerProps {
   visitMethod: "on" | "off";
@@ -121,9 +122,10 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
         <Box className="mt-8 p-4 rounded-[10px] border-l-4 border-l-[#1976d2] bg-[var(--variant-outlinedBg)]">
           <Typography variant="body2">
             Please ensure you have reviewed the assessment materials before your
-            session. Ensure you are ready to receive a call at your scheduled
-            time. Your TAC will contact you via your preferred communication
-            method.
+            session. Ensure you are ready to attend at your scheduled
+            time. Consultant will contact you via your <Link href="/profile" className="underline">
+              preferred communication method
+            </Link>.
           </Typography>
         </Box>
       </CardContent>

@@ -19,10 +19,10 @@ export const AssessmentDialog: React.FC<AssessmentDialogProps> = ({ isOpen, onCl
         <Typography variant="h4">Assessment</Typography>
         <Box className="mb-8">
           <Typography variant="body1" className="mt-2 mb-4 px-8">
-            You are assigned to a Talent Acquisition <br /> Consultant (TAC). <br /> Be ready for e-Assessment with Original Documents
+            Keep your original documents ready for the Assessment. Your qualifications, experience, and supporting documents will be verified to assess your eligibility for the selected position.
           </Typography>
           <Button onClick={onProceed} className="bg-[var(--mui-palette-primary-main)] hover:bg-[--mui-palette-primary-main] text-white rounded-full text-[16px] normal-case px-6 py-2">
-            Request e-Assessment
+            Request Assessment
           </Button>
         </Box>
       </DialogContent>

@@ -54,7 +54,7 @@ export const getTacCandidatesAction = async (params: {
 
 export const getTacCandidateDetailAction = async (id: string) => {
   const res = await axiosClient.get(`/tac/candidate/${id}`);
-  console.log("Fetched candidate detail:", res.data);
+  // console.log("Fetched candidate detail:", res.data);
   return res.data.data as {
     lead: any;
     branchToken: any;

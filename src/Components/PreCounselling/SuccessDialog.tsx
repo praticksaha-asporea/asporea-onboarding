@@ -29,29 +29,26 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
         <Typography variant="h4">Request Submitted</Typography>
         <Typography
           variant="body1"
-          className="text-[--mui-palette-error-light] mt-5 leading-[1.9] text-center"
+          className="mt-5 leading-[1.9] text-center"
         >
-          Please be ready for your pre-counselling held on mentioned date and
-          time. A Talent Acquisition Consultant(TAC) will connect with you.
+          Pre-Counselling scheduled successfully.
         </Typography>
         <Typography
           variant="body1"
           className="text-[--mui-palette-error-light] mt-5 text-center"
         >
-          Please check your communication preference.
-        </Typography>
-        <Typography variant="body1" className="mt-5 text-center">
-          Meanwhile you can start uploading necessary documents
+          Please be available on the selected date and time. A Talent Acquisition Consultant (TAC) will contact you through your preferred communication channel.
         </Typography>
         <Box className="flex gap-4 justify-center w-full mt-5">
           <Button
             variant="contained"
             disableRipple
             disableElevation
-            href={`/document-upload?leadId=${leadId}`}
+            // href={`/document-upload?leadId=${leadId}`}
+            href={`/profile`}
             className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-[var(--mui-palette-primary-contrastText)] hover:text-white shadow-md"
           >
-            Go to Documents
+            Go to Profile
           </Button>
         </Box>
       </DialogContent>

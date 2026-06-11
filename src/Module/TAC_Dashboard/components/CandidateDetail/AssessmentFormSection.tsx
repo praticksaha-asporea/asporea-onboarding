@@ -8,7 +8,7 @@ import toast from "react-hot-toast";
 
 interface AssessmentFormSectionProps {
   candidate: any;
-  assessAssign: any;  
+  assessAssign: any;
   isFoe: boolean;
   branchTitle: string;
   setCurrentView: (view: "dashboard" | "detail" | "assessment") => void;
@@ -21,28 +21,28 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   branchTitle,
   setCurrentView,
 }) => {
-  
+
   const docs = candidate?.documents || {};
   const exp = candidate?.experience || {};
-//   const tech = candidate?.technical || {};
+  //   const tech = candidate?.technical || {};
 
- 
- const uploadedDocsList = Array.isArray(docs?.uploadedDocs) ? docs.uploadedDocs : [];
-  const dynamicDocChips = uploadedDocsList.length > 0 
+
+  const uploadedDocsList = Array.isArray(docs?.uploadedDocs) ? docs.uploadedDocs : [];
+  const dynamicDocChips = uploadedDocsList.length > 0
     ? Array.from(new Set(uploadedDocsList.map((d: any) => d.section)))
     : [];
 
- 
+
   const [status, setStatus] = useState(assessAssign?.status || "not");
   const [visitMethod, setVisitMethod] = useState(assessAssign?.schedule?.method || "off");
-  
+
   const [docStatus, setDocStatus] = useState(docs.status || "na");
   const [expStatus, setExpStatus] = useState(exp.type ? "selected" : "not");
   const [expType, setExpType] = useState(exp.type || "");
-//   const [techStatus, setTechStatus] = useState(tech.status || "na");
-//   const [classifyExp, setClassifyExp] = useState(tech.classify || "");
+  //   const [techStatus, setTechStatus] = useState(tech.status || "na");
+  //   const [classifyExp, setClassifyExp] = useState(tech.classify || "");
 
-   
+
   useEffect(() => {
     setStatus(assessAssign?.status || "not");
     setVisitMethod(assessAssign?.schedule?.method || "off");
@@ -54,12 +54,12 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   }, [assessAssign, candidate]);
 
   const handleSaveAll = () => {
-   
+
     const payload = {
       assessment: { status, method: visitMethod },
       documents: { status: docStatus },
       experience: { status: expStatus, type: expType },
-    //   technical: { status: techStatus, classify: classifyExp },
+      //   technical: { status: techStatus, classify: classifyExp },
     };
     console.log("Saving Assessment Data:", payload);
     toast.success("Assessment details saved successfully!");
@@ -68,7 +68,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   return (
     <Card className="p-6 rounded-xl  shadow-xl mt-4">
       <Typography className="text-[24px] text-center font-semibold mb-5 text-[var(--mui-palette-text-primary)]">
-        Assessment 
+        Assessment
       </Typography>
 
       <Grid container spacing={4}>
@@ -76,10 +76,12 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           <FormControl>
             <FormLabel className="font-semibold  text-[var(--mui-palette-text-primary)]">Assessment Status</FormLabel>
             <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
-              <FormControlLabel value="not" control={<Radio disabled={isFoe} />} label="Not Scheduled" />
-              <FormControlLabel value="assigned" control={<Radio disabled={isFoe} />} label="Assigned" />
-              <FormControlLabel value="progress" control={<Radio disabled={isFoe} />} label="In Progress" />
-              <FormControlLabel value="done" control={<Radio disabled={isFoe} />} label="Finished" />
+              <FormControlLabel value="assigned" control={<Radio />} label="Scheduled" />
+              {assessAssign?.schedule?.method === "on" && <FormControlLabel value="contacted" control={<Radio readOnly />} label="Contacted" disabled />}
+              {assessAssign?.schedule?.method === "off" && <FormControlLabel value="queued" control={<Radio />} label="Queued" />}
+              <FormControlLabel value="completed" control={<Radio />} label="Completed" disabled={assessAssign?.status === "rejected"} />
+              <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded / Unattened" disabled />
+              <FormControlLabel value="rejected" control={<Radio />} label="Rejected" disabled={assessAssign?.status === "completed"} />
             </RadioGroup>
           </FormControl>
         </Grid>
@@ -88,8 +90,8 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           <FormControl>
             <FormLabel className="font-semibold text-[var(--mui-palette-text-primary)]">Visit Option</FormLabel>
             <RadioGroup row value={visitMethod} onChange={(e) => setVisitMethod(e.target.value)}>
-              <FormControlLabel value="off" control={<Radio disabled={isFoe} />} label="In-Office" />
-              <FormControlLabel value="on" control={<Radio disabled={isFoe} />} label="Remote" />
+              <FormControlLabel value="off" control={<Radio />} label="In-Office" />
+              <FormControlLabel value="on" control={<Radio />} label="Remote" />
             </RadioGroup>
           </FormControl>
         </Grid>
@@ -102,29 +104,27 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           <TextField fullWidth label="Token No" disabled value={candidate.token || "—"} size="small" />
         </Grid>
 
-        {!isFoe && (
-          <Grid size={{ xs: 12 }}>
-            <Box className="flex justify-center md:justify-end gap-3 mt-2">
-              <Button variant="contained" disabled={status === "done"} className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case">
-                Call for Assessment
-              </Button>
-              <Button variant="contained" disabled={status === "done"} className=" hover:!bg-blue-600 !rounded-lg !normal-case">
-                Queue for Assessment
-              </Button>
-            </Box>
-          </Grid>
-        )}
+        <Grid size={{ xs: 12 }}>
+          <Box className="flex justify-center md:justify-end gap-3 mt-2">
+            <Button variant="contained" disabled={status === "done"} className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case">
+              Call for Assessment
+            </Button>
+            <Button variant="contained" disabled={status === "done"} className=" hover:!bg-blue-600 !rounded-lg !normal-case">
+              Queue for Assessment
+            </Button>
+          </Box>
+        </Grid>
       </Grid>
 
       {/* --- Documents Section --- */}
       <Box className=" shadow-2xl  rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)] ">
         <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Documents</Typography>
         <RadioGroup row value={docStatus} onChange={(e) => setDocStatus(e.target.value)}>
-          <FormControlLabel value="uploaded" control={<Radio disabled={isFoe} />} label="Uploaded" />
-          <FormControlLabel value="verified" control={<Radio disabled={isFoe} />} label="Verified" />
-          <FormControlLabel value="rejected" control={<Radio disabled={isFoe} />} label="Rejected" />
+          <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
+          <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+          <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
         </RadioGroup>
-       <Box className="flex flex-wrap gap-2 mt-4">
+        <Box className="flex flex-wrap gap-2 mt-4">
           {dynamicDocChips.length > 0 ? (
             dynamicDocChips.map((item: any) => (
               <Chip key={item} label={item} color="primary" variant="outlined" size="small" className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]" />
@@ -139,13 +139,13 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
         <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Experience</Typography>
         <RadioGroup row value={expStatus} onChange={(e) => setExpStatus(e.target.value)}>
-          <FormControlLabel value="not" control={<Radio disabled={isFoe} />} label="Not Selected" />
-          <FormControlLabel value="selected" control={<Radio disabled={isFoe} />} label="Selected" />
-          <FormControlLabel value="verified" control={<Radio disabled={isFoe} />} label="Verified" />
+          <FormControlLabel value="not" control={<Radio />} label="Not Selected" />
+          <FormControlLabel value="selected" control={<Radio />} label="Selected" />
+          <FormControlLabel value="verified" control={<Radio />} label="Verified" />
         </RadioGroup>
         <FormControl fullWidth className="mt-4 md:w-1/2" size="small">
           <InputLabel>Experience Type</InputLabel>
-          <Select value={expType} label="Experience Type" onChange={(e) => setExpType(e.target.value)} disabled={isFoe}>
+          <Select value={expType} label="Experience Type" onChange={(e) => setExpType(e.target.value)}>
             <MenuItem value="fresher">Fresher</MenuItem>
             <MenuItem value="domestic">Domestic</MenuItem>
             <MenuItem value="abroad">Abroad</MenuItem>
@@ -156,8 +156,8 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
       {/* --- Assessment Start Button --- */}
       {/* <Box className="flex justify-end gap-3 mt-6 mb-2">
-        <Button variant="contained" disabled={isFoe} className="!rounded-lg !normal-case font-bold">Refer Technical</Button>
-        <Button variant="contained" disabled={isFoe} onClick={() => setCurrentView("assessment")} className=" !rounded-lg !normal-case font-bold">
+        <Button variant="contained" className="!rounded-lg !normal-case font-bold">Refer Technical</Button>
+        <Button variant="contained" onClick={() => setCurrentView("assessment")} className=" !rounded-lg !normal-case font-bold">
           Start
         </Button>
       </Box> */}
@@ -183,9 +183,9 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       {/* --- Common Save Button --- */}
       {!isFoe && (
         <Box className="flex justify-end mt-6">
-          <Button 
-            variant="contained" 
-            onClick={handleSaveAll} 
+          <Button
+            variant="contained"
+            onClick={handleSaveAll}
             className="  !text-white !rounded-xl !px-10 !py-2.5 !normal-case font-bold shadow-md"
           >
             Save All Details

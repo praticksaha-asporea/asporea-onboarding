@@ -57,7 +57,7 @@ const AssessmentContent = () => {
             {isBookingMode && (
               <>
                 <Typography variant="h4">
-                  Confirm Your E-Assessment Readiness
+                  Confirm Your Assessment Readiness
                 </Typography>
                 <Typography variant="subtitle1" className="pb-5">
                   Please review the details below and confirm your availability

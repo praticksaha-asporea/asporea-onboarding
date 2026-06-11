@@ -96,7 +96,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             )}
 
             {/* --- Assessment Form Section (Tab 3) --- */}
-            {!!Object.keys(abp).length && inqAssign?.status === "completed" && (
+            {!!Object.keys(abp).length && inqAssign?.status === "completed" && assessAssign && (
               <AssessmentFormSection
                 candidate={c}
                 assessAssign={assessAssign}
