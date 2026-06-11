@@ -10,10 +10,11 @@ interface ProgressSidebarProps {
   tacList: any[];
   escalateTo: string;
   setEscalateTo: (val: string) => void;
+  currentUser: any;
 }
 
 const ProgressSidebar: React.FC<ProgressSidebarProps> = ({
-  candidate: c, isFoe, branchId, consultantId, tacList, escalateTo, setEscalateTo
+  candidate: c, isFoe, branchId, consultantId, tacList, escalateTo, setEscalateTo,currentUser
 }) => {
   return (
     <Card className="p-5 sticky top-6 rounded-xl  shadow-2xl">
@@ -46,7 +47,7 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({
               Branch: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{branchId.title ?? "—"}</span>
             </Typography>
             <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
-              Consultant: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}</span>
+              Consultant: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{consultantId?._id === currentUser?.id ? "You" : consultantId.firstName ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim() : "—"}</span>
             </Typography>
             <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
               Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{CamelCase(c.status ?? "")}</span>

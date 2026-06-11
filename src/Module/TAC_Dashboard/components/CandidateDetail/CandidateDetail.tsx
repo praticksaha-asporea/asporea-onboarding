@@ -117,6 +117,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             tacList={tacList}
             escalateTo={escalateTo}
             setEscalateTo={setEscalateTo}
+            currentUser={currentUser}
           />
         </Grid>
       </Grid>
