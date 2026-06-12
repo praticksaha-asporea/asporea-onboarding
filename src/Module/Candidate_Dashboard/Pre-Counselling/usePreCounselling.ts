@@ -16,12 +16,14 @@ import {
   NotificationPreferences,
 } from "@/Types/Frontend_Payload/precounselling.types";
 import { checkBranchView } from "@/Services/APIs/PreCounselling/preCounselling.action";
+import {getJourneyTimelineAction} from "@/Services/APIs/Assessment/assessment.actions";
 
 
 export const usePreCounselling = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useDispatch();
+
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -54,6 +56,8 @@ export const usePreCounselling = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [isReduxReady, setIsReduxReady] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [isValidLead, setIsValidLead] = useState(true);
+  const [isCompleted, setIsCompleted] = useState(false);
 
   const [checklist, setChecklist] = useState<ChecklistState>({
     materials: true,
@@ -80,19 +84,52 @@ export const usePreCounselling = () => {
     }
   }, [isReduxReady, leadId, router]);
 
-  useEffect(() => {
+ useEffect(() => {
     const checkStatus = async () => {
       if (!leadId) return;
       setCheckingStatus(true);
-      const res = await checkBookingStatusAction(leadId);
-      if (res?.success && res.data) {
-        setExistingBooking(res.data);
-        if (res.data.schedule?.date) {
-          setDate(new Date(res.data.schedule.date).toISOString().split("T")[0]);
+      
+      try {
+        
+        try {
+          const timelineRes = await getJourneyTimelineAction(leadId);
+          if (timelineRes?.success === false && timelineRes?.message?.toLowerCase().includes("not found")) {
+            setIsValidLead(false);
+            setCheckingStatus(false);
+            return;  
+          }
+        } catch (timeErr: any) {
+          if (timeErr?.response?.status === 404 || timeErr?.response?.data?.message?.toLowerCase().includes("not found")) {
+            setIsValidLead(false);
+            setCheckingStatus(false);
+            return;  
+          }
         }
+
+         
+        const res = await checkBookingStatusAction(leadId);
+        if (res?.success && res.data) {
+          setExistingBooking(res.data);
+          
+          if (res.data.status?.toLowerCase() === "completed") {
+            setIsCompleted(true);
+          }
+
+          if (res.data.schedule?.date) {
+            setDate(new Date(res.data.schedule.date).toISOString().split("T")[0]);
+          }
+        } else if (res?.message?.toLowerCase().includes("not found")) {
+          setIsValidLead(false);
+        }
+      } catch (err: any) {
+        if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
+          setIsValidLead(false);
+        }
+      } finally {
+        setCheckingStatus(false);
       }
-      setCheckingStatus(false);
     };
+    
     checkStatus();
   }, [leadId]);
 
@@ -225,6 +262,8 @@ export const usePreCounselling = () => {
     handleSavePreferences,
     handleConfirm,
     isChecklistComplete,
-    reduxUser
+    reduxUser,
+    isValidLead,
+    isCompleted
   };
 };
