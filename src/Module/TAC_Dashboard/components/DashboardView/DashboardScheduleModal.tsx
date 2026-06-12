@@ -86,11 +86,11 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
           </Box>
         )}
       </DialogContent>
-      <DialogActions className="px-6 pb-4">
-        <Button onClick={() => setModalOpen(false)} className="text-white bg-[var(--mui-palette-primary-main)] normal-case">Cancel</Button>
+      <DialogActions className="px-5">
+        <Button onClick={() => setModalOpen(false)} className="text-white mt-8 bg-[var(--mui-palette-primary-main)] normal-case">Cancel</Button>
         <Button
           variant="contained" disabled={!selectedSlot || !selectedTac || bookingLoading}
-          onClick={handleBookSlot} className="bg-[var(--mui-palette-primary-main)] rounded-lg px-6 normal-case shadow-md"
+          onClick={handleBookSlot} className="bg-[var(--mui-palette-primary-main)] rounded-lg px-6 mt-8 normal-case shadow-md"
         >
           {bookingLoading ? <CircularProgress size={20} color="inherit" /> : "Confirm & Book"}
         </Button>

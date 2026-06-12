@@ -35,6 +35,7 @@ export const useDocumentUpload = () => {
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
   const [isPreLocked, setIsPreLocked] = useState(false);
+  const [isValidLead, setIsValidLead] = useState(true);
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReduxReady(true), 800);
@@ -52,7 +53,10 @@ export const useDocumentUpload = () => {
       setCheckingStatus(true);
       try {
         const timelineRes = await getJourneyTimelineAction(leadId);
-        console.log("Journey Timeline Data:", timelineRes);
+       if (timelineRes?.success === false && timelineRes?.message?.toLowerCase().includes("not found")) {
+        setIsValidLead(false);
+        return;
+      }
         if (timelineRes?.success && timelineRes.data) {
           const currentActiveStep = timelineRes.data.activeStep;
           const preCounsellingStatus = timelineRes.data?.preCounselling?.status;
@@ -76,7 +80,10 @@ export const useDocumentUpload = () => {
             setIsAlreadySubmitted(true);
           }
         }
-      } catch (err) {
+      } catch (err:any) {
+       if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
+        setIsValidLead(false);
+      }
         console.error("Error pulling timeline or status", err);
       } finally {
         setCheckingStatus(false);
@@ -178,6 +185,6 @@ export const useDocumentUpload = () => {
   return {
     router, leadId, activeStep, positions, selectedPosition, setSelectedPosition,
     loadingPositions, loadingDocs, hasDocuments, groupedDocs, isSubmitting,
-    isAlreadySubmitted, checkingStatus, isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady
+    isAlreadySubmitted, checkingStatus, isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady, isValidLead
   };
 };

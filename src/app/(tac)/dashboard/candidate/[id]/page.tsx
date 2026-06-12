@@ -63,6 +63,7 @@ export default function CandidateDetailPage() {
     token: data.branchToken?.tokenNo ?? null,
     lastActivity: data.lead.updatedAt,
     assignmentByPhase: data.assignmentByPhase ?? {},
+    notificationPreference: data.lead.notificationPreference ?? {},
   };
 
   

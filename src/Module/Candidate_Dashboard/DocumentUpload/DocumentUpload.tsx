@@ -18,7 +18,7 @@ const DocumentUploadPage = () => {
   const {
     router, leadId, activeStep, positions, selectedPosition, setSelectedPosition,
     loadingPositions, loadingDocs, hasDocuments, groupedDocs, isSubmitting,
-    isAlreadySubmitted, checkingStatus, isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady
+    isAlreadySubmitted, checkingStatus, isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady, isValidLead
   } = useDocumentUpload();
 
   if (!isReduxReady || checkingStatus) {
@@ -29,6 +29,22 @@ const DocumentUploadPage = () => {
       </Box>
     );
   }
+
+  if (!isValidLead) {
+  return (
+    <Box className="w-full flex justify-center p-4 sm:p-10 mt-10">
+      <Card className="p-10 text-center rounded-[24px] shadow-sm flex flex-col items-center justify-center min-h-[300px] w-full max-w-[600px]">
+        <i className="ri-error-warning-fill text-6xl text-[var(--mui-palette-error-main)] mb-4"></i>
+        <Typography variant="h5" className="text-[var(--mui-palette-text-primary)] font-semibold mb-2">
+          Inquiry Not Found
+        </Typography>
+        <Typography variant="body2" className="text-[var(--mui-palette-text-primary)]">
+          The inquiry you are trying to access has been deleted or does not exist. Please generate a new inquiry.
+        </Typography>
+      </Card>
+    </Box>
+  );
+}
 
   if (!leadId || activeStep < 2) return null;
 

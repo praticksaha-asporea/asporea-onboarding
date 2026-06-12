@@ -41,13 +41,52 @@ const PreCounsellingContent = () => {
     handleSavePreferences,
     handleConfirm,
     isChecklistComplete,
-    reduxUser
+    reduxUser,
+    isValidLead,
+    isCompleted
   } = usePreCounselling();
 
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12, md: 8 }}>
-        {!isReduxReady ? (
+        
+       
+        {!isValidLead ? (
+          <Card className="p-10 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)] text-center bg-var(--mui-overlays-1) flex flex-col items-center justify-center min-h-[400px]">
+            <i className="ri-error-warning-fill text-6xl text-red-400 mb-4"></i>
+            <Typography variant="h5" className="font-semibold text-[var(--mui-palette-text-primary)] mb-2">
+              Application Not Found
+            </Typography>
+            <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] max-w-md">
+              The application or lead you are trying to access has been deleted or does not exist.
+            </Typography>
+          </Card>
+        ) : 
+
+        
+        isCompleted ? (
+          <Card className="p-10 rounded-[15px] shadow-2xl text-center   bg-[var(--mui-palette-primary)] flex flex-col items-center justify-center min-h-[400px]">
+            <Box className="w-20 h-20 bg-[var(--mui-palette-success-primary)] rounded-full flex items-center justify-center mb-6 mx-auto">
+              <i className="ri-checkbox-circle-fill text-5xl text-[var(--mui-palette-success-main)]"></i>
+            </Box>
+            <Typography variant="h4" className="font-bold text-[var(--mui-palette-primary)] mb-2">
+              Pre-Counselling Completed
+            </Typography>
+            <Typography variant="subtitle1" className="text-[var(--mui-palette-secondary)] max-w-md mx-auto">
+              Your pre-counselling session has been successfully completed. You can now proceed to upload your documents.
+            </Typography>
+            <Button 
+              variant="contained" 
+              href="/document-upload" 
+              className="mt-6 rounded-xl normal-case   shadow-none px-8 py-2.5"
+            >
+              Proceed to Documents
+            </Button>
+          </Card>
+        ) : 
+
+         
+        !isReduxReady ? (
           <Card className="p-10 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)] text-center bg-var(--mui-overlays-1) flex flex-col items-center justify-center min-h-[400px]">
             <CircularProgress size={40} />
             <Typography className="mt-4 text-[var(--mui-palette-text-secondary)] font-medium">
