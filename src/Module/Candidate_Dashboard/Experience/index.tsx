@@ -337,7 +337,7 @@
 //           }
 
          
-//           const docCompletedStatuses = ["doc_submitted", "exp_submitted", "assessment_submitted", "assessment_scheduled"];
+//           const docCompletedStatuses = ["doc_submitted", "exp_submitted", "assess_scheduled"];
 //           const isDocUploaded = res.data.documentStatus === "uploaded" || docCompletedStatuses.includes(currentStatus);
 
 //           if (!isDocUploaded) {
@@ -347,7 +347,7 @@
 //           }
 
       
-//           const submittedStages = ["exp_submitted", "assessment_submitted", "assessment_scheduled"];
+//           const submittedStages = ["exp_submitted", "assess_scheduled"];
 //           if (submittedStages.includes(currentStatus)) {
 //             setIsAlreadySubmitted(true);
 //             if (res.data.experienceType) {

@@ -70,7 +70,7 @@ export const useDocumentUpload = () => {
         }
         const res = await checkDocumentStatusAction(leadId);
         if (res?.success && res.data) {
-          const submittedStages = ["doc_submitted", "exp_submitted", "assessment_submitted", "assessment_scheduled"];
+          const submittedStages = ["doc_submitted", "exp_submitted", "assess_scheduled"];
           
           if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
             setIsAlreadySubmitted(true);

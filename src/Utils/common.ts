@@ -1,4 +1,5 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import dayjs from "dayjs";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export const respectiveDashboard = (
@@ -44,3 +45,12 @@ export const currentFy = () => {
     : `${now.getFullYear() - 1}-${String(now.getFullYear()).slice(-2)}`;
 
 }
+
+export const isWithinSchedule = (assign: any): boolean => {
+  if (!assign?.schedule?.date || !assign?.schedule?.from) return false;
+  const base = dayjs(assign.schedule.date).format("YYYY-MM-DD");
+  const start = dayjs(`${base} ${assign.schedule.from}`, "YYYY-MM-DD hh:mm A");
+  const end = assign.schedule.to ? dayjs(`${base} ${assign.schedule.to}`, "YYYY-MM-DD hh:mm A") : start.add(30, "minute");
+  const now = dayjs();
+  return now.isAfter(start) && now.isBefore(end);
+};

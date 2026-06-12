@@ -63,7 +63,7 @@ export default async function handler(
         "pre_scheduled",
         "doc_submitted",
         "exp_submitted",
-        "assessment_submitted",
+        "assess_scheduled",
       ].includes(lead.status)
     ) {
       activeStep = 2;
@@ -77,7 +77,7 @@ export default async function handler(
       activeStep = 4;
     }
 
-    if (lead.status === "assessment_submitted" || isAssessScheduled) {
+    if (lead.status === "assess_scheduled" || isAssessScheduled) {
       activeStep = 5;
     }
 

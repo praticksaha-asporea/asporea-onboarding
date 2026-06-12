@@ -134,7 +134,7 @@ export const getTacKpis = async (userId: string, role: string) => {
   const [openCases, pendingCounselling, pendingAssessment] = await Promise.all([
     Lead.countDocuments({ ...base }),
     Lead.countDocuments({ ...base, status: "inquiry_submitted" }),
-    Lead.countDocuments({ ...base, status: "assessment_submitted" }),
+    Lead.countDocuments({ ...base, status: "assess_scheduled" }),
   ]);
 
   return { openCases, pendingCounselling, pendingAssessment };

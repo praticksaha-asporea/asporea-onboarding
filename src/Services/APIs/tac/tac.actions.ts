@@ -66,14 +66,20 @@ export const getTacCandidateDetailAction = async (id: string) => {
 type UpdateAssignmentPayload =
   | FormData
   | {
-      assignmentId: string;
-      status?: string;
-      additionalDetails?: string;
-      specificNotes?: string;
-      advice?: string;
-      attended?: boolean;
-    };
+    assignmentId: string;
+    status?: string;
+    additionalDetails?: string;
+    specificNotes?: string;
+    advice?: string;
+    attended?: boolean;
+  };
 
+type UpdateAssignmentAssessPayload =
+  | FormData
+  | {
+    assignmentId: string;
+    status?: string;
+  };
 export const updateAssignmentAction = async (
   payload: UpdateAssignmentPayload
 ) => {
@@ -82,10 +88,26 @@ export const updateAssignmentAction = async (
     payload,
     payload instanceof FormData
       ? {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+      : undefined
+  );
+};
+
+export const updateAssignmentAssessAction = async (
+  payload: UpdateAssignmentAssessPayload
+) => {
+  return axiosClient.patch(
+    "/tac/assignment/update-assessment",
+    payload,
+    payload instanceof FormData
+      ? {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
       : undefined
   );
 };

@@ -327,7 +327,7 @@ export const saveAssessmentBooking = async (body: any) => {
 
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
   await LeadModel.findByIdAndUpdate(leadId, {
-    status: "assessment_submitted"
+    status: "assess_scheduled"
   });
 
   return newAssessmentAssignment;

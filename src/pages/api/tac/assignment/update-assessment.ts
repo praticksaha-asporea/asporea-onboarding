@@ -19,7 +19,7 @@ const updateAssignmentSchema = Joi.object({
     .length(24)
     .required(),
 
-  preStatus: Joi.string()
+  status: Joi.string()
     .valid(
       "assigned",
       "contacted",
@@ -29,22 +29,7 @@ const updateAssignmentSchema = Joi.object({
       "rejected",
       "not_responded"
     )
-    .optional(),
-
-  additionalDetails: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(),
-
-  specificNotes: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(),
-
-  advice: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(),
+    .optional()
 })
   .options({
     abortEarly: false,
@@ -74,7 +59,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const { assignmentId, status, additionalDetails, specificNotes, advice } = value;
+    const { assignmentId, status } = value;
 
     if (!mongoose.Types.ObjectId.isValid(assignmentId))
       throw new ApiError("Invalid assignment ID", 400);
@@ -85,69 +70,36 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       assignedTo: new mongoose.Types.ObjectId(authUser.id),
     });
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
-    if (!assignment?.token?.number && assignment?.schedule?.method=="off") throw new ApiError("Token not generated yet", 404);
-    // need to work on file upload
-    type UploadResult = {
-      uploadId: string;
-      path: string;
-    };
+    if (!assignment?.token?.number && assignment?.schedule?.method=="off") throw new ApiError("Token not generated yet", 404)
 
-    let result: UploadResult | null = null;
 
-    if (files?.resume) {
-
-      result = await uploadFileService({
-        file: files?.resume,
-        userId: authUser?.id,
-      });
-    }
 
     // need to work here for update fields
     const update: Record<string, any> = {
-      ...(status !== undefined && { status }),
-
-      pre: {
-        ...(additionalDetails !== undefined && {
-          additionalDetails,
-        }),
-
-        ...(specificNotes !== undefined && {
-          specificNotes,
-        }),
-
-        ...(advice !== undefined && {
-          advice,
-        }),
-
-        ...(files && result?.uploadId !== undefined && {
-          initialCV: result.uploadId,
-        }),
-      },
+      ...(status !== undefined && { status })
     };
 
-      if (status=== "completed" || status === "rejected") {
-        update['attended']= true;
-        // update['status']= status;
-      }
-      else if (status === "not_responded") {
-        update['attended']= false;
-        // update['status']= status;
-      }
-      
+    if (status === "completed" || status === "rejected") {
+      update['attended'] = true;
+    }
+    else if (status === "not_responded") {
+      update['attended'] = false;
+    }
+
     const updated = await Assignment.findByIdAndUpdate(
       assignmentId,
       { $set: update },
       { returnDocument: "after", runValidators: true },
     ).lean();
-      // console.log(update,updated,assignmentId,18444);
+    // console.log(update,updated,assignmentId,18444);
 
     const updatableStatus: Record<string, string> = {
-      assigned: "pre_scheduled",
-      contacted: "pre_contacted",
-      queued: "pre_queued",
-      not_responded: "pre_not_responded",
-      completed: "pre_completed",
-      rejected: "pre_rejected",
+      assigned: "assess_scheduled",
+      contacted: "assess_contacted",
+      queued: "assess_queued",
+      not_responded: "assess_not_responded",
+      completed: "assess_completed",
+      rejected: "assess_rejected",
     };
     if (updatableStatus) {
 
@@ -156,20 +108,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         { $set: { status: updatableStatus?.[status] } },
         { returnDocument: "after", runValidators: true }
       );
-      if (updatableStatus?.[status] === "pre_queued") {
+      if (updatableStatus?.[status] === "assess_queued") {
 
         // only work when offline - later
         await BranchTokenModel.findOneAndUpdate(
-          { tokenNo:updated?.token?.number },
+          { tokenNo: updated?.token?.number },
           { $set: { status: 'queued' } },
           { returnDocument: 'after', upsert: true, runValidators: true },
         ).lean();
 
       }
-      else if (updatableStatus?.[status] === "pre_completed" || updatableStatus?.[status] === "pre_rejected") {
+      else if (updatableStatus?.[status] === "assess_completed" || updatableStatus?.[status] === "assess_rejected") {
         // only work when offline - later
         await BranchTokenModel.findOneAndUpdate(
-          { tokenNo:updated?.token?.number },
+          { tokenNo: updated?.token?.number },
           { $set: { status: 'finished' } },
           { returnDocument: 'after', upsert: true, runValidators: true },
         ).lean();

@@ -16,7 +16,7 @@ const getStatusBadge = (status: string) => {
     case "pre_scheduled": return "bg-indigo-100 text-indigo-700";
     case "doc_submitted": return "bg-yellow-100 text-yellow-700";
     case "exp_submitted": return "bg-orange-100 text-orange-700";
-    case "assessment_submitted": return "bg-green-100 text-green-700";
+    case "assess_scheduled": return "bg-green-100 text-green-700";
     case "pre_not_responded": return "bg-red-100 text-red-700";
     default: return "bg-[var(--mui-palette-primary-light)] text-[var(--mui-palette-primary-dark)]";
   }
