@@ -13,7 +13,7 @@ dayjs.extend(relativeTime);
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "inquiry_submitted": return "bg-blue-100 text-blue-600";
-    case "pre_scheduled": return "bg-indigo-100 text-indigo-700";
+    case "pre_scheduled": return "bg-blue-500 text-white";
     case "doc_submitted": return "bg-yellow-100 text-yellow-700";
     case "exp_submitted": return "bg-orange-100 text-orange-700";
     case "assess_scheduled": return "bg-green-100 text-green-700";
