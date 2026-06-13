@@ -81,9 +81,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, lg: 9 }}>
           <Stack spacing={3}>
-            {/* <InquiryDetailsForm candidate={c} /> */}
+            <InquiryDetailsForm candidate={c} />
 
-            {/* {!!Object.keys(abp).length && (
+            {!!Object.keys(abp).length && (
               <PreCounsellingForm
                 candidate={c}
                 inqAssign={inqAssign}
@@ -93,7 +93,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 preferences={preferences}
                 candidatePhone={c.contact?.phone ?? ""}
               />
-            )} */}
+            )}
 
             {/* --- Assessment Form Section (Tab 3) --- */}
             {!!Object.keys(abp).length && inqAssign?.status === "completed" && assessAssign && (

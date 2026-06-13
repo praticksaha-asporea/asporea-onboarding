@@ -84,7 +84,7 @@ export const ExperienceUploadCard: React.FC<UploadCardProps> = ({ title, subtitl
                 {files.map((file, idx) => (
                   <Box key={idx} className="flex items-center gap-2 justify-center w-full">
                     <Typography className="text-xs font-extrabold max-w-[150px] whitespace-nowrap overflow-hidden text-ellipsis">{file.name}</Typography>
-                    <button onClick={(e) => handleReset(e, idx)} className="text-red-500 font-bold text-xs">✕</button>
+                    {/* <button onClick={(e) => handleReset(e, idx)} className="text-red-500 font-bold text-xs">✕</button> */}
                   </Box>
                 ))}
               </Box>

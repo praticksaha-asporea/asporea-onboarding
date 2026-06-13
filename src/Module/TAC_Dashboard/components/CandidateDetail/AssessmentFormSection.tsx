@@ -32,6 +32,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   const exp = candidate?.experience || {};
   //   const tech = candidate?.technical || {};
 
+  // console.log(docs, 5844);
 
   const uploadedDocsList = Array.isArray(docs?.uploadedDocs) ? docs.uploadedDocs : [];
   const dynamicDocChips = uploadedDocsList.length > 0
@@ -226,7 +227,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             <Box className="flex flex-wrap gap-2 mt-4">
               {dynamicDocChips.length > 0 ? (
                 dynamicDocChips.map((item: any) => (
-                  <Chip key={item} label={item} color="primary" variant="outlined" size="small" className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]" />
+                  <Chip key={item} label={CamelCase(item)} color="primary" variant="outlined" size="medium" className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]" />
                 ))
               ) : (
                 <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] italic mt-1">No documents uploaded yet</Typography>
