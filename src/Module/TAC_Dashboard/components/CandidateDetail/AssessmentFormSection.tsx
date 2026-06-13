@@ -5,6 +5,12 @@ import {
   Select, TextField, Typography,
 } from "@mui/material";
 import toast from "react-hot-toast";
+import { CamelCase, isWithinSchedule } from "@/Utils/common";
+import { useFormik } from "formik";
+import * as Yup from "yup";
+import { confirmToast } from "@/Utils/confirmToast";
+import dayjs from "dayjs";
+import { updateAssignmentAssessAction } from "@/Services/APIs/tac/tac.actions";
 
 interface AssessmentFormSectionProps {
   candidate: any;
@@ -26,6 +32,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   const exp = candidate?.experience || {};
   //   const tech = candidate?.technical || {};
 
+  // console.log(docs, 5844);
 
   const uploadedDocsList = Array.isArray(docs?.uploadedDocs) ? docs.uploadedDocs : [];
   const dynamicDocChips = uploadedDocsList.length > 0
@@ -39,9 +46,73 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   const [docStatus, setDocStatus] = useState(docs.status || "na");
   const [expStatus, setExpStatus] = useState(exp.type ? "selected" : "not");
   const [expType, setExpType] = useState(exp.type || "");
+  const [isPreLocked, setIsPreLocked] = useState(true);
+
   //   const [techStatus, setTechStatus] = useState(tech.status || "na");
   //   const [classifyExp, setClassifyExp] = useState(tech.classify || "");
 
+
+  const assessBasicForm = useFormik({
+    initialValues: {
+      status: assessAssign?.status ?? "na",
+    },
+    enableReinitialize: true,
+    validationSchema: Yup.object({
+      status: Yup.string().trim().required("Status is required"),
+    }),
+    onSubmit: async (values, { setSubmitting }) => {
+      if (!assessAssign?._id) { toast.error("No pre-counselling assignment found"); setSubmitting(false); return; }
+      if (values.status === "completed") {
+        const confirmed = await confirmToast(`Are you sure Pre-Counselling is Completed!`);
+        if (!confirmed) { setSubmitting(false); return; }
+      }
+      if (values.status === "rejected") {
+        const confirmed = await confirmToast(`Are you sure Candidate is Rejected!`);
+        if (!confirmed) { setSubmitting(false); return; }
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append("assignmentId", assessAssign._id);
+        formData.append("status", values.status);
+
+        const assessResult = await updateAssignmentAssessAction(formData);
+        if (assessResult?.data?.data?.status === "completed" || assessResult?.data?.data?.status === "rejected") {
+          setIsPreLocked(true);
+        }
+        toast.success("Status Updated and will be sent to Candidate via Email");
+      } catch (err: any) {
+        toast.error(err?.response?.data?.message ?? "Save failed");
+      } finally {
+        setSubmitting(false);
+      }
+    },
+  });
+  // console.log(candidate.token,7777);
+
+  const updateAssignmentStatus = async (status: string) => {
+    if (!assessAssign?._id) return;
+    const textStatus =
+      status === "contacted"
+        ? `Are you sure?\nYou contacted ${candidate.contact?.phone ?? ""}`
+        : status === "not_responded"
+          ? `You contacted ${candidate.contact?.phone ?? ""},\nbut the candidate did not respond?`
+          : "Are you sure you are available to talk with this candidate now?";
+    const confirmed = await confirmToast(textStatus);
+    if (!confirmed) return;
+    try {
+      const formData = new FormData();
+      formData.append("assignmentId", assessAssign._id);
+      formData.append("status", status);
+
+      await updateAssignmentAssessAction(formData);
+      toast.success(`Status updated to ${CamelCase(status)}`);
+      assessBasicForm.setValues({ ...assessBasicForm.values, status: status });
+      if (status === "queued") setIsPreLocked(false);
+    } catch (err: any) {
+      console.log(err?.response?.data?.message ?? "Update failed");
+    }
+  };
 
   useEffect(() => {
     setStatus(assessAssign?.status || "not");
@@ -51,6 +122,11 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     setExpType(exp.type || "");
     // setTechStatus(tech.status || "na");
     // setClassifyExp(tech.classify || "");
+    if (assessAssign?.status === "completed" || assessAssign?.status === "rejected") {
+      setIsPreLocked(true);
+    } else if (assessAssign?.status === "queued" && (isWithinSchedule(assessAssign) && assessAssign?.schedule?.from != "" && assessAssign?.schedule?.to != "")) {
+      setIsPreLocked(false);
+    }
   }, [assessAssign, candidate]);
 
   const handleSaveAll = () => {
@@ -75,12 +151,16 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         <Grid size={{ xs: 12 }}>
           <FormControl>
             <FormLabel className="font-semibold  text-[var(--mui-palette-text-primary)]">Assessment Status</FormLabel>
-            <RadioGroup row value={status} onChange={(e) => setStatus(e.target.value)}>
-              <FormControlLabel value="assigned" control={<Radio />} label="Scheduled" />
+            <RadioGroup row name="status" value={assessBasicForm.values.status} onChange={(e, value) => {
+              // setEnablePreSubmit(((preForm.isSubmitting || isWithinSchedule(inqAssign)) && (value === "completed" || value === "rejected") && (inqAssign?.status !== "completed" && inqAssign?.status !== "rejected")));
+              setIsPreLocked(!(assessBasicForm.isSubmitting || isWithinSchedule(assessAssign)) && (value === "completed" || value === "rejected" || value === "queued") && (assessAssign?.status !== "completed" && assessAssign?.status !== "rejected" && assessAssign?.status !== "queued"));
+              return assessBasicForm.handleChange(e);
+            }}>
+              <FormControlLabel value="assigned" control={<Radio />} label="Scheduled" disabled={assessBasicForm.values.status !== 'assigned'} />
               {assessAssign?.schedule?.method === "on" && <FormControlLabel value="contacted" control={<Radio readOnly />} label="Contacted" disabled />}
               {assessAssign?.schedule?.method === "off" && <FormControlLabel value="queued" control={<Radio />} label="Queued" />}
               <FormControlLabel value="completed" control={<Radio />} label="Completed" disabled={assessAssign?.status === "rejected"} />
-              <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded / Unattened" disabled />
+              <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded / Unattended" disabled />
               <FormControlLabel value="rejected" control={<Radio />} label="Rejected" disabled={assessAssign?.status === "completed"} />
             </RadioGroup>
           </FormControl>
@@ -89,79 +169,112 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         <Grid size={{ xs: 12, md: 6 }}>
           <FormControl>
             <FormLabel className="font-semibold text-[var(--mui-palette-text-primary)]">Visit Option</FormLabel>
-            <RadioGroup row value={visitMethod} onChange={(e) => setVisitMethod(e.target.value)}>
-              <FormControlLabel value="off" control={<Radio />} label="In-Office" />
-              <FormControlLabel value="on" control={<Radio />} label="Remote" />
+            <RadioGroup row value={assessAssign?.schedule?.method === "on" ? "remote" : "office"}>
+              <FormControlLabel value="office" control={<Radio />} label="In-Office" disabled={assessAssign?.schedule?.method === "on"} />
+              <FormControlLabel value="remote" control={<Radio />} label="Remote" disabled={assessAssign?.schedule?.method === "off"} />
             </RadioGroup>
           </FormControl>
         </Grid>
 
         <Grid size={{ xs: 12, md: 6 }}>
-          <TextField fullWidth label="Branch" disabled value={branchTitle} size="small" />
+          <TextField fullWidth label="Branch" disabled value={branchTitle} />
         </Grid>
-
+        {assessAssign?.schedule.method === "off" &&
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField fullWidth label="Token No" disabled value={candidate.token || "—"} />
+          </Grid>
+        }
+        <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Scheduled Date" disabled value={assessAssign?.schedule?.date ? dayjs(assessAssign.schedule.date).format("DD/MM/YYYY") : "—"} /></Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          <TextField fullWidth label="Token No" disabled value={candidate.token || "—"} size="small" />
+          <TextField fullWidth label="Scheduled Time" disabled value={assessAssign?.schedule?.from ? assessAssign.schedule.from + (assessAssign.schedule.to ? " – " + assessAssign.schedule.to : "") : "—"} />
         </Grid>
-
         <Grid size={{ xs: 12 }}>
           <Box className="flex justify-center md:justify-end gap-3 mt-2">
-            <Button variant="contained" disabled={status === "done"} className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case">
+            {/* <Button variant="contained" disabled={status === "done"} className="!bg-blue-300 hover:!bg-blue-400 !text-white !rounded-lg !normal-case">
               Call for Assessment
             </Button>
             <Button variant="contained" disabled={status === "done"} className=" hover:!bg-blue-600 !rounded-lg !normal-case">
               Queue for Assessment
-            </Button>
+            </Button> */}
+            {assessAssign && assessAssign.schedule?.method === "on" && (
+              <>
+                <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(assessAssign.status !== "assigned" && assessAssign.status !== "contacted") || !isWithinSchedule(assessAssign) || assessBasicForm.values.status === "completed" || assessBasicForm.values.status === "rejected"} onClick={() => updateAssignmentStatus("not_responded")}>Not Responded</Button>
+                <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(assessAssign.status !== "assigned" && assessAssign.status !== "contacted") || !isWithinSchedule(assessAssign) || assessBasicForm.values.status === "completed" || assessBasicForm.values.status === "rejected"} onClick={
+                  () => updateAssignmentStatus("contacted")
+                }>Call</Button>
+              </>
+            )}
+            {assessAssign && assessAssign.schedule?.method === "off" && (
+              <Button variant="contained" className="!bg-orange-400 hover:!bg-orange-500 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={!(assessAssign.status === "assigned" && isWithinSchedule(assessAssign)) || assessBasicForm.values.status === "queued" || assessBasicForm.values.status === "completed" || assessBasicForm.values.status === "rejected"} onClick={() => updateAssignmentStatus("queued")}>Queue</Button>
+            )}
+            {assessBasicForm?.values?.status == "queued" && (
+              <Button variant="contained" type="button" className="bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || assessBasicForm.values.status === "completed" || assessBasicForm.values.status === "rejected"} onClick={() => updateAssignmentStatus("not_responded")}>Absent</Button>
+            )}
           </Box>
         </Grid>
       </Grid>
 
-      {/* --- Documents Section --- */}
-      <Box className=" shadow-2xl  rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)] ">
-        <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Documents</Typography>
-        <RadioGroup row value={docStatus} onChange={(e) => setDocStatus(e.target.value)}>
-          <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
-          <FormControlLabel value="verified" control={<Radio />} label="Verified" />
-          <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
-        </RadioGroup>
-        <Box className="flex flex-wrap gap-2 mt-4">
-          {dynamicDocChips.length > 0 ? (
-            dynamicDocChips.map((item: any) => (
-              <Chip key={item} label={item} color="primary" variant="outlined" size="small" className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]" />
-            ))
-          ) : (
-            <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] italic mt-1">No documents uploaded yet</Typography>
-          )}
-        </Box>
-      </Box>
+      {assessBasicForm?.values?.status === "queued" || assessBasicForm?.values?.status === "completed" || assessBasicForm?.values?.status === "rejected" ? (
+        <>
+          {/* --- Documents Section --- */}
+          <Box className=" shadow-2xl  rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)] ">
+            <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Documents</Typography>
+            <RadioGroup row value={docStatus} onChange={(e) => setDocStatus(e.target.value)}>
+              <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
+              <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+              <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
+            </RadioGroup>
+            <Box className="flex flex-wrap gap-2 mt-4">
+              {dynamicDocChips.length > 0 ? (
+                dynamicDocChips.map((item: any) => (
+                  <Chip key={item} label={CamelCase(item)} color="primary" variant="outlined" size="medium" className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]" />
+                ))
+              ) : (
+                <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] italic mt-1">No documents uploaded yet</Typography>
+              )}
+            </Box>
+          </Box>
 
-      {/* --- Experience Section --- */}
-      <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
-        <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Experience</Typography>
-        <RadioGroup row value={expStatus} onChange={(e) => setExpStatus(e.target.value)}>
-          <FormControlLabel value="not" control={<Radio />} label="Not Selected" />
-          <FormControlLabel value="selected" control={<Radio />} label="Selected" />
-          <FormControlLabel value="verified" control={<Radio />} label="Verified" />
-        </RadioGroup>
-        <FormControl fullWidth className="mt-4 md:w-1/2" size="small">
-          <InputLabel>Experience Type</InputLabel>
-          <Select value={expType} label="Experience Type" onChange={(e) => setExpType(e.target.value)}>
-            <MenuItem value="fresher">Fresher</MenuItem>
-            <MenuItem value="domestic">Domestic</MenuItem>
-            <MenuItem value="abroad">Abroad</MenuItem>
-            <MenuItem value="free">Freelance</MenuItem>
-          </Select>
-        </FormControl>
-      </Box>
-
-      {/* --- Assessment Start Button --- */}
-      {/* <Box className="flex justify-end gap-3 mt-6 mb-2">
+          {/* --- Experience Section ---  */}
+          <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
+            <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Experience</Typography>
+            <RadioGroup row value={expStatus} onChange={(e) => setExpStatus(e.target.value)}>
+              <FormControlLabel value="selected" control={<Radio />} label="Selected" />
+              <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+            </RadioGroup>
+            <FormControl fullWidth className="mt-4 md:w-1/2">
+              <InputLabel>Experience Type</InputLabel>
+              <Select value={expType} label="Experience Type" onChange={(e) => setExpType(e.target.value)}>
+                <MenuItem value="fresher">Fresher</MenuItem>
+                <MenuItem value="domestic">Domestic</MenuItem>
+                <MenuItem value="abroad">Abroad</MenuItem>
+                <MenuItem value="free">Freelance</MenuItem>
+              </Select>
+            </FormControl>
+          </Box>
+          {/* --- Assessment Start Button --- */}
+          {/* <Box className="flex justify-end gap-3 mt-6 mb-2">
         <Button variant="contained" className="!rounded-lg !normal-case font-bold">Refer Technical</Button>
         <Button variant="contained" onClick={() => setCurrentView("assessment")} className=" !rounded-lg !normal-case font-bold">
           Start
         </Button>
       </Box> */}
 
+          {/* --- Common Save Button --- */}
+          {!isFoe && (
+            <Box className="flex justify-end mt-6">
+              <Button
+                variant="contained"
+                onClick={handleSaveAll}
+                className="  !text-white !rounded-xl !px-10 !py-2.5 !normal-case font-bold shadow-md"
+                disabled={isPreLocked}
+              >
+                Save
+              </Button>
+            </Box>
+          )}
+        </>
+      ) : ``}
       {/* --- Technical Round Section --- */}
       {/* <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-primary)]">
         <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Technical Round</Typography>
@@ -180,18 +293,6 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         </FormControl>
       </Box> */}
 
-      {/* --- Common Save Button --- */}
-      {!isFoe && (
-        <Box className="flex justify-end mt-6">
-          <Button
-            variant="contained"
-            onClick={handleSaveAll}
-            className="  !text-white !rounded-xl !px-10 !py-2.5 !normal-case font-bold shadow-md"
-          >
-            Save All Details
-          </Button>
-        </Box>
-      )}
     </Card>
   );
 };

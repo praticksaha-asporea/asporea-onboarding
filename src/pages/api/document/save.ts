@@ -20,12 +20,12 @@ export default async function handler(
     const token = getTokenFromHeader(req);
     const user = token ? await verifyToken(token) : null;
 
-    const { leadId, documents } = req.body; // documents = [{ typeId: "...", uploadId: "..." }, { typeId: "...", uploadId: "..." }]
+    const { leadId, documents,position } = req.body; // documents = [{ typeId: "...", uploadId: "..." }, { typeId: "...", uploadId: "..." }]
 
-    if (!leadId || !documents || !documents.length) {
+    if (!leadId || !documents || !documents.length || !position) {
       return ResponseHandler.sendError(
         res,
-        "LeadId and documents array are required",
+        "Lead and documents and applying position are required",
         400,
       );
     }
@@ -50,6 +50,7 @@ export default async function handler(
         "documents.status": "uploaded",
 
         "documents.submittedOn": new Date(),
+        "documents.position": position
       });
     }
 

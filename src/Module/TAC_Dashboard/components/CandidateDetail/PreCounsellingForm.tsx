@@ -7,7 +7,7 @@ import {
   Box, Button, Card, CircularProgress, FormControl, FormControlLabel,
   FormLabel, Grid, Radio, RadioGroup, Stack, TextField, Typography
 } from "@mui/material";
-import { CamelCase } from "@/Utils/common";
+import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 
@@ -34,14 +34,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
   const currentPreview = resumeFile ? URL.createObjectURL(resumeFile) : existingResume;
   const isPdf = resumeFile?.type === "application/pdf" || existingResume?.toLowerCase().includes(".pdf");
 
-  const isWithinSchedule = (assign: any): boolean => {
-    if (!assign?.schedule?.date || !assign?.schedule?.from) return false;
-    const base = dayjs(assign.schedule.date).format("YYYY-MM-DD");
-    const start = dayjs(`${base} ${assign.schedule.from}`, "YYYY-MM-DD hh:mm A");
-    const end = assign.schedule.to ? dayjs(`${base} ${assign.schedule.to}`, "YYYY-MM-DD hh:mm A") : start.add(30, "minute");
-    const now = dayjs();
-    return now.isAfter(start) && now.isBefore(end);
-  };
+
 
   useEffect(() => {
     if (inqAssign?.status === "completed" || inqAssign?.status === "rejected") {
@@ -68,6 +61,8 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
       preForm.setFieldValue("resumeFile", file);
     }
   };
+  // console.log(c.token,6666);
+  
 
   const preForm = useFormik({
     initialValues: {
@@ -160,7 +155,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                   {inqAssign?.schedule?.method === "on" && <FormControlLabel value="contacted" control={<Radio readOnly />} label="Contacted" disabled />}
                   {inqAssign?.schedule?.method === "off" && <FormControlLabel value="queued" control={<Radio />} label="Queued" disabled={preForm.values.preStatus === 'rejected' || preForm.values.preStatus === 'completed'} />}
                   <FormControlLabel value="completed" control={<Radio />} label="Completed" disabled={inqAssign?.status === "rejected"} />
-                  <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded / Unattened" disabled />
+                  <FormControlLabel value="not_responded" control={<Radio readOnly />} label="Not Responded / Unattended" disabled />
                   <FormControlLabel value="rejected" control={<Radio />} label="Rejected" disabled={inqAssign?.status === "completed"} />
                 </RadioGroup>
               </FormControl>

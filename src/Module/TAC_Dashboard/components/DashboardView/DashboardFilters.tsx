@@ -42,7 +42,7 @@ const DashboardFilters: React.FC<DashboardFiltersProps> = ({
             <MenuItem value="doc_submitted">Documents Submitted</MenuItem>
             <MenuItem value="exp_submitted">Experience Submitted</MenuItem>
             <MenuItem value="pre_not_responded">Pre Not Responded</MenuItem>
-            <MenuItem value="assessment_submitted">Assessment Submitted</MenuItem>
+            <MenuItem value="assess_scheduled">Assessment Scheduled</MenuItem>
           </Select>
           <Select
             displayEmpty

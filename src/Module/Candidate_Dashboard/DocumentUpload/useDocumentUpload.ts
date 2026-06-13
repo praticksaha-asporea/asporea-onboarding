@@ -53,19 +53,19 @@ export const useDocumentUpload = () => {
       setCheckingStatus(true);
       try {
         const timelineRes = await getJourneyTimelineAction(leadId);
-       if (timelineRes?.success === false && timelineRes?.message?.toLowerCase().includes("not found")) {
-        setIsValidLead(false);
-        return;
-      }
+        if (timelineRes?.success === false && timelineRes?.message?.toLowerCase().includes("not found")) {
+          setIsValidLead(false);
+          return;
+        }
         if (timelineRes?.success && timelineRes.data) {
           const currentActiveStep = timelineRes.data.activeStep;
           const preCounsellingStatus = timelineRes.data?.preCounselling?.status;
           setActiveStep(currentActiveStep);
           if (preCounsellingStatus !== "Completed") {
-        setIsPreLocked(true);
-      } else {
-        setIsPreLocked(false);  
-      }
+            setIsPreLocked(true);
+          } else {
+            setIsPreLocked(false);
+          }
           if (currentActiveStep < 2 && preCounsellingStatus !== "Completed") {
             toast.error("Please schedule pre-counselling first and wait for completion", { id: "doc-guard-precoun" });
             router.push(`/pre-counselling?leadId=${leadId}`);
@@ -74,16 +74,16 @@ export const useDocumentUpload = () => {
         }
         const res = await checkDocumentStatusAction(leadId);
         if (res?.success && res.data) {
-          const submittedStages = ["doc_submitted", "exp_submitted", "assessment_submitted", "assessment_scheduled"];
-          
+          const submittedStages = ["doc_submitted", "exp_submitted", "assess_scheduled"];
+
           if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
             setIsAlreadySubmitted(true);
           }
         }
-      } catch (err:any) {
-       if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
-        setIsValidLead(false);
-      }
+      } catch (err: any) {
+        if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
+          setIsValidLead(false);
+        }
         console.error("Error pulling timeline or status", err);
       } finally {
         setCheckingStatus(false);
@@ -169,7 +169,7 @@ export const useDocumentUpload = () => {
         }
       }
       if (mappedDocs.length > 0) {
-        const saveRes = await saveMappedDocumentsAction({ leadId, documents: mappedDocs });
+        const saveRes = await saveMappedDocumentsAction({ leadId, documents: mappedDocs, position: selectedPosition });
         if (saveRes?.success) {
           toast.success("Documents uploaded successfully!");
           router.push(`/experience?positionId=${selectedPosition}`);

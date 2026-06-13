@@ -116,6 +116,7 @@ const LeadSchema = new Schema<ILead>(
 
     documents: {
       submittedOn: Date,
+      position: { type: Schema.Types.ObjectId, ref: "Position" },
       status: {
         type: String,
         enum: [
