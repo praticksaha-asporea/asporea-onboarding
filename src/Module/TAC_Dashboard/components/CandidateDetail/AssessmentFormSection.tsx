@@ -88,7 +88,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       }
     },
   });
-  // console.log(candidate.token,7777);
+  // console.log(candidate?.documents?.position,7777);
 
   const updateAssignmentStatus = async (status: string) => {
     if (!assessAssign?._id) return;
@@ -217,24 +217,72 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       {assessBasicForm?.values?.status === "queued" || assessBasicForm?.values?.status === "completed" || assessBasicForm?.values?.status === "rejected" ? (
         <>
           {/* --- Documents Section --- */}
-          <Box className=" shadow-2xl  rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)] ">
-            <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Documents</Typography>
-            <RadioGroup row value={docStatus} onChange={(e) => setDocStatus(e.target.value)}>
-              <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
-              <FormControlLabel value="verified" control={<Radio />} label="Verified" />
-              <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
-            </RadioGroup>
-            <Box className="flex flex-wrap gap-2 mt-4">
-              {dynamicDocChips.length > 0 ? (
-                dynamicDocChips.map((item: any) => (
-                  <Chip key={item} label={CamelCase(item)} color="primary" variant="outlined" size="medium" className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]" />
-                ))
-              ) : (
-                <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] italic mt-1">No documents uploaded yet</Typography>
-              )}
-            </Box>
-          </Box>
+<Box className="shadow-2xl rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)]">
+  <Typography className="mb-4 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">
+    Documents
+  </Typography>
 
+  <Grid container spacing={3}>
+    <Grid size={{ xs: 12, md: 6 }}>
+      <TextField
+        fullWidth
+        label="Position Applied"
+        disabled
+        value={candidate?.documents?.position?.title || ""}
+      />
+    </Grid>
+
+    <Grid size={{ xs: 12 }}>
+      <Typography
+        variant="body2"
+        className="mb-2 font-medium text-[var(--mui-palette-text-primary)]"
+      >
+        Uploaded Documents
+      </Typography>
+
+      <Box className="flex flex-wrap gap-2">
+        {dynamicDocChips.length > 0 ? (
+          dynamicDocChips.map((item: any) => (
+            <Chip
+              key={item}
+              label={CamelCase(item)}
+              color="primary"
+              variant="outlined"
+              size="medium"
+              className="font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-text-primary)]"
+            />
+          ))
+        ) : (
+          <Typography
+            variant="body2"
+            className="italic text-[var(--mui-palette-text-secondary)]"
+          >
+            No documents uploaded yet
+          </Typography>
+        )}
+      </Box>
+    </Grid>
+
+    <Grid size={{ xs: 12 }}>
+      <Typography
+        variant="body2"
+        className="mb-2 font-medium text-[var(--mui-palette-text-primary)]"
+      >
+        Verification Status
+      </Typography>
+
+      <RadioGroup
+        row
+        value={docStatus}
+        onChange={(e) => setDocStatus(e.target.value)}
+      >
+        <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
+        <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+        <FormControlLabel value="rejected" control={<Radio />} label="Rejected" />
+      </RadioGroup>
+    </Grid>
+  </Grid>
+</Box>
           {/* --- Experience Section ---  */}
           <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
             <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Experience</Typography>

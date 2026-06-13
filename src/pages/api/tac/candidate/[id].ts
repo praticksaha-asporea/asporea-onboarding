@@ -17,6 +17,7 @@ import "@/lib/models/Branch.model";
 import "@/lib/models/Upload.model";
 import "@/lib/models/Document.model";
 import "@/lib/models/DocumentType.model";
+import "@/lib/models/Position.model";
 
 export default async function handler(
   req: NextApiRequest,
@@ -57,6 +58,7 @@ export default async function handler(
     const lead = await Lead.findOne(leadFilter)
       .populate("preferences.branchId", "title location timeZone")
       .populate("preferences.consultantId", "firstName lastName")
+      .populate("documents.position", "title")
       .lean();
 
     if (!lead)
