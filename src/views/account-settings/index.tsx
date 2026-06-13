@@ -7,13 +7,20 @@ import Tab from '@mui/material/Tab'
 import TabContext from '@mui/lab/TabContext'
 import TabList from '@mui/lab/TabList'
 import TabPanel from '@mui/lab/TabPanel'
+import { useSearchParams } from 'next/navigation'  
 // import { usePathname, useRouter } from 'next/navigation'
 // import { useSelector } from 'react-redux'
 
 
 const AccountSettings = ({ tabContentList }: { tabContentList: { [key: string]: ReactElement } }) => {
   const [activeTab, setActiveTab] = useState('account')
-
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get('tab')  
+  useEffect(() => {
+    if (tabParam && tabContentList[tabParam]) {
+      setActiveTab(tabParam)
+    }
+  }, [tabParam, tabContentList])
   const handleChange = (event: SyntheticEvent, value: string) => {
     setActiveTab(value)
   }

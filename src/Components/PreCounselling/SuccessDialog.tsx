@@ -45,7 +45,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
             disableRipple
             disableElevation
             // href={`/document-upload?leadId=${leadId}`}
-            href={`/profile`}
+            // href={`/profile`}
+            href={`/profile?tab=notifications`}
             className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-[var(--mui-palette-primary-contrastText)] hover:text-white shadow-md"
           >
             Go to Profile

@@ -101,9 +101,21 @@ const ApplicationTracking = () => {
           <JourneyCard
             title="Pre-Counselling Readiness"
             status={journeyData.preCounselling.status}
-            dateLabel="On"
+            dateLabel={
+              journeyData.preCounselling.status === "pre_scheduled"
+                ? "Scheduled For"
+                : journeyData.preCounselling.status === "Completed"
+                  ? "Completed On"
+                  : "On"
+            }
             date={journeyData.preCounselling.date}
-            description="Please confirm your readiness for pre-counselling sessions. This is a crucial step."
+            description={
+              journeyData.preCounselling.status === "Completed"
+                ? "Your pre-counselling session has been successfully completed and verified by the consultant."
+                : journeyData.preCounselling.status === "pre_scheduled"
+                  ? "Your pre-counselling session is successfully scheduled. Please be available at your selected date and time slot."
+                  : "Please confirm your readiness for pre-counselling sessions. This is a crucial step."
+            }
           />
 
           <JourneyCard
@@ -112,9 +124,11 @@ const ApplicationTracking = () => {
             dateLabel="On"
             date={journeyData.documents.date}
             description={
-              journeyData.documents.status === "Verified"
-                ? "All uploaded documents have been verified and approved. Good job!"
-                : "Your uploaded documents are under review."
+              !isDocsUploaded
+                ? "Please upload your required documents."
+                : journeyData.documents.status === "Verified"
+                  ? "All uploaded documents have been verified and approved. Good job!"
+                  : "Your uploaded documents are under review."
             }
           />
 
@@ -124,9 +138,11 @@ const ApplicationTracking = () => {
             dateLabel="On"
             date={journeyData.experience.date}
             description={
-              journeyData.experience.type
-                ? `Your experience type has been confirmed as '${journeyData.experience.type}'.`
-                : "Your experience details are under review."
+              !isExpSubmitted
+                ? "Please fill  and submit your experience details for review."
+                : journeyData.experience.type
+                  ? `Your experience type has been confirmed as '${journeyData.experience.type}'.`
+                  : "Your experience details are under review."
             }
           />
 
@@ -147,10 +163,10 @@ const ApplicationTracking = () => {
                 : journeyData.assessment.status === "Scheduled"
                   ? `Your Assessment is successfully Scheduled. Please be ready on your selected slot.`
                   : !arePrerequisitesMet && journeyData.assessment.canSchedule
-                    ? "⚠️ Documents Submission and Experience Verification are mandatory before scheduling. Please complete them from your  dashboard first."
+                    ? "Documents Submission and Experience Submission are mandatory before scheduling. Please complete them from your  dashboard first."
                     : journeyData.assessment.canSchedule
                       ? "Your initial online assessment is pending. Please schedule it by the deadline."
-                      : "Wait for Pre-Counselling phase to be completed by Consultant."
+                      : "Wait for Pre-Counselling phase  completion."
             }
             buttonLabel={
               journeyData.assessment.hasResult
