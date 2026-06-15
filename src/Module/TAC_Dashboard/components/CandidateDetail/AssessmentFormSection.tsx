@@ -12,13 +12,14 @@ import * as Yup from "yup";
 import { confirmToast } from "@/Utils/confirmToast";
 import dayjs from "dayjs";
 import { updateAssignmentAssessAction, updateDocumentStatusAction } from "@/Services/APIs/tac/tac.actions";
+import AssessmentForm from "../AssessmentForm/AssessmentForm";
 
 interface AssessmentFormSectionProps {
   candidate: any;
   assessAssign: any;
   isFoe: boolean;
   branchTitle: string;
-  setCurrentView: (view: "dashboard" | "detail" | "assessment") => void;
+  setCurrentView: (view: "dashboard" | "detail") => void;
 }
 
 const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
@@ -26,7 +27,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   assessAssign,
   isFoe,
   branchTitle,
-  setCurrentView,
+  setCurrentView
 }) => {
 
   const docs = candidate?.documents || {};
@@ -43,6 +44,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   const [expStatus, setExpStatus] = useState(exp.type ? "selected" : "not");
   const [expType, setExpType] = useState(exp.type || "");
   const [isPreLocked, setIsPreLocked] = useState(true);
+  const [showAssesmentForm, setShowAssesmentForm] = useState(false);
 
   //   const [techStatus, setTechStatus] = useState(tech.status || "na");
   //   const [classifyExp, setClassifyExp] = useState(tech.classify || "");
@@ -135,8 +137,8 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     toast.success("Assessment details saved successfully!");
   };
 
-  const updateDocumentStatus = async (status: 'verified' | 'rejected') =>{
-    
+  const updateDocumentStatus = async (status: 'verified' | 'rejected') => {
+
     if (!assessAssign?._id) return;
     const textStatus =
       status === "verified"
@@ -147,7 +149,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     const confirmed = await confirmToast(textStatus);
     if (!confirmed) return;
     try {
-      await updateDocumentStatusAction(assessAssign._id,status);
+      await updateDocumentStatusAction(assessAssign._id, status);
       toast.success(`Documents Marked as ${CamelCase(status)}`);
     } catch (err: any) {
       console.log(err?.response?.data?.message ?? "Update failed");
@@ -269,10 +271,10 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
                 </RadioGroup>
               </Grid>
             </Grid>
-              <Box className="flex justify-center md:justify-end gap-3 mt-2">
-                <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={()=>updateDocumentStatus(`rejected`)}>Rejected</Button>
-                <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={()=>updateDocumentStatus(`verified`)}>Verified</Button>
-              </Box>
+            <Box className="flex justify-center md:justify-end gap-3 mt-2">
+              <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={() => updateDocumentStatus(`rejected`)}>Rejected</Button>
+              <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={() => updateDocumentStatus(`verified`)}>Verified</Button>
+            </Box>
           </Box>
           {/* --- Experience Section ---  */}
           <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
@@ -292,12 +294,12 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             </FormControl>
           </Box>
           {/* --- Assessment Start Button --- */}
-          {/* <Box className="flex justify-end gap-3 mt-6 mb-2">
+          <Box className="flex justify-end gap-3 mt-6 mb-2">
             <Button variant="contained" className="!rounded-lg !normal-case font-bold">Refer Technical</Button>
-            <Button variant="contained" onClick={() => setCurrentView("assessment")} className=" !rounded-lg !normal-case font-bold">
+            <Button variant="contained" onClick={() => setShowAssesmentForm(true)} className=" !rounded-lg !normal-case font-bold">
               Start
             </Button>
-          </Box> */}
+          </Box>
 
           {/* --- Common Save Button --- */}
           {!isFoe && (
@@ -331,7 +333,13 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           </Select>
         </FormControl>
       </Box> */}
+      {showAssesmentForm && (
+        <AssessmentForm
+          selectedCandidate={candidate}
+          setCurrentView={setCurrentView}
+        />
 
+      )}
     </Card>
   );
 };

@@ -10,7 +10,7 @@ import AssessmentSignatures from "./AssessmentSignatures";
 
 interface AssessmentFormProps {
   selectedCandidate: any;
-  setCurrentView: (view: "dashboard" | "detail" | "assessment") => void;
+  setCurrentView: (view: "dashboard" | "detail") => void;
 }
 
 const AssessmentForm: React.FC<AssessmentFormProps> = ({
@@ -159,7 +159,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
 
   return (
     <Box className="w-full min-h-screen p-4 md:p-8 text-gray-900">
-      <AssessmentHeader onBack={() => setCurrentView("detail")} />
+      {/* <AssessmentHeader onBack={() => setCurrentView("detail")} /> */}
 
       <Card className="rounded-xl border border-gray-200 shadow-sm">
         <CardContent className="p-6 md:p-8">

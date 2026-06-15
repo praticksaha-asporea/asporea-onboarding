@@ -15,7 +15,7 @@ import AssessmentFormSection from "./AssessmentFormSection";
 interface CandidateDetailProps {
   selectedCandidate: any;
   setSelectedCandidate: (candidate: any) => void;
-  setCurrentView: (view: "dashboard" | "detail" | "assessment") => void;
+  setCurrentView: (view: "dashboard" | "detail") => void;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
