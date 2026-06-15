@@ -83,11 +83,12 @@ export default async function handler(
       .populate("typeId", "title section subTitle")
       .populate("uploadId", "path")
       .lean();
-
+    
     if (lead && lead.documents) {
       (lead as any).documents.uploadedDocs = dbUploadedFiles.map(
         (doc: any) => ({
           _id: doc._id,
+          typeId: doc.typeId._id,
           status: doc.status,
           title: doc.typeId?.title || "Unknown Document",
           section: doc.typeId?.section || "additional",

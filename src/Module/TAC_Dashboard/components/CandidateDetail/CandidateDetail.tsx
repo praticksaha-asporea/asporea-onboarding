@@ -42,8 +42,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const abp = c.assignmentByPhase ?? {};
   const inqAssign = abp["pre"] ?? null;
   const assessAssign = abp["assess"] ?? null;
-  console.log("ABP Log Check:", c);
-  console.log("Assessment Assign Data:", assessAssign);
+  // console.log("ABP Log Check:", c);
+  // console.log("Assessment Assign Data:", assessAssign);
   const [tacList, setTacList] = useState<any[]>([]);
   const [escalateTo, setEscalateTo] = useState("");
 
