@@ -54,7 +54,6 @@ export const getTacCandidatesAction = async (params: {
 
 export const getTacCandidateDetailAction = async (id: string) => {
   const res = await axiosClient.get(`/tac/candidate/${id}`);
-  console.log("Fetched candidate detail:", res.data);
   return res.data.data as {
     lead: any;
     branchToken: any;
@@ -109,6 +108,16 @@ export const updateAssignmentAssessAction = async (
         },
       }
       : undefined
+  );
+};
+
+export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected'
+) => {
+
+  const payload = { id, status };
+  return axiosClient.patch(
+    "/tac/document/verification",
+    payload
   );
 };
 

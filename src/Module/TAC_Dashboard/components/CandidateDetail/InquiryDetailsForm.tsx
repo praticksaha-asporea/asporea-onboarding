@@ -26,7 +26,7 @@ interface InquiryDetailsFormProps {
 const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({
   candidate: c,
 }) => {
-  console.log("Rendering InquiryDetailsForm with candidate:", c);
+  // console.log("Rendering InquiryDetailsForm with candidate:", c);
   const contact = c.contact ?? {};
   const passport = c.passport ?? {};
   const preferences = c.preferences ?? {};

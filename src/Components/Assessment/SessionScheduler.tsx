@@ -123,7 +123,7 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
           <Typography variant="body2">
             Please ensure you have reviewed the assessment materials before your
             session. Ensure you are ready to attend at your scheduled
-            time. Consultant will contact you via your <Link href="/profile" className="underline">
+            time. Consultant will contact you via your <Link href="/profile?tab=notifications" className="underline">
               preferred communication method
             </Link>.
           </Typography>

@@ -17,7 +17,7 @@ import DashboardTable from "./DashboardTable";
 import DashboardScheduleModal from "./DashboardScheduleModal";
 
 interface DashboardProps {
-  setCurrentView: (view: "dashboard" | "detail" | "assessment") => void;
+  setCurrentView: (view: "dashboard" | "detail") => void;
   setSelectedCandidate: (candidate: any) => void;
 }
 

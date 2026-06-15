@@ -31,7 +31,8 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({
             </span>
           </Typography>
           <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
-            Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{CamelCase(c.status ?? "")}</span>
+            Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">
+              {CamelCase(c.status ?? "")}</span>
           </Typography>
           <Typography className="text-[12px] text-[var(--mui-palette-text-primary)]">
             Experience:{" "}
@@ -53,7 +54,7 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({
               Status: <span className="font-semibold text-[var(--mui-palette-text-primary)]">{CamelCase(c.status ?? "")}</span>
             </Typography>
             <Typography className="text-[12px] text-gray-500">
-              Experience: <span className="font-semibold text-gray-800">{CamelCase(c.experience?.type ?? "Not set")}</span>
+              Experience: <span className="font-semibold">{CamelCase(c.experience?.type ?? "Not set")}</span>
             </Typography>
           </Box>
           <FormControl fullWidth className="mb-4">

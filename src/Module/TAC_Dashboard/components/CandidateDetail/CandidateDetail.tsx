@@ -15,7 +15,7 @@ import AssessmentFormSection from "./AssessmentFormSection";
 interface CandidateDetailProps {
   selectedCandidate: any;
   setSelectedCandidate: (candidate: any) => void;
-  setCurrentView: (view: "dashboard" | "detail" | "assessment") => void;
+  setCurrentView: (view: "dashboard" | "detail") => void;
 }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = ({
@@ -42,8 +42,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
   const abp = c.assignmentByPhase ?? {};
   const inqAssign = abp["pre"] ?? null;
   const assessAssign = abp["assess"] ?? null;
-  console.log("ABP Log Check:", abp);
-  console.log("Assessment Assign Data:", assessAssign);
+  // console.log("ABP Log Check:", c);
+  // console.log("Assessment Assign Data:", assessAssign);
   const [tacList, setTacList] = useState<any[]>([]);
   const [escalateTo, setEscalateTo] = useState("");
 
