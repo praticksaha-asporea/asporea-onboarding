@@ -46,15 +46,57 @@ const AssessmentContent = () => {
     handleChannelChange,
     statusCardRef,
     handleScheduleAssessment,
+    isAlreadyScheduled,
+    scheduledDetails,
+    checkingStatus,
   } = useAssessment();
 
+  if (checkingStatus) {
+    return (
+      <Box className="w-full flex justify-center p-10 mt-10">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
-    <Grid container spacing={6}>
+   <Grid container spacing={6}>
       {/* LEFT COLUMN */}
-      <Grid size={{ xs: 12, md: isBookingMode ? 8 : 12 }}>
+      <Grid size={{ xs: 12, md: (isBookingMode && !isAlreadyScheduled) ? 8 : 12 }}>
         {(isBookingMode || isAssessmentResult) && (
-          <Card className="p-4 sm:p-12 rounded-[15px] shadow-[0_4px_18px_rgba(0,0,0,0.04)]">
-            {isBookingMode && (
+          <Card className="p-4 sm:p-12 rounded-[15px] shadow-2xl mb-6  bg-[var(--mui-palette-primary)]">
+            
+           
+            {isBookingMode && isAlreadyScheduled ? (
+              <Box className="p-4 text-center bg-[var(--mui-palette-primary)] rounded-xl flex flex-col items-center justify-center min-h-[350px]">
+                <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
+                  <i className="ri-calendar-check-fill text-5xl text-blue-600"></i>
+                </Box>
+                <Typography variant="h4" className="font-bold text-[var(--mui-palette-primary)] mb-2">
+                  Assessment Already Scheduled
+                </Typography>
+                <Typography variant="subtitle1" className="text-[var(--mui-palette-secondary)] max-w-md mx-auto mb-4">
+                  Your assessment is locked and scheduled successfully. Please ensure you are ready before the scheduled time.
+                </Typography>
+
+                {scheduledDetails?.date && (
+                  <Box className="p-3 bg-[var(--mui-palette-primary)]   rounded-xl inline-block shadow-sm px-6">
+                    <Typography variant="body2" className="text-[var(--mui-palette-primary)] font-medium">
+                      📅 Date: <strong>{new Date(scheduledDetails.date).toLocaleDateString()}</strong>
+                    </Typography>
+                  </Box>
+                )}
+
+                <Button 
+                  variant="contained" 
+                  onClick={() => router.push("/application-tracking")} 
+                  className="mt-8 rounded-xl normal-case bg-blue-600 hover:bg-blue-700 shadow-none px-8 py-2.5"
+                >
+                  Track Application Status
+                </Button>
+              </Box>
+            ) : isBookingMode ? (
+               
               <>
                 <Typography variant="h4">
                   Confirm Your Assessment Readiness
@@ -99,8 +141,9 @@ const AssessmentContent = () => {
                   </Button>
                 </Box>
               </>
-            )}
+            ) : null}
 
+            {/* 🔹 RESULT VIEW */}
             {isAssessmentResult && (
               <Box
                 ref={statusCardRef}
@@ -143,8 +186,8 @@ const AssessmentContent = () => {
         )}
       </Grid>
 
-      {/* RIGHT COLUMN */}
-      {isBookingMode && (
+       
+      {isBookingMode && !isAlreadyScheduled && (
         <Grid size={{ xs: 12, md: 4 }}>
           <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
             <CardContent className="p-6">
@@ -182,8 +225,7 @@ const AssessmentContent = () => {
         router={router}
       />
     </Grid>
-  );
-};
+  )}
 
 const Assessment = () => {
   return (

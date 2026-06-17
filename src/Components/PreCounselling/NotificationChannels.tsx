@@ -51,7 +51,7 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
             )}
             {preferences.sms && (
               <Box className="flex gap-4 items-start mb-8">
-                <i className="ri-message-2-line text-[24px] text-gray-600 mt-[2px]"></i>
+                <i className="ri-message-2-line text-[18px] text-gray-600 mt-[2px]"></i>
                 <Typography variant="body2"><span className="font-bold">SMS:</span> Enabled for quick alerts and notifications.</Typography>
               </Box>
             )}

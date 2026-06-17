@@ -14,10 +14,12 @@ import {
   NotificationChannels,
   TechData,
 } from "@/Types/Frontend_Payload/assessment.types";
+import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 
 export const useAssessment = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
+
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -54,7 +56,9 @@ export const useAssessment = () => {
   const [loadingSlots, setLoadingSlots] = useState<boolean>(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false);
   const [isEditingChannels, setIsEditingChannels] = useState<boolean>(false);
-
+  const [isAlreadyScheduled, setIsAlreadyScheduled] = useState<boolean>(false);
+  const [scheduledDetails, setScheduledDetails] = useState<any>(null);
+  const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
   const [checklist, setChecklist] = useState<Checklist>({
     documents: false,
     environment: false,
@@ -73,6 +77,31 @@ export const useAssessment = () => {
     sms: false,
   });
   const statusCardRef = useRef<HTMLDivElement | null>(null);
+  
+  useEffect(() => {
+    const checkAssessmentStatus = async () => {
+      if (!leadId || !isBookingMode) {
+        setCheckingStatus(false);
+        return;
+      }
+      try {
+        setCheckingStatus(true);
+        const res = await getJourneyTimelineAction(leadId);
+        if (res?.success && res.data?.assessment) {
+          if (res.data.assessment.status === "Scheduled") {
+            setIsAlreadyScheduled(true);
+            setScheduledDetails(res.data.assessment);
+          }
+        }
+      } catch (err) {
+        console.error("Error verifying assessment status:", err);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+    checkAssessmentStatus();
+  }, [leadId, isBookingMode]);
+  
 
   useEffect(() => {
     if (typeof window !== "undefined" && viewParam) {
@@ -93,7 +122,7 @@ export const useAssessment = () => {
 
   useEffect(() => {
     const fetchSlots = async () => {
-      if (!consultantId || !isBookingMode) return;
+      if (!consultantId || !isBookingMode || isAlreadyScheduled) return;  
       setLoadingSlots(true);
       setSelectedSlot(null);
       try {
@@ -146,6 +175,7 @@ export const useAssessment = () => {
       const res = await scheduleAssessmentAction(payload as any);
       if (res?.success) {
         toast.success("Assessment Scheduled Successfully!");
+        setIsAlreadyScheduled(true);
         setShowConfirmPopup(true);
       } else toast.error(res?.message || "Failed to schedule Assessment.");
     } catch (error) {
@@ -183,5 +213,8 @@ export const useAssessment = () => {
     handleChannelChange,
     statusCardRef,
     handleScheduleAssessment,
+    isAlreadyScheduled,
+    scheduledDetails,
+    checkingStatus,
   };
 };

@@ -26,6 +26,7 @@ export const useApplicationTracking = () => {
       try {
         setLoading(true);
         const res = await getJourneyTimelineAction(leadId);
+         console.log("Journey Timeline Response:", res);  
          
         if (res?.success && res.data) {
           setJourneyData(res.data);
