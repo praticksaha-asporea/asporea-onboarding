@@ -8,11 +8,11 @@ export interface IAssessmentQuestion extends Document {
 
   section?: string;     // e.g. "Academic"
   subSection?: string;  // e.g. "3 Years Undergraduate"
-
+  
   type?: "rating" | "boolean" | "text";
 
   levels?: string[]; // ["L1","L2","L3","L4"]
-
+  isDeleted?: boolean;
   order?: number;
 
   createdAt: Date;
@@ -48,6 +48,12 @@ const AssessmentQuestionSchema = new Schema<IAssessmentQuestion>(
       trim: true,
     },
 
+    isDeleted: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
+
     type: {
       type: String,
       enum: ["rating", "boolean", "text"],
@@ -72,7 +78,7 @@ const AssessmentQuestionSchema = new Schema<IAssessmentQuestion>(
 
 // for ordering UI
 AssessmentQuestionSchema.index({ section: 1, order: 1 });
-
+AssessmentQuestionSchema.index({ isDeleted: 1 });
 /* ================= EXPORT ================= */
 
 export const AssessmentQuestionModel =
