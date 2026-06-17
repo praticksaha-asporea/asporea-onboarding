@@ -4,7 +4,7 @@ export interface IEscalationReport extends Document {
   fromId: Types.ObjectId;
   toId: Types.ObjectId;
 
-  assignmentId: Types.ObjectId;
+  leadId: Types.ObjectId;
 
   status: "requested" | "approved" | "rejected";
 
@@ -33,9 +33,9 @@ const EscalationReportSchema = new Schema<IEscalationReport>(
       index: true,
     },
 
-    assignmentId: {
+    leadId: {
       type: Schema.Types.ObjectId,
-      ref: "Assignment",
+      ref: "Lead",
       required: true,
       index: true,
     },

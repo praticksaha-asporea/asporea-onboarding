@@ -134,3 +134,16 @@ export const updateLeadAction = async (payload: {
   const res = await axiosClient.patch("/tac/lead/update", payload);
   return res.data;
 };
+
+export const escalateLeadAction = async (payload: {
+  leadId: string;
+  toId: string;
+  reason: string;
+}) => {
+  try {
+    const res = await axiosClient.post("/tac/escalate", payload);
+    return res.data;
+  } catch (error: any) {
+    throw error;
+  }
+};
