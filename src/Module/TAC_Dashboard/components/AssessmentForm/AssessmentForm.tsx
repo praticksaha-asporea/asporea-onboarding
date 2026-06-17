@@ -2,24 +2,21 @@ import React, { useState, useEffect } from "react";
 import { Box, Card, CardContent } from "@mui/material";
 
 // Sub-components Imports
-import AssessmentHeader from "./AssessmentHeader";
 import AssessmentBasicInfo from "./AssessmentBasicInfo";
 import AssessmentScoringTable from "./AssessmentScoringTable";
 import AssessmentNotes from "./AssessmentNotes";
 import AssessmentSignatures from "./AssessmentSignatures";
 
 interface AssessmentFormProps {
-  selectedCandidate: any;
-  setCurrentView: (view: "dashboard" | "detail") => void;
+  selectedCandidate: any
 }
 
 const AssessmentForm: React.FC<AssessmentFormProps> = ({
-  selectedCandidate,
-  setCurrentView,
+  selectedCandidate
 }) => {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // }, []);
 
   const [candidateSignature, setCandidateSignature] = useState<File | null>(null);
   const [assessorSignature, setAssessorSignature] = useState<File | null>(null);

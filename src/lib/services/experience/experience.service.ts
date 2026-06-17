@@ -24,6 +24,8 @@ export const saveExperienceTypeService = async (
         status: "exp_submitted",
         "experience.type": experienceType,
         "experience.submittedOn": new Date(),
+        "experience.status": 'selected',
+        
       },
     },
     { new: true, runValidators: true }, 

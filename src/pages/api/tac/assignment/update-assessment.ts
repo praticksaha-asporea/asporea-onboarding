@@ -8,12 +8,11 @@ import { Assignment } from "@/lib/models/Assignment.model";
 import mongoose from "mongoose";
 import Joi from "joi";
 import { normalizeFormFields, parseForm } from "@/lib/utils/parseForm";
-import { uploadFileService } from "@/lib/services/upload.service";
 import { Lead } from "@/lib/models/Lead.model";
 import { BranchTokenModel } from "@/lib/models/BranchToken.model";
 
 
-const updateAssignmentSchema = Joi.object({
+const updateAssessAssignmentSchema = Joi.object({
   assignmentId: Joi.string()
     .hex()
     .length(24)
@@ -50,11 +49,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const authUser = await verifyToken(token);
     if (authUser.role !== "tac") throw new ApiError("TAC access required", 403);
-    const { fields, files } = await parseForm(req);
+    const { fields } = await parseForm(req);
     const body = normalizeFormFields(
       fields as any
     );
-    const { error, value } = updateAssignmentSchema.validate(body);
+    const { error, value } = updateAssessAssignmentSchema.validate(body);
 
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
@@ -103,7 +102,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
     if (updatableStatus) {
 
-      const updatedLead = await Lead.findByIdAndUpdate(
+      await Lead.findByIdAndUpdate(
         assignment?.leadId,
         { $set: { status: updatableStatus?.[status] } },
         { returnDocument: "after", runValidators: true }

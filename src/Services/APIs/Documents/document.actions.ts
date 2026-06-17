@@ -65,3 +65,14 @@ export const checkDocumentStatusAction = async (leadId: string): Promise<any> =>
     return { success: false, message: error.response?.data?.message || "Failed to check status" };
   }
 };
+
+
+
+export const getCandidateDocumentsAction = async (leadId: string): Promise<any> => {
+  try {
+    const response = await axiosClient.get(`/tac/candidate/${leadId}`);
+    return response?.data;
+  } catch (error: any) {
+    return { success: false, message: error.response?.data?.message || "Failed to check status" };
+  }
+};
