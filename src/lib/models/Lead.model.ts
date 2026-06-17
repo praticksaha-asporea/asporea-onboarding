@@ -34,7 +34,7 @@ export interface ILead extends Document {
 
   documents?: {
     submittedOn?: Date;
-    status?: "na" | "uploaded" | "verified" | "rejected" | "re_uploaded" | "re_verified";
+    status?: "na" | "uploaded" | "verified" | "rejected" | "re_uploaded" | "re_verified" | "awaiting_approval";
   };
 
   technical?: {
@@ -112,6 +112,15 @@ const LeadSchema = new Schema<ILead>(
         enum: ["fresher", "domestic", "abroad", "free"],
       },
       submittedOn: Date,
+      status: {
+        type: String,
+        enum: [
+          "selected",
+          "verified",
+          "request_technical"
+        ],
+        actionBy: { type: Schema.Types.ObjectId, ref: "User" }
+      },
     },
 
     documents: {
@@ -127,6 +136,7 @@ const LeadSchema = new Schema<ILead>(
           "re_uploaded",
           "re_verified",
         ],
+        actionBy: { type: Schema.Types.ObjectId, ref: "User" }
       },
     },
 

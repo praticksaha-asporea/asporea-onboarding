@@ -1,4 +1,6 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { leadDocumentUpdateResponse } from "@/Types/ApiResponse/leadRes.types";
+import { AxiosResponse } from "axios";
 
 export interface CandidateRow {
   _id: string;
@@ -30,7 +32,11 @@ export interface CandidatesResponse {
     pendingAssessment: number;
   } | null;
 }
-
+export type ExpType =
+  | "fresher"
+  | "domestic"
+  | "abroad"
+  | "free";
 export const getTacCandidatesAction = async (params: {
   page?: number;
   limit?: number;
@@ -111,12 +117,22 @@ export const updateAssignmentAssessAction = async (
   );
 };
 
-export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected'
-) => {
+export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected' | 'awaiting_approval'
+): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
   const payload = { id, status };
   return axiosClient.patch(
-    "/tac/document/verification",
+    "/tac/assignment/document-verify",
+    payload
+  );
+};
+
+export const updateExpStatusAction = async (id: string, status: 'verified' | 'rejected' | 'refer_technical', expType: ExpType
+): Promise<AxiosResponse<leadDocumentUpdateResponse>>  => {
+
+  const payload = { id, status, expType };
+  return axiosClient.patch(
+    "/tac/assignment/exp-verify",
     payload
   );
 };

@@ -21,6 +21,7 @@ import {
   getPositionDetailsAction,
   uploadFileAction,
   saveMappedDocumentsAction,
+  getCandidateDocumentsAction,
 } from "@/Services/APIs/Documents/document.actions";
 import { DocumentRequirement, GroupedDocuments } from "@/Types/Frontend_Payload/document.types";
 
@@ -41,10 +42,10 @@ interface CandidateDocumentsSectionProps {
 
 // Sections rendered in order
 const SECTION_ORDER: Array<{ key: string; label: string }> = [
-  { key: "resume",     label: "Resume" },
-  { key: "document",   label: "Documents" },
+  { key: "resume", label: "Resume" },
+  { key: "document", label: "Documents" },
   { key: "experience", label: "Experience Certificates" },
-  { key: "academic",   label: "Academic Certificates" },
+  { key: "academic", label: "Academic Certificates" },
   { key: "additional", label: "Additional" },
 ];
 
@@ -83,9 +84,8 @@ const UploadedFileCard: React.FC<{ doc: UploadedDoc; onPreview: (doc: UploadedDo
         ) : (
           <Box className="flex flex-col items-center gap-1">
             <i
-              className={`text-4xl text-[var(--mui-palette-primary-main)] ${
-                fileType === "pdf" ? "ri-file-pdf-2-line" : "ri-file-line"
-              }`}
+              className={`text-4xl text-[var(--mui-palette-primary-main)] ${fileType === "pdf" ? "ri-file-pdf-2-line" : "ri-file-line"
+                }`}
             />
             <Typography className="text-[10px] text-[var(--mui-palette-text-secondary)] font-semibold uppercase">
               {doc.path.split(".").pop()}
@@ -99,17 +99,18 @@ const UploadedFileCard: React.FC<{ doc: UploadedDoc; onPreview: (doc: UploadedDo
         <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] leading-tight line-clamp-2 flex-1">
           {doc.title}
         </Typography>
-        <Box
-          className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${
-            doc.status === "verified"
+        {doc.status !== 'uploaded' && (
+          <Box
+            className={`shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full ${doc.status === "verified"
               ? "bg-green-100 text-green-700"
               : doc.status === "rejected"
                 ? "bg-red-100 text-red-600"
                 : "bg-blue-100 text-blue-700"
-          }`}
-        >
-          {CamelCase(doc.status)}
-        </Box>
+              }`}
+          >
+            {CamelCase(doc.status)}
+          </Box>
+        )}
       </Box>
 
       <Typography className="text-[11px] text-[var(--mui-palette-primary-main)] font-semibold text-center">
@@ -129,26 +130,49 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
   const uploadedDocs: UploadedDoc[] = Array.isArray(docs?.uploadedDocs)
     ? docs.uploadedDocs
     : [];
+  const [uploadedDocsState, setUploadedDocsState] = useState<UploadedDoc[]>(
+    uploadedDocs
+  );
 
   // ── Grouped uploaded docs ────────────────────────────────────────────────
   const grouped: Record<string, UploadedDoc[]> = {};
-  for (const doc of uploadedDocs) {
-    const key = doc.section || "additional";
-    if (!grouped[key]) grouped[key] = [];
-    grouped[key].push(doc);
-  }
 
+  (uploadedDocsState || []).forEach((doc) => {
+    const key = doc.section || "additional";
+
+    if (!grouped[key]) grouped[key] = [];
+
+    grouped[key].push(doc);
+  });
   // ── Preview modal ────────────────────────────────────────────────────────
   const [previewDoc, setPreviewDoc] = useState<UploadedDoc | null>(null);
 
   // ── Missing-docs upload section ──────────────────────────────────────────
   const [loadingMissing, setLoadingMissing] = useState(false);
+  // Full position requirements — fetched once, reused for recomputing missing list
+  const [allPositionDocs, setAllPositionDocs] = useState<DocumentRequirement[]>([]);
   const [missingDocs, setMissingDocs] = useState<GroupedDocuments>({
     resume: [], document: [], experience: [], academic: [], additional: [],
   });
   const [hasMissingLoaded, setHasMissingLoaded] = useState(false);
   const [selectedFilesMap, setSelectedFilesMap] = useState<Record<string, File[]>>({});
   const [isSaving, setIsSaving] = useState(false);
+
+  /** Recompute which docs are still missing given a (possibly updated) uploaded list */
+  const recomputeMissing = useCallback(
+    (allDocs: DocumentRequirement[], currentUploaded: UploadedDoc[]) => {
+      const uploadedTypeIds = new Set(currentUploaded.map((d: any) => d.typeId ?? d._id));
+      const missing = allDocs.filter((d) => !uploadedTypeIds.has(d._id));
+      setMissingDocs({
+        resume: missing.filter((d) => d.section === "resume"),
+        document: missing.filter((d) => d.section === "document"),
+        experience: missing.filter((d) => d.section === "experience"),
+        academic: missing.filter((d) => d.section === "academic"),
+        additional: missing.filter((d) => d.section === "additional"),
+      });
+    },
+    []
+  );
 
   const loadMissingDocs = useCallback(async () => {
     if (!positionId || hasMissingLoaded) return;
@@ -164,21 +188,8 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
         mandatory.forEach((d: any) => docMap.set(d._id, { ...d, isMandatory: true }));
 
         const allDocs = Array.from(docMap.values()) as DocumentRequirement[];
-
-        // Filter out already uploaded typeIds
-        const uploadedTypeIds = new Set(
-          uploadedDocs.map((d: any) => d.typeId ?? d._id)
-        );
-
-        const missing = allDocs.filter((d) => !uploadedTypeIds.has(d._id));
-        
-        setMissingDocs({
-          resume:     missing.filter((d) => d.section === "resume"),
-          document:   missing.filter((d) => d.section === "document"),
-          experience: missing.filter((d) => d.section === "experience"),
-          academic:   missing.filter((d) => d.section === "academic"),
-          additional: missing.filter((d) => d.section === "additional"),
-        });
+        setAllPositionDocs(allDocs);
+        recomputeMissing(allDocs, uploadedDocsState);
         setHasMissingLoaded(true);
       } else {
         toast.error(res?.message ?? "Failed to load document requirements");
@@ -186,12 +197,12 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
     } finally {
       setLoadingMissing(false);
     }
-  }, [positionId, hasMissingLoaded, uploadedDocs]);
+  }, [positionId, hasMissingLoaded, uploadedDocsState, recomputeMissing]);
 
   // Load missing docs once on mount (if position is known)
   useEffect(() => {
     if (positionId) loadMissingDocs();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [positionId]);
 
   const handleFilesUpdate = (typeId: string, files: File[]) => {
@@ -229,8 +240,19 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
           position: positionId,
         });
         if (saveRes?.success) {
-          toast.success("Documents uploaded successfully. Refresh to see updates.");
+          const refreshed = await getCandidateDocumentsAction(leadId);
+
+          if (refreshed?.success) {
+            const freshDocs: UploadedDoc[] =
+              refreshed?.data?.lead?.documents?.uploadedDocs ?? [];
+            setUploadedDocsState(freshDocs);
+            // Recompute missing list immediately from the fresh uploaded docs
+            // using the already-loaded position requirements — no extra fetch needed
+            recomputeMissing(allPositionDocs, freshDocs);
+          }
+
           setSelectedFilesMap({});
+          toast.success("Documents uploaded successfully.");
         } else {
           toast.error(saveRes?.message ?? "Failed to save documents");
         }
@@ -276,7 +298,7 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
       )}
 
       {/* ── Missing docs upload ─────────────────────────────────────────── */}
-      {positionId && (
+      {positionId && totalMissing > 0 && (
         <Box className="mt-4">
           <SectionAccordion
             title={
@@ -302,7 +324,7 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
             ) : (
               <Box>
                 {(["resume", "document", "experience", "academic", "additional"] as const).map(
-                  (sectionKey) => {                    
+                  (sectionKey) => {
                     const sectionLabel = SECTION_ORDER.find((s) => s.key === sectionKey)?.label ?? sectionKey;
                     const sectionDocs = missingDocs[sectionKey];
                     if (!sectionDocs.length) return null;

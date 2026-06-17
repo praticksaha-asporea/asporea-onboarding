@@ -17,9 +17,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   selectedCandidate,
   setCurrentView,
 }) => {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
+  // useEffect(() => {
+  //   window.scrollTo({ top: 0, behavior: "smooth" });
+  // }, []);
 
   const [candidateSignature, setCandidateSignature] = useState<File | null>(null);
   const [assessorSignature, setAssessorSignature] = useState<File | null>(null);

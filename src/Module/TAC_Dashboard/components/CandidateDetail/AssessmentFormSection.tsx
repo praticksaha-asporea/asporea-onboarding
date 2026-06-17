@@ -11,7 +11,7 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import { confirmToast } from "@/Utils/confirmToast";
 import dayjs from "dayjs";
-import { updateAssignmentAssessAction, updateDocumentStatusAction } from "@/Services/APIs/tac/tac.actions";
+import { ExpType, updateAssignmentAssessAction, updateDocumentStatusAction, updateExpStatusAction } from "@/Services/APIs/tac/tac.actions";
 import AssessmentForm from "../AssessmentForm/AssessmentForm";
 
 interface AssessmentFormSectionProps {
@@ -32,19 +32,16 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
   const docs = candidate?.documents || {};
   const exp = candidate?.experience || {};
-  //   const tech = candidate?.technical || {};
 
-  // console.log(docs, 5844);
-
-  const uploadedDocsList = Array.isArray(docs?.uploadedDocs) ? docs.uploadedDocs : [];
-  const dynamicDocChips = uploadedDocsList.length > 0
-    ? Array.from(new Set(uploadedDocsList.map((d: any) => d.section)))
-    : [];
   const [docStatus, setDocStatus] = useState(docs.status || "na");
-  const [expStatus, setExpStatus] = useState(exp.type ? "selected" : "not");
-  const [expType, setExpType] = useState(exp.type || "");
+  const [expStatus, setExpStatus] = useState<"selected" | "verified">("selected");
+  const [expType, setExpType] = useState<ExpType>(exp.type);
   const [isPreLocked, setIsPreLocked] = useState(true);
-  const [showAssesmentForm, setShowAssesmentForm] = useState(false);
+  const [docReject, setDocReject] = useState(false);
+  const [docVerify, setDocVerify] = useState(false);
+  const [docRequestTL, setDocRequestTL] = useState(false);
+  const [expRFT, setExpRFT] = useState(false);
+  const [expVerified, setExpVerified] = useState(false);
 
   //   const [techStatus, setTechStatus] = useState(tech.status || "na");
   //   const [classifyExp, setClassifyExp] = useState(tech.classify || "");
@@ -114,8 +111,9 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
   useEffect(() => {
     setDocStatus(docs.status || "na");
-    setExpStatus(exp.type ? "selected" : "not");
-    setExpType(exp.type || "");
+    setExpStatus(exp.status);
+    
+    setExpType(exp.type);
     // setTechStatus(tech.status || "na");
     // setClassifyExp(tech.classify || "");
     if (assessAssign?.status === "completed" || assessAssign?.status === "rejected") {
@@ -123,6 +121,25 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     } else if (assessAssign?.status === "queued" && (isWithinSchedule(assessAssign) && assessAssign?.schedule?.from != "" && assessAssign?.schedule?.to != "")) {
       setIsPreLocked(false);
     }
+    if (candidate?.status === "doc_awaiting_approval") {
+      setDocReject(false);
+      setDocVerify(false);
+      setDocRequestTL(false);
+
+      setExpRFT(false);
+      setExpVerified(false);
+    }
+    else {
+      setDocReject(docs?.status === "uploaded");
+      setDocVerify(docs?.status === "uploaded");
+      setDocRequestTL(docs?.status === "uploaded");
+
+      setExpRFT(docs?.status === "verified");
+      setExpVerified(docs?.status === "verified");
+      setShowAssessmentForm(docs?.status === "verified");
+    }
+    
+
   }, [assessAssign, candidate]);
 
   const handleSaveAll = () => {
@@ -133,29 +150,150 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       experience: { status: expStatus, type: expType },
       //   technical: { status: techStatus, classify: classifyExp },
     };
-    console.log("Saving Assessment Data:", payload);
+    // console.log("Saving Assessment Data:", payload);
     toast.success("Assessment details saved successfully!");
   };
 
-  const updateDocumentStatus = async (status: 'verified' | 'rejected') => {
+  // const updateDocumentStatus = async (status: 'verified' | 'rejected' | 'awaiting_approval') => {
+
+  //   if (!assessAssign?._id) return;
+  //   const textStatus =
+  //     status === "verified"
+  //       ? `Are you sure?\nYou verified these documents?`
+  //       : status === "rejected"
+  //         ? `Are you sure?\nYou rejecting these documents`
+  //         : ``;
+  //   const confirmed = await confirmToast(textStatus);
+  //   if (!confirmed) return;
+  //   try {
+  //     const updatedLead = await updateDocumentStatusAction(assessAssign._id, status);
+  //     toast.success(`Documents Marked as ${CamelCase(status)}`);
+  //     if (updatedLead?.data?.data?.status === "doc_verified") {
+  //       setExpRFT(true)
+  //       setExpVerified(true)
+  //       setDocRequestTL(true)
+
+  //       setDocVerify(false)
+  //       setDocReject(false)
+  //     }
+  //     else if (updatedLead?.data?.data?.status === "doc_rejected") {
+  //       setExpRFT(false)
+  //       setExpVerified(false)
+  //       setDocRequestTL(false)
+
+  //       setDocVerify(false)
+  //       setDocReject(false)
+
+  //     }
+  //     else if (updatedLead?.data?.data?.status === "doc_awaiting_approval") {
+  //       setExpRFT(false)
+  //       setExpVerified(false)
+  //       setDocRequestTL(false)
+
+  //       setDocVerify(false)
+  //       setDocReject(false)
+  //     }
+
+  //   } catch (err: any) {
+  //     console.log(err?.response?.data?.message ?? "Update failed");
+  //   }
+  // }
+  const updateDocumentStatus = async (
+    status: "verified" | "rejected" | "awaiting_approval"
+  ) => {
+    if (!assessAssign?._id) return;
+
+    const messages = {
+      verified: "Are you sure?\nYou verified these documents.",
+      rejected: "Are you sure?\nYou are rejecting these documents.",
+      awaiting_approval: "Are you sure?\nSend these documents for approval?",
+    };
+
+    const confirmed = await confirmToast(messages[status]);
+    if (!confirmed) return;
+
+    try {
+      const res = await updateDocumentStatusAction(
+        assessAssign._id,
+        status
+      );
+
+      const docStatus = res?.data?.data?.documents?.status;
+
+      toast.success(`Documents marked as ${CamelCase(status)}`);
+
+      // const isVerified = docStatus === "verified";
+
+      // setExpRFT(isVerified);
+      // setExpVerified(isVerified);
+      // setDocRequestTL(!isVerified);
+
+      // setDocVerify(false);
+      // setDocReject(false);
+
+      setDocReject(docStatus === "uploaded");
+      setDocVerify(docStatus === "uploaded");
+      setDocRequestTL(docStatus === "uploaded");
+
+      setExpRFT(docStatus === "verified");
+      setExpVerified(docStatus === "verified");
+
+      setDocStatus(docStatus);
+    } catch (err: any) {
+      toast.error(
+        err?.response?.data?.message ?? "Failed to update document status"
+      );
+    }
+  };
+
+  const updateExpStatus = async (status: 'verified' | 'rejected' | 'refer_technical') => {
 
     if (!assessAssign?._id) return;
     const textStatus =
       status === "verified"
-        ? `Are you sure?\nYou verified these documents?`
+        ? `Are you sure?\nYou verified candidate experience.`
         : status === "rejected"
-          ? `Are you sure?\nYou rejecting these documents`
+          ? `Are you sure?\nYou rejecting candidate experience.`
           : ``;
     const confirmed = await confirmToast(textStatus);
     if (!confirmed) return;
     try {
-      await updateDocumentStatusAction(assessAssign._id, status);
-      toast.success(`Documents Marked as ${CamelCase(status)}`);
+      const updatedEXPLead = await updateExpStatusAction(assessAssign._id, status, expType);
+      toast.success(`Experience updated as ${CamelCase(status)} !`);
+      if (updatedEXPLead?.data?.data?.experience?.status === 'verified') {
+        setShowAssessmentForm(true);
+      }
+      // setExpRFT(false);
+      // setExpVerified(false);
+
+      if (updatedEXPLead?.data?.data?.experience?.status !== 'request_technical') {
+        setExpStatus(updatedEXPLead?.data?.data?.experience?.status)
+      }
+      // console.log(updatedEXPLead?.data?.data?.experience?.type,15854);
+      
+      setExpType(updatedEXPLead?.data?.data?.experience?.type as ExpType)
     } catch (err: any) {
       console.log(err?.response?.data?.message ?? "Update failed");
     }
   }
 
+  // Derived: show assessment form once the candidate is actively being assessed
+  const [showAssessmentForm, setShowAssessmentForm] =
+    useState(false);
+  const currentStatus = assessBasicForm.values.status || assessAssign.status;
+  const canAccess = isWithinSchedule(assessAssign);
+
+  const isFinalStatus = ["completed", "rejected"].includes(currentStatus);
+
+  const canCall =
+    canAccess &&
+    !isFinalStatus &&
+    ["assigned", "not_responded"].includes(currentStatus);
+
+  const canMarkNotResponded =
+    canAccess &&
+    !isFinalStatus &&
+    currentStatus === "contacted";
   return (
     <Card className="p-6 rounded-xl  shadow-xl mt-4">
       <Typography className="text-[24px] text-center font-semibold mb-5 text-[var(--mui-palette-text-primary)]">
@@ -213,8 +351,10 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             </Button> */}
             {assessAssign && assessAssign.schedule?.method === "on" && (
               <>
-                <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(assessAssign.status !== "assigned" && assessAssign.status !== "contacted") || !isWithinSchedule(assessAssign) || assessBasicForm.values.status === "completed" || assessBasicForm.values.status === "rejected"} onClick={() => updateAssignmentStatus("not_responded")}>Not Responded</Button>
-                <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(assessAssign.status !== "assigned" && assessAssign.status !== "contacted") || !isWithinSchedule(assessAssign) || assessBasicForm.values.status === "completed" || assessBasicForm.values.status === "rejected"} onClick={
+                <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={!canMarkNotResponded}
+                  onClick={() => updateAssignmentStatus("not_responded")}>Not Responded</Button>
+
+                <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={!canCall} onClick={
                   () => updateAssignmentStatus("contacted")
                 }>Call</Button>
               </>
@@ -236,7 +376,6 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             <Typography className="mb-4 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">
               Documents Verification
             </Typography>
-
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, md: 6 }}>
                 <TextField
@@ -265,23 +404,32 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
                   value={docStatus}
                   onChange={(e) => setDocStatus(e.target.value)}
                 >
-                  <FormControlLabel value="uploaded" control={<Radio />} label="Uploaded" />
+                  <FormControlLabel value="uploaded" control={<Radio disabled />} label="Uploaded" />
                   <FormControlLabel value="verified" control={<Radio disabled />} label="Verified" />
                   <FormControlLabel value="rejected" control={<Radio disabled />} label="Rejected" />
                 </RadioGroup>
+                {candidate?.status === "doc_awaiting_approval" && (
+                  <Typography
+                    variant="caption"
+                    className="block mt-2 text-[--mui-palette-warning-main] font-medium"
+                  >
+                    Documents have been reviewed and are currently awaiting approval from the Team Leader (TL).
+                  </Typography>
+                )}
               </Grid>
             </Grid>
             <Box className="flex justify-center md:justify-end gap-3 mt-2">
-              <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={() => updateDocumentStatus(`rejected`)}>Rejected</Button>
-              <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={() => updateDocumentStatus(`verified`)}>Verified</Button>
+              <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || !docReject} onClick={() => updateDocumentStatus(`rejected`)}>Rejected</Button>
+              <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || !docVerify} onClick={() => updateDocumentStatus(`verified`)}>Verified</Button>
+              <Button variant="contained" className="!bg-[--mui-palette-warning-main] hover:!bg-[--mui-palette-warning-dark] !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || !docRequestTL} onClick={() => updateDocumentStatus(`awaiting_approval`)}>TL Request</Button>
             </Box>
           </Box>
           {/* --- Experience Section ---  */}
           <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
             <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Experience</Typography>
-            <RadioGroup row value={expStatus} onChange={(e) => setExpStatus(e.target.value)}>
-              <FormControlLabel value="selected" control={<Radio />} label="Selected" />
-              <FormControlLabel value="verified" control={<Radio />} label="Verified" />
+            <RadioGroup row value={expStatus} onChange={(e: any) => setExpStatus(e.target.value)}>
+              <FormControlLabel value="selected" control={<Radio disabled/>} label="Selected" />
+              <FormControlLabel value="verified" control={<Radio disabled/>} label="Verified" />
             </RadioGroup>
             <FormControl fullWidth className="mt-4 md:w-1/2">
               <InputLabel>Experience Type</InputLabel>
@@ -292,14 +440,17 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
                 <MenuItem value="free">Freelance</MenuItem>
               </Select>
             </FormControl>
+            <Box className="flex justify-end gap-3 mt-6 mb-2">
+              <Button variant="contained" className="!rounded-xl !normal-case bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark]" disabled={isPreLocked || !expRFT} onClick={() => updateExpStatus(`refer_technical`)}>Refer Technical</Button>
+              <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || !expVerified} onClick={() => updateExpStatus(`verified`)}>Verified</Button>
+            </Box>
           </Box>
           {/* --- Assessment Start Button --- */}
-          <Box className="flex justify-end gap-3 mt-6 mb-2">
-            <Button variant="contained" className="!rounded-lg !normal-case font-bold">Refer Technical</Button>
+          {/* <Box className="flex justify-end gap-3 mt-6 mb-2">
             <Button variant="contained" onClick={() => setShowAssesmentForm(true)} className=" !rounded-lg !normal-case font-bold">
               Start
             </Button>
-          </Box>
+          </Box> */}
 
           {/* --- Common Save Button --- */}
           {!isFoe && (
@@ -333,12 +484,11 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           </Select>
         </FormControl>
       </Box> */}
-      {showAssesmentForm && (
+      {showAssessmentForm && (
         <AssessmentForm
           selectedCandidate={candidate}
           setCurrentView={setCurrentView}
         />
-
       )}
     </Card>
   );
