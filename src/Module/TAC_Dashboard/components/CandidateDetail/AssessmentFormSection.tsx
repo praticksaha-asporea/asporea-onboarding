@@ -128,6 +128,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
       setExpRFT(false);
       setExpVerified(false);
+      setShowAssessmentForm(false);
     }
     else {
       setDocReject(docs?.status === "uploaded");
@@ -262,6 +263,10 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       toast.success(`Experience updated as ${CamelCase(status)} !`);
       if (updatedEXPLead?.data?.data?.experience?.status === 'verified') {
         setShowAssessmentForm(true);
+      }
+      else{
+        setShowAssessmentForm(false);
+
       }
       // setExpRFT(false);
       // setExpVerified(false);
@@ -487,7 +492,6 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       {showAssessmentForm && (
         <AssessmentForm
           selectedCandidate={candidate}
-          setCurrentView={setCurrentView}
         />
       )}
     </Card>
