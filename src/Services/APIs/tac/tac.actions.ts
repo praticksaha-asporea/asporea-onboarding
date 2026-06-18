@@ -32,6 +32,39 @@ export interface CandidatesResponse {
     pendingAssessment: number;
   } | null;
 }
+
+export interface QuestionType {
+  _id: string,
+  title: string,
+  shortName: string,
+  marks: number,
+  section: string,
+  subSection: string,
+  isDeleted: boolean,
+  type: boolean,
+  levels: string[],
+  order: number,
+  createdAt: string,
+  updatedAt: string,
+  __v: number
+}
+export interface QuestionsListReponse {
+  success: boolean,
+  message: string,
+  data: {
+    data: QuestionType[],
+    pagination: {
+      total: number,
+      page: number,
+      limit: number,
+      totalPages: number,
+      hasNextPage: boolean,
+      hasPrevPage: boolean
+    }
+  },
+  error: string
+}
+
 export type ExpType =
   | "fresher"
   | "domestic"
@@ -128,7 +161,7 @@ export const updateDocumentStatusAction = async (id: string, status: 'verified' 
 };
 
 export const updateExpStatusAction = async (id: string, status: 'verified' | 'rejected' | 'refer_technical', expType: ExpType
-): Promise<AxiosResponse<leadDocumentUpdateResponse>>  => {
+): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
   const payload = { id, status, expType };
   return axiosClient.patch(
@@ -149,4 +182,10 @@ export const updateLeadAction = async (payload: {
 }) => {
   const res = await axiosClient.patch("/tac/lead/update", payload);
   return res.data;
+};
+
+export const getAssessmentQuestionsList = async (
+): Promise<AxiosResponse<QuestionsListReponse>> => {
+  return axiosClient.get(
+    "/assessment/questions/list");
 };

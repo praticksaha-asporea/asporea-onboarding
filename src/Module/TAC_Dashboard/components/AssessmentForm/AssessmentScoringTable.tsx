@@ -41,7 +41,7 @@ const AssessmentScoringTable: React.FC<AssessmentScoringTableProps> = ({
                   <Box className="flex gap-4 w-full">
                     <span className="w-8 text-[var(--mui-palette-primary-dark)]">{section.id}</span>
                     <span className="flex-1 uppercase font-semibold text-[var(--mui-palette-primary-dark)]">
-                      LANGUAGE ABILITIES (2ND & 3RD LANGUAGES)
+                      LANGUAGE (Abilities: Speak,Read, Write,Listen) - L1 'Poor', L2 'Average', L3 'Good', L4 'Excellent' 
                     </span>
                   </Box>
                   <Box className="flex gap-10 min-w-[120px] justify-end">
