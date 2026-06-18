@@ -189,3 +189,15 @@ export const getAssessmentQuestionsList = async (
   return axiosClient.get(
     "/assessment/questions/list");
 };
+export const escalateLeadAction = async (payload: {
+  leadId: string;
+  toId: string;
+  reason: string;
+}) => {
+  try {
+    const res = await axiosClient.post("/tac/escalate", payload);
+    return res.data;
+  } catch (error: any) {
+    throw error;
+  }
+};

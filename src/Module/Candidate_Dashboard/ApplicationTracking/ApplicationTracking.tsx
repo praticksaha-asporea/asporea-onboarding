@@ -70,8 +70,10 @@ const ApplicationTracking = () => {
   const isExpSubmitted =
     (expStatus !== "" && expStatus !== "na" && expStatus !== "pending") ||
     !!journeyData.experience?.type;
-
-  const arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
+     const isExpVerified = 
+    expStatus === "verified" || 
+    expStatus === "exp_verified";
+    const arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
 
   return (
     <Box className="w-full flex justify-center">

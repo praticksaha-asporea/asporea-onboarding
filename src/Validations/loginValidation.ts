@@ -1,4 +1,5 @@
 import * as yup from "yup";
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
 export const getLoginValidationSchema = (authMode: string) => {
   return yup.object({
@@ -27,7 +28,10 @@ export const passwordSetupSchema = yup.object({
   newPassword: yup
     .string()
     .required("Password is required")
-    .min(6, "Password must be at least 6 characters"),
+    .matches(
+      passwordRegex,
+      "Password must be 8+ chars with uppercase, lowercase, number & special char"
+    ),
   confirmPassword: yup
     .string()
     .required("Confirm Password is required")
