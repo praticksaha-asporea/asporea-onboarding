@@ -59,6 +59,18 @@ const AssessmentContent = () => {
     );
   }
 
+
+  const formatToDDMMYY = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";  
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear()).slice(-2);  
+    return `${day}/${month}/${year}`;
+  };
+
   return (
    <Grid container spacing={6}>
       {/* LEFT COLUMN */}
@@ -82,7 +94,7 @@ const AssessmentContent = () => {
                 {scheduledDetails?.date && (
                   <Box className="p-3 bg-[var(--mui-palette-primary)]   rounded-xl inline-block shadow-sm px-6">
                     <Typography variant="body2" className="text-[var(--mui-palette-primary)] font-medium">
-                      📅 Date: <strong>{new Date(scheduledDetails.date).toLocaleDateString()}</strong>
+                      📅 Date: : <strong>{formatToDDMMYY(scheduledDetails.date)}</strong>
                     </Typography>
                   </Box>
                 )}

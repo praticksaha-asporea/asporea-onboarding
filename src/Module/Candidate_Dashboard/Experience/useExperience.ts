@@ -112,11 +112,16 @@ export const useExperience = () => {
 
           const docCompletedStatuses = [
             "doc_submitted",
+            "doc_verified",
             "exp_submitted",
+            "exp_verified",
             "assess_scheduled",
+            "assessment_scheduled",
+            "assessment_submitted",
           ];
           const isDocUploaded =
             res.data.documentStatus === "uploaded" ||
+            res.data.documentStatus === "verified" ||
             docCompletedStatuses.includes(currentStatus);
 
           if (!isDocUploaded) {
@@ -127,7 +132,10 @@ export const useExperience = () => {
 
           const submittedStages = [
             "exp_submitted",
+            "exp_verified",
             "assess_scheduled",
+            "assessment_scheduled",
+            "assessment_submitted",
           ];
           if (submittedStages.includes(currentStatus)) {
             setIsAlreadySubmitted(true);
@@ -206,8 +214,18 @@ export const useExperience = () => {
         }
       }
 
-      if (mappedDocs.length > 0) {
-        await saveMappedDocumentsAction({ leadId, documents: mappedDocs });
+    if (mappedDocs.length > 0) {
+        const docSaveRes = await saveMappedDocumentsAction({ 
+          leadId, 
+          documents: mappedDocs, 
+          position: positionId 
+        });
+        
+        if (!docSaveRes?.success) {
+          toast.error(docSaveRes?.message || "Failed to save additional documents.");
+          setIsSubmitting(false);
+          return;  
+        }
       }
 
       const expRes = await saveExperienceTypeAction({

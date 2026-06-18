@@ -3,7 +3,11 @@ import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
-import { Position, GroupedDocuments, DocumentRequirement } from "@/Types/Frontend_Payload/document.types";
+import {
+  Position,
+  GroupedDocuments,
+  DocumentRequirement,
+} from "@/Types/Frontend_Payload/document.types";
 import {
   getPositionsListAction,
   getPositionDetailsAction,
@@ -15,7 +19,9 @@ import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.
 
 export const useDocumentUpload = () => {
   const router = useRouter();
-  const reduxUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );
   const leadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
 
   const [activeStep, setActiveStep] = useState<number>(2);
@@ -27,10 +33,16 @@ export const useDocumentUpload = () => {
   const [isReduxReady, setIsReduxReady] = useState(false);
 
   const [groupedDocs, setGroupedDocs] = useState<GroupedDocuments>({
-    resume: [], document: [], experience: [], academic: [], additional: [],
+    resume: [],
+    document: [],
+    experience: [],
+    academic: [],
+    additional: [],
   });
 
-  const [selectedFilesMap, setSelectedFilesMap] = useState<Record<string, File[]>>({});
+  const [selectedFilesMap, setSelectedFilesMap] = useState<
+    Record<string, File[]>
+  >({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isAlreadySubmitted, setIsAlreadySubmitted] = useState(false);
   const [checkingStatus, setCheckingStatus] = useState(true);
@@ -46,14 +58,19 @@ export const useDocumentUpload = () => {
     const checkAccessAndStatus = async () => {
       if (!isReduxReady) return;
       if (!leadId) {
-        toast.error("Please generate inquiry first", { id: "doc-guard-inquiry" });
+        toast.error("Please generate inquiry first", {
+          id: "doc-guard-inquiry",
+        });
         router.push("/inquiry");
         return;
       }
       setCheckingStatus(true);
       try {
         const timelineRes = await getJourneyTimelineAction(leadId);
-        if (timelineRes?.success === false && timelineRes?.message?.toLowerCase().includes("not found")) {
+        if (
+          timelineRes?.success === false &&
+          timelineRes?.message?.toLowerCase().includes("not found")
+        ) {
           setIsValidLead(false);
           return;
         }
@@ -67,21 +84,37 @@ export const useDocumentUpload = () => {
             setIsPreLocked(false);
           }
           if (currentActiveStep < 2 && preCounsellingStatus !== "Completed") {
-            toast.error("Please schedule pre-counselling first and wait for completion", { id: "doc-guard-precoun" });
+            toast.error(
+              "Please schedule pre-counselling first and wait for completion",
+              { id: "doc-guard-precoun" },
+            );
             router.push(`/pre-counselling?leadId=${leadId}`);
             return;
           }
         }
         const res = await checkDocumentStatusAction(leadId);
         if (res?.success && res.data) {
-          const submittedStages = ["doc_submitted", "exp_submitted", "assess_scheduled"];
-
-          if (submittedStages.includes(res.data.status) || res.data.documentStatus === "uploaded") {
+          const submittedStages = [
+            "doc_submitted",
+            "doc_verified",
+            "exp_submitted",
+            "exp_verified",
+            "assess_scheduled",
+            "assessment_scheduled",
+            "assessment_submitted",
+          ];
+          if (
+            submittedStages.includes(res.data.status) ||
+            res.data.documentStatus === "uploaded" || res.data.documentStatus === "verified"
+          ) {
             setIsAlreadySubmitted(true);
           }
         }
       } catch (err: any) {
-        if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
+        if (
+          err?.response?.status === 404 ||
+          err?.response?.data?.message?.toLowerCase().includes("not found")
+        ) {
           setIsValidLead(false);
         }
         console.error("Error pulling timeline or status", err);
@@ -105,7 +138,13 @@ export const useDocumentUpload = () => {
 
   useEffect(() => {
     if (!selectedPosition) {
-      setGroupedDocs({ resume: [], document: [], experience: [], academic: [], additional: [] });
+      setGroupedDocs({
+        resume: [],
+        document: [],
+        experience: [],
+        academic: [],
+        additional: [],
+      });
       setHasDocuments(true);
       return;
     }
@@ -115,13 +154,20 @@ export const useDocumentUpload = () => {
       if (res?.success) {
         const required = res.data.requiredDocuments || [];
         const mandatory = res.data.mandatoryDocuments || [];
-        if (required.length === 0 && mandatory.length === 0) setHasDocuments(false);
+        if (required.length === 0 && mandatory.length === 0)
+          setHasDocuments(false);
         else setHasDocuments(true);
 
         const docMap = new Map();
-        required.forEach((d: any) => docMap.set(d._id, { ...d, isMandatory: false }));
-        mandatory.forEach((d: any) => docMap.set(d._id, { ...d, isMandatory: true }));
-        const allUniqueDocs = Array.from(docMap.values()) as DocumentRequirement[];
+        required.forEach((d: any) =>
+          docMap.set(d._id, { ...d, isMandatory: false }),
+        );
+        mandatory.forEach((d: any) =>
+          docMap.set(d._id, { ...d, isMandatory: true }),
+        );
+        const allUniqueDocs = Array.from(
+          docMap.values(),
+        ) as DocumentRequirement[];
 
         setGroupedDocs({
           resume: allUniqueDocs.filter((d) => d.section === "resume"),
@@ -144,14 +190,23 @@ export const useDocumentUpload = () => {
     if (!leadId) return toast.error("Session expired or Lead ID missing.");
 
     const allRequiredDocs = [
-      ...groupedDocs.resume, ...groupedDocs.document, ...groupedDocs.experience, ...groupedDocs.academic,
+      ...groupedDocs.resume,
+      ...groupedDocs.document,
+      ...groupedDocs.experience,
+      ...groupedDocs.academic,
     ];
 
-    const missingMandatory = allRequiredDocs.filter((d) => d.isMandatory && (!selectedFilesMap[d._id] || selectedFilesMap[d._id].length === 0));
-    if (missingMandatory.length > 0) return toast.error("Please upload all mandatory documents.");
+    const missingMandatory = allRequiredDocs.filter(
+      (d) =>
+        d.isMandatory &&
+        (!selectedFilesMap[d._id] || selectedFilesMap[d._id].length === 0),
+    );
+    if (missingMandatory.length > 0)
+      return toast.error("Please upload all mandatory documents.");
 
     const hasFiles = Object.values(selectedFilesMap).flat().length > 0;
-    if (!hasFiles) return router.push(`/experience?positionId=${selectedPosition}`);
+    if (!hasFiles)
+      return router.push(`/experience?positionId=${selectedPosition}`);
 
     setIsSubmitting(true);
     try {
@@ -169,11 +224,16 @@ export const useDocumentUpload = () => {
         }
       }
       if (mappedDocs.length > 0) {
-        const saveRes = await saveMappedDocumentsAction({ leadId, documents: mappedDocs, position: selectedPosition });
+        const saveRes = await saveMappedDocumentsAction({
+          leadId,
+          documents: mappedDocs,
+          position: selectedPosition,
+        });
         if (saveRes?.success) {
           toast.success("Documents uploaded successfully!");
           router.push(`/experience?positionId=${selectedPosition}`);
-        } else toast.error(saveRes?.message || "Failed to save document records.");
+        } else
+          toast.error(saveRes?.message || "Failed to save document records.");
       }
     } catch (err) {
       toast.error("An error occurred during the upload process.");
@@ -183,8 +243,23 @@ export const useDocumentUpload = () => {
   };
 
   return {
-    router, leadId, activeStep, positions, selectedPosition, setSelectedPosition,
-    loadingPositions, loadingDocs, hasDocuments, groupedDocs, isSubmitting,
-    isAlreadySubmitted, checkingStatus, isPreLocked, handleFilesUpdate, handleSubmit, isReduxReady, isValidLead
+    router,
+    leadId,
+    activeStep,
+    positions,
+    selectedPosition,
+    setSelectedPosition,
+    loadingPositions,
+    loadingDocs,
+    hasDocuments,
+    groupedDocs,
+    isSubmitting,
+    isAlreadySubmitted,
+    checkingStatus,
+    isPreLocked,
+    handleFilesUpdate,
+    handleSubmit,
+    isReduxReady,
+    isValidLead,
   };
 };

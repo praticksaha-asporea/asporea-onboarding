@@ -18,16 +18,16 @@ export const createEscalationService = async (payload: EscalatePayload) => {
 
  const existingEscalation = await EscalationReportModel.findOne({
     leadId,
-    status: { $in: ["requested", "approved"] } // 🎯 Dono status check ho rhe hain
+    status: { $in: ["requested", "approved"] }  
   });
 
   if (existingEscalation) {
     if (existingEscalation.status === "requested") {
-      // Agar abhi pending hai manager ke paas
-      throw new ApiError("An escalation request for this lead is already pending manager approval.", 400);
+      
+      throw new ApiError("Escalation request already submitted and awaiting manager approval.", 400);
     } else {
-      // Agar pehle hi approve ho chuka hai (Tera naya rule)
-      throw new ApiError("Escalation already raised and approved for this lead.", 400);
+     
+      throw new ApiError("This candidate has a history of escalation.", 400);
     }
   }
   const newEscalation = await EscalationReportModel.create({

@@ -119,13 +119,13 @@ export default async function handler(
               : "Pending",
         date: formatDate(lead.documents?.submittedOn),
       },
-      experience: {
+     experience: {
         status:
-          lead.experience?.submittedOn ||
-          lead.status === "exp_submitted" ||
-          isAssessScheduled
-            ? "Filled"
-            : "Pending",
+          lead.experience?.status === "verified" || lead.status === "exp_verified"
+            ? "Verified"  
+            : lead.experience?.submittedOn || lead.status === "exp_submitted" || isAssessScheduled
+              ? "Filled"
+              : "Pending",
         type: lead.experience?.type || null,
         date: formatDate(lead.experience?.submittedOn),
       },

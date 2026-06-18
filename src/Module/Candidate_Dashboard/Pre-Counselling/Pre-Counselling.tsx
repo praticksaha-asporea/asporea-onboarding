@@ -46,6 +46,18 @@ const PreCounsellingContent = () => {
     isCompleted
   } = usePreCounselling();
 
+  const formatToDDMMYY = (dateStr: string) => {
+    if (!dateStr) return "";
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return "";  
+
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = String(d.getFullYear()).slice(-2);  
+
+    return `${day}/${month}/${year}`;
+  };
+
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12, md: 8 }}>
@@ -140,10 +152,9 @@ const PreCounsellingContent = () => {
                     className="text-[var(--mui-palette-text-primary)]"
                   >
                     Your session is booked for{" "}
-                    <strong>
-                      {new Date(
-                        existingBooking.schedule?.date || "",
-                      ).toLocaleDateString()}
+                  <strong>
+                      
+                      {formatToDDMMYY(existingBooking.schedule?.date || "")}
                     </strong>{" "}
                     at{" "}
                     <strong>
