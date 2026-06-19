@@ -7,6 +7,9 @@ import AssessmentScoringTable from "./AssessmentScoringTable";
 import AssessmentNotes from "./AssessmentNotes";
 import AssessmentSignatures from "./AssessmentSignatures";
 import { getAssessmentQuestionsList, QuestionType } from "@/Services/APIs/tac/tac.actions";
+import { useFormik } from "formik";
+import * as yup from "yup";
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
 interface AssessmentFormProps {
   selectedCandidate: any
@@ -64,11 +67,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     {
       id: 2, title: "PROFESSIONAL QUALIFICATION", max: 10, bg: "bg-[#f3e8ff]",
       options: [
-        { label: questionsByShortName.prof_L7?.title, score: questionsByShortName.prof_L7?.marks},
-        { label: questionsByShortName.prof_L6?.title, score: questionsByShortName.prof_L6?.marks},
-        { label: questionsByShortName.prof_l4_l5_Diploma_2yrs?.title, score: questionsByShortName.prof_l4_l5_Diploma_2yrs?.marks},
-        { label: questionsByShortName.prof_1yrs?.title, score: questionsByShortName.prof_1yrs?.marks},
-        { label: questionsByShortName.prof_ITI_L1_L2?.title, score: questionsByShortName.prof_ITI_L1_L2?.marks},
+        { label: questionsByShortName.prof_L7?.title, score: questionsByShortName.prof_L7?.marks },
+        { label: questionsByShortName.prof_L6?.title, score: questionsByShortName.prof_L6?.marks },
+        { label: questionsByShortName.prof_l4_l5_Diploma_2yrs?.title, score: questionsByShortName.prof_l4_l5_Diploma_2yrs?.marks },
+        { label: questionsByShortName.prof_1yrs?.title, score: questionsByShortName.prof_1yrs?.marks },
+        { label: questionsByShortName.prof_ITI_L1_L2?.title, score: questionsByShortName.prof_ITI_L1_L2?.marks },
         { label: questionsByShortName.prof_Dipl_Recog?.title, score: questionsByShortName.prof_Dipl_Recog?.marks },
         { label: questionsByShortName.prof_Skill_Cert?.title, score: questionsByShortName.prof_Skill_Cert?.marks },
         { label: 'Others:', score: 0 }
@@ -136,11 +139,11 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       options: [
         { label: questionsByShortName.ADAP_1YR?.title, score: questionsByShortName.ADAP_1YR?.marks },
         { label: questionsByShortName.ADAP_ABROAD?.title, score: questionsByShortName.ADAP_ABROAD?.marks },
-        { label: questionsByShortName.ADAP_FAMILY_ABROAD?.title, score: questionsByShortName.ADAP_FAMILY_ABROAD?.marks},
-        { label: questionsByShortName.ADAP_RECET_ABROAD?.title, score: questionsByShortName.ADAP_RECET_ABROAD?.marks},
-        { label: questionsByShortName.ADAP_EDU_ABROAD?.title, score: questionsByShortName.ADAP_EDU_ABROAD?.marks},
-        { label: questionsByShortName.ADAP_WORKING_ABROAD?.title, score: questionsByShortName.ADAP_WORKING_ABROAD?.marks},
-        { label: questionsByShortName.ADAP_WORKED_ABROAD?.title, score: questionsByShortName.ADAP_WORKED_ABROAD?.marks}
+        { label: questionsByShortName.ADAP_FAMILY_ABROAD?.title, score: questionsByShortName.ADAP_FAMILY_ABROAD?.marks },
+        { label: questionsByShortName.ADAP_RECET_ABROAD?.title, score: questionsByShortName.ADAP_RECET_ABROAD?.marks },
+        { label: questionsByShortName.ADAP_EDU_ABROAD?.title, score: questionsByShortName.ADAP_EDU_ABROAD?.marks },
+        { label: questionsByShortName.ADAP_WORKING_ABROAD?.title, score: questionsByShortName.ADAP_WORKING_ABROAD?.marks },
+        { label: questionsByShortName.ADAP_WORKED_ABROAD?.title, score: questionsByShortName.ADAP_WORKED_ABROAD?.marks }
       ],
     },
   ];
@@ -167,17 +170,73 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   const finalTotal = totalScore + englishTotal + otherTotal;
 
   const signatureFields = [
-    { label: "Candidate Signature", file: candidateSignature, setFile: setCandidateSignature },
-    { label: "Assessor Signature", file: assessorSignature, setFile: setAssessorSignature },
+    {
+      label: "Candidate Signature",
+      field: "candidateSign",
+    },
+    {
+      label: "Assessor Signature",
+      field: "assessorSign",
+    },
   ];
 
+  const assessmentForm = useFormik({
+    initialValues: {
+      passportNo: selectedCandidate?.passport?.no || "",
+      note1: "",
+      note2: "",
+      note3: "",
+      note4: "",
+      candidateSign: null as File | null,
+      assessorSign: null as File | null,
+    },
+    // validationSchema: yup.object({
+      //   passportNo: yup
+      //     .string()
+      //     .trim()
+      //     .required("Passport No is required")
+      // })
+      // note1: yup.string().required("Note 1 is required"),
+      // note2: yup.string().required("Note 2 is required"),
+      // note3: yup.string(),
+      // note4: yup.string(),
+      // candidateSign: yup.mixed()
+      //   .required("Candidate signature is required"),
+
+      // assessorSign: yup.mixed()
+      //   .required("Assessor signature is required"),
+
+    // }),
+    onSubmit: async (values) => {
+      const formData = new FormData();
+
+      formData.append("passportNo", values.passportNo);
+      formData.append("totalMarks", String(finalTotal));
+
+      ["note1", "note2", "note3", "note4"].forEach((key) => {
+        formData.append(key, values[key as keyof typeof values] as string);
+      });
+
+      if (values.candidateSign) {
+        formData.append("candidateSign", values.candidateSign);
+      }
+
+      if (values.assessorSign) {
+        formData.append("assessorSign", values.assessorSign);
+      }
+      // console.log(formData,5444);
+      
+      // await axiosClient.post("/", formData);
+    },
+  });
+
   return (
-    <Box className="w-full min-h-screen p-4 md:p-8 text-gray-900">
+    <Box className="w-full min-h-screen p-4 md:p-8 text-gray-900" >
       {/* <AssessmentHeader onBack={() => setCurrentView("detail")} /> */}
 
-      <Card className="rounded-xl border border-gray-200 shadow-sm">
+      < Card className="rounded-xl border border-gray-200 shadow-sm" >
         <CardContent className="p-6 md:p-8">
-          <AssessmentBasicInfo selectedCandidate={selectedCandidate} />
+          <AssessmentBasicInfo selectedCandidate={selectedCandidate} assessmentForm={assessmentForm} />
 
           <AssessmentScoringTable
             scoringSections={scoringSections}
@@ -191,12 +250,12 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             finalTotal={finalTotal}
           />
 
-          <AssessmentNotes />
+          <AssessmentNotes assessmentForm={assessmentForm} />
 
-          <AssessmentSignatures signatureFields={signatureFields} />
+          <AssessmentSignatures signatureFields={signatureFields} assessmentForm={assessmentForm} />
         </CardContent>
-      </Card>
-    </Box>
+      </Card >
+    </Box >
   );
 };
 

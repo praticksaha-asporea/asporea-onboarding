@@ -1,31 +1,47 @@
 import React from "react";
 import { Box, Card, CardContent, Grid, TextField, Typography } from "@mui/material";
 
-const AssessmentNotes: React.FC = () => {
+const AssessmentNotes: React.FC<{ assessmentForm: any }> = (
+  { assessmentForm }) => {
   return (
     <Box className="mb-10">
       <Typography className="text-[14px] font-bold mb-4">
         Additional Assessment Notes
       </Typography>
       <Grid container spacing={3}>
-        {[1, 2, 3, 4].map((i) => (
+        {[0, 1, 2, 3].map((i) => {
+          const fieldName = `note${i + 1}`;
+          return (
           <Grid size={{ xs: 12, md: 6 }} key={i}>
             <Card className="border border-gray-200 shadow-sm">
               <CardContent>
                 <Typography className="text-[11px] font-bold mb-2 uppercase">
-                  Note {i}
+                  Note {i+1}
                 </Typography>
                 <TextField
+                  fullWidth
                   multiline
                   rows={4}
-                  fullWidth
-                  defaultValue=""
-                  placeholder="Sample Note... "
+                  name={fieldName}
+                  value={assessmentForm.values[fieldName]}
+                  onChange={assessmentForm.handleChange}
+                  onBlur={assessmentForm.handleBlur}
+                  error={
+                    !!(
+                      assessmentForm.touched[fieldName] &&
+                      assessmentForm.errors[fieldName]
+                    )
+                  }
+                  helperText={
+                    assessmentForm.touched[fieldName]
+                      ? assessmentForm.errors[fieldName]
+                      : ""
+                  }
                 />
               </CardContent>
             </Card>
           </Grid>
-        ))}
+        )})}
       </Grid>
     </Box>
   );
