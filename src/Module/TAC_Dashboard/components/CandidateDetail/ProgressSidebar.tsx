@@ -205,7 +205,7 @@ toast.success("Escalation request submitted successfully!", { id: "escalation-su
                 {escalationForm.isSubmitting ? (
                   <CircularProgress size={24} color="inherit" />
                 ) : (
-                  "Submit Request"
+                  "Submit"
                 )}
               </Button>
             </Box>
