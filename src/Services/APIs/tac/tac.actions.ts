@@ -33,6 +33,34 @@ export interface CandidatesResponse {
   } | null;
 }
 
+export interface TacAssessmentResponse {
+    success: boolean,
+    message: string,
+    data: {
+        _id: string,
+        leadId: string,
+        phase: string,
+        assignedTo: string,
+        schedule: {
+            date: string,
+            from: string,
+            to: string,
+            method: string
+        },
+        status: string,
+        token: {
+            generated: boolean
+        },
+        attended: boolean,
+        escalation: {
+            requested: boolean
+        },
+        createdAt: string,
+        updatedAt: string
+    },
+    error: null
+}
+
 export interface QuestionType {
   _id: string,
   title: string,
@@ -118,6 +146,19 @@ type UpdateAssignmentAssessPayload =
     assignmentId: string;
     status?: string;
   };
+
+  type UpdateAssessmentPayload =
+  | FormData
+  | {
+  id: string;
+  passportNo: string,
+  note1: string,
+  note2: string,
+  note3: string,
+  note4: string,
+  candidateSign?: File | null,
+  assessorSign?: File | null;
+};
 export const updateAssignmentAction = async (
   payload: UpdateAssignmentPayload
 ) => {
@@ -160,7 +201,7 @@ export const updateDocumentStatusAction = async (id: string, status: 'verified' 
   );
 };
 
-export const updateExpStatusAction = async (id: string, status: 'verified' | 'rejected' | 'refer_technical', expType: ExpType
+export const updateExpStatusAction = async (id: string, status: 'verified' | 'rejected' | 'request_technical', expType: ExpType
 ): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
   const payload = { id, status, expType };
@@ -200,4 +241,10 @@ export const escalateLeadAction = async (payload: {
   } catch (error: any) {
     throw error;
   }
+};
+
+
+export const updateAssessmentScoreAction = async (payload: UpdateAssessmentPayload):Promise<AxiosResponse<TacAssessmentResponse>> => {
+  const res = await axiosClient.patch("/tac/assessment/tool-update", payload);
+  return res;
 };

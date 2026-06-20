@@ -1,5 +1,6 @@
 import React from "react";
-import { Box, Button, Typography } from "@mui/material";
+import { Box, Button, CircularProgress, Typography } from "@mui/material";
+import { isWithinSchedule } from "@/Utils/common";
 
 interface AssessmentSignaturesProps {
   signatureFields: {
@@ -7,10 +8,12 @@ interface AssessmentSignaturesProps {
     field: string;
   }[];
   assessmentForm: any;
+  assessmentStatus: string;
+  assessAssign: any;
 }
 type SignatureField = "candidateSign" | "assessorSign";
 
-const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentForm, signatureFields }) => {
+const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentForm, signatureFields, assessmentStatus, assessAssign }) => {
   return (
     <Box className="flex flex-col md:flex-row justify-between items-end gap-10">
       <Box className="flex w-full md:w-[60%] gap-6">
@@ -135,9 +138,19 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
         type="button"
         variant="contained"
         onClick={() => assessmentForm.handleSubmit()}
+        disabled={
+          assessmentForm.isSubmitting ||
+          assessmentStatus === "completed" ||
+          assessmentStatus === "rejected" ||
+          !isWithinSchedule(assessAssign)
+        }
         className="bg-[var(--mui-palette-success-dark)] hover:bg-[var(--mui-palette-success-dark)] px-10 py-3 font-bold tracking-widest"
       >
-        SUBMIT
+        {assessmentForm?.isSubmitting ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          "Check Eligibility"
+        )}
       </Button>
     </Box>
   );
