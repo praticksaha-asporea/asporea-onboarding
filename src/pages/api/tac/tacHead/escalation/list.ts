@@ -22,18 +22,14 @@ export default async function handler(
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-
-    if (String(authUser.role).toLowerCase() === "user") {
-      throw new ApiError(
-        "Unauthorized access. Candidates cannot view escalation records.",
-        403,
-      );
+    const userRole = String(authUser.role).toLowerCase();
+    if (userRole === "user") {
+      throw new ApiError("Unauthorized access. Candidates cannot view escalation records.", 403);
     }
-
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-
-    const result = await getEscalationListService(page, limit);
+    const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
+    const result = await getEscalationListService(page, limit,filterUserId);
 
     return ResponseHandler.sendSuccess(
       res,

@@ -49,6 +49,7 @@ const AssessmentContent = () => {
     isAlreadyScheduled,
     scheduledDetails,
     checkingStatus,
+    handleSavePreferences,
   } = useAssessment();
 
   if (checkingStatus) {
@@ -227,6 +228,7 @@ const AssessmentContent = () => {
             setIsEditingChannels={setIsEditingChannels}
             channels={channels}
             handleChannelChange={handleChannelChange}
+            handleSavePreferences={handleSavePreferences}  
           />
         </Grid>
       )}

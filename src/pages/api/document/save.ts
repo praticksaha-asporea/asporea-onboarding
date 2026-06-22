@@ -20,9 +20,9 @@ export default async function handler(
     const token = getTokenFromHeader(req);
     const user = token ? await verifyToken(token) : null;
 
-    const { leadId, documents,position } = req.body; // documents = [{ typeId: "...", uploadId: "..." }, { typeId: "...", uploadId: "..." }]
+    const { leadId, documents, position } = req.body;
 
-    if (!leadId || !documents || !documents.length || !position) {
+    if (!leadId || !documents || !position) {
       return ResponseHandler.sendError(
         res,
         "Lead and documents and applying position are required",
@@ -31,28 +31,30 @@ export default async function handler(
     }
 
     const savedDocs = [];
-    for (const doc of documents) {
-      const newDoc = await DocumentModel.create({
-        leadId,
-        userId: user?.id,
-        typeId: doc.typeId,
-        uploadId: doc.uploadId,
-        status: "uploaded",
-      });
-      savedDocs.push(newDoc);
+
+    if (documents && documents.length > 0) {
+      for (const doc of documents) {
+        if (doc.typeId && doc.uploadId) {
+          const newDoc = await DocumentModel.create({
+            leadId,
+            userId: user?.id,
+            typeId: doc.typeId,
+            uploadId: doc.uploadId,
+            status: "uploaded",
+          });
+          savedDocs.push(newDoc);
+        }
+      }
     }
 
-    if (savedDocs.length > 0) {
-      const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
+    const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
 
-      await LeadModel.findByIdAndUpdate(leadId, {
-        status: "doc_submitted",
-        "documents.status": "uploaded",
-
-        "documents.submittedOn": new Date(),
-        "documents.position": position
-      });
-    }
+    await LeadModel.findByIdAndUpdate(leadId, {
+      status: "doc_submitted",
+      "documents.status": "uploaded",
+      "documents.submittedOn": new Date(),
+      "documents.position": position,
+    });
 
     return ResponseHandler.sendSuccess(
       res,

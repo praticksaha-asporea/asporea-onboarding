@@ -188,6 +188,7 @@ export const useDocumentUpload = () => {
 
   const handleSubmit = async () => {
     if (!leadId) return toast.error("Session expired or Lead ID missing.");
+    if (!selectedPosition) return toast.error("Please select a position first.");
 
     const allRequiredDocs = [
       ...groupedDocs.resume,
@@ -196,7 +197,7 @@ export const useDocumentUpload = () => {
       ...groupedDocs.academic,
     ];
 
-    const missingMandatory = allRequiredDocs.filter(
+   const missingMandatory = allRequiredDocs.filter(
       (d) =>
         d.isMandatory &&
         (!selectedFilesMap[d._id] || selectedFilesMap[d._id].length === 0),
@@ -204,40 +205,42 @@ export const useDocumentUpload = () => {
     if (missingMandatory.length > 0)
       return toast.error("Please upload all mandatory documents.");
 
-    const hasFiles = Object.values(selectedFilesMap).flat().length > 0;
-    if (!hasFiles)
-      return router.push(`/experience?positionId=${selectedPosition}`);
-
     setIsSubmitting(true);
     try {
       const mappedDocs = [];
+      
+      
       for (const [typeId, files] of Object.entries(selectedFilesMap)) {
         for (const file of files) {
-          const uploadRes = await uploadFileAction(file);
-          if (uploadRes?.success && uploadRes.data?.uploadId) {
-            mappedDocs.push({ typeId, uploadId: uploadRes.data.uploadId });
-          } else {
-            toast.error(`Failed to upload ${file.name}`);
-            setIsSubmitting(false);
-            return;
+          if (file) {
+            const uploadRes = await uploadFileAction(file);
+            if (uploadRes?.success && uploadRes.data?.uploadId) {
+              mappedDocs.push({ typeId, uploadId: uploadRes.data.uploadId });
+            } else {
+              toast.error(`Failed to upload ${file.name}`);
+              setIsSubmitting(false);
+              return;
+            }
           }
         }
       }
-      if (mappedDocs.length > 0) {
-        const saveRes = await saveMappedDocumentsAction({
-          leadId,
-          documents: mappedDocs,
-          position: selectedPosition,
-        });
-        if (saveRes?.success) {
-          toast.success("Documents uploaded successfully!");
-          router.push(`/experience?positionId=${selectedPosition}`);
-        } else
-          toast.error(saveRes?.message || "Failed to save document records.");
+
+      
+      const saveRes = await saveMappedDocumentsAction({
+        leadId,
+        documents: mappedDocs,
+        position: selectedPosition,
+      });
+
+      if (saveRes?.success) {
+        toast.success("Details updated successfully!");
+        router.push(`/experience?positionId=${selectedPosition}`);
+      } else {
+        toast.error(saveRes?.message || "Failed to save document records.");
       }
     } catch (err) {
       toast.error("An error occurred during the upload process.");
-    } finally {
+    } {
       setIsSubmitting(false);
     }
   };

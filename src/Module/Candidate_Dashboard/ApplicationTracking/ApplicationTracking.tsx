@@ -221,7 +221,7 @@ const ApplicationTracking = () => {
         onClose={() => setIsPopupOpen(false)}
         onProceed={() => {
           setIsPopupOpen(false);
-          router.push("/assessment");
+         router.push(`/assessment?leadId=${leadId}`);
         }}
       />
     </Box>

@@ -18,6 +18,7 @@ interface NotificationChannelsProps {
   setIsEditingChannels: (val: boolean) => void;
   channels: ChannelsType;
   handleChannelChange: (e: ChangeEvent<HTMLInputElement>) => void;
+  handleSavePreferences: () => void; // 🌟 Prop interface mein add kiya
 }
 
 export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
@@ -25,6 +26,7 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
   setIsEditingChannels,
   channels,
   handleChannelChange,
+  handleSavePreferences, // 🌟 Destructure kiya
 }) => {
   return (
     <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
@@ -47,18 +49,23 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
         </Box>
         {!isEditingChannels ? (
           <Box>
+            {/* Conditional icons or text mapping based on real state */}
             <Box className="flex gap-4 items-start mb-8">
-              <i className="ri-whatsapp-line text-[24px] text-[#25D366] mt-[2px]"></i>
+              <i className={`ri-whatsapp-line text-[20px] ${channels.whatsapp ? "text-[#25D366]" : "text-gray-400"} mt-[2px]`}></i>
               <Typography variant="body2">
-                <span className="font-bold">WhatsApp:</span> Enabled for timely
-                updates.
+                <span className="font-bold">WhatsApp:</span> {channels.whatsapp ? "Enabled for timely updates." : "Disabled."}
               </Typography>
             </Box>
-            <Box className="flex gap-4 items-start">
-              <i className="ri-mail-line text-[24px] text-[#1976d2] mt-[2px]"></i>
+            <Box className="flex gap-4 -mt-4 items-start">
+              <i className={`ri-mail-line text-[19px] ${channels.email ? "text-[#1976d2]" : "text-gray-400"} mt-[2px]`}></i>
               <Typography variant="body2">
-                <span className="font-bold">Email:</span> Enabled for detailed
-                information.
+                <span className="font-bold">Email:</span> {channels.email ? "Enabled for detailed information." : "Disabled."}
+              </Typography>
+            </Box>
+            <Box className="flex gap-4 mt-4 items-start">
+              <i className={`ri-message-3-line text-[19px] ${channels.sms ? "text-[#ff9800]" : "text-gray-400"} mt-[2px]`}></i>
+              <Typography variant="body2">
+                <span className="font-bold">SMS:</span> {channels.sms ? "Enabled for important reminders." : "Disabled."}
               </Typography>
             </Box>
           </Box>
@@ -86,7 +93,7 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
                     />
                   }
                 />
-                <FormControlLabel
+            <FormControlLabel
                   label="Receive updates via SMS"
                   control={
                     <Checkbox
@@ -102,7 +109,7 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
               <Button
                 variant="contained"
                 size="small"
-                onClick={() => setIsEditingChannels(false)}
+                onClick={handleSavePreferences}  
                 className="rounded-[8px] normal-case font-bold px-6 bg-[#1976d2] shadow-none"
               >
                 Save

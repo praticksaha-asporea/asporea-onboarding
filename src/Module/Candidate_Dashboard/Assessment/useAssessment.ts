@@ -1,13 +1,19 @@
 import { useState, useEffect, useRef, ChangeEvent } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
+
+import { updateUserData } from "@/Redux/Auth/user.slice";
 
 import {
   scheduleAssessmentAction,
   getTechnicalResultAction,
 } from "@/Services/APIs/Assessment/assessment.actions";
-import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+
+import {
+  getSlotsAction,
+  checkBookingStatusAction,
+} from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import {
   Slot,
   Checklist,
@@ -15,25 +21,38 @@ import {
   TechData,
 } from "@/Types/Frontend_Payload/assessment.types";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
 export const useAssessment = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
-
+  const dispatch = useDispatch();
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
-  const leadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
-  const consultantId =
+
+  const reduxLeadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
+  const leadId = searchParams?.get("leadId") || reduxLeadId;
+
+  const reduxConsultantId =
     reduxUser?.prefferedConsultant ||
     reduxUser?.user?.prefferedConsultant ||
-    "";
+    reduxUser?.preferences?.consultantId ||
+    reduxUser?.user?.preferences?.consultantId;
+
+  let initialConsultantId = searchParams?.get("consultantId") || "";
+  if (!initialConsultantId && reduxConsultantId) {
+    initialConsultantId =
+      typeof reduxConsultantId === "object"
+        ? reduxConsultantId._id || ""
+        : reduxConsultantId;
+  }
+
   const defaultMethod =
     (reduxUser?.visitOption ?? reduxUser?.user?.visitOption) === 2
       ? "on"
       : "off";
-
   const viewParam = searchParams?.get("view");
   const isAssessmentResult = viewParam === "result";
   const isTechnicalResult = viewParam === "technical";
@@ -45,6 +64,10 @@ export const useAssessment = () => {
   )
     .toISOString()
     .split("T")[0];
+
+  const [fetchedConsultantId, setFetchedConsultantId] = useState<string>("");
+
+  const finalConsultantId = initialConsultantId || fetchedConsultantId;
 
   const [techData, setTechData] = useState<TechData | null>(null);
   const [loadingTech, setLoadingTech] = useState(false);
@@ -59,25 +82,66 @@ export const useAssessment = () => {
   const [isAlreadyScheduled, setIsAlreadyScheduled] = useState<boolean>(false);
   const [scheduledDetails, setScheduledDetails] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
+
   const [checklist, setChecklist] = useState<Checklist>({
     documents: false,
     environment: false,
     aspirations: false,
     lighting: false,
   });
+
   const isChecklistComplete =
     checklist.documents &&
     checklist.environment &&
     checklist.aspirations &&
     checklist.lighting;
 
-  const [channels, setChannels] = useState<NotificationChannels>({
-    email: true,
-    whatsapp: false,
-    sms: false,
+ const [channels, setChannels] = useState<NotificationChannels>({
+    email: reduxUser?.notificationPreference?.email ?? true,
+    whatsapp: reduxUser?.notificationPreference?.whatsapp ?? false,
+    sms: reduxUser?.notificationPreference?.sms ?? false,
   });
-  const statusCardRef = useRef<HTMLDivElement | null>(null);
+
+
+  useEffect(() => {
+    if (reduxUser?.notificationPreference) {
+      setChannels({
+        email: reduxUser.notificationPreference.email ?? true,
+        whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
+        sms: reduxUser.notificationPreference.sms ?? false,
+      });
+    }
+  }, [reduxUser]);
+
   
+  const handleSavePreferences = async () => {
+    if (!channels.email && !channels.whatsapp && !channels.sms) {
+      return toast.error("Please select at least one notification channel", {
+        id: "pref-toast",
+      });
+    }
+    setIsEditingChannels(false);
+    try {
+      const res = await axiosClient.patch("/user/profile-update", {
+        notificationPreference: channels,
+      });
+      if (res.data?.success) {
+        dispatch(
+          updateUserData({
+            notificationPreference: res.data.data.notificationPreference,
+          }),
+        );
+        toast.success("Preferences updated successfully", { id: "pref-toast" });
+      }
+    } catch (err) {
+      toast.error("Failed to update preferences", { id: "pref-toast" });
+    }
+  };
+
+  
+
+  const statusCardRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     const checkAssessmentStatus = async () => {
       if (!leadId || !isBookingMode) {
@@ -86,11 +150,27 @@ export const useAssessment = () => {
       }
       try {
         setCheckingStatus(true);
+
         const res = await getJourneyTimelineAction(leadId);
         if (res?.success && res.data?.assessment) {
           if (res.data.assessment.status === "Scheduled") {
             setIsAlreadyScheduled(true);
             setScheduledDetails(res.data.assessment);
+          }
+        }
+
+        if (!initialConsultantId) {
+          try {
+            const bookingRes = await checkBookingStatusAction(leadId);
+            if (bookingRes?.success && bookingRes?.data?.assignedTo) {
+              const tacId =
+                typeof bookingRes.data.assignedTo === "object"
+                  ? bookingRes.data.assignedTo._id
+                  : bookingRes.data.assignedTo;
+              setFetchedConsultantId(tacId);
+            }
+          } catch (bookingErr) {
+            console.error("Failed to fetch assignment fallback", bookingErr);
           }
         }
       } catch (err) {
@@ -100,8 +180,7 @@ export const useAssessment = () => {
       }
     };
     checkAssessmentStatus();
-  }, [leadId, isBookingMode]);
-  
+  }, [leadId, isBookingMode, initialConsultantId]);
 
   useEffect(() => {
     if (typeof window !== "undefined" && viewParam) {
@@ -122,11 +201,11 @@ export const useAssessment = () => {
 
   useEffect(() => {
     const fetchSlots = async () => {
-      if (!consultantId || !isBookingMode || isAlreadyScheduled) return;  
+      if (!finalConsultantId || !isBookingMode || isAlreadyScheduled) return;
       setLoadingSlots(true);
       setSelectedSlot(null);
       try {
-        const res = await getSlotsAction(consultantId, date);
+        const res = await getSlotsAction(finalConsultantId, date);
         if (res?.success) setSlots(res.data);
         else {
           toast.error(res?.message || "Failed to fetch slots");
@@ -140,7 +219,7 @@ export const useAssessment = () => {
       }
     };
     fetchSlots();
-  }, [date, consultantId, isBookingMode]);
+  }, [date, finalConsultantId, isBookingMode, isAlreadyScheduled]);
 
   useEffect(() => {
     const fetchTechData = async () => {
@@ -155,7 +234,7 @@ export const useAssessment = () => {
   }, [isTechnicalResult, leadId]);
 
   const handleScheduleAssessment = async () => {
-    if (!leadId || !consultantId)
+    if (!leadId || !finalConsultantId)
       return toast.error("Session missing. Please refresh and try again.");
     if (!selectedSlot)
       return toast.error("Please select an available time slot.");
@@ -166,7 +245,7 @@ export const useAssessment = () => {
     try {
       const payload = {
         leadId,
-        consultantId,
+        consultantId: finalConsultantId,
         date,
         method: visitMethod,
         from: selectedSlot.from || selectedSlot.time.split("-")[0].trim(),
@@ -216,5 +295,6 @@ export const useAssessment = () => {
     isAlreadyScheduled,
     scheduledDetails,
     checkingStatus,
+    handleSavePreferences,  
   };
 };
