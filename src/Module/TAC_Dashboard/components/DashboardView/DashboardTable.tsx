@@ -9,16 +9,55 @@ import { CamelCase } from "@/Utils/common";
 import { CandidateRow } from "@/Services/APIs/tac/tac.actions";
 
 dayjs.extend(relativeTime);
-
 const getStatusBadge = (status: string) => {
   switch (status) {
-    case "inquiry_submitted": return "bg-blue-100 text-blue-600";
-    case "pre_scheduled": return "bg-blue-500 text-white";
-    case "doc_submitted": return "bg-yellow-100 text-yellow-700";
-    case "exp_submitted": return "bg-orange-100 text-orange-700";
-    case "assess_scheduled": return "bg-green-100 text-green-700";
-    case "pre_not_responded": return "bg-red-100 text-red-700";
-    default: return "bg-[var(--mui-palette-primary-light)] text-[var(--mui-palette-primary-dark)]";
+   
+    case "inquiry_submitted":
+    case "doc_submitted":
+    case "exp_submitted":
+    case "assessment_submitted":
+      return "bg-blue-500 text-white dark:bg-blue-500 dark:text-white";
+
+   
+    case "doc_verified":
+    case "exp_verified":
+    case "pre_completed":
+    case "assess_completed":
+      return "bg-green-500 text-white dark:bg-green-90 dark:text-white";
+
+   
+    case "pre_contacted":
+    case "assess_contacted":
+      return "bg-teal-500 text-white dark:bg-teal-95 dark:text-white";
+
+    
+    case "pre_queued":
+    case "assess_queued":
+      return "bg-orange-500 text-white dark:bg-orange-95 dark:text-white";
+
+    
+    case "pre_scheduled":
+    case "assess_scheduled":
+    case "assessment_scheduled":
+      return "bg-amber-600 text-white dark:bg-amber-700 dark:text-white";
+
+     
+    case "pre_not_responded":
+    case "assess_not_responded":
+      return "bg-pink-500 text-white dark:bg-pink-96 dark:text-white";
+
+    
+    case "pre_rejected":
+    case "assess_rejected":
+      return "bg-red-600 text-white dark:bg-red-98 dark:text-white";
+
+  
+    case "exp_request_technical":
+      return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white  ";
+
+    
+    default:
+      return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white ";
   }
 };
 
@@ -106,7 +145,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     {candidate.token ?? <span className="text-gray-400">—</span>}
                   </TableCell>
                   <TableCell className="resp-cell !py-3 !px-4" data-label="Status">
-                    <Box className={`inline-block px-3 py-1 rounded-full text-[11px] font-semibold whitespace-nowrap ${getStatusBadge(candidate.status)}`}>
+                    <Box className={`inline-block px-3 py-1 rounded-full text-[11px] tracking-wide font-normal whitespace-nowrap ${getStatusBadge(candidate.status)}`}>
                       {CamelCase(candidate.status)}
                     </Box>
                   </TableCell>
