@@ -1,4 +1,4 @@
-import TACDashboard from '../../../..'; // Tera path check kar lena ek baar
+import TACDashboard from '../../../..';  
 
 const TACDashboardPage = () => {
   return <TACDashboard />;

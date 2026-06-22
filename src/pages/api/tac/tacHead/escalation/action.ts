@@ -32,7 +32,7 @@ export default async function handler(
       );
     }
 
-    const { escalationId, status, remarks } = req.body;
+    const { escalationId, status, remarks,schedule } = req.body;
 
     if (!escalationId || !status) {
       throw new ApiError("Escalation ID and Status are required", 400);
@@ -42,10 +42,15 @@ export default async function handler(
       throw new ApiError("Status must be either 'approved' or 'rejected'", 400);
     }
 
+    // if (status === "approved" && (!schedule || !schedule.date || !schedule.from || !schedule.to)) {
+    //   throw new ApiError("New schedule (date, from, to) is required when approving an escalation.", 400);
+    // }
+
     const updatedEscalation = await updateEscalationStatusService(
       escalationId,
       status,
       remarks,
+      schedule
     );
 
     return ResponseHandler.sendSuccess(
