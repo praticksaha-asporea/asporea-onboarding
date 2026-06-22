@@ -245,10 +245,10 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       // note3: yup.string(),
       // note4: yup.string(),
       candidateSign: yup.mixed()
-        .required("Candidate signature is required"),
+        .required("Candidate signature is required, Supports only .pdf, .jpg, .jpeg, .png within size 2mb"),
 
       assessorSign: yup.mixed()
-        .required("Assessor signature is required"),
+        .required("Assessor signature is required, Supports only .pdf, .jpg, .jpeg, .png within size 2mb"),
 
     }),
     onSubmit: async (values) => {

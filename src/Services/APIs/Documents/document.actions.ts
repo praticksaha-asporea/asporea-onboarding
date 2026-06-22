@@ -27,24 +27,6 @@ export const getPositionDetailsAction = async (positionId: string) => {
     };
   }
 };
-
-export const uploadFileAction = async (file: File) => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const response = await axiosClient.post("/upload/local", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Upload failed",
-    };
-  }
-};
-
 export const saveMappedDocumentsAction = async (payload: any) => {
   try {
     const response = await axiosClient.post("/document/save", payload);

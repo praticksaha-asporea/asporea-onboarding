@@ -11,11 +11,11 @@ import {
 import {
   getPositionsListAction,
   getPositionDetailsAction,
-  uploadFileAction,
   saveMappedDocumentsAction,
   checkDocumentStatusAction,
 } from "@/Services/APIs/Documents/document.actions";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
+import { uploadFileAction } from "@/Utils/common";
 
 export const useDocumentUpload = () => {
   const router = useRouter();
