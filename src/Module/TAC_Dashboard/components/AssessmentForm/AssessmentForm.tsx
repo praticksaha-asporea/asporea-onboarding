@@ -6,21 +6,28 @@ import AssessmentBasicInfo from "./AssessmentBasicInfo";
 import AssessmentScoringTable from "./AssessmentScoringTable";
 import AssessmentNotes from "./AssessmentNotes";
 import AssessmentSignatures from "./AssessmentSignatures";
-import { getAssessmentQuestionsList, QuestionType } from "@/Services/APIs/tac/tac.actions";
+import { getAssessmentQuestionsList, QuestionType, updateAssessmentScoreAction } from "@/Services/APIs/tac/tac.actions";
 import { useFormik } from "formik";
 import * as yup from "yup";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import toast from "react-hot-toast";
+import { CamelCase } from "@/Utils/common";
 
 interface AssessmentFormProps {
-  selectedCandidate: any
+  selectedCandidate: any;
+  assessAssign: any;
+  assessBasicForm: any;
 }
 
 const AssessmentForm: React.FC<AssessmentFormProps> = ({
-  selectedCandidate
+  selectedCandidate,
+  assessAssign,
+  assessBasicForm
 }) => {
   useEffect(() => {
     //   window.scrollTo({ top: 0, behavior: "smooth" });
     getAssessmentQuestion();
+    setAssessmentStatus(assessAssign?.status);
   }, []);
 
   const getAssessmentQuestion = async () => {
@@ -28,9 +35,9 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     setDbQuestions(result?.data?.data?.data);
   }
 
-  const [candidateSignature, setCandidateSignature] = useState<File | null>(null);
-  const [assessorSignature, setAssessorSignature] = useState<File | null>(null);
   const [dbQuestions, setDbQuestions] = useState<QuestionType[]>();
+  const [assessmentStatus, setAssessmentStatus] = useState<string>("");
+  const [customScores, setCustomScores] = useState<Record<number, Record<number, number>>>({});
 
   const [selectedOptions, setSelectedOptions] = useState<any>({
     1: null, 2: null, 4: [], 5: null, 6: null, 7: null, 8: null, 9: null, 10: [], 11: [],
@@ -41,6 +48,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       return acc;
     }, {});
   }, [dbQuestions]);
+
 
   const [languageLevels, setLanguageLevels] = useState<any>({
     english: { Listening: null, Speaking: null, Writing: null, Reading: null },
@@ -148,23 +156,59 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     },
   ];
 
+  const languageSections = {
+    english: [
+      questionsByShortName.Lang_Lis,
+      questionsByShortName.Lang_Spea,
+      questionsByShortName.Lang_Wri,
+      questionsByShortName.Lang_Read,
+    ].filter(Boolean),
+
+    other: [
+      questionsByShortName.Lang_3rd_Lis,
+      questionsByShortName.Lang_3rd_Spe,
+      questionsByShortName.Lang_3rd_Wri,
+      questionsByShortName.Lang_3rd_Read,
+    ].filter(Boolean),
+  };
+
   const totalScore = scoringSections.reduce((acc, section) => {
     const selected = selectedOptions[section.id];
     let score = 0;
+
     if (Array.isArray(selected)) {
-      score = selected.reduce((sum: number, idx: number) => sum + (section.options[idx]?.score || 0), 0);
+      score = selected.reduce((sum: number, idx: number) => {
+        const option = section.options[idx];
+
+        return (
+          sum +
+          (option?.score > 0
+            ? option.score
+            : customScores[section.id]?.[idx] || 0)
+        );
+      }, 0);
     } else if (selected !== null && selected !== undefined) {
-      score = section.options[selected]?.score || 0;
+      const option = section.options[selected];
+
+      score =
+        option?.score > 0
+          ? option.score
+          : customScores[section.id]?.[selected] || 0;
     }
+
     return acc + score;
   }, 0);
 
-  const englishTotal: number = Object.values(languageLevels.english).reduce(
-    (acc: number, lvl: any) => acc + (levelScoreMap[lvl] || 0), 0
+  const englishTotal = languageSections.english.reduce(
+    (acc, q) =>
+      acc + (levelScoreMap[languageLevels.english?.[q.shortName]] || 0),
+    0
   );
 
-  const otherTotal: number = Object.values(languageLevels.other).reduce(
-    (acc: number, lvl: any) => acc + (lvl ? 1 : 0), 0
+  const otherTotal = languageSections.other.reduce(
+    (acc, q) =>
+      acc + (languageLevels.other?.[q.shortName] ? q.marks : 0),
+    0
   );
 
   const finalTotal = totalScore + englishTotal + otherTotal;
@@ -190,26 +234,35 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       candidateSign: null as File | null,
       assessorSign: null as File | null,
     },
-    // validationSchema: yup.object({
+    validationSchema: yup.object({
       //   passportNo: yup
       //     .string()
       //     .trim()
       //     .required("Passport No is required")
       // })
-      // note1: yup.string().required("Note 1 is required"),
+      note1: yup.string().required("Note 1 is required"),
       // note2: yup.string().required("Note 2 is required"),
       // note3: yup.string(),
       // note4: yup.string(),
-      // candidateSign: yup.mixed()
-      //   .required("Candidate signature is required"),
+      candidateSign: yup.mixed()
+        .required("Candidate signature is required, Supports only .pdf, .jpg, .jpeg, .png within size 2mb"),
 
-      // assessorSign: yup.mixed()
-      //   .required("Assessor signature is required"),
+      assessorSign: yup.mixed()
+        .required("Assessor signature is required, Supports only .pdf, .jpg, .jpeg, .png within size 2mb"),
 
-    // }),
+    }),
     onSubmit: async (values) => {
+      if (finalTotal > 100) {
+        toast.error('Total mark is greater than 100 ');
+        return;
+      }
+      else if (finalTotal === 0) {
+        toast.error('Total mark must be more than 0 ');
+        return;
+      }
       const formData = new FormData();
 
+      formData.append("id", assessAssign?._id);
       formData.append("passportNo", values.passportNo);
       formData.append("totalMarks", String(finalTotal));
 
@@ -224,9 +277,18 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       if (values.assessorSign) {
         formData.append("assessorSign", values.assessorSign);
       }
-      // console.log(formData,5444);
-      
-      // await axiosClient.post("/", formData);
+      const result = await updateAssessmentScoreAction(formData);
+      setAssessmentStatus(result?.data?.data?.status);
+      console.log(result?.data?.data?.status, result?.data, 5844);
+
+      if (result?.data?.data?.status === "completed") {
+        toast.success("Assessment result recorded: Candidate Passed.");
+        assessBasicForm.status.values(result?.data?.data?.status);
+      }
+      else if (result?.data?.data?.status === "rejected") {
+        toast.error("Assessment result recorded: Candidate Failed.");
+        assessBasicForm.status.values(result?.data?.data?.status);
+      }
     },
   });
 
@@ -235,25 +297,32 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       {/* <AssessmentHeader onBack={() => setCurrentView("detail")} /> */}
 
       < Card className="rounded-xl border border-gray-200 shadow-sm" >
-        <CardContent className="p-6 md:p-8">
-          <AssessmentBasicInfo selectedCandidate={selectedCandidate} assessmentForm={assessmentForm} />
+        {assessmentStatus !== "completed" && assessmentStatus !== "rejected" ? (
+          <CardContent className="p-6 md:p-8">
+            <AssessmentBasicInfo selectedCandidate={selectedCandidate} assessmentForm={assessmentForm} />
 
-          <AssessmentScoringTable
-            scoringSections={scoringSections}
-            selectedOptions={selectedOptions}
-            setSelectedOptions={setSelectedOptions}
-            languageLevels={languageLevels}
-            setLanguageLevels={setLanguageLevels}
-            levels={levels}
-            skills={skills}
-            levelScoreMap={levelScoreMap}
-            finalTotal={finalTotal}
-          />
+            <AssessmentScoringTable
+              scoringSections={scoringSections}
+              selectedOptions={selectedOptions}
+              setSelectedOptions={setSelectedOptions}
+              languageLevels={languageLevels}
+              setLanguageLevels={setLanguageLevels}
+              levels={levels}
+              skills={skills}
+              languageSections={languageSections}
+              levelScoreMap={levelScoreMap}
+              finalTotal={finalTotal}
+              customScores={customScores}
+              setCustomScores={setCustomScores}
+            />
 
-          <AssessmentNotes assessmentForm={assessmentForm} />
+            <AssessmentNotes assessmentForm={assessmentForm} />
 
-          <AssessmentSignatures signatureFields={signatureFields} assessmentForm={assessmentForm} />
-        </CardContent>
+            <AssessmentSignatures signatureFields={signatureFields} assessmentForm={assessmentForm} assessmentStatus={assessmentStatus} assessAssign={assessAssign} />
+          </CardContent>
+        ) : <CardContent className="p-6 md:p-8">
+          The Candidate already {CamelCase(assessmentStatus)} this assessment.
+        </CardContent>}
       </Card >
     </Box >
   );

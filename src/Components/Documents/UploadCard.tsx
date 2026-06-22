@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Card from "@mui/material/Card";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Dialog from "@mui/material/Dialog";
+import DialogContent from "@mui/material/DialogContent";
+import IconButton from "@mui/material/IconButton";
+import Button from "@mui/material/Button";
 import toast from "react-hot-toast";
 
 interface UploadCardProps {
@@ -19,6 +23,35 @@ export const UploadCard: React.FC<UploadCardProps> = ({ title, subtitle, allowed
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+
+  const handlePreview = (e: React.MouseEvent, index: number) => {
+    e.stopPropagation();
+    const file = files[index];
+    if (file) {
+      const url = URL.createObjectURL(file);
+      setPreviewFile(file);
+      setPreviewUrl(url);
+    }
+  };
+
+  const handleClosePreview = () => {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+    setPreviewFile(null);
+    setPreviewUrl(null);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+      }
+    };
+  }, [previewUrl]);
 
   const isValidFile = (file: File, allowedFormats: string[]) => {
     if (!allowedFormats || allowedFormats.length === 0) return true;
@@ -73,15 +106,48 @@ export const UploadCard: React.FC<UploadCardProps> = ({ title, subtitle, allowed
         <Box onClick={() => fileInputRef.current?.click()} className={`w-full h-full min-h-32 border-2 border-dashed rounded-xl flex flex-col items-center justify-center p-3 cursor-pointer transition-all duration-200 ${isDragging ? "border-blue-600 bg-blue-50" : ""} hover:border-blue-300 hover:bg-[var(--mui-palette-secondary-lightOpacity)]`}>
           <input type="file" ref={fileInputRef} className="hidden" multiple={multiple} onChange={handleFileChange} accept={allowedFormats?.map((ext) => `.${ext.toLowerCase()}`).join(",")} />
           {files.length > 0 ? (
-            <Box className="flex flex-col items-center text-center w-full relative">
-              <i className="ri-file-text-fill text-3xl text-[var(--mui-palette-primary-main)] mb-1"></i>
-              <Box className="w-full max-h-[60px] overflow-y-auto mb-1 px-1">
-                {files.map((file, idx) => (
-                  <Typography key={idx} className="text-xs font-extrabold max-w-xs whitespace-nowrap overflow-hidden text-ellipsis">{file.name}</Typography>
-                ))}
+            <Box className="flex flex-col items-center w-full relative" onClick={(e) => e.stopPropagation()}>
+              <Box className="w-full max-h-[140px] overflow-y-auto mb-2 px-1 flex flex-col gap-1.5">
+                {files.map((file, idx) => {
+                  const isFileImg = file.type.startsWith("image/") || /\.(jpeg|jpg|gif|png|webp|svg)$/i.test(file.name);
+                  const isFilePdf = file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+                  return (
+                    <Box
+                      key={idx}
+                      onClick={(e) => handlePreview(e, idx)}
+                      className="flex items-center justify-between gap-2 p-2 rounded-lg bg-white border hover:border-blue-500 transition-all cursor-pointer group/file w-full shadow-sm"
+                    >
+                      <Box className="flex items-center gap-2 overflow-hidden">
+                        <i className={`text-lg shrink-0 ${isFilePdf ? "ri-file-pdf-2-line text-red-500" :
+                          isFileImg ? "ri-image-line text-green-500" : "ri-file-text-line text-blue-500"
+                          }`} />
+                        <Typography className="text-[11px] font-bold truncate max-w-[130px] text-gray-700">
+                          {file.name}
+                        </Typography>
+                      </Box>
+                      <Box className="flex items-center gap-1.5 shrink-0">
+                        <i className="ri-eye-line text-xs text-gray-400 group-hover/file:text-blue-500 transition-colors" />
+                        <IconButton
+                          size="small"
+                          className="!p-0.5 hover:bg-red-50"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            const updatedFiles = files.filter((_, i) => i !== idx);
+                            setFiles(updatedFiles);
+                            if (onFilesChange) onFilesChange(updatedFiles);
+                          }}
+                        >
+                          <i className="ri-close-line text-[14px] text-red-500 font-bold" />
+                        </IconButton>
+                      </Box>
+                    </Box>
+                  );
+                })}
               </Box>
-              <Typography className="text-xs text-green-600 font-extrabold mt-0.5">{files.length} {files.length === 1 ? "File" : "Files"} attached</Typography>
-              <Typography onClick={handleReset} className="text-[11px] text-red-500 font-bold underline mt-1 hover:text-red-700">Clear</Typography>
+              <Typography className="text-[11px] text-green-600 font-extrabold">{files.length} {files.length === 1 ? "File" : "Files"} attached</Typography>
+              {multiple &&
+                <Typography onClick={handleReset} className="text-[10px] text-red-500 font-bold underline mt-1 hover:text-red-700 cursor-pointer">Clear All</Typography>
+              }
             </Box>
           ) : (
             <Box className="flex flex-col items-center text-center">
@@ -96,6 +162,62 @@ export const UploadCard: React.FC<UploadCardProps> = ({ title, subtitle, allowed
           {allowedFormats && allowedFormats.length > 0 && <Typography className="text-xs font-medium leading-[1.2] text-[var(--mui-palette-secondary)] mt-1.5 tracking-wide">Supported Extensions: {allowedFormats.join(", ").toUpperCase()}</Typography>}
         </Box>
       </Box>
+
+      {/* Document Fullscreen Preview Dialog */}
+      <Dialog
+        open={!!previewFile}
+        onClose={handleClosePreview}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ className: "rounded-[20px] relative overflow-hidden" }}
+      >
+        <Box className="flex items-center justify-between px-5 py-3 border-b border-[var(--mui-palette-divider)]">
+          <Typography variant="subtitle1" className="font-bold truncate max-w-[80%]">
+            {previewFile?.name}
+          </Typography>
+          <Box className="flex items-center gap-2">
+            {previewUrl && (
+              <a href={previewUrl} download={previewFile?.name} target="_blank" rel="noreferrer">
+                <Button size="small" variant="text" startIcon={<i className="ri-download-2-line" />}>
+                  Download
+                </Button>
+              </a>
+            )}
+            <IconButton size="small" onClick={handleClosePreview}>
+              <i className="ri-close-line text-xl" />
+            </IconButton>
+          </Box>
+        </Box>
+        <DialogContent className="p-0 bg-gray-50 flex items-center justify-center min-h-[60vh]">
+          {previewUrl && previewFile && (previewFile.type === "application/pdf" || previewFile.name.toLowerCase().endsWith(".pdf")) ? (
+            <iframe
+              src={previewUrl}
+              title={previewFile.name}
+              className="w-full min-h-[75vh] border-0"
+            />
+          ) : previewUrl && previewFile && (previewFile.type.startsWith("image/") || /\.(jpeg|jpg|gif|png|webp|svg)$/i.test(previewFile.name)) ? (
+            <img
+              src={previewUrl}
+              alt={previewFile.name}
+              className="max-w-full max-h-[75vh] object-contain p-4"
+            />
+          ) : (
+            previewUrl && (
+              <Box className="flex flex-col items-center gap-4 p-10">
+                <i className="ri-file-line text-6xl text-[var(--mui-palette-text-secondary)]" />
+                <Typography variant="body1" className="text-[var(--mui-palette-text-secondary)]">
+                  Preview not available for this file type.
+                </Typography>
+                <a href={previewUrl} download={previewFile?.name} target="_blank" rel="noreferrer">
+                  <Button variant="contained" className="!rounded-xl !normal-case">
+                    Download File
+                  </Button>
+                </a>
+              </Box>
+            )
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };

@@ -10,6 +10,7 @@ import Joi from "joi";
 import { normalizeFormFields, parseForm } from "@/lib/utils/parseForm";
 import { Lead } from "@/lib/models/Lead.model";
 import { DocumentModel } from "@/lib/models/Document.model";
+import { AssessmentExperienceVerification } from "@/lib/services/Assessments/assessment-tool.service";
 
 
 const updateAssignmentExperienceSchema = Joi.object({
@@ -22,7 +23,7 @@ const updateAssignmentExperienceSchema = Joi.object({
         .valid(
             "verified",
             "rejected",
-            "refer_technical"
+            "request_technical"
         )
         .optional(),
     expType: Joi.string()
@@ -38,6 +39,7 @@ const updateAssignmentExperienceSchema = Joi.object({
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+
     if (applyCors(req, res)) return;
     await connectToDatabase();
 
@@ -58,36 +60,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         if (error)
             throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
-
-        const { id, status, expType } = value;
-
-        if (!mongoose.Types.ObjectId.isValid(id))
-            throw new ApiError("Invalid assignment ID", 400);
-
-        // Verify the assignment belongs to this TAC
-        const assignment = await Assignment.findOne({
-            _id: id,
-            assignedTo: new mongoose.Types.ObjectId(authUser.id),
-        });
-        if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
-        if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404)
-
-        let
-            leadUpdate = { "experience.status": status , "experience.type": expType, status: `exp_${status}`, actionBy: new mongoose.Types.ObjectId(authUser.id) };
-        
-        const updatedLead=await Lead.findByIdAndUpdate(
-            assignment?.leadId,
-            { $set: leadUpdate },
-            { returnDocument: "after", runValidators: true }
-        );
-        if(status==='refer_technical')
-        {
-            // Refer Technical
-        }
-
+        const updatedLead = await AssessmentExperienceVerification(value, authUser);
         return ResponseHandler.sendSuccess(res, updatedLead, "Experience status updated");
     } catch (error: unknown) {
 
+        console.log(error, 444);
         if (error instanceof ApiError)
             return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
         return ResponseHandler.sendError(res, "Unknown error occurred", 500);

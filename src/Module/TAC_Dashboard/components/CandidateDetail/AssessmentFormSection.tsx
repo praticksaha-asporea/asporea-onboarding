@@ -26,15 +26,13 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   candidate,
   assessAssign,
   isFoe,
-  branchTitle,
-  setCurrentView
-}) => {
+  branchTitle }) => {
 
   const docs = candidate?.documents || {};
   const exp = candidate?.experience || {};
 
   const [docStatus, setDocStatus] = useState(docs.status || "na");
-  const [expStatus, setExpStatus] = useState<"selected" | "verified">("selected");
+  const [expStatus, setExpStatus] = useState<"selected" | "verified" | "request_technical">("selected");
   const [expType, setExpType] = useState<ExpType>(exp.type);
   const [isPreLocked, setIsPreLocked] = useState(true);
   const [docReject, setDocReject] = useState(false);
@@ -112,7 +110,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   useEffect(() => {
     setDocStatus(docs.status || "na");
     setExpStatus(exp.status);
-    
+
     setExpType(exp.type);
     // setTechStatus(tech.status || "na");
     // setClassifyExp(tech.classify || "");
@@ -137,9 +135,9 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
       setExpRFT(docs?.status === "verified");
       setExpVerified(docs?.status === "verified");
-      setShowAssessmentForm(docs?.status === "verified");
+      setShowAssessmentForm(docs?.status === "verified" && exp?.status === "verified");
     }
-    
+
 
   }, [assessAssign, candidate]);
 
@@ -247,15 +245,17 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     }
   };
 
-  const updateExpStatus = async (status: 'verified' | 'rejected' | 'refer_technical') => {
+  const updateExpStatus = async (status: 'verified' | 'rejected' | 'request_technical') => {
 
     if (!assessAssign?._id) return;
     const textStatus =
       status === "verified"
         ? `Are you sure?\nYou verified candidate experience.`
-        : status === "rejected"
+        : (status === "rejected"
           ? `Are you sure?\nYou rejecting candidate experience.`
-          : ``;
+          : status === "request_technical" ?
+            `Are you sure?\nYou want technical round for this candidate.` : ``);
+
     const confirmed = await confirmToast(textStatus);
     if (!confirmed) return;
     try {
@@ -264,18 +264,18 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       if (updatedEXPLead?.data?.data?.experience?.status === 'verified') {
         setShowAssessmentForm(true);
       }
-      else{
+      else {
         setShowAssessmentForm(false);
 
       }
-      // setExpRFT(false);
-      // setExpVerified(false);
+      setExpRFT(false);
+      setExpVerified(false);
 
-      if (updatedEXPLead?.data?.data?.experience?.status !== 'request_technical') {
+      // if (updatedEXPLead?.data?.data?.experience?.status !== 'request_technical') {
         setExpStatus(updatedEXPLead?.data?.data?.experience?.status)
-      }
+      // }
       // console.log(updatedEXPLead?.data?.data?.experience?.type,15854);
-      
+
       setExpType(updatedEXPLead?.data?.data?.experience?.type as ExpType)
     } catch (err: any) {
       console.log(err?.response?.data?.message ?? "Update failed");
@@ -432,9 +432,10 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           {/* --- Experience Section ---  */}
           <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
             <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Experience</Typography>
-            <RadioGroup row value={expStatus} onChange={(e: any) => setExpStatus(e.target.value)}>
-              <FormControlLabel value="selected" control={<Radio disabled/>} label="Selected" />
-              <FormControlLabel value="verified" control={<Radio disabled/>} label="Verified" />
+            <RadioGroup row value={expStatus} onChange={(e:any) => setExpStatus(e.target.value)}>
+              <FormControlLabel value="selected" control={<Radio disabled />} label="Selected" />
+              <FormControlLabel value="verified" control={<Radio disabled />} label="Verified" />
+              <FormControlLabel value="request_technical" control={<Radio disabled />} label="Technical Requested" />
             </RadioGroup>
             <FormControl fullWidth className="mt-4 md:w-1/2">
               <InputLabel>Experience Type</InputLabel>
@@ -446,7 +447,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
               </Select>
             </FormControl>
             <Box className="flex justify-end gap-3 mt-6 mb-2">
-              <Button variant="contained" className="!rounded-xl !normal-case bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark]" disabled={isPreLocked || !expRFT} onClick={() => updateExpStatus(`refer_technical`)}>Refer Technical</Button>
+              <Button variant="contained" className="!rounded-xl !normal-case bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark]" disabled={isPreLocked || !expRFT} onClick={() => updateExpStatus(`request_technical`)}>Refer Technical</Button>
               <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || !expVerified} onClick={() => updateExpStatus(`verified`)}>Verified</Button>
             </Box>
           </Box>
@@ -458,7 +459,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
           </Box> */}
 
           {/* --- Common Save Button --- */}
-          {!isFoe && (
+          {!isFoe && !showAssessmentForm && (
             <Box className="flex justify-end mt-6">
               <Button
                 variant="contained"
@@ -492,6 +493,8 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       {showAssessmentForm && (
         <AssessmentForm
           selectedCandidate={candidate}
+          assessAssign={assessAssign}
+          assessBasicForm={assessBasicForm}
         />
       )}
     </Card>

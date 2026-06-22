@@ -16,10 +16,9 @@ import toast from "react-hot-toast";
 
 import { SectionAccordion } from "@/Components/Documents/SectionAccordion";
 import { UploadCard } from "@/Components/Documents/UploadCard";
-import { CamelCase } from "@/Utils/common";
+import { CamelCase, uploadFileAction } from "@/Utils/common";
 import {
   getPositionDetailsAction,
-  uploadFileAction,
   saveMappedDocumentsAction,
   getCandidateDocumentsAction,
 } from "@/Services/APIs/Documents/document.actions";

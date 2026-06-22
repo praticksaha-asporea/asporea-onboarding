@@ -8,12 +8,12 @@ import {
   AdditionalDocument,
 } from "@/Types/Frontend_Payload/experience.types";
 import {
-  uploadFileAction,
   saveMappedDocumentsAction,
   getPositionDetailsAction,
   checkDocumentStatusAction,
 } from "@/Services/APIs/Documents/document.actions";
 import { saveExperienceTypeAction } from "@/Services/APIs/experience/experience.actions";
+import { uploadFileAction } from "@/Utils/common";
 
 export const experienceTypes: ExperienceOption[] = [
   {
@@ -214,17 +214,17 @@ export const useExperience = () => {
         }
       }
 
-    if (mappedDocs.length > 0) {
-        const docSaveRes = await saveMappedDocumentsAction({ 
-          leadId, 
-          documents: mappedDocs, 
-          position: positionId 
+      if (mappedDocs.length > 0) {
+        const docSaveRes = await saveMappedDocumentsAction({
+          leadId,
+          documents: mappedDocs,
+          position: positionId
         });
-        
+
         if (!docSaveRes?.success) {
           toast.error(docSaveRes?.message || "Failed to save additional documents.");
           setIsSubmitting(false);
-          return;  
+          return;
         }
       }
 

@@ -729,7 +729,7 @@ const InquiryDetails = () => {
                   </span>{" "}
                   Branch.
                   <br />
-                  For Pre-counselling, please reach the Reception Counter.
+                  For Pre-counselling, please reach to the FOE (Front Office Executive).
                 </Typography>
               ) : (
                 <Typography variant="body1" className="mb-4">
@@ -746,7 +746,7 @@ const InquiryDetails = () => {
                 As you&apos;re in{" "}
                 <span className="font-bold">{selectedBranchName}</span> Branch.
                 <br />
-                For Pre-counselling, please reach the Reception Counter.
+                For Pre-counselling, please reach to the FOE (Front Office Executive).
                 <br />
                 The FOE(Front Office Executive) will generate a token on your
                 behalf.

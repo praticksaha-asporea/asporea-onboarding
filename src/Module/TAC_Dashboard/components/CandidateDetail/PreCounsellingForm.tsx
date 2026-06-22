@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 import dayjs from "dayjs";
 import {
   Box, Button, Card, CircularProgress, FormControl, FormControlLabel,
-  FormLabel, Grid, Radio, RadioGroup, Stack, TextField, Typography
+  FormLabel, Grid, Radio, RadioGroup, Stack, TextField, Typography,
+  Dialog, DialogContent, IconButton
 } from "@mui/material";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
@@ -29,10 +30,30 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
   // const [enablePreSubmit, setEnablePreSubmit] = useState(false);
   const [isPreLocked, setIsPreLocked] = useState(true);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const existingResume = inqAssign?.pre?.initialCV?.path;
-  const currentPreview = resumeFile ? URL.createObjectURL(resumeFile) : existingResume;
-  const isPdf = resumeFile?.type === "application/pdf" || existingResume?.toLowerCase().includes(".pdf");
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    if (resumeFile) {
+      objectUrl = URL.createObjectURL(resumeFile);
+      setPreviewUrl(objectUrl);
+    } else {
+      setPreviewUrl(existingResume ?? null);
+    }
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [resumeFile, existingResume]);
+
+  const isPdf = resumeFile
+    ? resumeFile.type === "application/pdf"
+    : existingResume?.toLowerCase().includes(".pdf") ?? false;
 
 
 
@@ -62,7 +83,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     }
   };
   // console.log(c.token,6666);
-  
+
 
   const preForm = useFormik({
     initialValues: {
@@ -110,8 +131,19 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
       } finally {
         setSubmitting(false);
       }
-    },
+    }
   });
+
+  useEffect(() => {
+    if (preForm.submitCount > 0 && Object.keys(preForm.errors).length > 0) {
+      const firstErrorField = Object.keys(preForm.errors)[0];
+      const errorElement = document.getElementsByName(firstErrorField)[0] || document.getElementById(firstErrorField);
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+        errorElement.focus();
+      }
+    }
+  }, [preForm.submitCount]);
 
   const updateAssignmentStatus = async (status: string) => {
     if (!inqAssign?._id) return;
@@ -180,7 +212,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             {source.refType && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Referred By (Type)" disabled value={CamelCase(source.refType ?? "")} /></Grid>}
             {source.refName && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Referred By (Name)" disabled value={source.refName} /></Grid>}
             {preferences.visitType === "offline" && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Token No" value={c.token ?? "—"} disabled /></Grid>}
-            
+
             <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Inquiry Created" disabled value={c.lastActivity ? dayjs(c.lastActivity).format("DD/MM/YYYY hh:mm A") : "—"} /></Grid>
             <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Scheduled Date" disabled value={inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("DD/MM/YYYY") : "—"} /></Grid>
             <Grid size={{ xs: 12, md: 6 }}>
@@ -218,7 +250,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                   <Typography className="text-[13px] font-semibold mb-1.5">Advice</Typography>
                   <TextField multiline rows={3} fullWidth name="advice" value={preForm.values.advice} onChange={preForm.handleChange} onBlur={preForm.handleBlur} slotProps={{ input: { className: "text-[13px]" } }} disabled={isPreLocked} />
                 </Grid>
-                <Grid size={{ xs: 12, md: 6 }}>
+                <Grid size={{ xs: 12, md: 6 }} id="resumeFile">
                   <Typography className="text-[12px] font-semibold mb-1.5">Upload Resume</Typography>
                   <Box onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-gray-50"}`}>
                     <input ref={fileInputRef} hidden type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} disabled={isPreLocked} />
@@ -227,20 +259,30 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                     <Typography className="text-xs text-gray-500 mt-1">PDF, JPG, JPEG, PNG</Typography>
                   </Box>
                 </Grid>
-                {currentPreview && (
+                {previewUrl && (
                   <Grid size={{ xs: 12, md: 6 }}>
                     <Typography className="text-[12px] font-semibold mb-1.5">Resume Preview</Typography>
-                    <Box className="border rounded-xl h-[220px] bg-gray-50 overflow-hidden relative">
+                    <Box
+                      onClick={() => setIsPreviewOpen(true)}
+                      className="border rounded-xl h-[220px] bg-gray-50 overflow-hidden relative cursor-pointer group hover:border-blue-500 transition-all"
+                    >
                       {isPdf ? (
-                        <Box className="h-full flex flex-col items-center justify-center p-4">
-                          <i className="ri-file-pdf-2-line text-6xl text-red-500 mb-3" />
-                          <Typography className="text-sm font-semibold mb-1">PDF Resume</Typography>
-                          <Typography className="text-xs text-gray-500 mb-3 text-center">Click below to preview document</Typography>
-                          <a href={currentPreview} target="_blank" rel="noreferrer" className="text-blue-600 underline text-sm">Open PDF</a>
+                        <Box className="w-full h-full pointer-events-none relative">
+                          <iframe src={previewUrl} className="w-full h-full border-0" />
+                          <Box className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <Box className="bg-white/90 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                              Click to view document
+                            </Box>
+                          </Box>
                         </Box>
                       ) : (
-                        <Box className="w-full h-full flex items-center justify-center bg-white">
-                          <img src={currentPreview} alt="Resume Preview" className="w-full h-full object-contain" />
+                        <Box className="w-full h-full flex items-center justify-center bg-white relative">
+                          <img src={previewUrl} alt="Resume Preview" className="w-full h-full object-contain" />
+                          <Box className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors flex items-center justify-center">
+                            <Box className="bg-white/90 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                              Click to view image
+                            </Box>
+                          </Box>
                         </Box>
                       )}
                     </Box>
@@ -258,6 +300,50 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
           )}
         </Stack>
       </form>
+
+      {/* Resume Fullscreen Preview Dialog */}
+      <Dialog
+        open={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{ className: "rounded-[20px] relative overflow-hidden" }}
+      >
+        <Box className="flex items-center justify-between px-5 py-3 border-b border-[var(--mui-palette-divider)]">
+          <Typography variant="subtitle1" className="font-bold">
+            Resume Preview
+          </Typography>
+          <Box className="flex items-center gap-2">
+            {previewUrl && (
+              <a href={previewUrl} download="Resume" target="_blank" rel="noreferrer">
+                <Button size="small" variant="text" startIcon={<i className="ri-download-2-line" />}>
+                  Download
+                </Button>
+              </a>
+            )}
+            <IconButton size="small" onClick={() => setIsPreviewOpen(false)}>
+              <i className="ri-close-line text-xl" />
+            </IconButton>
+          </Box>
+        </Box>
+        <DialogContent className="p-0 bg-gray-50 flex items-center justify-center min-h-[60vh]">
+          {previewUrl && isPdf ? (
+            <iframe
+              src={previewUrl}
+              title="Resume PDF Preview"
+              className="w-full min-h-[75vh] border-0"
+            />
+          ) : (
+            previewUrl && (
+              <img
+                src={previewUrl}
+                alt="Resume Image Preview"
+                className="max-w-full max-h-[75vh] object-contain p-4"
+              />
+            )
+          )}
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 };
