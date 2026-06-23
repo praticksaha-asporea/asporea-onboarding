@@ -29,7 +29,7 @@ const formatTime12Hr = (minutes: number) => {
   return `${formattedHour.toString().padStart(2, "0")}:${formattedMin} ${ampm}`;
 };
 
-export const getConsultantSlots = async (
+ export const getConsultantSlots = async (
   consultantId: string,
   targetDateStr: string,
 ) => {
@@ -48,23 +48,52 @@ export const getConsultantSlots = async (
     throw new ApiError("Invalid Date Format. Use YYYY-MM-DD", 400);
   }
 
-  const shiftAssignments = await EmployeeBranchShiftModel.find({
+ 
+  const allAssignments = await EmployeeBranchShiftModel.find({
     employeeId: new mongoose.Types.ObjectId(consultantId),
-  });
+  }).lean();
 
-  if (!shiftAssignments || shiftAssignments.length === 0) {
+  if (!allAssignments || allAssignments.length === 0) {
     return [];
   }
 
-  const shiftIds = shiftAssignments.map((a) => a.shiftId);
+ 
+  const validAssignments = allAssignments
+    .filter((a: any) => {
+     
+      if (!a.effectiveFrom) return true; 
+      
+      const effectiveDate = new Date(a.effectiveFrom);
+      effectiveDate.setHours(0, 0, 0, 0);  
+      
+      const comparisonTarget = new Date(targetDate);
+      comparisonTarget.setHours(0, 0, 0, 0);
+       
+      return effectiveDate.getTime() <= comparisonTarget.getTime();
+    })
+    .sort((a: any, b: any) => {
+      const dateA = a.effectiveFrom ? new Date(a.effectiveFrom).getTime() : 0;
+      const dateB = b.effectiveFrom ? new Date(b.effectiveFrom).getTime() : 0;
+       console.log(dateA-dateB,787777)
+      return dateB - dateA;
+    });
+
+   
+  const activeAssignment = validAssignments[0];
+
+  if (!activeAssignment) {
+    return [];  
+  }
 
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
   const targetDay = daysOfWeek[targetDate.getDay()];
 
   const ShiftScheduleModel =
     mongoose.models.ShiftSchedule || mongoose.model("ShiftSchedule");
+    
+  
   const schedule = await ShiftScheduleModel.findOne({
-    shiftId: { $in: shiftIds },
+    shiftId: activeAssignment.shiftId,
     days: targetDay,
   });
 
@@ -72,10 +101,7 @@ export const getConsultantSlots = async (
     return [];
   }
 
-  const activeAssignment = shiftAssignments.find(
-    (a) => a.shiftId.toString() === schedule.shiftId.toString(),
-  );
-
+ 
   const startOfDay = new Date(targetDate);
   startOfDay.setHours(0, 0, 0, 0);
   const endOfDay = new Date(targetDate);
@@ -95,6 +121,7 @@ export const getConsultantSlots = async (
   const todayStr = istTime.toISOString().split("T")[0];
   const isToday = targetDateStr === todayStr;
   const currentMinutes = istTime.getHours() * 60 + istTime.getMinutes();
+  
   let startMins = timeToMinutes(schedule.startTime);
   let endMins = timeToMinutes(schedule.endTime);
 

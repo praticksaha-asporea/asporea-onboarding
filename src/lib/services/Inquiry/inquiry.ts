@@ -86,12 +86,16 @@ export const createInquiry = async (body: any, createdById: string) => {
       .lean();
 
     // Build list of { employeeId, counterNo } for active TAC users only
-    const tacEntries = tacShifts
+    const rawTacEntries = tacShifts
       .filter((s: any) => s.employeeId && s.employeeId.role === "tac" && s.counterNo != null)
       .map((s: any) => ({
         employeeId: s.employeeId._id as mongoose.Types.ObjectId,
         counterNo: s.counterNo as number,
       }));
+
+      const tacEntries = Array.from(
+      new Map(rawTacEntries.map((e: any) => [e.employeeId.toString(), e])).values()
+    );
 
     if (tacEntries.length > 0) {
       const assignmentType = generalSettings?.tacAssignmentType ?? "random";
@@ -186,7 +190,7 @@ export const getTacListByBranch = async (branchId: string) => {
     .populate("employeeId", "firstName lastName role")
     .lean();
 
-  const tacList = assignments
+  const rawTacList = assignments
     .filter((a: any) => a.employeeId && a.employeeId.role === "tac")
     .map((a: any) => ({
       _id: a.employeeId._id.toString(), 
@@ -196,7 +200,11 @@ export const getTacListByBranch = async (branchId: string) => {
       counterNo: a.counterNo ?? null, 
     }));
 
-  return tacList;
+    const uniqueTacList = Array.from(
+    new Map(rawTacList.map((tac: any) => [tac._id, tac])).values()
+  );
+
+  return uniqueTacList;
 };
 
 export const getExternalSourcesByType = async (type: string) => {
