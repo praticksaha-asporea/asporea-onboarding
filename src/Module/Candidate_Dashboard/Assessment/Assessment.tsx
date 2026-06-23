@@ -50,6 +50,7 @@ const AssessmentContent = () => {
     scheduledDetails,
     checkingStatus,
     handleSavePreferences,
+    resultData
   } = useAssessment();
 
   if (checkingStatus) {
@@ -180,10 +181,10 @@ const AssessmentContent = () => {
                   </Typography>
                   <Box className="flex items-baseline">
                     <Typography className="text-[34px] font-black text-[#1877F2] leading-none">
-                      78
+                      {resultData?.scores?.achieved}
                     </Typography>
                     <Typography className="text-[16px] font-semibold text-[#6b7280] ml-1">
-                      /100
+                      /{resultData?.scores?.total}
                     </Typography>
                   </Box>
                 </Box>

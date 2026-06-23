@@ -33,13 +33,15 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
   useEffect(() => {
     if (assessmentForm.submitCount > 0 && Object.keys(assessmentForm.errors).length > 0) {
       const firstErrorField = Object.keys(assessmentForm.errors)[0];
-      const errorElement = document.getElementById(firstErrorField) || document.getElementsByName(firstErrorField)[0];
+      const errorElement =
+        document.getElementById(firstErrorField) ||
+        document.getElementsByName(firstErrorField)[0];
       if (errorElement) {
         errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
         errorElement.focus();
       }
     }
-  }, [assessmentForm.submitCount]);
+  }, [assessmentForm.submitCount, assessmentForm.errors]);
 
   useEffect(() => {
     return () => {

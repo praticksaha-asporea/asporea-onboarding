@@ -339,7 +339,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         </Grid>
         {assessAssign?.schedule.method === "off" &&
           <Grid size={{ xs: 12, md: 6 }}>
-            <TextField fullWidth label="Token No" disabled value={candidate.token || "—"} />
+            <TextField fullWidth label="Token No" disabled value={assessAssign?.token?.number || "—"} />
           </Grid>
         }
         <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Scheduled Date" disabled value={assessAssign?.schedule?.date ? dayjs(assessAssign.schedule.date).format("DD/MM/YYYY") : "—"} /></Grid>

@@ -279,7 +279,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       }
       const result = await updateAssessmentScoreAction(formData);
       setAssessmentStatus(result?.data?.data?.status);
-      console.log(result?.data?.data?.status, result?.data, 5844);
+      // console.log(result?.data?.data?.status, result?.data, 5844);
 
       if (result?.data?.data?.status === "completed") {
         toast.success("Assessment result recorded: Candidate Passed.");
@@ -321,7 +321,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
             <AssessmentSignatures signatureFields={signatureFields} assessmentForm={assessmentForm} assessmentStatus={assessmentStatus} assessAssign={assessAssign} />
           </CardContent>
         ) : <CardContent className="p-6 md:p-8">
-          The Candidate already {CamelCase(assessmentStatus)} this assessment.
+          The candidate assessment status is: {CamelCase(assessmentStatus)}.
         </CardContent>}
       </Card >
     </Box >
