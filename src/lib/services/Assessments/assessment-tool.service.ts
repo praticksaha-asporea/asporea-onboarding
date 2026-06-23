@@ -153,10 +153,24 @@ export const AssessmentExperienceVerification = async (value: any, authUser: any
         { returnDocument: "after", runValidators: true }
     );
     // console.log(updatedLead,5844444);
-    
+
     if (status === 'request_technical') {
         // Refer Technical
     }
     return updatedLead;
 
 }
+
+
+export const getAssessmentResult = async (leadId: string) => {
+    const result = await AssessmentModel.findOne({
+        leadId: new mongoose.Types.ObjectId(leadId),
+    });
+    if (!result) throw new ApiError("Assessment not found", 404);
+
+    return result;
+
+}
+
+
+

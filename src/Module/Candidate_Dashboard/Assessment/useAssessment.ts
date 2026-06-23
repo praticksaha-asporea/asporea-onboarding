@@ -8,6 +8,7 @@ import { updateUserData } from "@/Redux/Auth/user.slice";
 import {
   scheduleAssessmentAction,
   getTechnicalResultAction,
+  getAssessmentResultAction,
 } from "@/Services/APIs/Assessment/assessment.actions";
 
 import {
@@ -70,6 +71,7 @@ export const useAssessment = () => {
   const finalConsultantId = initialConsultantId || fetchedConsultantId;
 
   const [techData, setTechData] = useState<TechData | null>(null);
+  const [resultData, setResultData] = useState<any>(null);
   const [loadingTech, setLoadingTech] = useState(false);
   const [date, setDate] = useState<string>(todayStr);
   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
@@ -152,6 +154,7 @@ export const useAssessment = () => {
         setCheckingStatus(true);
 
         const res = await getJourneyTimelineAction(leadId);
+        
         if (res?.success && res.data?.assessment) {
           if (res.data.assessment.status === "Scheduled") {
             setIsAlreadyScheduled(true);
@@ -180,6 +183,7 @@ export const useAssessment = () => {
       }
     };
     checkAssessmentStatus();
+    
   }, [leadId, isBookingMode, initialConsultantId]);
 
   useEffect(() => {
@@ -232,6 +236,19 @@ export const useAssessment = () => {
     };
     fetchTechData();
   }, [isTechnicalResult, leadId]);
+
+  
+  useEffect(() => {
+    const fetchAssessmentResultData = async () => {
+      if (isAssessmentResult && leadId) {
+        const res = await getAssessmentResultAction(leadId);
+        if (res?.success) setResultData(res.data);
+        
+      }
+    };
+    fetchAssessmentResultData();
+    
+  }, [isAssessmentResult]);
 
   const handleScheduleAssessment = async () => {
     if (!leadId || !finalConsultantId)
@@ -296,5 +313,6 @@ export const useAssessment = () => {
     scheduledDetails,
     checkingStatus,
     handleSavePreferences,  
+    resultData
   };
 };

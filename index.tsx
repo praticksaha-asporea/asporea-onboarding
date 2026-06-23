@@ -20,13 +20,13 @@ const TACDashboard = () => {
         />
       )}
 
-      {currentView === "detail" && selectedCandidate && (
+      {/* {currentView === "detail" && selectedCandidate && (
         <CandidateDetail
           selectedCandidate={selectedCandidate}
           setSelectedCandidate={setSelectedCandidate}
           setCurrentView={setCurrentView}
         />
-      )}
+      )} */}
 
       {/* {currentView === "assessment" && selectedCandidate && (
         <AssessmentForm

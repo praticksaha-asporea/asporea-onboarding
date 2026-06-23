@@ -50,7 +50,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({
           <Button
             variant="outlined"
             onClick={onSecondaryClick}
-            className="rounded-[8px] px-6 py-2 normal-case text-white bg-var(--mui-palette-primary-main) shadow-none hover:bg-[#1565c0] hover:shadow-none transition-colors duration-150 disabled:bg-[#e3f2fd] disabled:text-[#93c5fd] disabled:cursor-not-allowed"
+            className="rounded-[8px] px-6 py-2 normal-case bg-var(--mui-palette-primary-main) shadow-none hover:bg-var(--mui-palette-secondary-lighter) hover:shadow-none transition-colors duration-150 disabled:bg-[#e3f2fd] disabled:text-[#93c5fd] disabled:cursor-not-allowed" //text-white 
           >
             {secondaryButtonLabel}
           </Button>
