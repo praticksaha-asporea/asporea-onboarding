@@ -1,0 +1,45 @@
+import { NextApiRequest, NextApiResponse } from "next";
+import connectToDatabase from "@/lib/mongodb";
+import ResponseHandler from "@/lib/utils/responseUtil";
+import { ApiError } from "@/lib/error/api.error";
+import {
+  getTokenFromHeader,
+  verifyToken,
+} from "@/lib/middleware/auth.middleware";
+
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse,
+) {
+  await connectToDatabase();
+  if (req.method !== "GET") {
+    return ResponseHandler.sendError(res, "Method not allowed", 405);
+  }
+
+  try {
+    const token = getTokenFromHeader(req);
+    if (!token) throw new ApiError("Unauthenticated user", 401);
+
+    const authUser = await verifyToken(token);
+    const userRole = String(authUser.role).toLowerCase();
+    if (userRole !== "tac_head") {
+      throw new ApiError("Unauthorized access. Candidates cannot view escalation records.", 403);
+    }
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+    // const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
+    // const result = await getEscalationListService(page, limit,filterUserId);
+
+    return ResponseHandler.sendSuccess(
+      res,
+      // result,
+      "Escalation list fetched successfully.",
+    );
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return ResponseHandler.sendError(res, error.message, error.statusCode);
+    }
+    console.error("ESCALATION LIST API ERROR:", error);
+    return ResponseHandler.sendError(res, "Unknown error occurred", 500);
+  }
+}
