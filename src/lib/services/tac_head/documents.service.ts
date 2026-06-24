@@ -1,4 +1,5 @@
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
+import { DocumentModel } from "@/lib/models/Document.model";
 import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
@@ -11,12 +12,11 @@ export const getAwaitingApprovalDocumentsService = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  // 1. Base query: Documents must be awaiting approval
-  const matchQuery: any = {
-    "documents.status": "awaiting_approval",
+   
+ const matchQuery: any = {
+    status: "doc_awaiting_approval",
   };
-
-  // 2. Apply TAC Head Branch Filtering (Same as your escalation logic)
+   
   if (filterUserId) {
     const shiftInfos = await EmployeeBranchShiftModel.find({ 
       employeeId: new mongoose.Types.ObjectId(filterUserId) 
@@ -36,11 +36,11 @@ export const getAwaitingApprovalDocumentsService = async (
 
     const branchObjectIds = assignedBranchIds.map(id => new mongoose.Types.ObjectId(id));
     
-    // Sirf in assigned branches ke leads dikhao
+     
     matchQuery["preferences.branchId"] = { $in: branchObjectIds };
   }
 
-  // 3. Optional Search Logic (Agar search karna ho frontend se)
+   
   if (search && search.trim().length > 0) {
     const regex = new RegExp(search.trim(), "i");
     matchQuery.$or = [
@@ -60,9 +60,9 @@ export const getAwaitingApprovalDocumentsService = async (
     })
     .populate({
       path: "documents.position",
-      select: "title", // Agar position title chahiye UI par
+      select: "title",  
     })
-    .sort({ "documents.submittedOn": -1, createdAt: -1 }) // Latest first
+    .sort({ "documents.submittedOn": -1, createdAt: -1 }) 
     .skip(skip)
     .limit(limit)
     .lean();
@@ -75,4 +75,43 @@ export const getAwaitingApprovalDocumentsService = async (
       totalPages: Math.ceil(totalRecords / limit),
     },
   };
+};
+
+export const approveRejectDocumentService = async (
+  leadId: string,
+  status: "verified" | "rejected",
+  remarks?: string
+) => {
+  if (!mongoose.Types.ObjectId.isValid(leadId)) {
+    throw new ApiError("Invalid Lead ID", 400);
+  }
+
+   
+  await DocumentModel.updateMany(
+    { leadId: new mongoose.Types.ObjectId(leadId) },
+    { $set: { status: status } }
+  );
+
+  
+  const leadUpdate: any = {
+    status: `doc_${status}`,                     
+    "documents.status": status,                 
+  };
+
+   
+  if (remarks) {
+    // leadUpdate["documents.remarks"] = remarks; 
+  }
+
+  const updatedLead = await Lead.findByIdAndUpdate(
+    leadId,
+    { $set: leadUpdate },
+    { new: true, runValidators: true }
+  );
+
+  if (!updatedLead) {
+    throw new ApiError("Lead not found", 404);
+  }
+
+  return updatedLead;
 };

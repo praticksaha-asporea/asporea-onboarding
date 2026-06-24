@@ -1,15 +1,26 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { 
-  Box, Typography, Paper, Table, TableBody, TableCell, 
-  TableContainer, TableHead, TableRow, IconButton, Chip, 
-  Pagination, CircularProgress 
+import {
+  Box,
+  Typography,
+  
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  IconButton,
+  Chip,
+  Pagination,
+  CircularProgress,
+  Paper,
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { getAwaitingDocumentsAction } from "../../../../Services/APIs/tacHead/document.action";
-import DocumentActionModal from "./DocumentActionModal";  
+import DocumentActionModal from "./DocumentActionModal";
 
 dayjs.extend(relativeTime);
 
@@ -18,17 +29,16 @@ const DocumentApprovalView = () => {
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
- 
+
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
     const res = await getAwaitingDocumentsAction(page, 10);
-    if (res?.success !== false) {
-      setLeads(res.leads || []);
-      setTotalPages(res.meta?.totalPages || 1);
+    if (res && res.success !== false) {
+      setLeads(res.data?.leads || []);
+      setTotalPages(res.data?.meta?.totalPages || 1);
     } else {
       // toast.error(res?.message || "Failed to load documents");
     }
@@ -45,56 +55,94 @@ const DocumentApprovalView = () => {
   };
 
   return (
-    <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-white">
-      <Typography className="text-[22px] md:text-[28px] font-medium tracking-tight mb-6">
+    <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
+      <Typography
+        className="text-[22px] md:text-[28px] text-[var(--mui-palette-secondary)]
+      font-medium tracking-tight mb-6"
+      >
         TAC Head - Document Approvals
       </Typography>
 
-      <TableContainer component={Paper} className="shadow-xl">
+      <TableContainer component={Paper} className="shadow-xl bg-[var(--mui-palette-primary)] ">
         <Table size="small">
           <TableHead>
             <TableRow>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Candidate</TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Inquiry No</TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Assigned TAC</TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Position Applied</TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Submitted</TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white text-right">Review</TableCell>
+           
+              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
+                Candidate
+              </TableCell>
+              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
+                Assigned TAC
+              </TableCell>
+              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
+                Position Applied
+              </TableCell>
+              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
+                Submitted
+              </TableCell>
+              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white text-right">
+                Review
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
             {loading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-10"><CircularProgress /></TableCell></TableRow>
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-10">
+                  <CircularProgress />
+                </TableCell>
+              </TableRow>
             ) : leads.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 font-medium text-gray-500">No documents awaiting approval.</TableCell></TableRow>
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-center py-8 font-medium text-gray-500"
+                >
+                  No documents awaiting approval.
+                </TableCell>
+              </TableRow>
             ) : (
               leads.map((row: any) => (
                 <TableRow key={row._id} hover>
                   <TableCell className="py-3 px-4">
-                    <Typography className="font-semibold text-[13px]">{row.fullName}</Typography>
-                    <Typography className="text-[12px] text-gray-500">{row.contact?.phone}</Typography>
+                    <Typography className="font-semibold text-[var(--mui-palette-primary)] text-[13px]">
+                      {row.fullName}
+                    </Typography>
+                    <Typography className="text-[12px] text-[var(--mui-palette-primary)]
+  font-medium">
+                      {row.inqNo || "N/A"}
+                    </Typography>
                   </TableCell>
-                  <TableCell className="py-3 px-4 text-[13px] font-mono font-medium">
-                    {row.inqNo || "N/A"}
-                  </TableCell>
-                  <TableCell className="py-3 px-4 text-[13px]">
-                    {row.preferences?.consultantId 
-                      ? `${row.preferences.consultantId.firstName} ${row.preferences.consultantId.lastName}` 
+
+                  <TableCell className="py-3 px-4 text-[var(--mui-palette-primary)] text-[13px]">
+                    {row.preferences?.consultantId
+                      ? `${row.preferences.consultantId.firstName} ${row.preferences.consultantId.lastName}`
                       : "Unassigned"}
                   </TableCell>
+
                   <TableCell className="py-3 px-4">
-                    <Chip 
-                      label={row.documents?.position?.title || "N/A"} 
-                      size="small" 
-                      variant="outlined" 
-                      className="text-[12px] font-bold bg-gray-50" 
+                    <Chip
+                      label={row.documents?.position?.title || "N/A"}
+                      size="small"
+                      variant="outlined"
+                      className="text-[12px] text-[var(--mui-palette-primary)]
+ font-medium border-none shadow-2xl bg-[var(--mui-palette-primary)]"
                     />
                   </TableCell>
+
                   <TableCell className="py-3 px-4 text-[12px] text-[var(--mui-palette-primary)]">
-                    {row.documents?.submittedOn ? dayjs(row.documents.submittedOn).fromNow() : "N/A"}
+                    {row.documents?.submittedOn
+                      ? dayjs(row.documents.submittedOn).fromNow()
+                      : "N/A"}
                   </TableCell>
+
                   <TableCell className="py-3 px-4 text-right">
-                    <IconButton size="small" onClick={() => openActionModal(row)} color="primary" className="bg-blue-50 hover:bg-[var(--mui-palette-primary-main)] hover:text-white transition-all text-[#0054a6]">
+                    <IconButton
+                      size="small"
+                      onClick={() => openActionModal(row)}
+                      color="primary"
+                      className="bg-[var(--mui-palette-primary)] hover:bg-[var(--mui-palette-primary-main)] hover:text-white transition-all text-[var(--mui-palette-primary)]"
+                    >
                       <i className="ri-file-search-line text-[20px]" />
                     </IconButton>
                   </TableCell>
@@ -107,16 +155,21 @@ const DocumentApprovalView = () => {
 
       {totalPages > 1 && (
         <Box className="flex justify-center mt-6">
-          <Pagination count={totalPages} page={page} onChange={(e, val) => setPage(val)} color="primary" />
+          <Pagination
+            count={totalPages}
+            page={page}
+            onChange={(e, val) => setPage(val)}
+            color="primary"
+          />
         </Box>
       )}
 
       {/* Action Modal Component */}
-      <DocumentActionModal 
-        open={modalOpen} 
-        setOpen={setModalOpen} 
-        lead={selectedLead} 
-        refreshData={fetchDocuments} 
+      <DocumentActionModal
+        open={modalOpen}
+        setOpen={setModalOpen}
+        lead={selectedLead}
+        refreshData={fetchDocuments}
       />
     </Box>
   );
