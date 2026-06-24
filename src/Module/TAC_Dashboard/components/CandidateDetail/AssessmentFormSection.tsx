@@ -394,6 +394,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
               <FormControlLabel value="selected" control={<Radio disabled />} label="Selected" />
               <FormControlLabel value="verified" control={<Radio disabled />} label="Verified" />
               <FormControlLabel value="request_technical" control={<Radio disabled />} label="Technical Requested" />
+              <FormControlLabel value="rejected" control={<Radio disabled />} label="Rejected from Technical" />
             </RadioGroup>
             <FormControl fullWidth className="mt-4 md:w-1/2">
               <InputLabel>Experience Type</InputLabel>

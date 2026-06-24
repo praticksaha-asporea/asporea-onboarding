@@ -12,9 +12,10 @@ export interface ITechnicalDetail extends Document {
   timeTaken?: string;
 
   questions?: number;
-  answered?: number; 
+  answered?: number;
 
   feedback?: string;
+  status?: 'passed' | 'failed';
 
   createdAt: Date;
   updatedAt: Date;
@@ -54,6 +55,10 @@ const TechnicalDetailSchema = new Schema<ITechnicalDetail>(
       type: String,
       trim: true,
     },
+    status: {
+      type: String,
+      trim: true,
+    }
   },
   { timestamps: true }
 );

@@ -6,6 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
+import { getTechnicalListService } from "@/lib/services/tac/technical.service";
 
 export default async function handler(
   req: NextApiRequest,
@@ -22,24 +23,24 @@ export default async function handler(
 
     const authUser = await verifyToken(token);
     const userRole = String(authUser.role).toLowerCase();
-    if (userRole !== "tac_head") {
+    if (userRole !== "tac_head" && userRole !== "admin") {
       throw new ApiError("Unauthorized access. Candidates cannot view escalation records.", 403);
     }
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    // const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
-    // const result = await getEscalationListService(page, limit,filterUserId);
+    const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
+    const result = await getTechnicalListService(page, limit,filterUserId);
 
     return ResponseHandler.sendSuccess(
       res,
-      // result,
-      "Escalation list fetched successfully.",
+      result,
+      "Technical Requests list fetched successfully.",
     );
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(res, error.message, error.statusCode);
     }
-    console.error("ESCALATION LIST API ERROR:", error);
+    console.error("Technical Requests LIST API ERROR:", error);
     return ResponseHandler.sendError(res, "Unknown error occurred", 500);
   }
 }

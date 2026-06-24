@@ -149,8 +149,19 @@ export const AssessmentExperienceVerification = async (value: any, authUser: any
 
     const updatedLead = await Lead.findByIdAndUpdate(
         assignment?.leadId,
-        { $set: leadUpdate },
-        { returnDocument: "after", runValidators: true }
+        {
+            $set: {
+                ...leadUpdate,
+                ...(status === "request_technical" && {
+                    "technical.status": 'refered',
+                    "technical.required": true,
+                }),
+            },
+        },
+        {
+            returnDocument: "after",
+            runValidators: true,
+        }
     );
     // console.log(updatedLead,5844444);
 

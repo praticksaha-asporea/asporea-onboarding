@@ -1,40 +1,50 @@
 import mongoose from "mongoose";
 import { TechnicalDetailModel } from "@/lib/models/TechnicalDetail.model";
 import { ApiError } from "@/lib/error/api.error";
+import { Assignment } from "@/lib/models/Assignment.model";
 
-export const addTechnicalResult = async (payload: any, userId?: string) => {
+export const addTechnicalResult = async (payload: any) => {
   const {
     leadId,
-    assessmentId,
     achievedScore,
     totalScore,
+    timeTaken,
     questions,
     answered,
-    timeTaken,
+    type,
+    breakdownPdf,
+    feedback
   } = payload;
 
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
   const lead = await LeadModel.findById(leadId);
 
   if (!lead) throw new ApiError("Lead not found", 404);
+  const assignments = await Assignment.findOne({ leadId: new mongoose.Types.ObjectId(leadId), phase: 'assess' });
+  // console.log({ leadId: new mongoose.Types.ObjectId(leadId), phase: 'assess' },assignments, 4544);
+  if (!assignments) throw new ApiError("Assignment not found", 404);
 
-  const isPassed = achievedScore >= totalScore / 2;
-  const status = isPassed ? "passed" : "failed";
+  const isPassed = await achievedScore >= totalScore / 2;
+  const statusTech = isPassed ? "passed" : "failed";
 
-  await LeadModel.findByIdAndUpdate(leadId, {
-    "technical.status": status,
-    "technical.required": true,
-  });
+  const s=await LeadModel.findByIdAndUpdate(leadId, {
+    "technical.status": statusTech,
+    "technical.type": type,
+    "experience.status": isPassed ? "verified" : "rejected",
+    "status": `exp_${isPassed ? "verified" : "rejected"}`
+  });  
 
   const techResult = await TechnicalDetailModel.create({
     leadId: new mongoose.Types.ObjectId(leadId),
-    assessmentId: new mongoose.Types.ObjectId(assessmentId),
+    assessmentId: new mongoose.Types.ObjectId(assignments?._id),
     achievedScore,
     totalScore,
     questions,
     answered,
     timeTaken,
-    feedback: "Evaluated successfully based on e-assessment.",
+    breakdownPdf,
+    status:statusTech,
+    feedback,
   });
 
   return techResult;

@@ -7,9 +7,6 @@ import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 
 // Services and Validations
-import { addTechnicalResult, getTechnicalResult } from "@/lib/services/Assessments/technical.service";
-import { addTechnicalResultSchema } from "@/lib/validation/technicalValidation";
-import { getAssessmentResultAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { getAssessmentResult } from "@/lib/services/Assessments/assessment-tool.service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
