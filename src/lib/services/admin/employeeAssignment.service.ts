@@ -5,17 +5,16 @@ import '../../models/User.model'
 import { BranchModel } from "../../models/Branch.model";
 import '../../models/Shift.model'
 
-async function enforceCounterLimit(branchId: string, counterNo: number | undefined) {
+async function enforceCounterLimit(branchId: string, counterNo: number | undefined,currentEmployeeId?: string) {
   if (counterNo === undefined) return;
 
   const branch = await BranchModel.findById(branchId).select("counters").lean();
   if (!branch) throw new ApiError("Branch not found", 404);
-
-  const branchCounterOccupied = await EmployeeBranchShiftModel.exists({
-    branchId,
-    counterNo,
-  });
-
+  const queryFilter: Record<string, any> = { branchId, counterNo };
+  if (currentEmployeeId) {
+    queryFilter.employeeId = { $ne: new mongoose.Types.ObjectId(currentEmployeeId) };
+  }
+ const branchCounterOccupied = await EmployeeBranchShiftModel.exists(queryFilter);
   if (branchCounterOccupied) {
     throw new ApiError("Counter is already occupied by other employee",404);
   }
@@ -109,7 +108,38 @@ export const createAssignment = async (body: any) => {
   // role is passed for Joi validation only — strip before saving
   const { role: _role, ...data } = body;
 
-  await enforceCounterLimit(data.branchId, data.counterNo);
+  await enforceCounterLimit(data.branchId, data.counterNo,data.employeeId);
+
+  
+  const existingAssignments = await EmployeeBranchShiftModel.find({
+    employeeId: new mongoose.Types.ObjectId(data.employeeId)
+  }).lean();
+
+  if (existingAssignments && existingAssignments.length > 0) {
+     
+    const latestExistingAssignment = existingAssignments.reduce((latest: any, current: any) => {
+      const dateLatest = latest.effectiveFrom ? new Date(latest.effectiveFrom).getTime() : 0;
+      const dateCurrent = current.effectiveFrom ? new Date(current.effectiveFrom).getTime() : 0;
+      return dateCurrent > dateLatest ? current : latest;
+    });
+
+    if (latestExistingAssignment && latestExistingAssignment.effectiveFrom) {
+      const existingEffectiveTime = new Date(latestExistingAssignment.effectiveFrom).getTime();
+      const newEffectiveTime = new Date(data.effectiveFrom).getTime();
+ 
+      if (newEffectiveTime <= existingEffectiveTime) {
+        const formattedDate = new Date(latestExistingAssignment.effectiveFrom).toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric"
+        });
+        throw new ApiError(
+          `Cannot assign backdated shift. The new effective date must be after the employee's latest assignment date (${formattedDate}).`,
+          400
+        );
+      }
+    }
+  }
 
   try {
     const assignment = await EmployeeBranchShiftModel.create(data);

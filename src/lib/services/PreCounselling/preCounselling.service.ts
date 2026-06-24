@@ -120,6 +120,7 @@ const formatTime12Hr = (minutes: number) => {
   const istTime = new Date(utcTime + 330 * 60000);
   const todayStr = istTime.toISOString().split("T")[0];
   const isToday = targetDateStr === todayStr;
+  const isPastDate = targetDateStr < todayStr;
   const currentMinutes = istTime.getHours() * 60 + istTime.getMinutes();
   
   let startMins = timeToMinutes(schedule.startTime);
@@ -141,11 +142,16 @@ const formatTime12Hr = (minutes: number) => {
 
     let isAvailable = true;
 
-    if (isToday && currentMins <= currentMinutes) {
+    if (isPastDate) {
+       
+      isAvailable = false;
+    } else if (isToday && currentMins <= currentMinutes) {
+      
       isAvailable = false;
     }
 
     if (bookedFromTimes.includes(fromStr)) {
+      
       isAvailable = false;
     }
 
