@@ -3,7 +3,7 @@ import axiosClient from "@/Services/AxiosConfig/axiosClient";
 export const getEscalationListAction = async (page = 1, limit = 10) => {
   try {
     const response = await axiosClient.get(
-      `/tac/tacHead/escalation/list?page=${page}&limit=${limit}`,
+      `/tac/tachead/escalation/list?page=${page}&limit=${limit}`,
     );
     return response.data;
   } catch (error: any) {
@@ -17,7 +17,7 @@ export const getEscalationListAction = async (page = 1, limit = 10) => {
 export const getEscalationViewAction = async (id: string) => {
   try {
     const response = await axiosClient.get(
-      `/tac/tacHead/escalation/view?id=${id}`,
+      `/tac/tachead/escalation/view?id=${id}`,
     );
     return response.data;
   } catch (error: any) {
@@ -31,7 +31,7 @@ export const getEscalationViewAction = async (id: string) => {
 export const approveRejectEscalationAction = async (payload: any) => {
   try {
     const response = await axiosClient.post(
-      "/tac/tacHead/escalation/action",
+      "/tac/tachead/escalation/action",
       payload,
     );
     return response.data;
