@@ -54,13 +54,19 @@ const TacHeadMenu = ({
         renderExpandedMenuItemIcon={{ icon: <i className="ri-circle-line" /> }}
         menuSectionStyles={menuSectionStyles(theme)}
       >
-        {/* 🌟 Yahan route aur naam change kar diya */}
+        
         <MenuItem
           href="/tac-head/dashboard"
           icon={<i className="ri-shield-check-line" />} 
         >
           Escalations
         </MenuItem>
+        <MenuItem
+    href="/tac-head/documents"
+    icon={<i className="ri-file-text-line" />} 
+  >
+    Documents
+  </MenuItem>
       </Menu>
     </ScrollWrapper>
   );

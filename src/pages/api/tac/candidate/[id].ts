@@ -34,8 +34,10 @@ export default async function handler(
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    if (authUser.role !== "tac" && authUser.role !== "foe")
-      throw new ApiError("TAC or FOE access required", 403);
+    const userRole = String(authUser.role).toLowerCase();
+
+    if (userRole !== "tac" && userRole !== "foe" && userRole !== "tac_head" && userRole !== "admin")
+      throw new ApiError("Unauthorized access. Insufficient permissions.", 403);
 
     const { id } = req.query;
     if (!id || typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id))
@@ -43,14 +45,38 @@ export default async function handler(
     let leadFilter: Record<string, unknown> = {
       _id: new mongoose.Types.ObjectId(id),
     };
-    if (authUser.role === "foe") {
+  // ─── 🌟 ROLE BASED FILTERING LOGIC 🌟 ───────────────────────────────────
+    if (userRole === "foe") {
       const shift = await EmployeeBranchShiftModel.findOne({
         employeeId: new mongoose.Types.ObjectId(authUser.id),
       }).lean();
       if (!shift) throw new ApiError("FOE branch assignment not found", 404);
 
       leadFilter["preferences.branchId"] = shift.branchId;
-    } else {
+
+    } else if (userRole === "tac_head") {
+      // TAC Head apni assigned branches ke kisi bhi consultant ka lead dekh sakta hai
+      const shiftInfos = await EmployeeBranchShiftModel.find({
+        employeeId: new mongoose.Types.ObjectId(authUser.id),
+      }).lean();
+
+      if (!shiftInfos || shiftInfos.length === 0) {
+        throw new ApiError("No branch assigned to your account. Please contact Admin.", 403);
+      }
+
+      const assignedBranchIds = [...new Set(
+        shiftInfos.map(shift => shift.branchId?.toString()).filter(Boolean)
+      )];
+
+      if (assignedBranchIds.length === 0) {
+        throw new ApiError("Your branch assignment data is invalid or corrupted. Please contact Admin.", 403);
+      }
+
+      const branchObjectIds = assignedBranchIds.map(bId => new mongoose.Types.ObjectId(bId));
+      leadFilter["preferences.branchId"] = { $in: branchObjectIds };
+
+    } else if (userRole === "tac") {
+      // Normal TAC sirf apna khud ka assigned lead dekh sakta hai
       leadFilter["preferences.consultantId"] = new mongoose.Types.ObjectId(
         authUser.id,
       );

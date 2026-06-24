@@ -11,7 +11,7 @@ const TACHeadDashboard = () => {
       {currentView === "dashboard" && (
         <DashboardView setCurrentView={setCurrentView} />
       )}
-      {/* Aage chal kar hum yahan detail view bhi add kar sakte hain */}
+    
     </Box>
   );
 };

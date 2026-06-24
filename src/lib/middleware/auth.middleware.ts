@@ -2,7 +2,7 @@ import type { NextApiRequest } from 'next';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import { ApiError } from '../error/api.error';
 
-export type UserRole = 'tac' | 'admin' | 'foe' ;
+export type UserRole = 'tac' | 'admin' | 'foe' | 'tac_head' ;
 export interface AuthUser {
   id: string;
   role: UserRole;

@@ -97,8 +97,12 @@ export const UploadCard: React.FC<UploadCardProps> = ({ title, subtitle, allowed
   };
 
   return (
-    <Card variant="outlined" className="rounded-[16px] flex flex-col h-full shadow-none hover:shadow-[0_4px_12px_rgba(0,0,0,0.05)] transition-all duration-200">
-      <Box className="p-2.5 h-[2.4em] flex items-center justify-center relative">
+<Card
+      variant="elevation"                 
+      elevation={0}                          
+      className="border-none shadow-2xl bg-[var(--mui-palette-primary)] rounded-[14px] p-4 flex flex-col gap-3 min-h-[160px] justify-between transition-all duration-200 hover:scale-[1.02]" 
+      
+    >      <Box className="p-2.5 h-[2.4em] flex items-center justify-center relative">
         <Typography className="font-extrabold text-[13px] leading-[1.2] text-center overflow-hidden">{title}</Typography>
       </Box>
       {isMandatory && <Typography className="text-red-500 font-bold text-[11px] text-center mb-1">* This is mandatory</Typography>}
