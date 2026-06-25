@@ -2,7 +2,7 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ITechnicalDetail extends Document {
   leadId: Types.ObjectId;
-  assessmentId: Types.ObjectId;
+  assignmentId: Types.ObjectId;
 
   totalScore?: number;
   achievedScore?: number;
@@ -30,9 +30,9 @@ const TechnicalDetailSchema = new Schema<ITechnicalDetail>(
       index: true,
     },
 
-    assessmentId: {
+    assignmentId: {
       type: Schema.Types.ObjectId,
-      ref: "Assessment",
+      ref: "Assignment",
       required: true,
       unique: true, // 1:1 relation
       index: true,

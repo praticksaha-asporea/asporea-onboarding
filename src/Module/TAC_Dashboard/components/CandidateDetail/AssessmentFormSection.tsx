@@ -146,6 +146,11 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       setExpRFT(false);
       setExpVerified(false);
     }
+    else if (exp.status==="rejected")
+    {
+      setExpRFT(false);
+      setExpVerified(false);
+    }
   }, [assessAssign, candidate]);
 
   const handleSaveAll = () => {

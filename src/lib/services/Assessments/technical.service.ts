@@ -27,23 +27,29 @@ export const addTechnicalResult = async (payload: any) => {
   const isPassed = await achievedScore >= totalScore / 2;
   const statusTech = isPassed ? "passed" : "failed";
 
-  const s=await LeadModel.findByIdAndUpdate(leadId, {
+  await LeadModel.findByIdAndUpdate(leadId, {
     "technical.status": statusTech,
     "technical.type": type,
     "experience.status": isPassed ? "verified" : "rejected",
     "status": `exp_${isPassed ? "verified" : "rejected"}`
-  });  
+  });
+
+  if (!isPassed) {
+    await Assignment.findByIdAndUpdate(assignments?._id, {
+      "status": "rejected"
+    });
+  }
 
   const techResult = await TechnicalDetailModel.create({
     leadId: new mongoose.Types.ObjectId(leadId),
-    assessmentId: new mongoose.Types.ObjectId(assignments?._id),
+    assignmentId: new mongoose.Types.ObjectId(assignments?._id),
     achievedScore,
     totalScore,
     questions,
     answered,
     timeTaken,
     breakdownPdf,
-    status:statusTech,
+    status: statusTech,
     feedback,
   });
 
