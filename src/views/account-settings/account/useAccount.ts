@@ -22,7 +22,14 @@ export const useAccount = () => {
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
 
-
+ 
+  useEffect(() => {
+    if (reduxUser?.profilePic?.path) {
+      setImgSrc(reduxUser.profilePic.path);
+    } else {
+      setImgSrc("/images/avatars/1.png");  
+    }
+  }, [reduxUser]);
   useEffect(() => {
     const fetchAndSetData = async () => {
       if (reduxUser && (reduxUser.firstName || reduxUser.verifiedIdentity)) {

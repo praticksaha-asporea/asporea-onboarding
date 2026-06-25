@@ -131,7 +131,7 @@ export const viewUser = async (userId: string) => {
 
   const user = await UserModel.findById(userId)
     .select('-password')
-    .populate('profilePic', 'url')
+    .populate('profilePic', 'path')
     .populate('reviewer', 'firstName lastName email')
     .populate('createdBy', 'firstName lastName email')
     .lean();

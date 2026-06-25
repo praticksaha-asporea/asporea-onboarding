@@ -97,6 +97,7 @@ export const registerSchema = Joi.object({
     expiresAt: Joi.string().trim().optional(),
     type: Joi.string().trim().required(),
   }).optional(),
+  profilePicData: Joi.string().allow("", null).optional(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 export const loginSchema = Joi.object({

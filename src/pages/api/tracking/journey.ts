@@ -98,8 +98,37 @@ export default async function handler(
           })
         : null;
 
-   const techStatus = lead.technical?.status;
-   const isTechVisible = ['refered', 'passed', 'failed'].includes(techStatus);
+    const techStatus = lead.technical?.status;
+    const isTechVisible = ["refered", "passed", "failed"].includes(techStatus);
+
+    let docStatusStr = "Pending";
+    if (lead.status === "doc_awaiting_approval") {
+      docStatusStr = "Waiting For Approval";
+    } else if (lead.documents?.status === "verified") {
+      docStatusStr = "Verified";
+    } else if (lead.documents?.status === "rejected") {
+      docStatusStr = "Rejected";
+    } else if (lead.documents?.status === "uploaded") {
+      docStatusStr = "Uploaded";
+    }
+
+    let expStatusStr = "Pending";
+    if (
+      lead.experience?.status === "verified" ||
+      lead.status === "exp_verified"
+    ) {
+      expStatusStr = "Verified";
+    } else if (lead.experience?.status === "rejected") {
+      expStatusStr = "Rejected";
+    } else if (lead.experience?.status === "request_technical") {
+      expStatusStr = "Waiting for Technical Round";
+    } else if (
+      lead.experience?.submittedOn ||
+      lead.status === "exp_submitted" ||
+      isAssessScheduled
+    ) {
+      expStatusStr = "Filled";
+    }
 
     const journeyData = {
       activeStep,
@@ -111,21 +140,11 @@ export default async function handler(
         ),
       },
       documents: {
-        status:
-          lead.documents?.status === "verified"
-            ? "Verified"
-            : lead.documents?.status === "uploaded"
-              ? "Uploaded"
-              : "Pending",
+        status: docStatusStr,
         date: formatDate(lead.documents?.submittedOn),
       },
-     experience: {
-        status:
-          lead.experience?.status === "verified" || lead.status === "exp_verified"
-            ? "Verified"  
-            : lead.experience?.submittedOn || lead.status === "exp_submitted" || isAssessScheduled
-              ? "Filled"
-              : "Pending",
+      experience: {
+        status: expStatusStr,
         type: lead.experience?.type || null,
         date: formatDate(lead.experience?.submittedOn),
       },
@@ -142,10 +161,18 @@ export default async function handler(
         hasResult: isAssessCompleted,
       },
       technical: {
-       status: techStatus === "passed" ? "Passed" : (techStatus === "failed" ? "Failed" : (techStatus === "refered" ? "Refered" : "Pending")),
-    hasResult: techStatus === "passed" || techStatus === "failed",
-    isVisible: isTechVisible, 
-    date: formatDate(techAssignment?.schedule?.date) || formatDate(new Date())
+        status:
+          techStatus === "passed"
+            ? "Passed"
+            : techStatus === "failed"
+              ? "Failed"
+              : techStatus === "refered"
+                ? "Refered"
+                : "Pending",
+        hasResult: techStatus === "passed" || techStatus === "failed",
+        isVisible: isTechVisible,
+        date:
+          formatDate(techAssignment?.schedule?.date) || formatDate(new Date()),
       },
     };
 

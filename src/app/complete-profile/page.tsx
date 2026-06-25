@@ -79,6 +79,7 @@ export default function CompleteProfilePage() {
       passportNumber:
         values.passportStatus === "having" ? values.passportNumber : "",
       password,
+     profilePicData: fileInput || "",
       ...(social && {
         social: {
           type: social.provider,
@@ -89,6 +90,8 @@ export default function CompleteProfilePage() {
         },
       }),
     };
+
+    console.log("🚀 SENDING PAYLOAD TO BACKEND:", payload);
 
     try {
       const res = await axios.post("/api/auth/register", payload);
@@ -148,17 +151,20 @@ export default function CompleteProfilePage() {
     }
   }, [router]);
 
-  const handleFileInputChange = (file: ChangeEvent) => {
+const handleFileInputChange = (file: ChangeEvent) => {
+  const { files } = file.target as HTMLInputElement;
+  if (files && files.length !== 0) {
     const reader = new FileReader();
-    const { files } = file.target as HTMLInputElement;
-    if (files && files.length !== 0) {
-      reader.onload = () => setImgSrc(reader.result as string);
-      reader.readAsDataURL(files[0]);
-      if (reader.result !== null) {
-        setFileInput(reader.result as string);
-      }
-    }
-  };
+    
+    reader.onload = () => {
+      const base64Data = reader.result as string;
+      setImgSrc(base64Data);     
+      setFileInput(base64Data);   
+    };
+    
+    reader.readAsDataURL(files[0]);
+  }
+};
 
   const handleFileInputReset = () => {
     setFileInput("");
