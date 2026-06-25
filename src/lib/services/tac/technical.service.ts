@@ -30,7 +30,7 @@ export const getTechnicalListService = async (page = 1, limit = 10, filterUserId
 
     const totalRecords = await Lead.countDocuments(matchQuery);
 
-    const technicalRequestedLeads = await Lead.find({ 'experience.status': 'request_technical' })
+    const technicalRequestedLeads = await Lead.find({ 'technical.required': true })
         .populate({
             path: "preferences.consultantId",
             select: "firstName lastName email role",

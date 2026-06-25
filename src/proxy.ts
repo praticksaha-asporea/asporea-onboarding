@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { protectedRoutesCandidate, protectedRouteTAC } from './Routes/protected.routes';
+import { protectedRoutesCandidate, protectedRouteTAC, protectedRouteTACHead } from './Routes/protected.routes';
 import { authRoutes, publicRoutes } from './Routes/auth.routes';
 import { decodedToken } from './lib/middleware/auth.middleware';
 import { JwtPayload } from 'jsonwebtoken';
@@ -10,7 +10,7 @@ export function proxy(req: NextRequest) {
   const { pathname } = url;
   const origin = req.headers.get('origin');
   const response = NextResponse.next();
-  
+
   if (!origin && req.url.includes('/api')) {
     return response;
   }
@@ -35,10 +35,11 @@ export function proxy(req: NextRequest) {
     // 1️⃣ If user is NOT logged in
     // -----------------------
     if (!isLoggedIn) {
-      
+
       const isProtected =
         protectedRoutesCandidate.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/')) ||
-        protectedRouteTAC.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/'));
+        protectedRouteTAC.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/')) ||
+        protectedRouteTACHead.some((r) => normalizedPath === r || normalizedPath.startsWith(r + '/'));
 
       if (isProtected) {
         // Redirect to login if trying to access protected route
@@ -56,7 +57,14 @@ export function proxy(req: NextRequest) {
     if (authRoutes.includes(normalizedPath)) {
       return NextResponse.redirect(
         new URL(
-          role === 'user' ? '/inquiry' : '/dashboard',
+          role === 'user' ?
+            '/inquiry'
+            : role === 'tac' || role === 'foe'
+              ? '/dashboard'
+              : role === 'tac_head'
+                ? '/tac-head/dashboard'
+                : '/'
+          ,
           req.url,
         ),
       );
@@ -70,13 +78,25 @@ export function proxy(req: NextRequest) {
       }
     }
 
-    if (role === 'tac') {
+    if (role === 'tac' || role === 'foe') {
       // If trying to access a path not in TAC routes → redirect
       const isTacRoute = protectedRouteTAC.some(
         (r) => normalizedPath === r || normalizedPath.startsWith(r + '/')
       );
       if (!isTacRoute) {
         return NextResponse.redirect(new URL('/dashboard', req.url));
+      }
+    }
+
+    if (role === 'tac_head') {
+      // console.log(req.url,5844);
+
+      // If trying to access a path not in TAC routes → redirect
+      const isTacHeadRoute = protectedRouteTACHead.some(
+        (r) => normalizedPath === r || normalizedPath.startsWith(r + '/')
+      );
+      if (!isTacHeadRoute) {
+        return NextResponse.redirect(new URL('/tac-head/dashboard', req.url));
       }
     }
   } else {

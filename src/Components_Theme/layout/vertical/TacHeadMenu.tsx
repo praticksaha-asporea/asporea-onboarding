@@ -38,13 +38,13 @@ const TacHeadMenu = ({
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
-            className: "bs-full overflow-y-auto overflow-x-hidden",
-            onScroll: (container) => scrollMenu(container, false),
-          }
+          className: "bs-full overflow-y-auto overflow-x-hidden",
+          onScroll: (container) => scrollMenu(container, false),
+        }
         : {
-            options: { wheelPropagation: false, suppressScrollX: true },
-            onScrollY: (container) => scrollMenu(container, true),
-          })}
+          options: { wheelPropagation: false, suppressScrollX: true },
+          onScrollY: (container) => scrollMenu(container, true),
+        })}
     >
       <Menu
         menuItemStyles={menuItemStyles(theme)}
@@ -54,19 +54,25 @@ const TacHeadMenu = ({
         renderExpandedMenuItemIcon={{ icon: <i className="ri-circle-line" /> }}
         menuSectionStyles={menuSectionStyles(theme)}
       >
-        
+
         <MenuItem
           href="/tac-head/dashboard"
-          icon={<i className="ri-shield-check-line" />} 
+          icon={<i className="ri-shield-check-line" />}
         >
           Escalations
         </MenuItem>
         <MenuItem
-    href="/tac-head/documents"
-    icon={<i className="ri-file-text-line" />} 
-  >
-    Documents
-  </MenuItem>
+          href="/tac-head/documents"
+          icon={<i className="ri-file-text-line" />}
+        >
+          Documents
+        </MenuItem>
+        <MenuItem
+          href="/tac-head/technicals"
+          icon={<i className="ri-computer-line" />}
+        >
+          Technicals
+        </MenuItem>
       </Menu>
     </ScrollWrapper>
   );

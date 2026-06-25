@@ -103,7 +103,7 @@ const UserDropdown = () => {
           src='/images/avatars/1.png'
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px] border-[3px] border-divider"'
-          />
+        />
       </Badge>
       <Popper
         open={open}
@@ -134,10 +134,14 @@ const UserDropdown = () => {
                   </div>
                   <Divider className='mlb-1' />
                   <MenuItem className='gap-3' onClick={(e) => {
+                      console.log(reduxUser?.role,414);
                     if (reduxUser?.role == "user") {
                       handleDropdownClose(e, '/profile');
                     }
-                    else if(reduxUser?.role == "tac"){
+                    else if (["tac", "foe"].includes(reduxUser?.role)) {
+                      handleDropdownClose(e, '/my-profile');
+                    }
+                    else if (["tac_head"].includes(reduxUser?.role)) {                      
                       handleDropdownClose(e, '/my-profile');
                     }
                   }}>

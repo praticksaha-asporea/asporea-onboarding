@@ -15,3 +15,10 @@ export const protectedRouteTAC = [
   'dashboard',
   'my-profile',
 ];
+
+export const protectedRouteTACHead = [
+  'tac-head/dashboard',
+  'tac-head/documents',
+  'tac-head/technicals',
+  'my-profile',
+];
