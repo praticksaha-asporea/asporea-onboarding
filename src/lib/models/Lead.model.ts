@@ -30,6 +30,7 @@ export interface ILead extends Document {
   experience?: {
     type?: "fresher" | "domestic" | "abroad" | "free";
     submittedOn?: Date;
+    status?: "selected" | "verified" | "rejected" | "request_technical";
   };
 
   documents?: {
@@ -117,6 +118,7 @@ const LeadSchema = new Schema<ILead>(
         enum: [
           "selected",
           "verified",
+          "rejected",
           "request_technical"
         ],
         actionBy: { type: Schema.Types.ObjectId, ref: "User" }
