@@ -9,10 +9,16 @@ export interface IGeneralSetting extends Document {
   inqResTimelineHours?: number;
   preCounsellingTimelineHours?: number;
   assessmentTimelineHours?: number;
-
   tacAssignmentType?: "random" | "counterwise";
-
   inquiryNumberFormat?: string;
+  assessment?: {
+    fullMarks?: number;
+    passingMarks?: number;
+  };
+  technical?: {
+    fullMarks?: number;
+    passingMarks?: number;
+  };
 
   createdAt: Date;
   updatedAt: Date;
@@ -68,6 +74,14 @@ const GeneralSettingSchema = new Schema<IGeneralSetting>(
       default: "ASP-INQ-0000",
       trim: true,
     },
+  assessment: {
+      fullMarks: { type: Number, default: 100 },
+      passingMarks: { type: Number, default: 40 }
+    },
+    technical: {
+      fullMarks: { type: Number, default: 100 },
+      passingMarks: { type: Number, default: 40 }
+    }
   },
   { timestamps: true }
 );

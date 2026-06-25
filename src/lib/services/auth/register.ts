@@ -1,10 +1,11 @@
 import User from '@/lib/models/User.model';
 import { RegisterPayload } from '@/Types/Backend_Payload/auth.types';
+import { Upload } from '@/lib/models/Upload.model';
 import { hashPassword } from '@/lib/utils/bcryptUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { SocialLogins } from '@/lib/models/SocialLogins.model';
 
-export const register = async (body: RegisterPayload) => {
+export const register = async (body: RegisterPayload & { profilePicData?: string }) => {
 
   const {
     firstName,
@@ -16,7 +17,8 @@ export const register = async (body: RegisterPayload) => {
     passportNo,
     password,
     address,
-    social
+    social,
+    profilePicData
   } = body;
 
   const existingUser = await User.findOne({ email });
@@ -46,7 +48,18 @@ export const register = async (body: RegisterPayload) => {
     passportNo,
     address,
     role: "user"
-  })
+  });
+
+  if (profilePicData) {
+    const uploadDoc = await Upload.create({
+      userId: newUser._id,
+      path: profilePicData  
+    });
+
+    
+    newUser.profilePic = uploadDoc._id;
+    await newUser.save();
+  }
   if (social) {
     await SocialLogins.create({
       userId: newUser?._id,

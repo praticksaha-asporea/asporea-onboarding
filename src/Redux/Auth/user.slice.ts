@@ -8,6 +8,10 @@ export interface UserData {
   role?: string;
   firstName?: string;
   lastName?: string;
+  profilePic?: {
+    _id?: string;
+    path?: string;
+  };
   organization?: string;
   phoneNumber?: string | number;
   isRegistered?: boolean;

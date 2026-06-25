@@ -41,6 +41,8 @@ const UserDropdown = () => {
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
+
+  const avatarSrc = reduxUser?.profilePic?.path || '/images/avatars/1.png';
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null)
 
@@ -100,7 +102,7 @@ const UserDropdown = () => {
         <Avatar
           ref={anchorRef}
           alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
-          src='/images/avatars/1.png'
+          src={avatarSrc}
           onClick={handleDropdownOpen}
           className='cursor-pointer bs-[38px] is-[38px] border-[3px] border-divider"'
         />
@@ -124,10 +126,11 @@ const UserDropdown = () => {
               <ClickAwayListener onClickAway={e => handleDropdownClose(e as MouseEvent | TouchEvent)}>
                 <MenuList>
                   <div className='flex items-center plb-2 pli-4 gap-2' tabIndex={-1}>
-                    <Avatar alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`} src='/images/avatars/1.png' />
+                    <Avatar alt={`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`} src={avatarSrc} />
                     <div className='flex items-start flex-col'>
                       <Typography className='font-medium' color='text.primary'>
                         {`${reduxUser?.firstName ?? ""} ${reduxUser?.lastName ?? ""}`}
+                        
                       </Typography>
                       <Typography variant='caption'>{CamelCase(reduxUser?.role)}</Typography>
                     </div>

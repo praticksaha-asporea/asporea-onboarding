@@ -27,6 +27,15 @@ const updateGeneralSettingsSchema = Joi.object({
   tacAssignmentType:          Joi.string().valid('random', 'counterwise').optional(),
   inquiryNumberFormat:        Joi.string().trim().optional(),
   lastFy:                     Joi.string().trim().optional(),
+  assessment: Joi.object({
+    fullMarks: Joi.number().min(0).optional().messages({ "number.base": "Full marks must be a number" }),
+    passingMarks: Joi.number().min(0).optional().messages({ "number.base": "Passing marks must be a number" })
+  }).optional(),
+
+  technical: Joi.object({
+    fullMarks: Joi.number().min(0).optional().messages({ "number.base": "Full marks must be a number" }),
+    passingMarks: Joi.number().min(0).optional().messages({ "number.base": "Passing marks must be a number" })
+  }).optional()
   // lastCounter:             Joi.string().trim().optional(),
   // lastInq is system-managed — not updatable via this endpoint
 }).options({ abortEarly: false, allowUnknown: false });

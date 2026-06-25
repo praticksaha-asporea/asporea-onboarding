@@ -70,10 +70,9 @@ const ApplicationTracking = () => {
   const isExpSubmitted =
     (expStatus !== "" && expStatus !== "na" && expStatus !== "pending") ||
     !!journeyData.experience?.type;
-     const isExpVerified = 
-    expStatus === "verified" || 
-    expStatus === "exp_verified";
-    const arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
+  const isExpVerified =
+    expStatus === "verified" || expStatus === "exp_verified";
+  const arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
 
   return (
     <Box className="w-full flex justify-center">
@@ -119,35 +118,42 @@ const ApplicationTracking = () => {
                   : "Please confirm your readiness for pre-counselling sessions. This is a crucial step."
             }
           />
-
           <JourneyCard
             title="Document Verification"
             status={journeyData.documents.status}
             dateLabel="On"
             date={journeyData.documents.date}
             description={
-              !isDocsUploaded
-                ? "Please upload your required documents."
-                : journeyData.documents.status === "Verified"
+              docStatus === "waiting for approval"
+                ? "Your documents have been submitted to the TAC Head and are currently waiting for approval."
+                : docStatus === "verified"
                   ? "All uploaded documents have been verified and approved. Good job!"
-                  : "Your uploaded documents are under review."
+                  : docStatus === "rejected"
+                    ? "Some of your documents were rejected. Please review and upload valid files."
+                    : !isDocsUploaded
+                      ? "Please upload your required documents."
+                      : "Your uploaded documents are under review."
             }
           />
-
           <JourneyCard
             title="Experience Verification"
             status={journeyData.experience.status}
             dateLabel="On"
             date={journeyData.experience.date}
             description={
-              !isExpSubmitted
-                ? "Please fill  and submit your experience details for review."
-                : journeyData.experience.type
-                  ? `Your experience type has been confirmed as '${journeyData.experience.type}'.`
-                  : "Your experience details are under review."
+              expStatus === "waiting for technical round"
+                ? "Your profile has been referred for a technical round evaluation. Please wait for your slot scheduling."
+                : expStatus === "verified"
+                  ? "Your experience certificates and history have been successfully verified."
+                  : expStatus === "rejected"
+                    ? "Your experience details were rejected. Please update with valid details."
+                    : !isExpSubmitted
+                      ? "Please fill and submit your experience details for review."
+                      : journeyData.experience.type
+                        ? `Your experience type has been confirmed as '${journeyData.experience.type}'.`
+                        : "Your experience details are under review."
             }
           />
-
           <JourneyCard
             title="Assessment"
             status={journeyData.assessment.status}
@@ -221,7 +227,7 @@ const ApplicationTracking = () => {
         onClose={() => setIsPopupOpen(false)}
         onProceed={() => {
           setIsPopupOpen(false);
-         router.push(`/assessment?leadId=${leadId}`);
+          router.push(`/assessment?leadId=${leadId}`);
         }}
       />
     </Box>
