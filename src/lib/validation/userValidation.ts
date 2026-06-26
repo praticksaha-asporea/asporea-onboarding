@@ -93,6 +93,7 @@ export const updateUserSchema = Joi.object({
     .trim()
     .allow("", null)
     .optional(),
+    profilePicData: Joi.string().allow("", null).optional(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 // ─── Update Note ──────────────────────────────────────────────────────────────
