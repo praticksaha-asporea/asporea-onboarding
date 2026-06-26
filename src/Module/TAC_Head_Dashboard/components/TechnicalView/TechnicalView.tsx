@@ -19,9 +19,9 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { getAwaitingDocumentsAction } from "../../../../Services/APIs/tacHead/document.action";
-import DocumentActionModal from "./DocumentActionModal";
 import { getAwaitingExperienceAction } from "@/Services/APIs/tacHead/experience.action";
+import { CamelCase } from "@/Utils/common";
+import TechnicalActionModal from "./TechnicalActionModal";
 
 dayjs.extend(relativeTime);
 
@@ -121,30 +121,21 @@ const TechnicalView = () => {
                       : "Unassigned"}
                   </TableCell>
 
-                  <TableCell className="py-3 px-4">
-                    <Chip
-                      label={row.documents?.position?.title || "N/A"}
-                      size="small"
-                      variant="outlined"
-                      className="text-[12px] text-[var(--mui-palette-primary)]
- font-medium border-none shadow-2xl bg-[var(--mui-palette-primary)]"
-                    />
+                  <TableCell className="py-3 px-4">{CamelCase(row.technical?.status) || "N/A"}
                   </TableCell>
 
-                  <TableCell className="py-3 px-4 text-[12px] text-[var(--mui-palette-primary)]">
-                    {row.documents?.submittedOn
-                      ? dayjs(row.documents.submittedOn).fromNow()
-                      : "N/A"}
-                  </TableCell>
+                    <TableCell className="py-3 px-4 text-[12px] text-[var(--mui-palette-primary)]">
+                      {row.contact.phone}
+                    </TableCell>
 
-                  <TableCell className="py-3 px-4 text-right">
+                  <TableCell className="py-3 px-4 text-center">
                     <IconButton
                       size="small"
                       onClick={() => openActionModal(row)}
                       color="primary"
                       className="bg-[var(--mui-palette-primary)] hover:bg-[var(--mui-palette-primary-main)] hover:text-white transition-all text-[var(--mui-palette-primary)]"
                     >
-                      <i className="ri-file-search-line text-[20px]" />
+                      <i className="ri-search-eye-line text-[20px]" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
@@ -166,7 +157,7 @@ const TechnicalView = () => {
       )}
 
       {/* Action Modal Component */}
-      <DocumentActionModal
+      <TechnicalActionModal
         open={modalOpen}
         setOpen={setModalOpen}
         lead={selectedLead}

@@ -18,6 +18,7 @@ import "@/lib/models/Upload.model";
 import "@/lib/models/Document.model";
 import "@/lib/models/DocumentType.model";
 import "@/lib/models/Position.model";
+import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
 
 export default async function handler(
   req: NextApiRequest,
@@ -35,17 +36,18 @@ export default async function handler(
 
     const authUser = await verifyToken(token);
     const userRole = String(authUser.role).toLowerCase();
-
+    let generalSettings: any = {};
     if (userRole !== "tac" && userRole !== "foe" && userRole !== "tac_head" && userRole !== "admin")
       throw new ApiError("Unauthorized access. Insufficient permissions.", 403);
 
-    const { id } = req.query;
+    const { id, settings } = req.query;
+    
     if (!id || typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id))
       throw new ApiError("Invalid candidate ID", 400);
     let leadFilter: Record<string, unknown> = {
       _id: new mongoose.Types.ObjectId(id),
     };
-  // ─── 🌟 ROLE BASED FILTERING LOGIC 🌟 ───────────────────────────────────
+    // ─── 🌟 ROLE BASED FILTERING LOGIC 🌟 ───────────────────────────────────
     if (userRole === "foe") {
       const shift = await EmployeeBranchShiftModel.findOne({
         employeeId: new mongoose.Types.ObjectId(authUser.id),
@@ -96,8 +98,8 @@ export default async function handler(
         .select("notificationPreference")
         .lean();
 
-        if (userDoc) {
-       
+      if (userDoc) {
+
         (lead as any).notificationPreference = (userDoc as any).notificationPreference;
       }
     }
@@ -109,7 +111,7 @@ export default async function handler(
       .populate("typeId", "title section subTitle")
       .populate("uploadId", "path")
       .lean();
-    
+
     if (lead && lead.documents) {
       (lead as any).documents.uploadedDocs = dbUploadedFiles.map(
         (doc: any) => ({
@@ -153,9 +155,12 @@ export default async function handler(
       assignmentByPhase[(a as any).phase] = a;
     }
 
+    if (settings === "true") {
+      generalSettings = await GeneralSettingModel.findOne().lean();
+    }
     return ResponseHandler.sendSuccess(
       res,
-      { lead, branchToken, assignments, assignmentByPhase },
+      { lead, branchToken, assignments, assignmentByPhase, generalSettings },
       "Candidate fetched",
     );
   } catch (error: unknown) {

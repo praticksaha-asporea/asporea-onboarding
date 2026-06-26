@@ -1,4 +1,5 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { AxiosResponse } from "axios";
 
 export const getAwaitingExperienceAction = async (
   page = 1,
@@ -24,14 +25,12 @@ export const getAwaitingExperienceAction = async (
   }
 };
 
-export const approveRejectDocumentAction = async (payload: {
-  leadId: string;
-  status: "verified" | "rejected";
-  remarks?: string;
-}) => {
+export const technicalExperienceAction = async (payload: any)=> 
+// :Promise<AxiosResponse<any>> 
+{
   try {
     const response = await axiosClient.post(
-      "/tac/tachead/document/action",
+      "/tac/tachead/technical/action",
       payload,
     );
     return response.data;
