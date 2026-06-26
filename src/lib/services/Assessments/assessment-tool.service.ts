@@ -6,6 +6,7 @@ import { BranchTokenModel } from "@/lib/models/BranchToken.model";
 import { AssessmentModel } from "@/lib/models/Assessment.model";
 import User from "@/lib/models/User.model";
 import { ApiError } from "@/lib/error/api.error";
+import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
 
 export const AssessmentUpdate = async (value: any, authUser: any, files: any) => {
     const { id, passportNo, totalMarks, note1, note2, note3, note4 } = value;
@@ -42,6 +43,8 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
             userId: authUser?.id,
         });
     }
+    const generalSettings= await GeneralSettingModel.findOne().lean();
+    
     const today = new Date();
     // today.setHours(0, 0, 0, 0);
     // need to work here for update fields
@@ -53,7 +56,7 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
             passportNo,
         }),
         scores: {
-            total: 100,
+            total: generalSettings?.assessment?.fullMarks,
             achieved: totalMarks
         },
         notes: [note1, note2, note3, note4].map((text) => ({
@@ -67,7 +70,7 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
             assessorSign: resultassessorSign.uploadId,
         }),
     };
-    const status = totalMarks > 35 ? 'completed' : 'rejected';
+    const status = totalMarks > generalSettings?.assessment?.passingMarks ? 'completed' : 'rejected';
     // console.log(update,status,2844);
     const assessmentUpdate = await AssessmentModel.findOneAndUpdate(
         { leadId: assignment?.leadId },
