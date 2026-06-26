@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
-  
+
   Table,
   TableBody,
   TableCell,
@@ -23,6 +23,44 @@ import { getAwaitingDocumentsAction } from "../../../../Services/APIs/tacHead/do
 import DocumentActionModal from "./DocumentActionModal";
 
 dayjs.extend(relativeTime);
+
+const responsiveTableSx = {
+  "& .resp-thead": { "@media (max-width: 767px)": { display: "none" } },
+  "& .resp-row": {
+    "@media (max-width: 767px)": {
+      display: "block",
+      borderBottom: "2px solid",
+      borderColor: "divider",
+      mb: 1,
+      borderRadius: 2,
+      overflow: "hidden",
+    },
+  },
+  "& .resp-cell": {
+    "@media (max-width: 767px)": {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      px: 2,
+      py: 1,
+      borderBottom: "1px solid",
+      borderColor: "divider",
+      "&:last-child": { borderBottom: "none" },
+      "&::before": {
+        content: "attr(data-label)",
+        fontWeight: 600,
+        fontSize: "0.72rem",
+        color: "text.secondary",
+        flexShrink: 0,
+        mr: 2,
+        minWidth: 110,
+      },
+    },
+  },
+};
+
+
+const COLS = ["Candidate", "Assigned TAC", "Position Applied", "Submitted", "Actions"];
 
 const DocumentApprovalView = () => {
   const [leads, setLeads] = useState<any[]>([]);
@@ -63,26 +101,19 @@ const DocumentApprovalView = () => {
         TAC Head - Document Approvals
       </Typography>
 
-      <TableContainer component={Paper} className="shadow-xl bg-[var(--mui-palette-primary)] ">
+      <TableContainer component={Paper} className="shadow-xl bg-[var(--mui-palette-primary)] " sx={responsiveTableSx}>
         <Table size="small">
           <TableHead>
-            <TableRow>
-           
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Candidate
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Assigned TAC
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Position Applied
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Submitted
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white text-right">
-                Review
-              </TableCell>
+            <TableRow className="resp-thead">
+              {COLS.map((head, i) => (
+                <TableCell
+                  key={i}
+                  className={`py-4 px-4 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] whitespace-nowrap
+                               ${head === "Actions" ? "text-right" : ""}`}
+                >
+                  {head}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
           <TableBody>
@@ -103,7 +134,7 @@ const DocumentApprovalView = () => {
               </TableRow>
             ) : (
               leads.map((row: any) => (
-                <TableRow key={row._id} hover>
+                <TableRow key={row._id} hover className="resp-row transition-colors">
                   <TableCell className="py-3 px-4">
                     <Typography className="font-semibold text-[var(--mui-palette-primary)] text-[13px]">
                       {row.fullName}
@@ -154,12 +185,13 @@ const DocumentApprovalView = () => {
       </TableContainer>
 
       {totalPages > 1 && (
-        <Box className="flex justify-center mt-6">
+        <Box className="flex justify-center md:justify-end mt-4">
           <Pagination
             count={totalPages}
             page={page}
             onChange={(e, val) => setPage(val)}
             color="primary"
+            size="small" 
           />
         </Box>
       )}

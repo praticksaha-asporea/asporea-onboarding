@@ -50,9 +50,16 @@ export const checkDocumentStatusAction = async (leadId: string): Promise<any> =>
 
 
 
-export const getCandidateDocumentsAction = async (leadId: string): Promise<any> => {
+export const getCandidateDocumentsAction = async (leadId: string, settings?: boolean): Promise<any> => {
   try {
-    const response = await axiosClient.get(`/tac/candidate/${leadId}`);
+    const response = await axiosClient.get(`/tac/candidate/${leadId}`, {
+      ...settings === true &&
+      {
+        params: {
+          settings: true,
+        }
+      },
+    });
     return response?.data;
   } catch (error: any) {
     return { success: false, message: error.response?.data?.message || "Failed to check status" };

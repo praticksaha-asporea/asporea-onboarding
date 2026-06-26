@@ -149,7 +149,6 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, 
               TAC Head Decision
            </Typography>
           
-          {/* 🌟 Naya Radio Buttons Setup */}
           <FormControl component="fieldset" className="mb-4 w-full">
             <RadioGroup 
               row 
@@ -158,13 +157,13 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, 
             >
               <FormControlLabel 
                 value="verified" 
-                control={<Radio sx={{ color: 'blue', '&.Mui-checked': { color: 'blue' } }} />} 
-                label={<Typography className="font-medium text-blue-500">Verify</Typography>} 
+                control={<Radio className="text-[var(--mui-palette-primary-light)] [&.Mui-checked]:text-[var(--mui-palette-primary-light)]" />} 
+                label={<Typography className="font-medium text-[var(--mui-palette-success-light)]">Verify</Typography>} 
               />
               <FormControlLabel 
                 value="rejected" 
-                control={<Radio sx={{ color: 'red', '&.Mui-checked': { color: 'red' } }} />} 
-                label={<Typography className="font-bold text-red-600">Reject</Typography>} 
+                control={<Radio className="text-[var(--mui-palette-error-light)] [&.Mui-checked]:text-[var(--mui-palette-error-light)]" />} 
+                label={<Typography className="font-bold text-[var(--mui-palette-error-light)]">Reject</Typography>} 
               />
             </RadioGroup>
           </FormControl>
@@ -183,7 +182,8 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, 
       </DialogContent>
 
       <DialogActions className="p-5  bg-[var(--mui-palette-primary)]   ">
-        <Button onClick={() => setOpen(false)} className="text-[var(--mui-palette-primary)]  font-medium normal-case">
+        <Button onClick={() => setOpen(false)}   className="text-[var(--mui-palette-primary-main)] [&.Mui-checked]:text-[var(--mui-palette-primary-main)]"
+>
           Cancel
         </Button>
         <Button
@@ -192,10 +192,10 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, 
           disabled={submitLoading || fetchingDetails || !action}
           onClick={handleSubmit}
           className={`rounded-lg px-6 normal-case shadow-md font-bold ${
-            action === "rejected" ? "!bg-red-600 hover:!bg-red-700" : "!bg-[var(--mui-palette-primary-main)]  "
+            action === "rejected" ? "!bg-[var(--mui-palette-error-light)] hover:!bg-[var(--mui-palette-error-dark)]" : "!bg-[var(--mui-palette-primary-main)]  "
           }`}
         >
-          {submitLoading ? <CircularProgress size={20} color="inherit" /> : `Confirm ${CamelCase(action || "Action")}`}
+          {submitLoading ? <CircularProgress size={20} color="inherit" /> : `Confirm`}
         </Button>
       </DialogActions>
     </Dialog>
