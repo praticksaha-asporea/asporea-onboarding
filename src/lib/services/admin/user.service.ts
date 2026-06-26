@@ -10,6 +10,7 @@ import '../../models/Shift.model'
 import '../../models/Branch.model'
 import '../../models/User.model';
 import { Lead } from '../../models/Lead.model';
+import { Upload } from '../../models/Upload.model';
 
 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
@@ -236,16 +237,24 @@ export const updateUser = async (userId: string, body: any) => {
       ? Number(update.experienceInMonths)
       : null;
 
-  const updated = await UserModel.findByIdAndUpdate(
+   if (body.profilePicData === "REMOVE") {
+   
+    update['profilePic'] = null; 
+  } else if (body.profilePicData && body.profilePicData.startsWith('data:image')) {
+    
+    const uploadDoc = await Upload.create({
+      userId: new mongoose.Types.ObjectId(userId),
+      path: body.profilePicData
+    });
+    update['profilePic'] = uploadDoc._id;
+  }
+const updated = await UserModel.findByIdAndUpdate(
     userId,
-    {
-      $set: update,
-    },
-    {
-      new: true,
-      runValidators: true,
-    }
-  ).select("-password");
+    { $set: update },
+    { returnDocument: 'after', runValidators: true }  
+  )
+  .select("-password")
+  .populate('profilePic', 'path'); 
 
   return updated;
 };

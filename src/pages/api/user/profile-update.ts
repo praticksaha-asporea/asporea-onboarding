@@ -8,6 +8,14 @@ import { updateUserSchema } from '@/lib/validation/userValidation';
 import { applyCors } from '@/lib/cors';
 import { JwtPayload } from 'jsonwebtoken';
 
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     await connectToDatabase();
     if (applyCors(req, res)) return;

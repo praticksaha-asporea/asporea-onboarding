@@ -13,8 +13,7 @@ export const useAccount = () => {
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
-  );  
-  
+  );
 
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
@@ -22,12 +21,11 @@ export const useAccount = () => {
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
 
- 
   useEffect(() => {
     if (reduxUser?.profilePic?.path) {
       setImgSrc(reduxUser.profilePic.path);
     } else {
-      setImgSrc("/images/avatars/1.png");  
+      setImgSrc("/images/avatars/1.png");
     }
   }, [reduxUser]);
   useEffect(() => {
@@ -63,7 +61,6 @@ export const useAccount = () => {
 
     fetchAndSetData();
   }, [reduxUser, dispatch]);
-
 
   const formik = useFormik({
     initialValues: {
@@ -114,11 +111,12 @@ export const useAccount = () => {
           passportStatus: values.passportStatus,
           passportNo:
             values.passportStatus === "having" ? values.passportNumber : "",
-          enquired: "yes",          
+          enquired: "yes",
           experienceInMonths: values?.experienceInMonths,
           bio: values?.bio,
+          profilePicData: fileInput || "",
         };
-        
+
         const res = await axiosClient.patch(`/user/profile-update`, payload);
 
         if (res.data?.success) {
@@ -126,6 +124,7 @@ export const useAccount = () => {
             duration: 3000,
           });
           dispatch(updateUserData(res.data.data));
+          setFileInput("");
         }
       } catch (error: any) {
         console.error("Update Profile Error:", error);
@@ -135,29 +134,32 @@ export const useAccount = () => {
     },
   });
 
-  // Image Upload Handlers
   const handleFileInputChange = (file: ChangeEvent) => {
-    const reader = new FileReader();
     const { files } = file.target as HTMLInputElement;
 
     if (files && files.length !== 0) {
-      reader.onload = () => setImgSrc(reader.result as string);
-      reader.readAsDataURL(files[0]);
-      if (reader.result !== null) setFileInput(reader.result as string);
+      const selectedFile = files[0];
+
+      if (selectedFile.size > 800 * 1024) {
+        toast.error(
+          "File size is too large! Please select an image under 800KB.",
+        );
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64Data = reader.result as string;
+      };
+      reader.readAsDataURL(selectedFile);
     }
   };
 
   const handleFileInputReset = () => {
-    setFileInput("");
+    setFileInput("REMOVE");
     setImgSrc("/images/avatars/1.png");
+    toast.success("Photo removed! Click 'Save Changes' to persist.");
   };
-
-
-
-
-
-
-
 
   useEffect(() => {
     const fetchAndSetData = async () => {
@@ -193,15 +195,16 @@ export const useAccount = () => {
     fetchAndSetData();
   }, [reduxUser, dispatch]);
 
-
   return {
     formik,
     fileInput,
+    setFileInput,
     imgSrc,
+    setImgSrc,
     fetching,
     updating,
     handleFileInputChange,
     handleFileInputReset,
-    reduxUser
+    reduxUser,
   };
 };
