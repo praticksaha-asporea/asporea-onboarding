@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Box,
   Typography,
@@ -11,10 +11,12 @@ import {
   TableHead,
   TableRow,
   IconButton,
-  Chip,
   Pagination,
   CircularProgress,
   Paper,
+  TextField,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -83,15 +85,38 @@ const TechnicalView = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
 
+  // ── Filters ────────────────────────────────────────────────────────────────
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Debounce search — reset to page 1 on new query
+  const handleSearchChange = (val: string) => {
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setPage(1);
+    }, 400);
+  };
+
+  // Reset page when status changes
+  const handleStatusChange = (val: string) => {
+    setStatusFilter(val);
+    setPage(1);
+  };
+
+  // ── Fetch ──────────────────────────────────────────────────────────────────
   const fetchTechnicalRequests = useCallback(async () => {
     setLoading(true);
-    const res = await getAwaitingExperienceAction(page, 10);
+    const res = await getAwaitingExperienceAction(page, 10, debouncedSearch, statusFilter);
     if (res && res.success !== false) {
       setLeads(res.data?.technicalRequestedLeads || []);
       setTotalPages(res.data?.meta?.totalPages || 1);
     }
     setLoading(false);
-  }, [page]);
+  }, [page, debouncedSearch, statusFilter]);
 
   useEffect(() => {
     fetchTechnicalRequests();
@@ -108,6 +133,34 @@ const TechnicalView = () => {
         TAC Head — Technical Round
       </Typography>
 
+      {/* ── Filters (mirrors DashboardFilters layout) ─────────────────────── */}
+      <Box className="flex flex-col gap-3 mb-5">
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search by name, inquiry ID, email or phone..."
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          slotProps={{ input: { className: "rounded-lg text-[14px]" } }}
+        />
+        <Box className="flex gap-2 flex-wrap">
+          <Select
+            displayEmpty
+            size="small"
+            value={statusFilter}
+            onChange={(e) => handleStatusChange(e.target.value)}
+            className="flex-1 min-w-[160px] text-[12px]"
+          >
+            <MenuItem value="">All Statuses</MenuItem>
+            <MenuItem value="refered">Referred</MenuItem>
+            <MenuItem value="passed">Passed</MenuItem>
+            <MenuItem value="failed">Failed</MenuItem>
+            <MenuItem value="na">Not Applicable</MenuItem>
+          </Select>
+        </Box>
+      </Box>
+
+      {/* ── Table ─────────────────────────────────────────────────────────── */}
       <TableContainer component={Paper} className="shadow-xl" sx={responsiveTableSx}>
         <Table size="small">
           <TableHead>
@@ -134,7 +187,7 @@ const TechnicalView = () => {
             ) : leads.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={COLS.length} className="text-center py-8 text-gray-400">
-                  No candidates are waiting for technical round.
+                  No candidates found.
                 </TableCell>
               </TableRow>
             ) : (
@@ -174,17 +227,15 @@ const TechnicalView = () => {
                   {/* Actions */}
                   <TableCell className="resp-cell !py-3 !px-4" data-label="Actions">
                     <Box className="flex gap-1 md:justify-end">
-                      {/* {!['passed', 'verified'].includes(row?.technical?.status) && */}
-                        <IconButton
-                          size="small"
-                          title="Review candidate"
-                          onClick={() => openActionModal(row)}
-                          color="primary"
-                          disabled={['passed', 'verified'].includes(row?.technical?.status)?true:false}
-                        >
-                          <i className="ri-search-eye-line text-[18px]" />
-                        </IconButton>
-                      {/* } */}
+                      <IconButton
+                        size="small"
+                        title="Review candidate"
+                        onClick={() => openActionModal(row)}
+                        color="primary"
+                        disabled={["passed", "verified"].includes(row?.technical?.status)}
+                      >
+                        <i className="ri-search-eye-line text-[18px]" />
+                      </IconButton>
                     </Box>
                   </TableCell>
                 </TableRow>

@@ -5,22 +5,21 @@ export const getAwaitingExperienceAction = async (
   page = 1,
   limit = 10,
   search = "",
+  status = "",
 ) => {
   try {
     let url = `/tac/tachead/technical/list?page=${page}&limit=${limit}`;
-
-    if (search) {
-      url += `&search=${encodeURIComponent(search)}`;
-    }
+    if (search) url += `&search=${encodeURIComponent(search)}`;
+    if (status) url += `&status=${encodeURIComponent(status)}`;
 
     const response = await axiosClient.get(url);
-
     return response.data;
   } catch (error: any) {
     return {
       success: false,
       message:
-        error.response?.data?.message || "Failed to fetch awaiting technical round candidates",
+        error.response?.data?.message ||
+        "Failed to fetch awaiting technical round candidates",
     };
   }
 };

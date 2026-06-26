@@ -28,8 +28,10 @@ export default async function handler(
     }
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const search = (req.query.search as string) || "";
+    const status = (req.query.status as string) || "";
     const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
-    const result = await getTechnicalListService(page, limit,filterUserId);
+    const result = await getTechnicalListService(page, limit, filterUserId, search, status);
 
     return ResponseHandler.sendSuccess(
       res,
