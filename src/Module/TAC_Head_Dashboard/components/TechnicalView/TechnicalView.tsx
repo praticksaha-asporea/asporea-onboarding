@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Typography,
-
   Table,
   TableBody,
   TableCell,
@@ -25,6 +24,56 @@ import TechnicalActionModal from "./TechnicalActionModal";
 
 dayjs.extend(relativeTime);
 
+// ── Shared responsive-table sx (mirrors DashboardTable) ──────────────────────
+const responsiveTableSx = {
+  "& .resp-thead": { "@media (max-width: 767px)": { display: "none" } },
+  "& .resp-row": {
+    "@media (max-width: 767px)": {
+      display: "block",
+      borderBottom: "2px solid",
+      borderColor: "divider",
+      mb: 1,
+      borderRadius: 2,
+      overflow: "hidden",
+    },
+  },
+  "& .resp-cell": {
+    "@media (max-width: 767px)": {
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+      px: 2,
+      py: 1,
+      borderBottom: "1px solid",
+      borderColor: "divider",
+      "&:last-child": { borderBottom: "none" },
+      "&::before": {
+        content: "attr(data-label)",
+        fontWeight: 600,
+        fontSize: "0.72rem",
+        color: "text.secondary",
+        flexShrink: 0,
+        mr: 2,
+        minWidth: 110,
+      },
+    },
+  },
+};
+
+// ── Status badge (mirrors DashboardTable getStatusBadge) ─────────────────────
+const getTechStatusBadge = (status: string) => {
+  switch (status) {
+    case "refered": return "bg-slate-400 text-white";
+    case "passed": return "bg-green-500 text-white";
+    case "failed": return "bg-red-600 text-white";
+    default: return "bg-slate-400 text-white";
+  }
+};
+
+const COLS = ["Candidate", "Assigned TAC", "Technical Status", "Contact", "Actions"];
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
 const TechnicalView = () => {
   const [leads, setLeads] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,8 +89,6 @@ const TechnicalView = () => {
     if (res && res.success !== false) {
       setLeads(res.data?.technicalRequestedLeads || []);
       setTotalPages(res.data?.meta?.totalPages || 1);
-    } else {
-      // toast.error(res?.message || "Failed to load documents");
     }
     setLoading(false);
   }, [page]);
@@ -57,86 +104,88 @@ const TechnicalView = () => {
 
   return (
     <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
-      <Typography
-        className="text-[22px] md:text-[28px] text-[var(--mui-palette-secondary)]
-      font-medium tracking-tight mb-6"
-      >
-        TAC Head - Technical Round
+      <Typography className="text-[22px] md:text-[28px] text-[var(--mui-palette-secondary)] font-medium tracking-tight mb-6">
+        TAC Head — Technical Round
       </Typography>
 
-      <TableContainer component={Paper} className="shadow-xl bg-[var(--mui-palette-primary)] ">
+      <TableContainer component={Paper} className="shadow-xl" sx={responsiveTableSx}>
         <Table size="small">
           <TableHead>
-            <TableRow>
-
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Candidate
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Assigned TAC
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Status
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">
-                Contact
-              </TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white text-right">
-                Review
-              </TableCell>
+            <TableRow className="resp-thead">
+              {COLS.map((head, i) => (
+                <TableCell
+                  key={i}
+                  className={`py-4 px-4 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] whitespace-nowrap
+                    ${head === "Actions" ? "text-right" : ""}`}
+                >
+                  {head}
+                </TableCell>
+              ))}
             </TableRow>
           </TableHead>
+
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-10">
-                  <CircularProgress />
+                <TableCell colSpan={COLS.length} className="text-center py-10">
+                  <CircularProgress size={28} />
                 </TableCell>
               </TableRow>
             ) : leads.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-center py-8 font-medium text-gray-500"
-                >
+                <TableCell colSpan={COLS.length} className="text-center py-8 text-gray-400">
                   No candidates are waiting for technical round.
                 </TableCell>
               </TableRow>
             ) : (
               leads.map((row: any) => (
-                <TableRow key={row._id} hover>
-                  <TableCell className="py-3 px-4">
-                    <Typography className="font-semibold text-[var(--mui-palette-primary)] text-[13px]">
-                      {row.fullName}
-                    </Typography>
-                    <Typography className="text-[12px] text-[var(--mui-palette-primary)]
-  font-medium">
-                      {row.inqNo || "N/A"}
-                    </Typography>
+                <TableRow key={row._id} hover className="resp-row transition-colors">
+                  {/* Candidate */}
+                  <TableCell className="resp-cell !py-3 !px-4" data-label="Candidate">
+                    <Box>
+                      <Typography className="font-semibold text-[13px]">
+                        {row.fullName}
+                      </Typography>
+                      <Typography className="text-[12px] text-[var(--mui-palette-text-secondary)]">
+                        {row.inqNo || "—"}
+                      </Typography>
+                    </Box>
                   </TableCell>
 
-                  <TableCell className="py-3 px-4 text-[var(--mui-palette-primary)] text-[13px]">
+                  {/* Assigned TAC */}
+                  <TableCell className="resp-cell !py-3 !px-4 text-[13px]" data-label="Assigned TAC">
                     {row.preferences?.consultantId
                       ? `${row.preferences.consultantId.firstName} ${row.preferences.consultantId.lastName}`
-                      : "Unassigned"}
+                      : <span className="text-gray-400">Unassigned</span>}
                   </TableCell>
 
-                  <TableCell className="py-3 px-4">{CamelCase(row.technical?.status) || "N/A"}
+                  {/* Technical Status */}
+                  <TableCell className="resp-cell !py-3 !px-4" data-label="Technical Status">
+                    <Box className={`inline-block px-3 py-1 rounded-full text-[11px] tracking-wide font-normal whitespace-nowrap ${getTechStatusBadge(row.technical?.status)}`}>
+                      {CamelCase(row.technical?.status) || "—"}
+                    </Box>
                   </TableCell>
 
-                    <TableCell className="py-3 px-4 text-[12px] text-[var(--mui-palette-primary)]">
-                      {row.contact.phone}
-                    </TableCell>
+                  {/* Contact */}
+                  <TableCell className="resp-cell !py-3 !px-4 text-[12px] text-[var(--mui-palette-text-secondary)]" data-label="Contact">
+                    {row.contact?.phone || "—"}
+                  </TableCell>
 
-                  <TableCell className="py-3 px-4 text-center">
-                    <IconButton
-                      size="small"
-                      onClick={() => openActionModal(row)}
-                      color="primary"
-                      className="bg-[var(--mui-palette-primary)] hover:bg-[var(--mui-palette-primary-main)] hover:text-white transition-all text-[var(--mui-palette-primary)]"
-                    >
-                      <i className="ri-search-eye-line text-[20px]" />
-                    </IconButton>
+                  {/* Actions */}
+                  <TableCell className="resp-cell !py-3 !px-4" data-label="Actions">
+                    <Box className="flex gap-1 md:justify-end">
+                      {/* {!['passed', 'verified'].includes(row?.technical?.status) && */}
+                        <IconButton
+                          size="small"
+                          title="Review candidate"
+                          onClick={() => openActionModal(row)}
+                          color="primary"
+                          disabled={['passed', 'verified'].includes(row?.technical?.status)?true:false}
+                        >
+                          <i className="ri-search-eye-line text-[18px]" />
+                        </IconButton>
+                      {/* } */}
+                    </Box>
                   </TableCell>
                 </TableRow>
               ))
@@ -146,17 +195,17 @@ const TechnicalView = () => {
       </TableContainer>
 
       {totalPages > 1 && (
-        <Box className="flex justify-center mt-6">
+        <Box className="flex justify-center md:justify-end mt-4">
           <Pagination
             count={totalPages}
             page={page}
-            onChange={(e, val) => setPage(val)}
+            onChange={(_e, val) => setPage(val)}
             color="primary"
+            size="small"
           />
         </Box>
       )}
 
-      {/* Action Modal Component */}
       <TechnicalActionModal
         open={modalOpen}
         setOpen={setModalOpen}
