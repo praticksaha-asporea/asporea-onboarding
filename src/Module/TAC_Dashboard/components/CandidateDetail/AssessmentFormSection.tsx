@@ -114,7 +114,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     setExpStatus(exp.status);
 
     setExpType(exp.type);
-    setClassifyExp(tech.classify || "");
+    setClassifyExp(exp.type);
     if (assessAssign?.status === "completed" || assessAssign?.status === "rejected") {
       setIsPreLocked(true);
     } else if (assessAssign?.status === "queued" && (isWithinSchedule(assessAssign) && assessAssign?.schedule?.from != "" && assessAssign?.schedule?.to != "")) {
@@ -434,15 +434,17 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-primary)]">
               <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Technical Round</Typography>
               <RadioGroup row value={techStatus} onChange={(e) => setTechStatus(e.target.value)}>
-                <FormControlLabel value="refered" control={<Radio disabled={isFoe} />} label="Referred" />
-                <FormControlLabel value="passed" control={<Radio disabled={isFoe} />} label="Passed" />
-                <FormControlLabel value="failed" control={<Radio disabled={isFoe} />} label="Failed" />
+                <FormControlLabel value="refered" control={<Radio disabled />} label="Referred" />
+                <FormControlLabel value="passed" control={<Radio disabled />} label="Passed" />
+                <FormControlLabel value="failed" control={<Radio disabled />} label="Failed" />
               </RadioGroup>
-              <FormControl fullWidth className="mt-4 md:w-1/2" size="small">
+              <FormControl fullWidth className="mt-4 md:w-1/2">
                 <InputLabel>Classify Experience</InputLabel>
                 <Select value={classifyExp} onChange={(e) => setClassifyExp(e.target.value)} label="Classify Experience" disabled={isFoe}>
+                  <MenuItem value="fresher">Fresher</MenuItem>
                   <MenuItem value="domestic">Domestic</MenuItem>
-                  <MenuItem value="abroad">International</MenuItem>
+                  <MenuItem value="abroad">Abroad</MenuItem>
+                  <MenuItem value="free">Freelance</MenuItem>
                 </Select>
               </FormControl>
             </Box>
