@@ -3,6 +3,8 @@ import { TechnicalDetailModel } from "@/lib/models/TechnicalDetail.model";
 import { ApiError } from "@/lib/error/api.error";
 import { Assignment } from "@/lib/models/Assignment.model";
 import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
+import "@/lib/models/Upload.model";
+
 
 export const addTechnicalResult = async (payload: any) => {
   const {
@@ -25,7 +27,7 @@ export const addTechnicalResult = async (payload: any) => {
   // console.log({ leadId: new mongoose.Types.ObjectId(leadId), phase: 'assess' },assignments, 4544);
   if (!assignments) throw new ApiError("Assignment not found", 404);
 
-  const generalSettings= await GeneralSettingModel.findOne().lean();
+  const generalSettings = await GeneralSettingModel.findOne().lean();
 
   const isPassed = await achievedScore >= generalSettings?.technical?.passingMarks;
   const statusTech = isPassed ? "passed" : "failed";
@@ -66,7 +68,8 @@ export const getTechnicalResult = async (leadId: string) => {
 
   const result = await TechnicalDetailModel.findOne({
     leadId: new mongoose.Types.ObjectId(leadId),
-  });
+  }).populate("breakdownPdf");
+
 
   if (!result) throw new ApiError("Result not found", 404);
 

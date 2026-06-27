@@ -43,8 +43,8 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   const [expVerified, setExpVerified] = useState(false);
   const [expRequestTech, setExpRequestTech] = useState(false);
 
-    const [techStatus, setTechStatus] = useState(tech.status || "na");
-    const [classifyExp, setClassifyExp] = useState(tech.classify || "");
+  const [techStatus, setTechStatus] = useState(tech.status || "na");
+  const [classifyExp, setClassifyExp] = useState(tech.classify || "");
 
 
   const assessBasicForm = useFormik({
@@ -146,8 +146,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       setExpRFT(false);
       setExpVerified(false);
     }
-    else if (exp.status==="rejected")
-    {
+    else if (exp.status === "rejected") {
       setExpRFT(false);
       setExpVerified(false);
     }
@@ -188,9 +187,17 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
       toast.success(`Documents marked as ${CamelCase(status)}`);
 
-      setDocReject(docStatus === "uploaded");
-      setDocVerify(docStatus === "uploaded");
-      setDocRequestTL(docStatus === "uploaded");
+      if (res?.data?.data?.status === "doc_awaiting_approval") {
+        setDocReject(false);
+        setDocVerify(false);
+        setDocRequestTL(false);
+
+      }
+      else {
+        setDocReject(docStatus === "uploaded");
+        setDocVerify(docStatus === "uploaded");
+        setDocRequestTL(docStatus === "uploaded");
+      }
 
       setExpRFT(docStatus === "verified");
       setExpVerified(docStatus === "verified");
@@ -261,7 +268,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     canAccess &&
     !isFinalStatus &&
     currentStatus === "contacted";
-    
+
   return (
     <Card className="p-6 rounded-xl  shadow-xl mt-4">
       <Typography className="text-[24px] text-center font-semibold mb-5 text-[var(--mui-palette-text-primary)]">
@@ -337,7 +344,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         </Grid>
       </Grid>
 
-      {assessBasicForm?.values?.status === "queued" || assessBasicForm?.values?.status === "completed" || assessBasicForm?.values?.status === "rejected" || (docStatus!=="uploaded") ? (
+      {assessBasicForm?.values?.status === "queued" || assessBasicForm?.values?.status === "completed" || assessBasicForm?.values?.status === "rejected" || (docStatus !== "uploaded") ? (
         <>
           {/* --- Documents Section --- */}
           <Box className="shadow-2xl rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)]">

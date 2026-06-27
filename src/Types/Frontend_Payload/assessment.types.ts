@@ -25,4 +25,14 @@ export interface TechData {
   answered: number;
   questions: number;
   timeTaken: string;
+  status: string;
+  breakdownPdf?: {
+    _id: string,
+    userId: string,
+    publicId: string,
+    path: string,
+    createdAt: string,
+    updatedAt: string,
+    __v: number
+  }
 }

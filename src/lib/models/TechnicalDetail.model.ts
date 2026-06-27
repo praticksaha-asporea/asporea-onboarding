@@ -1,4 +1,8 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
+import {
+  Schema, Document, Types,
+  model,
+  models,
+} from "mongoose";
 
 export interface ITechnicalDetail extends Document {
   leadId: Types.ObjectId;
@@ -70,8 +74,5 @@ TechnicalDetailSchema.index({ leadId: 1 });
 /* ================= EXPORT ================= */
 
 export const TechnicalDetailModel =
-  mongoose.models.TechnicalDetail ||
-  mongoose.model<ITechnicalDetail>(
-    "TechnicalDetail",
-    TechnicalDetailSchema
-  );
+  models.TechnicalDetail ||
+  model<ITechnicalDetail>("TechnicalDetail", TechnicalDetailSchema);
