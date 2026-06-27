@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLottie } from "lottie-react";
 
-import notFoundAnim from "@/assets/404 Page not found.json";
+import notFoundAnim from "@/assets/404 error.json";
 
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -24,21 +24,22 @@ export default function NotFound() {
 
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
-      <Card className="flex flex-col sm:is-[450px] z-[1]">
+      <Card className="flex bg-[var(--mui-palette-primary)] flex-col sm:is-[450px] z-[1]">
         <CardContent className="p-6 sm:!p-12 flex flex-col items-center text-center">
           <Link href="/" className="flex justify-center items-center mbe-6">
             <Logo />
           </Link>
 
-          <div className="w-48 h-48 md:w-56 md:h-56 flex items-center justify-center mbe-4">
-            {View}
-          </div>
+        <div className="w-72 h-72 md:w-[320px] md:h-[320px] flex items-center justify-center -mt-6 mb-2 pointer-events-none">
+  {View}
+</div>
 
           {/* Texts */}
-          <Typography variant="h4" className="mbe-2 font-medium text-slate-700">
+          <Typography variant="h4" className="mbe-2 font-medium text-[var(--mui-palette-primary)]
+">
             Oops! Page Not Found
           </Typography>
-          <Typography className="mbe-6 text-slate-500 text-sm leading-relaxed">
+          <Typography className="mbe-6 text-[var(--mui-palette-primary) text-sm leading-relaxed">
             The page you are looking for might have been removed or does not
             exist.
           </Typography>
