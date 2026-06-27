@@ -73,6 +73,8 @@ const ApplicationTracking = () => {
   const isExpVerified =
     expStatus === "verified" || expStatus === "exp_verified";
   const arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
+  // console.log(journeyData.technical,28441);
+  
 
   return (
     <Box className="w-full flex justify-center">
