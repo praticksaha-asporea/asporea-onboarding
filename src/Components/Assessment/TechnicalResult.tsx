@@ -30,8 +30,9 @@ export const TechnicalResult = ({
     answered: number,
   ) => {
     if (!answered || !questions || !total) return 0;
-    const correctAnswers = achieved / (total / questions);
-    return Math.round((correctAnswers / answered) * 100);
+    const accuracyRate = Math.round(
+      (achieved * questions * 100) / (total * answered)
+    ); return accuracyRate;
   };
 
   if (loadingTech || !techData)

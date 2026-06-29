@@ -1,10 +1,11 @@
- export interface TrackingPhase {
+export interface TrackingPhase {
   status: string;
   date?: string;
   canSchedule?: boolean;
   hasResult?: boolean;
   isVisible?: boolean;
   type?: string;
+  assessLatestStatus?: { token: { generated: boolean, number: string }, status: string }
 }
 
 export interface JourneyData {
