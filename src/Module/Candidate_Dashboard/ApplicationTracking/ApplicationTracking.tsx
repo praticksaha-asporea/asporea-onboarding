@@ -11,6 +11,7 @@ import { useApplicationTracking } from "@/Module/Candidate_Dashboard/Application
 import { TrackingStepper } from "@/Components/ApplicationTracking/TrackingStepper";
 import { JourneyCard } from "@/Components/ApplicationTracking/JourneyCard";
 import { AssessmentDialog } from "@/Components/ApplicationTracking/AssessmentDialog";
+import { CamelCase } from "@/Utils/common";
 
 const ApplicationTracking = () => {
   const {
@@ -63,7 +64,7 @@ const ApplicationTracking = () => {
   }
   const docStatus = journeyData.documents?.status?.toLowerCase() || "";
   const expStatus = journeyData.experience?.status?.toLowerCase() || "";
-
+  let assessDescription = "";
   const isDocsUploaded =
     docStatus !== "" && docStatus !== "na" && docStatus !== "pending";
 
@@ -73,6 +74,81 @@ const ApplicationTracking = () => {
   const isExpVerified =
     expStatus === "verified" || expStatus === "exp_verified";
   const arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
+  // console.log(journeyData.technical,28441);
+
+
+  if (journeyData.assessment.status === "Completed") {
+    assessDescription = "Your assessment has been evaluated successfully.";
+  } else if (
+    journeyData.assessment.status === "Scheduled"
+  ) {
+    if (
+      journeyData.documents.status === "Verified" &&
+      journeyData.experience.status === "Verified"
+    ) {
+      assessDescription = "Your Documents & Experiences are verified.";
+      if (journeyData.assessment.assessLatestStatus?.status === "rejected") {
+        assessDescription = "You are failed to this assessment.";
+
+      }
+      else if (journeyData.assessment.assessLatestStatus?.status === "completed") {
+        assessDescription = "You are passsed to this assessment.";
+
+      }
+    }
+    else if (
+      journeyData.documents.status === "Verified" &&
+      journeyData.experience.status === "Waiting for Technical Round"
+    ) {
+      assessDescription =
+        "You will need to complete technical round to verify experience.";
+    }
+    else if (
+      journeyData.documents.status === "Verified" &&
+      journeyData.experience.status === "Filled"
+    ) {
+      assessDescription =
+        "Your Documents are verified. Now waiting for experience check.";
+    }
+    else if (
+      journeyData.documents.status === "Waiting For Approval"
+    ) {
+      assessDescription = "Your Documents are waiting for approval.";
+    }
+    else if (
+      journeyData.documents.status === "Rejected" &&
+      journeyData.experience.status === "Rejected"
+    ) {
+      assessDescription = "Your Documents & Experiences are rejected.";
+    }
+    else if (
+      journeyData.documents.status === "Rejected"
+    ) {
+      assessDescription = "Your Documents are rejected.";
+    }
+    else if (journeyData.assessment.assessLatestStatus?.token?.generated) {
+      assessDescription =
+        "Your Assessment token has been generated. Please be within the Branch Premises.";
+    }
+    else {
+      assessDescription =
+        "Your Assessment is successfully Scheduled. Please be ready on your selected slot.";
+    }
+
+  }
+  else if (!arePrerequisitesMet && journeyData.assessment.canSchedule) {
+    assessDescription =
+      "Documents Submission and Experience Submission are mandatory before scheduling. Please complete them from your dashboard first.";
+  } else if (journeyData.assessment.canSchedule) {
+    assessDescription =
+      "Your initial online assessment is pending. Please schedule it by the deadline.";
+  } else {
+    assessDescription = "Wait for Pre-Counselling phase completion.";
+    if (journeyData.assessment.assessLatestStatus?.status === "rejected") {
+      assessDescription = "You are failed to this assessment.";
+
+    }
+  }
 
   return (
     <Box className="w-full flex justify-center">
@@ -150,7 +226,7 @@ const ApplicationTracking = () => {
                     : !isExpSubmitted
                       ? "Please fill and submit your experience details for review."
                       : journeyData.experience.type
-                        ? `Your experience type has been confirmed as '${journeyData.experience.type}'.`
+                        ? `Your experience type has been confirmed as '${journeyData.experience.type === "free" ? 'Freelancer' : CamelCase(journeyData.experience.type)}'.`
                         : "Your experience details are under review."
             }
           />
@@ -165,27 +241,19 @@ const ApplicationTracking = () => {
                   : undefined
             }
             date={journeyData.assessment.date}
-            description={
-              journeyData.assessment.status === "Completed"
-                ? "Your assessment has been evaluated successfully."
-                : journeyData.assessment.status === "Scheduled"
-                  ? `Your Assessment is successfully Scheduled. Please be ready on your selected slot.`
-                  : !arePrerequisitesMet && journeyData.assessment.canSchedule
-                    ? "Documents Submission and Experience Submission are mandatory before scheduling. Please complete them from your  dashboard first."
-                    : journeyData.assessment.canSchedule
-                      ? "Your initial online assessment is pending. Please schedule it by the deadline."
-                      : "Wait for Pre-Counselling phase  completion."
-            }
+            description={assessDescription}
             buttonLabel={
               journeyData.assessment.hasResult
                 ? null
                 : journeyData.assessment.status === "Scheduled"
                   ? "Scheduled"
-                  : journeyData.assessment.canSchedule
-                    ? arePrerequisitesMet
-                      ? "Schedule Assessment"
-                      : "Complete Profile First"
-                    : "Wait for Pre-Counselling"
+                  : journeyData.assessment.status === "Rejected" ?
+                    "Rejected" :
+                    journeyData.assessment.canSchedule
+                      ? arePrerequisitesMet
+                        ? "Schedule Assessment"
+                        : "Doc. & Exp."
+                      : "Wait for Pre-Counselling"
             }
             disabledButton={
               !journeyData.assessment.canSchedule ||

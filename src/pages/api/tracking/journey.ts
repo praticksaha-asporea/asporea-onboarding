@@ -39,17 +39,30 @@ export default async function handler(
     const techAssignment = assignments.find((a) => a.phase === "tech");
 
     let isPreCompleted = false;
+    let isPreRejected = false;
     let isAssessScheduled = false;
+    let isAssessRejected = false;
     let isAssessCompleted = false;
+    let assessLatestStatus = {};
 
     if (preAssignment && preAssignment.status === "completed") {
       isPreCompleted = true;
+    }
+
+    if (preAssignment && preAssignment.status === "rejected") {
+      isPreRejected = true;
     }
 
     if (assessAssignment) {
       isAssessScheduled = true;
       if (assessAssignment.status === "completed") {
         isAssessCompleted = true;
+      }
+      else {
+        if (assessAssignment.status === "rejected") {
+          isAssessRejected = true;
+        }
+        assessLatestStatus = assessAssignment;
       }
     }
 
@@ -92,10 +105,10 @@ export default async function handler(
     const formatDate = (date: any) =>
       date
         ? new Date(date).toLocaleDateString("en-US", {
-            month: "short",
-            day: "2-digit",
-            year: "numeric",
-          })
+          month: "short",
+          day: "2-digit",
+          year: "numeric",
+        })
         : null;
 
     const techStatus = lead.technical?.status;
@@ -134,7 +147,11 @@ export default async function handler(
       activeStep,
       inquiry: { status: "Done", date: formatDate(lead.createdAt) },
       preCounselling: {
-        status: isPreCompleted ? "Completed" : "Pending",
+        status: isPreCompleted
+          ? "Completed"
+          : isPreRejected
+            ? "Rejected"
+            : "Pending",
         date: formatDate(
           preAssignment?.updatedAt || preAssignment?.schedule?.date,
         ),
@@ -151,14 +168,17 @@ export default async function handler(
       assessment: {
         status: isAssessCompleted
           ? "Completed"
-          : isAssessScheduled
-            ? "Scheduled"
-            : "Pending",
+          : isAssessRejected
+            ? "Rejected"
+            : isAssessScheduled
+              ? "Scheduled"
+              : "Pending",
         date: isAssessScheduled
           ? `${formatDate(assessAssignment?.schedule?.date)} (${assessAssignment?.schedule?.from} - ${assessAssignment?.schedule?.to})`
           : null,
         canSchedule: isPreCompleted && !isAssessScheduled,
         hasResult: isAssessCompleted,
+        assessLatestStatus
       },
       technical: {
         status:

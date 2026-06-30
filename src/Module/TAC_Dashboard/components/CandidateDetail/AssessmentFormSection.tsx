@@ -43,8 +43,8 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
   const [expVerified, setExpVerified] = useState(false);
   const [expRequestTech, setExpRequestTech] = useState(false);
 
-    const [techStatus, setTechStatus] = useState(tech.status || "na");
-    const [classifyExp, setClassifyExp] = useState(tech.classify || "");
+  const [techStatus, setTechStatus] = useState(tech.status || "na");
+  const [classifyExp, setClassifyExp] = useState(tech.classify || "");
 
 
   const assessBasicForm = useFormik({
@@ -114,7 +114,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     setExpStatus(exp.status);
 
     setExpType(exp.type);
-    setClassifyExp(tech.classify || "");
+    setClassifyExp(exp.type);
     if (assessAssign?.status === "completed" || assessAssign?.status === "rejected") {
       setIsPreLocked(true);
     } else if (assessAssign?.status === "queued" && (isWithinSchedule(assessAssign) && assessAssign?.schedule?.from != "" && assessAssign?.schedule?.to != "")) {
@@ -146,8 +146,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       setExpRFT(false);
       setExpVerified(false);
     }
-    else if (exp.status==="rejected")
-    {
+    else if (exp.status === "rejected") {
       setExpRFT(false);
       setExpVerified(false);
     }
@@ -188,9 +187,17 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
 
       toast.success(`Documents marked as ${CamelCase(status)}`);
 
-      setDocReject(docStatus === "uploaded");
-      setDocVerify(docStatus === "uploaded");
-      setDocRequestTL(docStatus === "uploaded");
+      if (res?.data?.data?.status === "doc_awaiting_approval") {
+        setDocReject(false);
+        setDocVerify(false);
+        setDocRequestTL(false);
+
+      }
+      else {
+        setDocReject(docStatus === "uploaded");
+        setDocVerify(docStatus === "uploaded");
+        setDocRequestTL(docStatus === "uploaded");
+      }
 
       setExpRFT(docStatus === "verified");
       setExpVerified(docStatus === "verified");
@@ -261,7 +268,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     canAccess &&
     !isFinalStatus &&
     currentStatus === "contacted";
-    
+
   return (
     <Card className="p-6 rounded-xl  shadow-xl mt-4">
       <Typography className="text-[24px] text-center font-semibold mb-5 text-[var(--mui-palette-text-primary)]">
@@ -337,7 +344,7 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         </Grid>
       </Grid>
 
-      {assessBasicForm?.values?.status === "queued" || assessBasicForm?.values?.status === "completed" || assessBasicForm?.values?.status === "rejected" || (docStatus!=="uploaded") ? (
+      {assessBasicForm?.values?.status === "queued" || assessBasicForm?.values?.status === "completed" || assessBasicForm?.values?.status === "rejected" || (docStatus !== "uploaded") ? (
         <>
           {/* --- Documents Section --- */}
           <Box className="shadow-2xl rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)]">
@@ -427,15 +434,17 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-primary)]">
               <Typography className="mb-2 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">Technical Round</Typography>
               <RadioGroup row value={techStatus} onChange={(e) => setTechStatus(e.target.value)}>
-                <FormControlLabel value="refered" control={<Radio disabled={isFoe} />} label="Referred" />
-                <FormControlLabel value="passed" control={<Radio disabled={isFoe} />} label="Passed" />
-                <FormControlLabel value="failed" control={<Radio disabled={isFoe} />} label="Failed" />
+                <FormControlLabel value="refered" control={<Radio disabled />} label="Referred" />
+                <FormControlLabel value="passed" control={<Radio disabled />} label="Passed" />
+                <FormControlLabel value="failed" control={<Radio disabled />} label="Failed" />
               </RadioGroup>
-              <FormControl fullWidth className="mt-4 md:w-1/2" size="small">
+              <FormControl fullWidth className="mt-4 md:w-1/2">
                 <InputLabel>Classify Experience</InputLabel>
                 <Select value={classifyExp} onChange={(e) => setClassifyExp(e.target.value)} label="Classify Experience" disabled={isFoe}>
+                  <MenuItem value="fresher">Fresher</MenuItem>
                   <MenuItem value="domestic">Domestic</MenuItem>
-                  <MenuItem value="abroad">International</MenuItem>
+                  <MenuItem value="abroad">Abroad</MenuItem>
+                  <MenuItem value="free">Freelance</MenuItem>
                 </Select>
               </FormControl>
             </Box>

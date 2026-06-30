@@ -8,6 +8,7 @@ import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import { TechData } from "@/Types/Frontend_Payload/assessment.types";
+import { useSelector } from "react-redux";
 
 export const TechnicalResult = ({
   techData,
@@ -16,6 +17,10 @@ export const TechnicalResult = ({
   techData: TechData | null;
   loadingTech: boolean;
 }) => {
+
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );
   const calculateScorePercentage = (achieved: number, total: number) =>
     total ? Math.round((achieved / total) * 100) : 0;
   const calculateAccuracyRate = (
@@ -25,8 +30,9 @@ export const TechnicalResult = ({
     answered: number,
   ) => {
     if (!answered || !questions || !total) return 0;
-    const correctAnswers = achieved / (total / questions);
-    return Math.round((correctAnswers / answered) * 100);
+    const accuracyRate = Math.round(
+      (achieved * questions * 100) / (total * answered)
+    ); return accuracyRate;
   };
 
   if (loadingTech || !techData)
@@ -36,7 +42,7 @@ export const TechnicalResult = ({
       </Box>
     );
 
-  const passed = techData.achievedScore >= techData.totalScore / 2;
+  const passed = techData.status === "passed";
 
   return (
     <Box className="flex flex-col gap-6 w-full">
@@ -104,14 +110,23 @@ export const TechnicalResult = ({
           </Box>
         </Box>
         <Divider className="my-7" />
-        <Button
-          fullWidth
-          disableElevation
-          variant="contained"
-          className="py-[10px] text-[14px] font-bold rounded-lg normal-case hover:bg-blue-500 bg-[#1877F2]"
-        >
-          View Detailed Breakdown (PDF)
-        </Button>
+        {techData?.breakdownPdf?.path ?
+          <Button
+            fullWidth
+            disableElevation
+            variant="contained"
+            className="py-[10px] text-[14px] font-bold rounded-lg normal-case hover:bg-blue-500 bg-[#1877F2]"
+            href={techData?.breakdownPdf?.path}
+            target="_blank"
+            download={`Result Technical Round - ${reduxUser?.firstName} ${reduxUser?.lastName}`}
+          >
+            View Detailed Breakdown
+          </Button>
+          :
+          <Typography className="text-[--mui-palette-error-main] font-bold text-center">
+            The result file is not available yet.
+          </Typography>
+        }
       </Card>
     </Box>
   );
