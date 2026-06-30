@@ -1,4 +1,12 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+ 
+
+type ChangePasswordData = {
+  userId: string,
+  oldPassword: string,
+  newPassword:string,
+  confirmPassword: string
+};
 
 export const loginApi = async (bodyData: {
   identity: string;
@@ -17,3 +25,8 @@ export const verifyOtpApi = async (bodyData: {
 }) => {
   return axiosClient.post("/auth/verify-otp", bodyData);
 };
+
+export const changePasswordApi = async (bodyData: ChangePasswordData) => {
+  return axiosClient.post("admin/auth/change-password", bodyData); 
+};
+

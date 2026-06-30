@@ -9,7 +9,7 @@ import { updateUserData } from "@/Redux/Auth/user.slice";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
 export const useAccount = () => {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch(); 
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,

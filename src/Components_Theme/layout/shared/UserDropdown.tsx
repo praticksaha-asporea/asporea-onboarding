@@ -23,6 +23,7 @@ import MenuItem from '@mui/material/MenuItem'
 import Button from '@mui/material/Button'
 import { useSelector } from 'react-redux'
 import { CamelCase } from '@/Utils/common'
+import ChangePasswordModal from '@/Components/modals/ChangePasswordModal'
 
 // Styled component for badge content
 const BadgeContentSpan = styled('span')({
@@ -37,6 +38,7 @@ const BadgeContentSpan = styled('span')({
 const UserDropdown = () => {
   // States
   const [open, setOpen] = useState(false)
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false)  
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -151,6 +153,15 @@ const UserDropdown = () => {
                     <i className='ri-user-3-line' />
                     <Typography color='text.primary'>My Profile</Typography>
                   </MenuItem>
+                  <MenuItem className='gap-3' onClick={(e) => { 
+                    e.preventDefault();
+                    e.stopPropagation();  
+                    setOpen(false); 
+                    setPasswordModalOpen(true); 
+                  }}>
+                    <i className='ri-lock-password-line' />
+                    <Typography color='text.primary'>Change Password</Typography>
+                  </MenuItem>
                   {/* <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/profile')}>
                     <i className='ri-settings-4-line' />
                     <Typography color='text.primary'>Settings</Typography>
@@ -174,6 +185,10 @@ const UserDropdown = () => {
           </Fade>
         )}
       </Popper>
+      <ChangePasswordModal 
+        open={passwordModalOpen} 
+        onClose={() => setPasswordModalOpen(false)} 
+      />
     </>
   )
 }

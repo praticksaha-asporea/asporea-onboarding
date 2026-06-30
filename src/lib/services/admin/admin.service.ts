@@ -18,7 +18,7 @@ export const adminLoginService = async (body: AdminLoginInput) => {
     throw new ApiError('Email, password are required', 400);
   }
 
-  const admin: IUser | null = await User.findOne({ email });
+  const admin: IUser | null = await User.findOne({ email }) .populate('profilePic', 'path');
   if (admin) {
     if (!(await comparePassword(password, admin.password as string))) {
       throw new ApiError('Invalid credentials', 401);
