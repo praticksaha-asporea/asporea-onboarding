@@ -33,7 +33,10 @@ export const createToken = async (body: any) => {
             : {
                 "contact.email": identity.toLowerCase().trim(),
             }
-    );
+    ).populate({
+        path: "documents.actionBy",
+        select: "role", // select only required fields
+    });
 
     if (!lead) {
         if (!user) {
@@ -57,6 +60,14 @@ export const createToken = async (body: any) => {
                 tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
             else if (lead?.status === "assess_scheduled") {
+                tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
+            }
+            else if (lead?.status === "doc_verified" && lead?.documents?.status === "verified" && assignment.phase == "assess" && assignment.status == "assigned" && lead?.documents?.actionBy?.role === "tac_head") {
+                //actionBy
+                tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
+            }
+            else if (lead?.status === "exp_verified" && lead?.technical?.status === "passed" && assignment.phase == "assess" && assignment.status == "assigned" && assignment.token?.generated === false && lead?.experience?.actionBy?.role === "tac_head") {
+                //actionBy
                 tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
             else {

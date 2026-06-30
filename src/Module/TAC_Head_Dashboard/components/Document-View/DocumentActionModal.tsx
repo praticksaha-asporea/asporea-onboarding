@@ -64,7 +64,7 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, 
       remarks,  
     };
 
-    console.log("API PAYLOAD BHEJ RAHA HU:", payload);
+    // console.log("API PAYLOAD BHEJ RAHA HU:", payload);
 
     setSubmitLoading(true);
      
