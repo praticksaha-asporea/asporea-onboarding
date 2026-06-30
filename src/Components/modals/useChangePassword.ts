@@ -3,7 +3,7 @@ import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { changePasswordApi } from "@/Services/APIs/auth/auth.actions";
 import { useSelector } from "react-redux";
-
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 export const useChangePassword = (onClose: () => void) => {
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -18,7 +18,10 @@ export const useChangePassword = (onClose: () => void) => {
     validationSchema: Yup.object({
       oldPassword: Yup.string().required("Old password is required"),
       newPassword: Yup.string()
-        .min(8, "Password must be at least 8 characters")
+        .matches(
+          passwordRegex,
+          "Password must be at least 8 characters and include uppercase, lowercase, number and special character"
+        )
         .required("New password is required"),
       confirmPassword: Yup.string()
         .oneOf([Yup.ref("newPassword")], "Passwords must match")
