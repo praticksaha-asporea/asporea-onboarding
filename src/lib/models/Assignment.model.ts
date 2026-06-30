@@ -10,7 +10,7 @@ export const ASSIGNMENT_PHASES = [
   // "inq",
   "pre",
   "assess",
-  "tech",
+  // "tech",
 ] as const;
 
 export const ASSIGNMENT_STATUS = [

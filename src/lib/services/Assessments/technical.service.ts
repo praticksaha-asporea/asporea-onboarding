@@ -16,7 +16,8 @@ export const addTechnicalResult = async (payload: any) => {
     answered,
     type,
     breakdownPdf,
-    feedback
+    feedback,
+    actionBy
   } = payload;
 
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
@@ -36,6 +37,7 @@ export const addTechnicalResult = async (payload: any) => {
     "technical.status": statusTech,
     "technical.type": type,
     "experience.status": isPassed ? "verified" : "rejected",
+    "experience.actionBy": actionBy,
     "status": `exp_${isPassed ? "verified" : "rejected"}`
   });
 

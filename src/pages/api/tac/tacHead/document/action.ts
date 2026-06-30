@@ -39,7 +39,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { leadId, status, remarks } = value;
 
      
-    const updatedLead = await approveRejectDocumentService(leadId, status, remarks);
+    const updatedLead = await approveRejectDocumentService(leadId, status, remarks,authUser.id);
 
     return ResponseHandler.sendSuccess(res, updatedLead, `Documents successfully ${status} by TAC Head`);
   } catch (error: unknown) {

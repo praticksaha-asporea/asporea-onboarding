@@ -80,7 +80,8 @@ export default async function handler(
       ...(files && result?.uploadId !== undefined && {
         breakdownPdf: result.uploadId,
       }),
-      feedback: body.feedback
+      feedback: body.feedback,
+      actionBy: authUser?.id
     };
 
     // if (!["passed", "failed"].includes(body.status)) {

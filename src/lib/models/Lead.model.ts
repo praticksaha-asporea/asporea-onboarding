@@ -1,4 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
+import { IUser } from "./User.model";
 
 export interface ILead extends Document {
   fullName?: string;
@@ -31,11 +32,14 @@ export interface ILead extends Document {
     type?: "fresher" | "domestic" | "abroad" | "free";
     submittedOn?: Date;
     status?: "selected" | "verified" | "rejected" | "request_technical";
+    actionBy?: IUser;
   };
 
   documents?: {
     submittedOn?: Date;
     status?: "na" | "uploaded" | "verified" | "rejected" | "re_uploaded" | "re_verified" | "awaiting_approval";
+    actionBy?: IUser;
+    remarks?: string;
   };
 
   technical?: {
@@ -138,7 +142,8 @@ const LeadSchema = new Schema<ILead>(
           "re_uploaded",
           "re_verified",
         ],
-        actionBy: { type: Schema.Types.ObjectId, ref: "User" }
+        actionBy: { type: Schema.Types.ObjectId, ref: "User" },
+        remarks: String
       },
     },
 

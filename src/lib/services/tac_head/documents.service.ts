@@ -3,25 +3,26 @@ import { DocumentModel } from "@/lib/models/Document.model";
 import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
+import { Assignment, IAssignment } from "@/lib/models/Assignment.model";
 
 export const getAwaitingApprovalDocumentsService = async (
-  page = 1, 
-  limit = 10, 
+  page = 1,
+  limit = 10,
   filterUserId?: string | null,
   search?: string
 ) => {
   const skip = (page - 1) * limit;
 
-   
- const matchQuery: any = {
+
+  const matchQuery: any = {
     status: "doc_awaiting_approval",
   };
-   
+
   if (filterUserId) {
-    const shiftInfos = await EmployeeBranchShiftModel.find({ 
-      employeeId: new mongoose.Types.ObjectId(filterUserId) 
+    const shiftInfos = await EmployeeBranchShiftModel.find({
+      employeeId: new mongoose.Types.ObjectId(filterUserId)
     }).lean();
-    
+
     if (!shiftInfos || shiftInfos.length === 0) {
       throw new ApiError("No branch assigned to your account. Please contact Admin.", 403);
     }
@@ -35,12 +36,12 @@ export const getAwaitingApprovalDocumentsService = async (
     }
 
     const branchObjectIds = assignedBranchIds.map(id => new mongoose.Types.ObjectId(id));
-    
-     
+
+
     matchQuery["preferences.branchId"] = { $in: branchObjectIds };
   }
 
-   
+
   if (search && search.trim().length > 0) {
     const regex = new RegExp(search.trim(), "i");
     matchQuery.$or = [
@@ -60,9 +61,9 @@ export const getAwaitingApprovalDocumentsService = async (
     })
     .populate({
       path: "documents.position",
-      select: "title",  
+      select: "title",
     })
-    .sort({ "documents.submittedOn": -1, createdAt: -1 }) 
+    .sort({ "documents.submittedOn": -1, createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean();
@@ -80,27 +81,44 @@ export const getAwaitingApprovalDocumentsService = async (
 export const approveRejectDocumentService = async (
   leadId: string,
   status: "verified" | "rejected",
-  remarks?: string
+  remarks?: string,
+  actionBy?:string
 ) => {
   if (!mongoose.Types.ObjectId.isValid(leadId)) {
     throw new ApiError("Invalid Lead ID", 400);
   }
 
-   
+  // await Assignment.findOneAndUpdate(
+  //   {
+  //     leadId: leadId,
+  //     phase: "assess",
+  //   },
+  //   {
+  //     $set: {
+  //       token: { generated: false },
+  //     },
+  //   },
+  //   {
+  //     sort: { createdAt: -1 }, // latest document
+  //     new: true,
+  //   }
+  // );
+
   await DocumentModel.updateMany(
     { leadId: new mongoose.Types.ObjectId(leadId) },
     { $set: { status: status } }
   );
 
-  
+
   const leadUpdate: any = {
-    status: `doc_${status}`,                     
-    "documents.status": status,                 
+    status: `doc_${status}`,
+    "documents.status": status,
+    "documents.actionBy": actionBy
   };
 
-   
+
   if (remarks) {
-    // leadUpdate["documents.remarks"] = remarks; 
+    leadUpdate["documents.remarks"] = remarks; 
   }
 
   const updatedLead = await Lead.findByIdAndUpdate(
