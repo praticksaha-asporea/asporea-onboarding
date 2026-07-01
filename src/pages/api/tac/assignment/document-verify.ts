@@ -67,7 +67,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
     if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404)
 
-    let leadUpdate: any = { status: `doc_${status}`, actionBy: new mongoose.Types.ObjectId(authUser.id) };
+    let leadUpdate: any = { status: `doc_${status}`, "documents.actionBy": new mongoose.Types.ObjectId(authUser.id) };
 
     if (status === "verified" || status === "rejected") {
 
@@ -76,17 +76,20 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         { $set: { status: status } }
       );
       leadUpdate = {
-        "documents.status": status, status: `doc_${status}`, actionBy: new mongoose.Types.ObjectId(authUser.id)
+        "documents.status": status, status: `doc_${status}`, "documents.actionBy": new mongoose.Types.ObjectId(authUser.id)
       };
     }
     else if (status === "awaiting_approval") {
       // TL Verify - request
     }
+    console.log(leadUpdate, 498441);
+
     const updatedLead = await Lead.findByIdAndUpdate(
       assignment?.leadId,
       { $set: leadUpdate }, //here
       { returnDocument: "after", runValidators: true }
     );
+    console.log(updatedLead, 22222);
     await Assignment.findByIdAndUpdate(
       id,
       { $set: { attended: true } },

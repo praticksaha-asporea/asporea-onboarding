@@ -124,9 +124,9 @@ const LeadSchema = new Schema<ILead>(
           "verified",
           "rejected",
           "request_technical"
-        ],
-        actionBy: { type: Schema.Types.ObjectId, ref: "User" }
+        ]
       },
+      actionBy: { type: Schema.Types.ObjectId, ref: "User" },
     },
 
     documents: {
@@ -141,10 +141,10 @@ const LeadSchema = new Schema<ILead>(
           "rejected",
           "re_uploaded",
           "re_verified",
-        ],
-        actionBy: { type: Schema.Types.ObjectId, ref: "User" },
-        remarks: String
+        ]
       },
+      remarks: String,
+      actionBy: { type: Schema.Types.ObjectId, ref: "User" },
     },
 
     technical: {

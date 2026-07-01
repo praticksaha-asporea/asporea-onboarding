@@ -49,6 +49,8 @@ export const isWithinSchedule = (assign: any): boolean => {
   if (!assign?.schedule?.date || !assign?.schedule?.from) return false;
   const base = dayjs(assign.schedule.date).format("YYYY-MM-DD");
   const start = dayjs(`${base} ${assign.schedule.from}`, "YYYY-MM-DD hh:mm A");
+  // const start = dayjs(`${base} 00:00:00`, "YYYY-MM-DD HH:mm:ss");
+
   const end = assign.schedule.to
     ? dayjs(`${base} ${assign.schedule.to}`, "YYYY-MM-DD hh:mm A")
     : start.add(30, "minute");

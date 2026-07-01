@@ -148,7 +148,7 @@ export const AssessmentExperienceVerification = async (value: any, authUser: any
     if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404)
 
     let
-        leadUpdate = { "experience.status": status, "experience.type": expType, status: `exp_${status}`, actionBy: new mongoose.Types.ObjectId(authUser.id) };
+        leadUpdate = { "experience.status": status, "experience.type": expType, status: `exp_${status}`, "experience.actionBy": new mongoose.Types.ObjectId(authUser.id) };
 
     const updatedLead = await Lead.findByIdAndUpdate(
         assignment?.leadId,

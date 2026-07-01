@@ -69,16 +69,34 @@ export const createToken = async (body: any) => {
             else if (lead?.status === "assess_scheduled") {
                 tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
-            else if (lead?.status === "doc_verified" && lead?.documents?.status === "verified" && assignment.phase == "assess" && assignment.status == "assigned") {
-                console.log(lead.documents,5844);
-                
+            else if (lead?.status === "doc_verified" && lead?.documents?.status === "verified" && assignment.phase == "assess" && assignment.status == "assigned" && lead?.documents?.actionBy && assignment.token?.generated === false) {
+
+                const docActionBy = await Lead.findById(lead?._id)
+                    .populate(
+                        {
+                            path: "documents.actionBy",
+                            select: "role",
+                        }
+                    )
+                    .lean();
+                console.log(docActionBy, 5844);
+
                 //actionBy
-                tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
+                if (docActionBy?.documents?.actionBy?.role === "tac_head")
+                    tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
-            else if (lead?.status === "exp_verified" && lead?.technical?.status === "passed" && assignment.phase == "assess" && assignment.status == "assigned" && assignment.token?.generated === false) {
-                console.log(lead.documents,16611);
-                //actionBy
-                tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
+            else if (lead?.status === "exp_verified" && lead?.technical?.status === "passed" && assignment.phase == "assess" && assignment.status == "assigned" && lead?.documents?.actionBy && assignment.token?.generated === false) {
+
+                const expActionBy = await Lead.findById(lead?._id)
+                    .populate(
+                        {
+                            path: "experience.actionBy",
+                            select: "role",
+                        })
+                    .lean();
+                console.log(lead.experience, 16611);
+                if (expActionBy?.documents?.actionBy?.role === "tac_head")
+                    tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
             else {
                 throw new ApiError(`You are not eligible for generating token!`, 401);
