@@ -33,10 +33,16 @@ export const createToken = async (body: any) => {
             : {
                 "contact.email": identity.toLowerCase().trim(),
             }
-    ).populate({
-        path: "documents.actionBy",
-        select: "role", // select only required fields
-    });
+    )
+    // .populate(
+    //     "documents.actionBy",
+    //     "role"
+    // );
+    // .populate({
+    //     path: "documents.actionBy",
+    //     select: "role", // select only required fields
+    // }).lean();
+    // console.log(lead,15164); return;
 
     if (!lead) {
         if (!user) {
@@ -54,6 +60,7 @@ export const createToken = async (body: any) => {
         .lean();
     if (lead && assignment) {
         // will update later
+
         // offline candidate come to branch after pre-counselling / assessment
         if (assignment?.phase === "pre" || assignment?.phase === "assess") {
             if (lead?.status === "pre_scheduled") {
@@ -62,11 +69,14 @@ export const createToken = async (body: any) => {
             else if (lead?.status === "assess_scheduled") {
                 tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
-            else if (lead?.status === "doc_verified" && lead?.documents?.status === "verified" && assignment.phase == "assess" && assignment.status == "assigned" && lead?.documents?.actionBy?.role === "tac_head") {
+            else if (lead?.status === "doc_verified" && lead?.documents?.status === "verified" && assignment.phase == "assess" && assignment.status == "assigned") {
+                console.log(lead.documents,5844);
+                
                 //actionBy
                 tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
-            else if (lead?.status === "exp_verified" && lead?.technical?.status === "passed" && assignment.phase == "assess" && assignment.status == "assigned" && assignment.token?.generated === false && lead?.experience?.actionBy?.role === "tac_head") {
+            else if (lead?.status === "exp_verified" && lead?.technical?.status === "passed" && assignment.phase == "assess" && assignment.status == "assigned" && assignment.token?.generated === false) {
+                console.log(lead.documents,16611);
                 //actionBy
                 tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }

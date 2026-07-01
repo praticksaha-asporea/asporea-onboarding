@@ -29,7 +29,8 @@ export default async function handler(
             "Token Generated successfully",
         );
     } catch (error: unknown) {
-
+        console.log(error,18944);
+        
         if (error instanceof ApiError)
             return ResponseHandler.sendError(res, error.message, error.statusCode);
         return ResponseHandler.sendError(res, "Unknown error occurred", 500);
