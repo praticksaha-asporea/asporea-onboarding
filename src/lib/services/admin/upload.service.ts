@@ -1,6 +1,8 @@
 import mongoose from "mongoose";
 import { Upload } from "../../../lib/models/Upload.model";
 import { ApiError } from "../../error/api.error";
+import fs from "fs";
+import path from "path";
 
 export const getUploadsList = async (query: {
   page?: number;
@@ -26,7 +28,7 @@ export const getUploadsList = async (query: {
         preserveNullAndEmptyArrays: true,
       },
     },
-    // 🌟 STEP 1: User ki profilePic ID ko safe string mein convert karo
+     
     {
       $addFields: {
         "user.profilePicStr": {
@@ -38,7 +40,7 @@ export const getUploadsList = async (query: {
         }
       }
     },
-    // 🌟 STEP 2: STRING TO STRING LOOKUP (Yeh kabhi fail nahi hoga)
+   
     {
       $lookup: {
         from: 'uploads', 
@@ -56,6 +58,12 @@ export const getUploadsList = async (query: {
       }
     }
   ];
+
+//   pipeline.push({                       // Condition to hide profile pictures from upload page
+//     $match: {
+//       path: { $not: /^\/uploads\/profiles\// }
+//     }
+//   });
 
   if (query.role) {
     pipeline.push({
@@ -109,4 +117,27 @@ export const getUploadsList = async (query: {
       hasPrevPage: page > 1,
     },
   };
+};
+
+export const deleteUploadById = async (id: string) => {
+  const upload = await Upload.findById(id);
+  if (!upload) {
+    throw new ApiError("Upload not found", 404);
+  }
+
+  
+  if (upload.path && upload.path.startsWith("/uploads")) {
+    const absolutePath = path.join(process.cwd(), "public", upload.path);
+    if (fs.existsSync(absolutePath)) {
+      try {
+        fs.unlinkSync(absolutePath);
+      } catch (err) {
+        console.error("Failed to delete physical file:", err);
+      }
+    }
+  }
+
+    
+  await Upload.findByIdAndDelete(id);
+  return true;
 };
