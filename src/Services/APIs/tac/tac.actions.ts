@@ -177,7 +177,7 @@ export const updateAssignmentAction = async (
 
 export const updateAssignmentAssessAction = async (
   payload: UpdateAssignmentAssessPayload
-) => {
+) :Promise<AxiosResponse<any>>  => {
   return axiosClient.patch(
     "/tac/assignment/update-assessment",
     payload,

@@ -19,6 +19,7 @@ import "@/lib/models/Document.model";
 import "@/lib/models/DocumentType.model";
 import "@/lib/models/Position.model";
 import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
+import { AssessmentModel } from "@/lib/models/Assessment.model";
 
 export default async function handler(
   req: NextApiRequest,
@@ -37,6 +38,7 @@ export default async function handler(
     const authUser = await verifyToken(token);
     const userRole = String(authUser.role).toLowerCase();
     let generalSettings: any = {};
+    let assessResult: any = {};
     if (userRole !== "tac" && userRole !== "foe" && userRole !== "tac_head" && userRole !== "admin")
       throw new ApiError("Unauthorized access. Insufficient permissions.", 403);
 
@@ -158,12 +160,20 @@ export default async function handler(
     if (settings === "true") {
       generalSettings = await GeneralSettingModel.findOne().lean();
     }
+    // console.log(assignmentByPhase["assess"],1612165);
+    
+    if(assignmentByPhase?.["assess"]?.status==="completed")
+    {
+      assessResult= await AssessmentModel.findOne({leadId: lead?._id})
+    }
     return ResponseHandler.sendSuccess(
       res,
-      { lead, branchToken, assignments, assignmentByPhase, generalSettings },
+      { lead, branchToken, assignments, assignmentByPhase, generalSettings,assessResult },
       "Candidate fetched",
     );
   } catch (error: unknown) {
+    console.log(error,13516);
+    
     if (error instanceof ApiError)
       return ResponseHandler.sendError(
         res,
