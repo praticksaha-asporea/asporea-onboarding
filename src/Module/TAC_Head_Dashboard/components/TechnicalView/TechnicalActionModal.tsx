@@ -329,7 +329,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
           setFullLeadData(res.data.lead);
           technicalReviewForm.setFieldValue("totalScore", res?.data?.generalSettings?.technical?.fullMarks);
           setPassingMarks(res?.data?.generalSettings?.technical?.passingMarks || 0);
-          // console.log(lead?.experience?.type,88444);
+          // console.log(res?.data,88444);
 
         } else {
           toast.error("Failed to fetch complete document details for this candidate.");
@@ -368,7 +368,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
             </Typography>
             <Box className="mt-2">
               <Chip
-                label={lead.documents?.position?.title || "No Position Selected"}
+                label={fullLeadData?.documents?.position?.title || "No Position Selected"}
                 size="small"
                 className="text-[11px] font-bold  text-[var(--mui-palette-primary)] border border-blue-100"
               />
@@ -548,7 +548,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
               <Grid size={{ xs: 12, md: 12 }}>
                 <Box className="p-4  rounded-xl   shadow-2xl mt-2 transition-all">
                   <Typography variant="subtitle2" className="mb-3 text-[var(--mui-palette-primary-main)] font-semibold uppercase tracking-wider">
-                     Schedule Next Assessment Slot (Mandatory)
+                     Schedule Assessment Slot *
                   </Typography>
                   <TextField
                     type="date" size="small" fullWidth

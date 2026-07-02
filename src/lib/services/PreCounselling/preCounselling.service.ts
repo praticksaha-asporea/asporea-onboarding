@@ -74,7 +74,7 @@ const formatTime12Hr = (minutes: number) => {
     .sort((a: any, b: any) => {
       const dateA = a.effectiveFrom ? new Date(a.effectiveFrom).getTime() : 0;
       const dateB = b.effectiveFrom ? new Date(b.effectiveFrom).getTime() : 0;
-       console.log(dateA-dateB,787777)
+      //  console.log(dateA-dateB,787777)
       return dateB - dateA;
     });
 
