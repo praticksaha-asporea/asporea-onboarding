@@ -19,6 +19,7 @@ import CandidateDocumentsSection from "@/Module/TAC_Dashboard/components/Candida
 import { getCandidateDocumentsAction } from "@/Services/APIs/Documents/document.actions";
 import { useFormik } from "formik";
 import { technicalExperienceAction } from "@/Services/APIs/tacHead/experience.action";
+import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 
 interface ActionModalProps {
   open: boolean;
@@ -83,7 +84,7 @@ const BreakdownPdfUpload: React.FC<BreakdownPdfUploadProps> = ({ file, onChange 
 
   return (
     <>
-      {/* Label acts as the drop/click zone */}
+     
       <Typography variant="caption" className="font-semibold text-[var(--mui-palette-text-secondary)] mb-1 block uppercase tracking-wide">
         Breakdown PDF / Image
       </Typography>
@@ -93,7 +94,7 @@ const BreakdownPdfUpload: React.FC<BreakdownPdfUploadProps> = ({ file, onChange 
         onDragOver={(e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); }}
         onDragLeave={(e: React.DragEvent) => { e.preventDefault(); setIsDragging(false); }}
         onDrop={handleDrop}
-        className={`border-2 border-dashed rounded-xl p-4 min-h-[150px] flex flex-col items-center justify-center cursor-pointer transition-all duration-200
+        className={` shadow-2xl rounded-xl p-4 min-h-[150px] flex flex-col items-center justify-center cursor-pointer transition-all duration-200
           ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:border-blue-300 hover:bg-[var(--mui-palette-secondary-lightOpacity)]"}`}
       >
         <input
@@ -194,6 +195,39 @@ const BreakdownPdfUpload: React.FC<BreakdownPdfUploadProps> = ({ file, onChange 
 const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, refreshData }) => {
   const [fullLeadData, setFullLeadData] = useState<any>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [slots, setSlots] = useState<any[]>([]);
+  const [fetchingSlots, setFetchingSlots] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [passingMarks, setPassingMarks] = useState<number>(0);
+
+  
+
+  useEffect(() => {
+    if (open) {
+      setSelectedDate("");
+      setSelectedSlot(null);
+      setSlots([]);
+    }
+  }, [open]);
+
+  
+  useEffect(() => {
+    const fetchSlots = async () => {
+      const consultantId = lead?.preferences?.consultantId?._id || lead?.preferences?.consultantId?.id;
+      if (selectedDate && consultantId) {
+        setFetchingSlots(true);
+        const res = await getSlotsAction(consultantId, selectedDate);
+        if (res?.success !== false) {
+          setSlots(res?.data || []);
+        } else {
+          setSlots([]);
+        }
+        setFetchingSlots(false);
+      }
+    };
+    fetchSlots();
+  }, [selectedDate, lead]);
   const technicalReviewForm = useFormik({
     enableReinitialize: true,
     initialValues: {
@@ -245,6 +279,11 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
       // breakdownPdf: yup.any()
     }),
     onSubmit: async (values) => {
+      const currentIsPassing = Number(values.achievedScore) >= passingMarks && passingMarks > 0;
+      if (currentIsPassing && (!selectedDate || !selectedSlot)) {
+        toast.error("Candidate has passed! Please schedule the next assessment slot.");
+        return;  
+      }
       const formData = new FormData();
 
       formData.append("leadId", lead?._id);
@@ -258,6 +297,12 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
       formData.append("feedback", values.remarks);
       if (values.breakdownPdf) {
         formData.append("breakdownPdf", values.breakdownPdf);
+      }
+
+   if (currentIsPassing && selectedDate && selectedSlot) {
+        formData.append("scheduleDate", selectedDate);
+        formData.append("scheduleFrom", selectedSlot.from);
+        formData.append("scheduleTo", selectedSlot.to);
       }
 
       const res = await technicalExperienceAction(formData);
@@ -281,6 +326,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
 
           setFullLeadData(res.data.lead);
           technicalReviewForm.setFieldValue("totalScore", res?.data?.generalSettings?.technical?.fullMarks);
+          setPassingMarks(res?.data?.generalSettings?.technical?.passingMarks || 0);
           // console.log(lead?.experience?.type,88444);
 
         } else {
@@ -293,6 +339,8 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
 
     fetchFullLeadDetails();
   }, [open, lead]);
+ 
+  const isPassing = Number(technicalReviewForm.values.achievedScore) >= passingMarks && passingMarks > 0;
 
   if (!lead) return null;
 
@@ -490,7 +538,61 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
               />
             </Grid>
 
+       
+          {isPassing && (
+              <Grid size={{ xs: 12, md: 12 }}>
+                <Box className="p-4  rounded-xl   shadow-2xl mt-2 transition-all">
+                  <Typography variant="subtitle2" className="mb-3 text-[var(--mui-palette-primary-main)] font-semibold uppercase tracking-wider">
+                     Schedule Next Assessment Slot (Mandatory)
+                  </Typography>
+                  <TextField
+                    type="date" size="small" fullWidth
+                    inputProps={{ min: new Date().toISOString().split("T")[0] }}
+                    value={selectedDate}
+                    onChange={(e) => {
+                      const selectedVal = e.target.value;
+                      const todayStr = new Date().toISOString().split("T")[0];
+                      if (selectedVal && selectedVal < todayStr) {
+                        toast.error("Past dates are not allowed!");
+                        setSelectedDate(todayStr);
+                        setSelectedSlot(null);
+                      } else {
+                        setSelectedDate(selectedVal);
+                        setSelectedSlot(null);
+                      }
+                    }}
+                    className="bg-[var(--mui-palette-primary)]"
+                  />
 
+                  {selectedDate && (
+                    <Box className="mt-4">
+                      {fetchingSlots ? (
+                        <Box className="flex items-center gap-2">
+                          <CircularProgress size={20} />
+                          <Typography variant="caption">Fetching available slots...</Typography>
+                        </Box>
+                      ) : slots.length > 0 ? (
+                        <Box className="flex flex-wrap gap-2 mt-2">
+                          {slots.map((slot: any) => (
+                            <Chip
+                              key={slot.time}
+                              label={slot.time}
+                              clickable={slot.available}
+                              onClick={() => slot.available && setSelectedSlot(slot)}
+                              color={selectedSlot?.time === slot.time ? "primary" : "default"}
+                              variant={selectedSlot?.time === slot.time ? "filled" : "outlined"}
+                              className={`${!slot.available ? "opacity-40 cursor-not-allowed bg-[var(--mui-palette-primary)]" : "hover:bg-[var(--mui-palette-primary)"}`}
+                            />
+                          ))}
+                        </Box>
+                      ) : (
+                        <Typography variant="caption" color="error">No slots available for this date.</Typography>
+                      )}
+                    </Box>
+                  )}
+                </Box>
+              </Grid>
+            )}
 
           </Grid>
 

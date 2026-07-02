@@ -64,7 +64,16 @@ export default async function handler(
     const body = normalizeFormFields(
       fields as any
     );
-    const { error } = addTechnicalResultSchema.validate(body);
+   const { error } = addTechnicalResultSchema.validate({
+      leadId: body.leadId,
+      type: body.type,
+      totalScore: body.totalScore,
+      achievedScore: body.achievedScore,
+      timeTaken: body.timeTaken,
+      questions: body.questions,
+      answered: body.answered,
+      feedback: body.feedback
+    }, { allowUnknown: true });  
     if (error) {
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
     }
@@ -81,7 +90,12 @@ export default async function handler(
         breakdownPdf: result.uploadId,
       }),
       feedback: body.feedback,
-      actionBy: authUser?.id
+      actionBy: authUser?.id,
+      schedule: (body.scheduleDate && body.scheduleFrom) ? {
+        date: body.scheduleDate,
+        from: body.scheduleFrom,
+        to: body.scheduleTo,
+      } : undefined
     };
 
     // if (!["passed", "failed"].includes(body.status)) {

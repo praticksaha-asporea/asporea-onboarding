@@ -40,19 +40,19 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
   const [action, setAction] = useState<"approved" | "rejected" | "">("");
   const [remarks, setRemarks] = useState("");
 
-  // Scheduling States
+   
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<any[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  // Default Today Date String (YYYY-MM-DD)
+  
   const todayStr = new Date(new Date().getTime() + 330 * 60000)
     .toISOString()
     .split("T")[0];
 
-  // Modal khulte hi states reset karo
+   
   useEffect(() => {
     if (open) {
       setDate(todayStr);
@@ -62,15 +62,14 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
     }
   }, [open, todayStr]);
 
-  // 🎯 CORE LOGIC: Check if this lead requires rescheduling upon approval
-  // Tune jo backend mein logic lagaya hai, uske hisaab se agar "pre_scheduled" ya "assess_scheduled" hai tabhi time badalna hai.
+  
   const leadStatus = escalation?.leadId?.status || "";
   const requiresSchedule = ["pre_scheduled", "assess_scheduled"].includes(
     leadStatus,
   );
   const targetTacId = escalation?.toId?._id;
 
-  // 🎯 DYNAMIC SLOT FETCHING: Agar Approve hua, aur schedule chahiye, toh Target TAC ke slots fetch karo
+  
   useEffect(() => {
     const fetchTargetTacSlots = async () => {
       if (action === "approved" && requiresSchedule && targetTacId && date) {
@@ -96,7 +95,7 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
     if (!action) return toast.error("Please select an action (Approve/Reject)");
     if (!remarks.trim()) return toast.error("Remarks are mandatory");
 
-    // Validation for Scheduled actions
+    
     let schedulePayload = undefined;
     if (action === "approved" && requiresSchedule) {
       if (!selectedSlot)
