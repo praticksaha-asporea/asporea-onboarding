@@ -91,7 +91,7 @@ export default function CompleteProfilePage() {
       }),
     };
 
-    console.log("🚀 SENDING PAYLOAD TO BACKEND:", payload);
+    // console.log("🚀 SENDING PAYLOAD TO BACKEND:", payload);
 
     try {
       const res = await axios.post("/api/auth/register", payload);
