@@ -57,10 +57,10 @@ axiosClient.interceptors.response.use(
 
     const isUnauthorized = error.response?.status === 401;
     const errorMessage = error.response?.data?.message?.toLowerCase() || "";
-    const isDuplicateError = 
-      errorMessage.includes("already exists") || 
+    const isDuplicateError =
+      errorMessage.includes("already exists") ||
       errorMessage.includes("in use");
-     const tokenExpired = error.response?.data?.error?.isTokenValid === false || error.response?.data?.message === "Invalid / expired token";
+    const tokenExpired = error.response?.data?.error?.isTokenValid === false || error.response?.data?.message === "Invalid / expired token";
 
     if (isUnauthorized && tokenExpired && !originalRequest?._retry) {
       if (isRefreshing) {
@@ -90,17 +90,17 @@ axiosClient.interceptors.response.use(
         const refreshResponse = await axios.post("/api/auth/refresh-token", {
           refreshToken: refreshToken,
         });
-       const responseData = refreshResponse.data?.data || refreshResponse.data;
+        const responseData = refreshResponse.data?.data || refreshResponse.data;
 
-      
+
         const newAccessToken = responseData?.accessToken || responseData?.tokens?.accessToken || responseData?.access?.token;
         const newRefreshToken = responseData?.refreshToken || responseData?.tokens?.refreshToken || responseData?.refresh?.token;
 
-       
+
         if (newAccessToken && newRefreshToken) {
           Cookies.set("accessToken", newAccessToken);
           Cookies.set("refreshToken", newRefreshToken);
-          
+
           processQueue(null, newAccessToken);
 
           if (originalRequest?.headers) {
@@ -108,11 +108,11 @@ axiosClient.interceptors.response.use(
           }
           return axiosClient(originalRequest!);
         } else {
-       
+
           throw new Error("Missing tokens in response");
         }
       } catch (refreshError) {
-        
+
         processQueue(refreshError, null);
         toast.error("Session expired. Please login again.");
 
@@ -130,9 +130,11 @@ axiosClient.interceptors.response.use(
         isRefreshing = false;
       }
     } else {
+
       if (isUnauthorized && !isDuplicateError) {
         Object.keys(Cookies.get()).forEach((cookieName) => {
-          if (cookieName !== "remEmail" && cookieName !== "remPass") {
+          if (cookieName !== "remEmail" && cookieName !== "remPass" && !errorMessage.includes("not eligible for generating token")) {
+            console.log('this working');
             Cookies.remove(cookieName);
           }
         });

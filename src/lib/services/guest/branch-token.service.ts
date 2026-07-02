@@ -3,6 +3,7 @@ import { Assignment, IAssignment } from "@/lib/models/Assignment.model";
 import { BranchTokenModel, IBranchToken } from "@/lib/models/BranchToken.model";
 import { ILead, Lead } from "@/lib/models/Lead.model";
 import User, { IUser } from "@/lib/models/User.model";
+import "@/lib/models/Position.model";
 import mongoose from "mongoose";
 
 export const createToken = async (body: any) => {
@@ -79,7 +80,7 @@ export const createToken = async (body: any) => {
                         }
                     )
                     .lean();
-                console.log(docActionBy, 5844);
+                // console.log(docActionBy, 5844);
 
                 //actionBy
                 if (docActionBy?.documents?.actionBy?.role === "tac_head")
@@ -94,8 +95,8 @@ export const createToken = async (body: any) => {
                             select: "role",
                         })
                     .lean();
-                console.log(lead.experience, 16611);
-                if (expActionBy?.documents?.actionBy?.role === "tac_head")
+                // console.log(expActionBy?.experience?.actionBy?.role, 32332);
+                if (expActionBy?.experience?.actionBy?.role === "tac_head")
                     tokenRes = await generateBranchToken(lead?.preferences?.branchId, user?._id, lead?.preferences?.consultantId, assignment);
             }
             else {
@@ -117,7 +118,7 @@ export const createToken = async (body: any) => {
     else {
         throw new ApiError('Inquiry not submitted yet', 401);
     }
-    console.log(lead, assignment, tokenRes, 25844);
+    // console.log(lead, assignment, tokenRes, 25844);
 
     return { token: tokenRes?.tokenNo, slot: { from: assignment?.schedule?.from, to: assignment?.schedule?.to }, role: user?.role };
 };
