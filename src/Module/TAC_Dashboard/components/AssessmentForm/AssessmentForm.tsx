@@ -279,7 +279,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       }
       const result = await updateAssessmentScoreAction(formData);
       setAssessmentStatus(result?.data?.data?.status);
-      // console.log(result?.data?.data?.status, result?.data, 5844);
+      console.log(result?.data?.data, 5844);
 
       if (result?.data?.data?.status === "completed") {
         toast.success("Assessment result recorded: Candidate Passed.");

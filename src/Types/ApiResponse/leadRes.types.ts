@@ -80,3 +80,32 @@ export interface leadDocumentUpdateResponse {
     },
     error: string | null
 }
+
+export interface assessmentResultResponse {
+    success: boolean,
+    message: string,
+    data: resultData,
+    error: string | null
+};
+
+interface Note {
+    _id: string;
+    text: string;
+    createdAt: string;
+}
+
+export interface resultData {
+    scores: {
+        total: number,
+        achieved: number
+    },
+    _id: string,
+    leadId: string,
+    __v: number,
+    assessedBy: string,
+    createdAt: string,
+    date: string,
+    notes: Note[];
+    passportNo: string,
+    updatedAt: string
+}

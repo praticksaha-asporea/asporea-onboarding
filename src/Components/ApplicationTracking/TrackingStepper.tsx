@@ -42,7 +42,7 @@ export const TrackingStepper = ({ activeStep, showTechnical }: { activeStep: num
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12, md: 12 }}>
-        <Card className="p-2 sm:p-6 rounded-xl shadow-md">
+        <Card className="relative z-0 p-2 sm:p-6 rounded-xl shadow-md">
           <Stack className="w-full" spacing={4}>
             <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />}>
               {steps.map((label) => (
