@@ -67,9 +67,8 @@ const UploadedFileCard: React.FC<{ doc: UploadedDoc; onPreview: (doc: UploadedDo
 
   return (
     <Card
-     variant="elevation"
-     elevation={0}       
-      className="border-none shadow-2xl rounded-[14px] p-3 flex flex-col gap-2 cursor-pointer hover:scale-[1.02] transition-all duration-200 bg-[var(--mui-palette-primary)]" 
+      variant="outlined"
+      className="rounded-[14px] p-3 flex flex-col gap-2 cursor-pointer hover:shadow-md transition-all duration-200"
       onClick={() => onPreview(doc)}
     >
       {/* Thumbnail / icon */}

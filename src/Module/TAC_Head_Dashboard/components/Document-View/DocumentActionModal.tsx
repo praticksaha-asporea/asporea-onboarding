@@ -1,5 +1,5 @@
 "use client";
-
+import { useTheme, lighten } from "@mui/material/styles";
 import React, { useState, useEffect } from "react";
 import {
   Dialog,
@@ -39,6 +39,8 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({
   lead,
   refreshData,
 }) => {
+  const theme = useTheme();
+  const headerGradient = `linear-gradient(270deg, var(--mui-palette-primary-main), ${lighten(theme.palette.primary.main, 0.5)} 100%)`;
   const [action, setAction] = useState<"verified" | "rejected" | "">("");
   const [remarks, setRemarks] = useState("");
   const [submitLoading, setSubmitLoading] = useState(false);
@@ -141,10 +143,12 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({
       fullWidth
       PaperProps={{ className: "rounded-xl" }}
     >
-      <DialogTitle className="font-medium text-[20px] text-[var(--mui-palette-primary)] bg-[var(--mui-palette-primary-main)]">
+     <DialogTitle 
+        className="font-medium text-[20px] text-white px-6 py-4"
+        style={{ background: headerGradient }}
+      >
         Review Candidate Documents
       </DialogTitle>
-
       <DialogContent className="flex flex-col gap-5 pt-6">
         <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <Box className="p-4 rounded-xl shadow-md border">

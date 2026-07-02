@@ -1,5 +1,5 @@
 "use client";
-
+import { useTheme, lighten } from "@mui/material/styles";
 import React, { useState, useRef, useEffect } from "react";
 import {
   Dialog, DialogTitle, DialogContent, DialogActions, Button,
@@ -193,6 +193,8 @@ const BreakdownPdfUpload: React.FC<BreakdownPdfUploadProps> = ({ file, onChange 
 // ── Main modal ────────────────────────────────────────────────────────────────
 
 const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead, refreshData }) => {
+  const theme = useTheme();
+  const headerGradient = `linear-gradient(270deg, var(--mui-palette-primary-main), ${lighten(theme.palette.primary.main, 0.5)} 100%)`;
   const [fullLeadData, setFullLeadData] = useState<any>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
@@ -346,7 +348,10 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth PaperProps={{ className: "rounded-xl" }}>
-      <DialogTitle className="font-medium text-[20px] text-[var(--mui-palette-primary)] bg-var(--mui-palette-primary-main)">
+      <DialogTitle 
+        className="font-medium text-[20px] text-white px-6 py-4"
+        style={{ background: headerGradient }}
+      >
         Review Candidate Experience
       </DialogTitle>
 

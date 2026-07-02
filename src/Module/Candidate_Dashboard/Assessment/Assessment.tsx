@@ -104,7 +104,8 @@ const AssessmentContent = () => {
                 <Button 
                   variant="contained" 
                   onClick={() => router.push("/application-tracking")} 
-                  className="mt-8 rounded-xl normal-case bg-blue-600 hover:bg-blue-700 shadow-none px-8 py-2.5"
+                     href="/applicationtracking"
+                  className="mt-8 rounded-xl normal-case  shadow-none px-8 py-2.5"
                 >
                   Track Application Status
                 </Button>
