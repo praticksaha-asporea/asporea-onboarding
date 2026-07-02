@@ -13,6 +13,11 @@ const tacHeadDocActionSchema = Joi.object({
   leadId: Joi.string().hex().length(24).required(),
   status: Joi.string().valid("verified", "rejected").required(),
   remarks: Joi.string().allow("", null).optional(),
+  schedule: Joi.object({
+    date: Joi.string().required(),
+    from: Joi.string().required(),
+    to: Joi.string().required(),
+  }).optional(),
 });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -36,10 +41,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { error, value } = tacHeadDocActionSchema.validate(req.body);
     if (error) throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const { leadId, status, remarks } = value;
+    const { leadId, status, remarks,schedule } = value;
 
      
-    const updatedLead = await approveRejectDocumentService(leadId, status, remarks,authUser.id);
+    const updatedLead = await approveRejectDocumentService(leadId, status, remarks,authUser.id, schedule);
 
     return ResponseHandler.sendSuccess(res, updatedLead, `Documents successfully ${status} by TAC Head`);
   } catch (error: unknown) {

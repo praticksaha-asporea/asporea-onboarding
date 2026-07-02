@@ -79,11 +79,7 @@ export const getAwaitingApprovalDocumentsService = async (
 };
 
 export const approveRejectDocumentService = async (
-  leadId: string,
-  status: "verified" | "rejected",
-  remarks?: string,
-  actionBy?:string
-) => {
+leadId: string, status: "verified" | "rejected", remarks?: string, actionBy?: string, schedule?: any) => {
   if (!mongoose.Types.ObjectId.isValid(leadId)) {
     throw new ApiError("Invalid Lead ID", 400);
   }
@@ -117,10 +113,9 @@ export const approveRejectDocumentService = async (
   };
 
 
-  if (remarks) {
-    leadUpdate["documents.remarks"] = remarks; 
+  if (remarks !== undefined) {
+    leadUpdate["documents.remarks"] = remarks;
   }
-
   const updatedLead = await Lead.findByIdAndUpdate(
     leadId,
     { $set: leadUpdate },
@@ -129,6 +124,28 @@ export const approveRejectDocumentService = async (
 
   if (!updatedLead) {
     throw new ApiError("Lead not found", 404);
+  }
+
+ if (status === "verified" && schedule) {
+    await Assignment.findOneAndUpdate(
+      { 
+        leadId: new mongoose.Types.ObjectId(leadId), 
+        phase: "assess" 
+      },
+      {
+        $set: {
+          "schedule.date": new Date(schedule.date),
+          "schedule.from": schedule.from,
+          "schedule.to": schedule.to,
+          "token.generated": false,     
+          "status": "assigned"          
+        },
+        $unset: {
+          "token.number": 1            
+        }
+      },
+      { new: true } 
+    );
   }
 
   return updatedLead;

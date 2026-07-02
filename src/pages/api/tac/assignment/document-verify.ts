@@ -24,11 +24,12 @@ const updateAssessDocumentSchema = Joi.object({
       "rejected",
       "awaiting_approval"
     )
-    .optional()
+    .optional(),
+    remarks: Joi.string().allow("", null).optional()  
 })
   .options({
     abortEarly: false,
-    allowUnknown: true, // IMPORTANT for multipart/form-data
+    allowUnknown: true,  
   });
 export const config = { api: { bodyParser: false } };
 
@@ -54,7 +55,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const { id, status } = value;
+    const { id, status, remarks } = value;
 
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new ApiError("Invalid assignment ID", 400);
@@ -78,6 +79,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       leadUpdate = {
         "documents.status": status, status: `doc_${status}`, "documents.actionBy": new mongoose.Types.ObjectId(authUser.id)
       };
+
+      if (status === "rejected" && remarks) {
+        leadUpdate["documents.remarks"] = remarks;
+      }
     }
     else if (status === "awaiting_approval") {
       // TL Verify - request

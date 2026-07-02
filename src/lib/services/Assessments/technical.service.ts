@@ -17,7 +17,8 @@ export const addTechnicalResult = async (payload: any) => {
     type,
     breakdownPdf,
     feedback,
-    actionBy
+    actionBy,
+    schedule
   } = payload;
 
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
@@ -41,8 +42,22 @@ export const addTechnicalResult = async (payload: any) => {
     "status": `exp_${isPassed ? "verified" : "rejected"}`
   });
 
-  if (!isPassed) {
-    await Assignment.findByIdAndUpdate(assignments?._id, {
+ if (isPassed && schedule?.date && schedule?.from && schedule?.to) {
+    await Assignment.findByIdAndUpdate(assignments._id, {
+      $set: {
+        "schedule.date": new Date(schedule.date),
+        "schedule.from": schedule.from,
+        "schedule.to": schedule.to,
+        "token.generated": false,
+        "status": "assigned"
+      },
+      $unset: {
+        "token.number": 1
+      }
+    });
+  } else if (!isPassed) {
+     
+    await Assignment.findByIdAndUpdate(assignments._id, {
       "status": "rejected"
     });
   }

@@ -28,6 +28,11 @@ export const approveRejectDocumentAction = async (payload: {
   leadId: string;
   status: "verified" | "rejected";
   remarks?: string;
+  schedule?: {
+    date: string;
+    from: string;
+    to: string;
+  };
 }) => {
   try {
     const response = await axiosClient.post(

@@ -191,10 +191,10 @@ export const updateAssignmentAssessAction = async (
   );
 };
 
-export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected' | 'awaiting_approval'
+export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected' | 'awaiting_approval',remarks?: string
 ): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
-  const payload = { id, status };
+  const payload = { id, status, remarks };
   return axiosClient.patch(
     "/tac/assignment/document-verify",
     payload
