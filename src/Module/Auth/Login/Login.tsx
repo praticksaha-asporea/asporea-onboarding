@@ -52,6 +52,7 @@ const Login = ({ mode }: { mode: Mode }) => {
     handleSendOtp,
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
+    countdown,
   } = useLogin();
 
   const darkImg = "/images/pages/auth-v1-mask-dark.png";
@@ -225,7 +226,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              {/* OTP SEND BUTTON */}
+              
+             
               {authMode === "otp" && (
                 <Button
                   fullWidth
@@ -242,43 +244,48 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              {authMode === "otp" && (
+              
+              {authMode === "otp" && sendOtp && (
                 <>
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <Typography color="error">Resend in 02:00</Typography>
+                  <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
+                    <Typography color={countdown > 0 ? "textSecondary" : "error"} className="text-sm font-medium">
+                      {countdown > 0 
+                        ? `Resend in ${Math.floor(countdown / 60).toString().padStart(2, "0")}:${(countdown % 60).toString().padStart(2, "0")}`
+                        : "Ready to resend!"}
+                    </Typography>
                     <Button
                       color="error"
                       size="small"
                       variant="text"
                       type="button"
-                      onClick={() => formik.handleSubmit()}
+                      disabled={countdown > 0 || loading}
+                      onClick={handleSendOtp}
                     >
                       Resend OTP
                     </Button>
                   </div>
-                  {sendOtp && (
-                    <>
-                      <MuiOtpInput
-                        value={otp}
-                        onChange={handleOtpChange}
-                        length={6}
-                      />
-                      <Button
-                        variant="contained"
-                        size="small"
-                        color="success"
-                        type="button"
-                        disabled={!enableVerifyOTP || loading}
-                        onClick={handleVerifyOtp}
-                      >
-                        {loading ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : (
-                          "Verify"
-                        )}
-                      </Button>
-                    </>
-                  )}
+
+                  <Box className="flex flex-col gap-4 mt-3">
+                    <MuiOtpInput
+                      value={otp}
+                      onChange={handleOtpChange}
+                      length={6}
+                    />
+                    <Button
+                      variant="contained"
+                      size="small"
+                      color="success"
+                      type="button"
+                      disabled={!enableVerifyOTP || loading}
+                      onClick={handleVerifyOtp}
+                    >
+                      {loading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        "Verify OTP"
+                      )}
+                    </Button>
+                  </Box>
                 </>
               )}
 

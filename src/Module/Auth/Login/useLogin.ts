@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useDispatch } from "react-redux";
@@ -31,6 +31,17 @@ export function useLogin() {
   const [enableVerifyOTP, setEnableVerifyOTP] = useState(false);
   const [showSetupPassword, setShowSetupPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [countdown, setCountdown] = useState<number>(0);
+
+  useEffect(() => {
+    if (countdown === 0) return;
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => prev - 1);
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
 
   const handleClickShowPassword = () => setIsPasswordShown((show) => !show);
   const togglePasswordOTP = () =>
@@ -69,7 +80,7 @@ export function useLogin() {
   };
 
   const handleSendOtp = async () => {
-    if (!identity) return alert("Please enter your email");
+    if (!identity) return alert("Please enter your email or phone number");
 
     try {
       setLoading(true);
@@ -77,6 +88,7 @@ export function useLogin() {
 
       if (res.data?.success) {
         setSendOtp(true);
+        setCountdown(120);
         toast.success("OTP Sent! Successfully");
       }
     } catch (err: any) {
@@ -160,5 +172,6 @@ export function useLogin() {
     handleSendOtp,
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
+    countdown,
   };
 }
