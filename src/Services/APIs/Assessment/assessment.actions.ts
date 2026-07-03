@@ -19,8 +19,11 @@ export const getJourneyTimelineAction = async (
 
 export const scheduleAssessmentAction = async (data: {
   leadId: string;
+  consultantId?: string;  
   date: string;
-  slotTime: string;
+  slotTime?: string;     
+  from?: string;         
+  to?: string;           
   method: "on" | "off";
 }): Promise<any> => {
   try {

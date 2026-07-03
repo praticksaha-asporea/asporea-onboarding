@@ -50,7 +50,8 @@ const AssessmentContent = () => {
     scheduledDetails,
     checkingStatus,
     handleSavePreferences,
-    resultData
+    resultData,
+    isAssessmentCompleted
   } = useAssessment();
 
   if (checkingStatus) {
@@ -76,12 +77,32 @@ const AssessmentContent = () => {
   return (
    <Grid container spacing={6}>
       {/* LEFT COLUMN */}
-      <Grid size={{ xs: 12, md: (isBookingMode && !isAlreadyScheduled) ? 8 : 12 }}>
+      <Grid size={{ xs: 12, md: (isBookingMode && !isAlreadyScheduled && !isAssessmentCompleted) ? 8 : 12 }}>
         {(isBookingMode || isAssessmentResult) && (
           <Card className="p-4 sm:p-12 rounded-[15px] shadow-2xl mb-6  bg-[var(--mui-palette-primary)]">
-            
+            {isBookingMode && isAssessmentCompleted ? (
+              <Box className="p-4 text-center bg-[var(--mui-palette-primary)] rounded-xl flex flex-col items-center justify-center min-h-[350px]">
+                <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
+                  <i className="ri-checkbox-circle-fill text-5xl bg-[var(--mui-palette-success-main)]"></i>
+                </Box>
+                <Typography variant="h4" className="font-bold text-[var(--mui-palette-text-primary)] mb-2">
+                  Assessment Session Completed
+                </Typography>
+                <Typography variant="subtitle1" className="text-[var(--mui-palette-text-secondary)] max-w-md mx-auto mb-4">
+                  Your assessment evaluation is done and captured successfully! Our operations team is processing the next steps of your journey.
+                </Typography>
+
+                <Button 
+                  variant="contained" 
+                  href="/applicationtracking"
+                  className="mt-6 rounded-xl normal-case shadow-none px-8 py-2.5"
+                >
+                  Track Recruitment Progress
+                </Button>
+              </Box>
+            ) :
            
-            {isBookingMode && isAlreadyScheduled ? (
+            isBookingMode && isAlreadyScheduled ? (
               <Box className="p-4 text-center bg-[var(--mui-palette-primary)] rounded-xl flex flex-col items-center justify-center min-h-[350px]">
                 <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
                   <i className="ri-calendar-check-fill text-5xl text-blue-600"></i>
@@ -202,7 +223,7 @@ const AssessmentContent = () => {
       </Grid>
 
        
-      {isBookingMode && !isAlreadyScheduled && (
+      {isBookingMode && !isAlreadyScheduled && !isAssessmentCompleted && (
         <Grid size={{ xs: 12, md: 4 }}>
           <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
             <CardContent className="p-6">

@@ -20,17 +20,22 @@ interface DashboardScheduleModalProps {
   setSelectedSlot: (val: any) => void;
   handleBookSlot: () => void;
   bookingLoading: boolean;
+  schedulePhase: "pre" | "assess";
 }
 
 const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
   modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac,
   date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot,
-  handleBookSlot, bookingLoading
+  handleBookSlot, bookingLoading,schedulePhase
 }) => {
   return (
     <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-xl p-2" }}>
-      <DialogTitle className="font-bold text-[20px]">
-        {targetLead?.status === "pre_not_responded" ? "Reschedule Pre-Counselling" : "Schedule Pre-Counselling"}
+     <DialogTitle className="font-bold text-[20px]">
+        {schedulePhase === "assess" 
+          ? "Schedule / Reschedule Assessment" 
+          : targetLead?.status === "pre_not_responded" 
+            ? "Reschedule Pre-Counselling" 
+            : "Schedule Pre-Counselling"}
       </DialogTitle>
       <DialogContent className="flex flex-col gap-5 pt-4">
         <Box className="mb-2">

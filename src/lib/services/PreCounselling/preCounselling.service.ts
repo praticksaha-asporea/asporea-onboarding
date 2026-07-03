@@ -224,9 +224,9 @@ export const savePreCounsellingBooking = async (body: any) => {
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
   const currentLead = await LeadModel.findById(leadId).lean();
   
-   
-  if (currentLead && currentLead.status === "pre_not_responded") {
-  
+   // Clear any existing pre-counselling assignments and branch tokens if the lead is in certain statuses
+  const preClearStatuses = ["pre_not_responded", "pre_scheduled", "pre_contacted", "pre_queued"];
+  if (currentLead && preClearStatuses.includes(currentLead.status)) {
     await Assignment.deleteMany({
       leadId: new mongoose.Types.ObjectId(leadId),
       phase: "pre"
@@ -344,21 +344,49 @@ export const saveAssessmentBooking = async (body: any) => {
     );
   }
 
-  const newAssessmentAssignment = await Assignment.create({
-    leadId: new mongoose.Types.ObjectId(leadId),
-    assignedTo: new mongoose.Types.ObjectId(consultantId),
-    phase: "assess",
-    status: "assigned",
-    schedule: {
-      date: new Date(date),
-      from,
-      to,
-      method: method || "off",
-    },
-    attended: false,
-  });
-
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
+  const currentLead = await LeadModel.findById(leadId).lean();
+  const assessClearStatuses = ["assess_not_responded", "assess_scheduled", "assess_contacted", "assess_queued"];
+   
+  // Clear any existing assessment assignments and branch tokens if the lead is in certain statuses:-
+
+  if (currentLead && assessClearStatuses.includes(currentLead.status)) {
+    await Assignment.deleteMany({
+      leadId: new mongoose.Types.ObjectId(leadId),
+      phase: "assess"
+    });
+
+    const BranchTokenModel = mongoose.models.BranchToken || mongoose.model("BranchToken");
+    const creatorId = currentLead.createdBy?.id || currentLead.createdBy?._id || currentLead.createdBy;
+    if (creatorId && currentLead.preferences?.branchId) {
+      await BranchTokenModel.deleteMany({
+        userId: creatorId, 
+        branchId: currentLead.preferences.branchId,
+        status: { $in: ["generated", "queued"] }
+      });
+    }
+  }
+
+  
+  const newAssessmentAssignment = await Assignment.findOneAndUpdate(
+    { leadId: new mongoose.Types.ObjectId(leadId), phase: "assess" },
+    {
+      $set: {
+        assignedTo: new mongoose.Types.ObjectId(consultantId),
+        status: "assigned",
+        schedule: {
+          date: new Date(date),
+          from,
+          to,
+          method: method || "off",
+        },
+        attended: false,
+        token: { generated: false, number: null }
+      }
+    },
+    { new: true, upsert: true }
+  );
+
   await LeadModel.findByIdAndUpdate(leadId, {
     status: "assess_scheduled"
   });

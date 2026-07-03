@@ -82,6 +82,7 @@ export const useAssessment = () => {
   const [showConfirmPopup, setShowConfirmPopup] = useState<boolean>(false);
   const [isEditingChannels, setIsEditingChannels] = useState<boolean>(false);
   const [isAlreadyScheduled, setIsAlreadyScheduled] = useState<boolean>(false);
+  const [isAssessmentCompleted, setIsAssessmentCompleted] = useState<boolean>(false);
   const [scheduledDetails, setScheduledDetails] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
 
@@ -145,23 +146,29 @@ export const useAssessment = () => {
   const statusCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    const checkAssessmentStatus = async () => {
-      if (!leadId || !isBookingMode) {
-        setCheckingStatus(false);
-        return;
+   const checkAssessmentStatus = async () => {
+  if (!leadId || !isBookingMode) {
+    setCheckingStatus(false);
+    return;
+  }
+  try {
+    setCheckingStatus(true);
+    const res = await getJourneyTimelineAction(leadId);
+    
+    if (res?.success && res.data?.assessment) {
+      const currentStatus = res.data.assessment.status;
+      
+       
+      if (currentStatus === "Scheduled" || currentStatus === "scheduled") {
+        setIsAlreadyScheduled(true);
+        setScheduledDetails(res.data.assessment);
+      } 
+       
+      else if (currentStatus === "Completed" || currentStatus === "completed") {
+        setIsAssessmentCompleted(true);
+        setScheduledDetails(res.data.assessment);
       }
-      try {
-        setCheckingStatus(true);
-
-        const res = await getJourneyTimelineAction(leadId);
-        
-        if (res?.success && res.data?.assessment) {
-          if (res.data.assessment.status === "Scheduled") {
-            setIsAlreadyScheduled(true);
-            setScheduledDetails(res.data.assessment);
-          }
-        }
-
+    }
         if (!initialConsultantId) {
           try {
             const bookingRes = await checkBookingStatusAction(leadId);
@@ -313,6 +320,7 @@ export const useAssessment = () => {
     scheduledDetails,
     checkingStatus,
     handleSavePreferences,  
-    resultData
+    resultData,
+    isAssessmentCompleted
   };
 };
