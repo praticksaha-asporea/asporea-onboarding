@@ -85,7 +85,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       assignedTo: new mongoose.Types.ObjectId(authUser.id),
     });
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
-    if (!assignment?.token?.number && assignment?.schedule?.method=="off") throw new ApiError("Token not generated yet", 404);
+    if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404);
     // need to work on file upload
     type UploadResult = {
       uploadId: string;
@@ -125,21 +125,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       },
     };
 
-      if (status=== "completed" || status === "rejected") {
-        update['attended']= true;
-        // update['status']= status;
-      }
-      else if (status === "not_responded") {
-        update['attended']= false;
-        // update['status']= status;
-      }
-      
+    if (status === "completed" || status === "rejected") {
+      update['attended'] = true;
+      // update['status']= status;
+    }
+    else if (status === "not_responded") {
+      update['attended'] = false;
+      // update['status']= status;
+    }
+
     const updated = await Assignment.findByIdAndUpdate(
       assignmentId,
       { $set: update },
       { returnDocument: "after", runValidators: true },
     ).lean();
-      // console.log(update,updated,assignmentId,18444);
+    // console.log(update,updated,assignmentId,18444);
 
     const updatableStatus: Record<string, string> = {
       assigned: "pre_scheduled",
@@ -160,7 +160,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
         // only work when offline - later
         await BranchTokenModel.findOneAndUpdate(
-          { tokenNo:updated?.token?.number },
+          { tokenNo: updated?.token?.number },
           { $set: { status: 'queued' } },
           { returnDocument: 'after', upsert: true, runValidators: true },
         ).lean();
@@ -168,11 +168,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       else if (updatableStatus?.[status] === "pre_completed" || updatableStatus?.[status] === "pre_rejected") {
         // only work when offline - later
-        await BranchTokenModel.findOneAndUpdate(
-          { tokenNo:updated?.token?.number },
-          { $set: { status: 'finished' } },
-          { returnDocument: 'after', upsert: true, runValidators: true },
-        ).lean();
+        if (updated?.token?.number !== null)
+          await BranchTokenModel.findOneAndUpdate(
+            { tokenNo: updated?.token?.number },
+            { $set: { status: 'finished' } },
+            { returnDocument: 'after', upsert: true, runValidators: true },
+          ).lean();
         //email/ notification for prescription wlll add later
 
       }

@@ -130,7 +130,7 @@ const AssessmentScoringTable: React.FC<AssessmentScoringTableProps> = ({
                     <Typography className="font-bold text-[13px]">
                       {levelScoreMap[
                         languageLevels.other?.[question.shortName]
-                      ] || 0}
+                      ] > 0 ? 1 : 0 || 0}
                     </Typography>
                   </Box>
                 ))}
