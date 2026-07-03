@@ -69,7 +69,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       assignedTo: new mongoose.Types.ObjectId(authUser.id),
     });
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
-    if (!assignment?.token?.number && assignment?.schedule?.method=="off") throw new ApiError("Token not generated yet", 404)
+    if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404)
 
 
 
@@ -119,11 +119,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
       else if (updatableStatus?.[status] === "assess_completed" || updatableStatus?.[status] === "assess_rejected") {
         // only work when offline - later
-        await BranchTokenModel.findOneAndUpdate(
-          { tokenNo: updated?.token?.number },
-          { $set: { status: 'finished' } },
-          { returnDocument: 'after', upsert: true, runValidators: true },
-        ).lean();
+        if (updated?.token?.number !== null)
+
+          await BranchTokenModel.findOneAndUpdate(
+            { tokenNo: updated?.token?.number },
+            { $set: { status: 'finished' } },
+            { returnDocument: 'after', upsert: true, runValidators: true },
+          ).lean();
         //email/ notification for prescription wlll add later
 
       }

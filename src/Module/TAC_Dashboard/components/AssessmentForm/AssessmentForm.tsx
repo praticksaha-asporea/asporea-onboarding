@@ -56,7 +56,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
   });
 
   const levels = ["L1", "L2", "L3", "L4"];
-  const skills = ["Listening", "Speaking", "Writing", "Reading"];
+  const skills = [questionsByShortName.Lang_Lis?.title, questionsByShortName.Lang_Spea?.title, questionsByShortName.Lang_Wri?.title, questionsByShortName.Lang_Read?.title];
   const levelScoreMap: any = { L1: 1, L2: 2, L3: 3, L4: 4 };
 
   const scoringSections = [

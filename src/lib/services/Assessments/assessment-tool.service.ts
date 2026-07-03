@@ -118,11 +118,12 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
             }
             if (updatableStatus?.[status] === "assess_completed") {
                 // only work when offline - later
-                await BranchTokenModel.findOneAndUpdate(
-                    { tokenNo: updated?.token?.number },
-                    { $set: { status: 'finished' } },
-                    { returnDocument: 'after', upsert: true, runValidators: true },
-                ).lean();
+                if(updated?.token?.number!==null)
+                    await BranchTokenModel.findOneAndUpdate(
+                        { tokenNo: updated?.token?.number },
+                        { $set: { status: 'finished' } },
+                        { returnDocument: 'after', upsert: true, runValidators: true },
+                    ).lean();
                 //email/ notification for prescription wlll add later
 
             }
