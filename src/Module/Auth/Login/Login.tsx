@@ -339,7 +339,10 @@ const Login = ({ mode }: { mode: Mode }) => {
 
       <Dialog
         open={showSetupPassword}
-        onClose={handleCloseDialog}
+       onClose={(event, reason) => {
+          if (reason === "backdropClick" || reason === "escapeKeyDown") return;
+          handleCloseDialog();
+        }}
         maxWidth="xs"
         fullWidth
         PaperProps={{ className: "rounded-[20px] p-3 relative" }}

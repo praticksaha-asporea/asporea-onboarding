@@ -1,4 +1,4 @@
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Cookies from "js-cookie";
 import { useDispatch } from "react-redux";
@@ -14,6 +14,8 @@ import { respectiveDashboard } from "@/Utils/common";
 export function useTACLogin() {
   const router = useRouter();
   const dispatch = useDispatch();
+
+  
 
   // --- UI & Toggles States ---
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -32,6 +34,37 @@ export function useTACLogin() {
   const [showSetupPassword, setShowSetupPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  const [countdown, setCountdown] = useState<number>(0);
+
+  useEffect(() => {
+    const savedExpiry = localStorage.getItem("asporea_tac_otp_expiry");
+    if (savedExpiry) {
+      const remainingTime = Math.ceil((parseInt(savedExpiry) - Date.now()) / 1000);
+      if (remainingTime > 0) {
+        setCountdown(remainingTime);
+        setSendOtp(true);
+      } else {
+        localStorage.removeItem("asporea_tac_otp_expiry");
+      }
+    }
+  }, []);
+
+  
+  useEffect(() => {
+    if (countdown <= 0) return; 
+
+    const timer = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          localStorage.removeItem("asporea_tac_otp_expiry");  
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [countdown]);
   const handleClickShowPassword = () => setIsPasswordShown((show) => !show);
   const togglePasswordOTP = () =>
     setAuthMode(authMode === "password" ? "otp" : "password");
@@ -79,6 +112,9 @@ export function useTACLogin() {
 
       if (res.data?.success) {
         setSendOtp(true);
+        const expiryTime = Date.now() + 120000;
+        localStorage.setItem("asporea_tac_otp_expiry", expiryTime.toString());
+        setCountdown(120);
         toast.success("OTP Sent! Successfully");
       }
     } catch (err: any) {
@@ -165,5 +201,6 @@ export function useTACLogin() {
     handleSendOtp,
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
+    countdown,
   };
 }
