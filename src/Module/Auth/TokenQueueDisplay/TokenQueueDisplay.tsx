@@ -135,26 +135,15 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
       <Box className="flex-1 p-4 md:p-8">
         <Box
           className="grid gap-4 md:gap-6"
-          sx={{
-            gridTemplateColumns: {
-              xs: "repeat(2, 1fr)",
-              sm: "repeat(3, 1fr)",
-              md: `repeat(${Math.min(counters.length, 4)}, 1fr)`,
-              lg: `repeat(${Math.min(counters.length, 5)}, 1fr)`,
-            },
-          }}
         >
-          <Grid size={{ xs: 12, md: 12 }}>
-            <FormControl fullWidth variant="outlined" color="primary">
-              <InputLabel id="branch-select-label">
-                For Branch
-              </InputLabel>
+          <Grid size={{ xs: 6, md: 6, lg: 6, xl: 6 }}>
+            <FormControl fullWidth color="primary">
+              <InputLabel color="primary">For Branch</InputLabel>
 
               <Select
-                labelId="branch-select-label"
                 label="For Branch"
                 value={tokenBranch}
-                onChange={(e) => { handleBranchChange(e.target.value) }}
+                onChange={(e) => handleBranchChange(e.target.value)}
                 color="primary"
               >
                 {branches.map((branch: any) => (
@@ -181,9 +170,9 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
           }}
         >
           {counters.map((counter: any) => {
-            // const meta = counter.currentToken
-            //   ? getMeta(counter.currentToken)
-            //   : fallbackMeta;
+            const meta = counter.currentToken
+              ? getMeta(counter.currentToken)
+              : fallbackMeta;
 
             return (
               <Box
@@ -197,14 +186,14 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                   transition: "transform .25s, box-shadow .25s",
                   "&:hover": {
                     transform: "translateY(-4px)",
-                    // boxShadow: `0 12px 40px ${meta.glow}`,
+                    boxShadow: `0 12px 40px ${meta.glow}`,
                   },
                 }}
               >
                 {/* counter header */}
                 <Box
                   className="py-3 px-4 text-center"
-                // sx={{ background: meta.gradient }}
+                  sx={{ background: meta.gradient }}
                 >
                   <Typography
                     sx={{
@@ -225,7 +214,11 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                       lineHeight: 1.1,
                     }}
                   >
-                    {counter.counterNo}
+                    {counter?.role === "tac"
+                      ? "A"
+                      : counter?.role === "coordinator"
+                        ? "C"
+                        : "B"}{counter.counterNo}
                   </Typography>
                 </Box>
 
@@ -265,7 +258,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                         {counter.currentToken}
                       </Typography>
                       <Chip
-                        // label={meta.label}
+                        label={meta.label}
                         size="small"
                         sx={{
                           mt: 1.5,
@@ -291,7 +284,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                   )}
 
                   {/* upcoming tokens */}
-                  {counter.upcomingTokens && counter.upcomingTokens.length > 0 && (
+                  {counter?.upcomingTokens && counter?.upcomingTokens?.length > 0 && (
                     <Box className="mt-4">
                       <Typography
                         sx={{
@@ -306,7 +299,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                         Up Next
                       </Typography>
                       <Box className="flex flex-wrap justify-center gap-1.5">
-                        {counter.upcomingTokens.map((t: any, idx: any) => (
+                        {counter?.upcomingTokens.map((t: any, idx: any) => (
                           <Chip
                             key={idx}
                             label={t}
@@ -341,13 +334,11 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                     sx={{
                       fontSize: "11px",
                       fontWeight: 700,
-                      // color: counter.isActive ? "#22c55e" : "#ef4444",
-                      color: "#22c55e",
+                      color: counter.currentToken || counter?.upcomingTokens?.length > 0 ? "#22c55e" : "#ef4444",
                       letterSpacing: "0.06em",
                     }}
                   >
-                    {/* {counter.isActive ? "● Active" : "○ Inactive"} */}
-                    ● Active
+                    {counter.currentToken || counter?.upcomingTokens?.length > 0 ? "● Active" : "○ Inactive"}
                   </Typography>
                 </Box>
               </Box>
@@ -367,7 +358,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
         {[
           {
             label: "Active Counters",
-            value: counters.filter((c) => c.isActive).length,
+            value: counters.filter((c) => c.currentToken).length,
             color: "#22c55e",
           },
           {

@@ -49,7 +49,7 @@ export default async function handler(
 
         const data = await branchList({ keyword, timeZone, latitude, longitude, radiusKm, page, limit });
 
-        return ResponseHandler.sendSuccess(res, data, "Branch list fetched");
+        return ResponseHandler.sendSuccess(res, data, "Token list fetched");
     } catch (error: unknown) {
         if (error instanceof ApiError)
             return ResponseHandler.sendError(

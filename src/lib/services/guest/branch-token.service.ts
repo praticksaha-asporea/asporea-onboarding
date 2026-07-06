@@ -125,17 +125,6 @@ export const createToken = async (body: any) => {
     return { token: tokenRes?.tokenNo, slot: { from: assignment?.schedule?.from, to: assignment?.schedule?.to }, role: user?.role };
 };
 
-
-// const generateBranchToken = async (branchId: any, userId: any, assignedId: any, lead:object) => {
-// console.log(branchId, userId, assignedId, lead, 2944)
-// first check the branch tokens 
-// if having any token 
-//  its from current date +1
-//  its from last day 001
-// if not having any token
-//  it will create A for assignedId?.role==tac, A001
-//  it will create C for assignedId?.role==coordinator, C001
-// }
 export const generateBranchToken = async (
     branchId: mongoose.Types.ObjectId | undefined,
     userId: mongoose.Types.ObjectId,
@@ -336,7 +325,6 @@ export const tokenCounterList = async ({ branchId }: { branchId: string }) => {
     }
 }
 
-
 export const counterWiseTokens = async ({
     branchId,
     counters,
@@ -360,7 +348,7 @@ export const counterWiseTokens = async ({
                 $match: {
                     assignedTo: { $in: employeeIds },
                     "token.generated": true,
-                    status: "queued",
+                    status: { $in: ["queued", "assigned"] },
                     "schedule.date": {
                         $gte: today,
                         $lt: tomorrow,
@@ -368,32 +356,64 @@ export const counterWiseTokens = async ({
                 },
             },
             {
+                $sort: {
+                    createdAt: 1,
+                },
+            },
+            {
                 $project: {
                     _id: 0,
                     assignedTo: 1,
+                    status: 1,
                     tokenNumber: "$token.number",
                     leadId: 1,
                 },
             },
         ]);
 
-        const tokenMap = new Map(
-            assignments.map((a) => [
-                a.assignedTo.toString(),
-                {
-                    tokenNumber: a.tokenNumber,
-                    leadId: a.leadId,
-                },
-            ])
-        );
+        const tokenMap = new Map<
+            string,
+            {
+                currentToken: string | null;
+                leadId: mongoose.Types.ObjectId | null;
+                upcomingTokens: string[];
+            }
+        >();
 
-        return counters.map((counter) => ({
-            ...counter,
-            currentToken:
-                tokenMap.get(counter.employeeId)?.tokenNumber ?? null,
-            leadId:
-                tokenMap.get(counter.employeeId)?.leadId ?? null,
-        }));
+        for (const assignment of assignments) {
+            const key = assignment.assignedTo.toString();
+
+            if (!tokenMap.has(key)) {
+                tokenMap.set(key, {
+                    currentToken: null,
+                    leadId: null,
+                    upcomingTokens: [],
+                });
+            }
+
+            const item = tokenMap.get(key)!;
+
+            if (assignment.status === "queued") {
+                item.currentToken = assignment.tokenNumber;
+                item.leadId = assignment.leadId;
+            } else if (
+                assignment.status === "assigned" &&
+                item.upcomingTokens.length < 3
+            ) {
+                item.upcomingTokens.push(assignment.tokenNumber);
+            }
+        }
+
+        return counters.map((counter) => {
+            const tokens = tokenMap.get(counter.employeeId);
+
+            return {
+                ...counter,
+                currentToken: tokens?.currentToken ?? null,
+                leadId: tokens?.leadId ?? null,
+                upcomingTokens: tokens?.upcomingTokens ?? [],
+            };
+        });
     } catch (error) {
         if (error instanceof ApiError) throw error;
         throw new ApiError("Internal Server Error", 500);
