@@ -1,6 +1,7 @@
 import { ApiError } from "@/lib/error/api.error";
 import { Otp } from "@/lib/models/Otp.model";
 import User, { IUser } from "@/lib/models/User.model";
+import "@/lib/models/Upload.model";
 import { comparePassword, hashPassword } from "@/lib/utils/bcryptUtil";
 import { generateTokens } from "@/lib/utils/tokenUtil";
 import { ResetPasswordPayload } from "@/Types/Backend_Payload/auth.types";
@@ -18,15 +19,14 @@ export const adminLoginService = async (body: AdminLoginInput) => {
     throw new ApiError('Email, password are required', 400);
   }
 
-  const admin: IUser | null = await User.findOne({ email }) .populate('profilePic', 'path');
+  const admin: IUser | null = await User.findOne({ email }).populate('profilePic', 'path');
   if (admin) {
     if (!(await comparePassword(password, admin.password as string))) {
       throw new ApiError('Invalid credentials', 401);
     }
-     if(admin.role!=="admin")
-      {
-      throw new ApiError("Admin only allowed",401)
-      }
+    if (admin.role !== "admin") {
+      throw new ApiError("Admin only allowed", 401)
+    }
     const tokens = await generateTokens({
       _id: String(admin._id),
       role: "admin"

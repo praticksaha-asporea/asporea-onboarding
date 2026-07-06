@@ -69,6 +69,12 @@ EmployeeBranchShiftSchema.index({
   shiftId: 1,
 });
 
+EmployeeBranchShiftSchema.index({
+  branchId: 1,
+  effectiveFrom: -1,
+  employeeId: 1,
+});
+
 /* ================= EXPORT ================= */
 
 export const EmployeeBranchShiftModel =

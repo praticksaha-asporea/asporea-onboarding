@@ -12,7 +12,7 @@ export interface IBranch extends Document {
     coordinates: [number, number];
   };
   lastUsedCounter: number;
-
+  coordinatorCounters?: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -25,6 +25,8 @@ const BranchSchema = new Schema<IBranch>(
 
     counters: { type: Number, default: 0 },
     lastUsedCounter: { type: Number, default: 0 },
+
+    coordinatorCounters: { type: Number, default: 0 }, // implemention will be done on phase2
     timeZone: { type: String, default: "Asia/Kolkata" },
 
     workDays: [

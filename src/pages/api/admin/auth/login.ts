@@ -33,6 +33,7 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       'You are successfully loggedIn'
     );
   } catch (error: unknown) {
+    console.log("🚀 ~ handler ~ error:", error)
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(
         res,

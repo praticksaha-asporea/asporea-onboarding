@@ -5,6 +5,8 @@ import { ILead, Lead } from "@/lib/models/Lead.model";
 import User, { IUser } from "@/lib/models/User.model";
 import "@/lib/models/Position.model";
 import mongoose from "mongoose";
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
+import { tokenCounter } from "@/Types/ApiResponse/tokenRes.types";
 
 export const createToken = async (body: any) => {
     const {
@@ -245,4 +247,155 @@ export const generateBranchToken = async (
     await Assignment.findByIdAndUpdate(assignment?._id, { "token.generated": true, "token.number": tokenNo })
 
     return token;
+};
+
+export const tokenCounterList = async ({ branchId }: { branchId: string }) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const counters = await EmployeeBranchShiftModel.aggregate([
+            {
+                $match: {
+                    branchId: new mongoose.Types.ObjectId(branchId),
+                    effectiveFrom: { $lte: today },
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "employeeId",
+                    foreignField: "_id",
+                    pipeline: [
+                        {
+                            $match: {
+                                role: "tac",
+                                status: "active",
+                            },
+                        },
+                        {
+                            $project: {
+                                firstName: 1,
+                                lastName: 1,
+                                role: 1
+                            },
+                        },
+                    ],
+                    as: "employee",
+                },
+            },
+            {
+                $unwind: "$employee",
+            },
+            {
+                $project: {
+                    _id: 0,
+                    counterNo: 1,
+                    employeeId: "$employee._id",
+                    employee: {
+                        $concat: [
+                            "$employee.firstName",
+                            " ",
+                            "$employee.lastName",
+                        ]
+                    },
+                    role: "$employee.role"
+                },
+            },
+            {
+                $sort: {
+                    effectiveFrom: -1,
+                },
+            },
+            {
+                $group: {
+                    _id: "$employeeId", // or "$counterNo" depending on your requirement
+                    doc: { $first: "$$ROOT" },
+                },
+            },
+            {
+                $replaceRoot: {
+                    newRoot: "$doc",
+                },
+            },
+            {
+                $sort: {
+                    counterNo: 1,
+                },
+            }
+        ]);
+
+        if (!counters || counters.length === 0) {
+            return [];
+        }
+        return counters;
+    } catch (error: unknown) {
+        if (error instanceof ApiError)
+            throw error;
+        throw new ApiError("Internal Server Error", 500);
+    }
+}
+
+
+export const counterWiseTokens = async ({
+    branchId,
+    counters,
+}: {
+    branchId: string;
+    counters: tokenCounter[];
+}) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+
+        const employeeIds = counters.map(
+            (c) => new mongoose.Types.ObjectId(c.employeeId)
+        );
+
+        const assignments = await Assignment.aggregate([
+            {
+                $match: {
+                    assignedTo: { $in: employeeIds },
+                    "token.generated": true,
+                    status: "queued",
+                    "schedule.date": {
+                        $gte: today,
+                        $lt: tomorrow,
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: 0,
+                    assignedTo: 1,
+                    tokenNumber: "$token.number",
+                    leadId: 1,
+                },
+            },
+        ]);
+
+        const tokenMap = new Map(
+            assignments.map((a) => [
+                a.assignedTo.toString(),
+                {
+                    tokenNumber: a.tokenNumber,
+                    leadId: a.leadId,
+                },
+            ])
+        );
+
+        return counters.map((counter) => ({
+            ...counter,
+            currentToken:
+                tokenMap.get(counter.employeeId)?.tokenNumber ?? null,
+            leadId:
+                tokenMap.get(counter.employeeId)?.leadId ?? null,
+        }));
+    } catch (error) {
+        if (error instanceof ApiError) throw error;
+        throw new ApiError("Internal Server Error", 500);
+    }
 };

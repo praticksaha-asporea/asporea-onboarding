@@ -96,11 +96,11 @@ const AssignmentSchema = new Schema<IAssignment>(
         default: null,
         index: true,
       },
-      from: String,  
+      from: String,
       to: String,
       method: {
         type: String,
-        enum: ["on", "off"], 
+        enum: ["on", "off"],
       },
     },
 
@@ -181,10 +181,7 @@ AssignmentSchema.index(
 AssignmentSchema.index({
   assignedTo: 1,
   "schedule.date": 1,
-});
-
-AssignmentSchema.index({
-  phase: 1,
+  "token.generated": 1,
   status: 1,
 });
 
@@ -203,4 +200,3 @@ export const Assignment =
   models.Assignment ||
   model<IAssignment>("Assignment", AssignmentSchema);
 
-  

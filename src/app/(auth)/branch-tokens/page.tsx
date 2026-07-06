@@ -1,12 +1,10 @@
-// // Server Action Imports
-import { getServerMode } from '@/@core/contexts/utils/serverHelpers'
-import BranchTokens from '@/Module/Auth/BranchTokens/BranchTokens'
+import { getServerMode } from "@/@core/contexts/utils/serverHelpers";
+import TokenQueueDisplay from "@/Module/Auth/TokenQueueDisplay/TokenQueueDisplay";
 
-const Tokens = async () => {
-  // Vars
+const TokenQueuePage = async () => {
   const mode = await getServerMode()
 
-  return <BranchTokens mode={mode} />
-}
+  return <TokenQueueDisplay mode={mode} />;
+};
 
-export default Tokens
+export default TokenQueuePage;
