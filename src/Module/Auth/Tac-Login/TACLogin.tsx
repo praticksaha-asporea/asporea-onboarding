@@ -4,7 +4,6 @@ import { useFormik } from "formik";
 import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
 import { useState } from "react";
 import Link from "next/link";
-import { signIn } from "next-auth/react";
 
 // MUI Imports
 import { Dialog, DialogContent, Box, CircularProgress } from "@mui/material";
@@ -17,7 +16,6 @@ import InputAdornment from "@mui/material/InputAdornment";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Divider from "@mui/material/Divider";
 import { MuiOtpInput } from "mui-one-time-password-input";
 
 // Hooks & Components
@@ -51,6 +49,7 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
     handleSendOtp,
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
+    countdown,
   } = useTACLogin();
 
   const darkImg = "/images/pages/auth-v1-mask-dark.png";
@@ -203,7 +202,7 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                   color="primary"
                   onClick={handleToggleAuthMode}
                 >
-                  Login / Signup via{" "}
+                  Login via{" "}
                   {authMode === "password" ? "OTP" : "Password"}
                 </Typography>
               </div>
@@ -224,7 +223,7 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              {/* OTP SEND BUTTON */}
+            {/* MAIN OTP SEND BUTTON (Sirf tab chalega jab tak OTP hit na ho) */}
               {authMode === "otp" && (
                 <Button
                   fullWidth
@@ -241,43 +240,48 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              {authMode === "otp" && (
+              
+              {authMode === "otp" && sendOtp && (
                 <>
-                  <div className="flex justify-between items-center flex-wrap gap-2">
-                    <Typography color="error">Resend in 02:00</Typography>
+                  <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
+                    <Typography color={countdown > 0 ? "textSecondary" : "error"} className="text-sm font-medium">
+                      {countdown > 0 
+                        ? `Resend in ${Math.floor(countdown / 60).toString().padStart(2, "0")}:${(countdown % 60).toString().padStart(2, "0")}`
+                        : "Ready to resend!"}
+                    </Typography>
                     <Button
                       color="error"
                       size="small"
                       variant="text"
                       type="button"
-                      onClick={() => formik.handleSubmit()}
+                      disabled={countdown > 0 || loading}
+                      onClick={handleSendOtp}
                     >
                       Resend OTP
                     </Button>
                   </div>
-                  {sendOtp && (
-                    <>
-                      <MuiOtpInput
-                        value={otp}
-                        onChange={handleOtpChange}
-                        length={6}
-                      />
-                      <Button
-                        variant="contained"
-                        size="small"
-                        color="success"
-                        type="button"
-                        disabled={!enableVerifyOTP || loading}
-                        onClick={handleVerifyOtp}
-                      >
-                        {loading ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : (
-                          "Verify"
-                        )}
-                      </Button>
-                    </>
-                  )}
+
+                  <Box className="flex flex-col gap-4 mt-3">
+                    <MuiOtpInput
+                      value={otp}
+                      onChange={handleOtpChange}
+                      length={6}
+                    />
+                    <Button
+                      variant="contained"
+                      size="small"
+                      color="success"
+                      type="button"
+                      disabled={!enableVerifyOTP || loading}
+                      onClick={handleVerifyOtp}
+                    >
+                      {loading ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        "Verify OTP"
+                      )}
+                    </Button>
+                  </Box>
                 </>
               )}
 

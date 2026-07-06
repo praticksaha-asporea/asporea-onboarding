@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback,useRef } from "react";
 import {
   Box,
   Typography,
@@ -16,6 +16,7 @@ import {
   Pagination,
   CircularProgress,
   Paper,
+  TextField,
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -70,18 +71,30 @@ const DocumentApprovalView = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedLead, setSelectedLead] = useState<any>(null);
+  const [searchInput, setSearchInput] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearchChange = (val: string) => {
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(val);
+      setPage(1);
+    }, 400);
+  };
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
-    const res = await getAwaitingDocumentsAction(page, 10);
-    if (res && res.success !== false) {
+const res = await getAwaitingDocumentsAction(page, 10, debouncedSearch);    
+if (res && res.success !== false) {
       setLeads(res.data?.leads || []);
       setTotalPages(res.data?.meta?.totalPages || 1);
     } else {
       // toast.error(res?.message || "Failed to load documents");
     }
     setLoading(false);
-  }, [page]);
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchDocuments();
@@ -100,6 +113,17 @@ const DocumentApprovalView = () => {
       >
         TAC Head - Document Approvals
       </Typography>
+
+      <Box className="flex flex-col gap-3 mb-5">
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search by name, inquiry ID, email or phone..."
+          value={searchInput}
+          onChange={(e) => handleSearchChange(e.target.value)}
+          slotProps={{ input: { className: "rounded-lg text-[14px]" } }}
+        />
+      </Box>
 
       <TableContainer component={Paper} className="shadow-xl bg-[var(--mui-palette-primary)] " sx={responsiveTableSx}>
         <Table size="small">
@@ -168,13 +192,14 @@ const DocumentApprovalView = () => {
                   </TableCell>
 
                   <TableCell className="py-3 px-4 text-right">
-                    <IconButton
+                   <IconButton
                       size="small"
+                      title="Review candidate"
                       onClick={() => openActionModal(row)}
                       color="primary"
-                      className="bg-[var(--mui-palette-primary)] hover:bg-[var(--mui-palette-primary-main)] hover:text-white transition-all text-[var(--mui-palette-primary)]"
+                      className="bg-[var(--mui-palette-primary)] hover:bg-[var(--mui-palette-primary-main)] hover:text-white transition-all"
                     >
-                      <i className="ri-file-search-line text-[20px]" />
+                      <i className="ri-search-eye-line text-[18px]" />
                     </IconButton>
                   </TableCell>
                 </TableRow>
