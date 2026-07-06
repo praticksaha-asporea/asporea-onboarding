@@ -131,6 +131,7 @@ interface DashboardTableProps {
     isReschedule: boolean,
     phase: "pre" | "assess",
   ) => void;
+  openCommModal: (candidate: any, mode: "chat" | "email") => void;  
   onViewCandidate: (id: string) => void;
 }
 const preRescheduleStatuses = ["pre_scheduled", "pre_contacted", "pre_queued"];
@@ -153,6 +154,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
   totalPages,
   setPage,
   openScheduleModal,
+  openCommModal,
   onViewCandidate,
 }) => {
   return (
@@ -269,10 +271,10 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     <Box className="flex gap-1 md:justify-end">
                       {!isFoe && (
                         <>
-                          <IconButton size="small" title="Chat">
+                          <IconButton size="small" title="Chat" onClick={() => openCommModal(candidate, "chat")}>
                             <i className="material-symbols-light--chat-bubble-outline" />
                           </IconButton>
-                          <IconButton size="small" title="Email">
+                          <IconButton size="small" title="Email" onClick={() => openCommModal(candidate, "email")}>
                             <i className="material-symbols-light--mail-outline" />
                           </IconButton>
                         </>
