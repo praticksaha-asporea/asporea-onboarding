@@ -16,11 +16,15 @@ type SendMailParams = {
   template?: string;
   contextData?: Record<string, unknown>;
   html?: string;
+  fromName?: string;  
+  replyTo?: string;   
 };
 
-export async function sendMail({ to, subject, html }: SendMailParams) {
+export async function sendMail({ to, subject, html, fromName, replyTo }: SendMailParams) {
+  const displayName = fromName ? `${fromName} - Asporea HR` : "Asporea HR";
   const response = await transporter.sendMail({
-    from: `"Asporea HR" <${process.env.FROM}>`,
+   from: `"${displayName}" <${process.env.FROM}>`,
+   replyTo: replyTo || process.env.FROM,
     to,
     subject,
     html,

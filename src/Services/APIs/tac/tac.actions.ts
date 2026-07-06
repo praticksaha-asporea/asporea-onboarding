@@ -248,3 +248,18 @@ export const updateAssessmentScoreAction = async (payload: UpdateAssessmentPaylo
   const res = await axiosClient.patch("/tac/assessment/tool-update", payload);
   return res;
 };
+
+export const sendTacEmailAction = async (payload: {
+  leadId: string;
+  message: string;
+}) => {
+  try {
+    const res = await axiosClient.post("/tac/communication/send-email", payload);
+    return res.data;
+  } catch (error: any) {
+    return {
+      success: false,
+      message: error.response?.data?.message || "Failed to send email",
+    };
+  }
+};

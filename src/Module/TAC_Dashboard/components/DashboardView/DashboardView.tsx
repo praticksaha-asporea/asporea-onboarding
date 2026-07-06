@@ -21,6 +21,7 @@ import DashboardKpiCards from "./DashboardKpiCards";
 import DashboardFilters from "./DashboardFilters";
 import DashboardTable from "./DashboardTable";
 import DashboardScheduleModal from "./DashboardScheduleModal";
+import DashboardCommunicationModal from "./DashboardCommunicationModal";  
 
 interface DashboardProps {
   setCurrentView: (view: "dashboard" | "detail") => void;
@@ -57,6 +58,10 @@ const DashboardView: React.FC<DashboardProps> = () => {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [targetLead, setTargetLead] = useState<any | null>(null);
+  const [commModalOpen, setCommModalOpen] = useState(false);
+  const [commMode, setCommMode] = useState<"chat" | "email" | null>(null);
+  const [commCandidate, setCommCandidate] = useState<any | null>(null);
+   
   const [tacList, setTacList] = useState<any[]>([]);
   const [selectedTac, setSelectedTac] = useState("");
 
@@ -71,6 +76,12 @@ const DashboardView: React.FC<DashboardProps> = () => {
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [schedulePhase, setSchedulePhase] = useState<"pre" | "assess">("pre");
+
+  const openCommModal = (candidate: any, mode: "chat" | "email") => {
+    setCommCandidate(candidate);
+    setCommMode(mode);
+    setCommModalOpen(true);
+  };
 
   useEffect(() => {
     const t = setTimeout(() => setSearch(searchInput), 400);
@@ -207,7 +218,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
         setExperienceFilter={setExperienceFilter}
       />
 
-      <DashboardTable
+     <DashboardTable
         rows={rows}
         loading={loading}
         error={error}
@@ -216,6 +227,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
         totalPages={totalPages}
         setPage={setPage}
         openScheduleModal={openScheduleModal}
+        openCommModal={openCommModal}  
         onViewCandidate={(id) => router.push(`/dashboard/candidate/${id}`)}
       />
 
@@ -236,6 +248,13 @@ const DashboardView: React.FC<DashboardProps> = () => {
         handleBookSlot={handleBookSlot}
         bookingLoading={bookingLoading}
         schedulePhase={schedulePhase}
+      />
+
+      <DashboardCommunicationModal
+        open={commModalOpen}
+        onClose={() => setCommModalOpen(false)}
+        candidate={commCandidate}
+        mode={commMode}
       />
     </Box>
   );
