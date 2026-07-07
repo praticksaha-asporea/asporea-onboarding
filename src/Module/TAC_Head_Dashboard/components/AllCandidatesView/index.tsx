@@ -97,8 +97,6 @@ const getCandidateStatusBadge = (status: string) => {
 
     case "doc_awaiting_approval":
       return "bg-purple-500 text-white dark:bg-purple-95 dark:text-white";
-    
-   
 
     default:
       return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white";
@@ -196,7 +194,7 @@ const AllCandidatesView = () => {
                 <TableCell
                   key={i}
                   className={`py-4 px-4 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] whitespace-nowrap
-                    ${head === "Status" ? "text-right" : ""}`}
+      ${head === "Status" ? "text-center" : ""}`}
                 >
                   {head}
                 </TableCell>
@@ -281,8 +279,13 @@ const AllCandidatesView = () => {
                   </TableCell>
 
                   {/* Status */}
-                 <TableCell className="resp-cell !py-3 !px-4 md:text-right" data-label="Status">
-                    <Box className={`inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${getCandidateStatusBadge(row.status)}`}>
+                  <TableCell
+                    className="resp-cell !py-3 !px-4 md:text-center"
+                    data-label="Status"
+                  >
+                    <Box
+                      className={`inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${getCandidateStatusBadge(row.status)}`}
+                    >
                       {row.status?.replace(/_/g, " ") || "—"}
                     </Box>
                   </TableCell>

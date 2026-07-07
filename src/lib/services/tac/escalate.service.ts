@@ -1,5 +1,5 @@
 import { EscalationReportModel } from "@/lib/models/EscalationReport.model";
-import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";  
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 import "@/lib/models/User.model";
 import { Assignment } from "@/lib/models/Assignment.model";
 import { Lead } from "@/lib/models/Lead.model";
@@ -63,48 +63,65 @@ export const createEscalationService = async (payload: EscalatePayload) => {
   return newEscalation;
 };
 
-export const getEscalationListService = async (page = 1, limit = 10,filterUserId?: string | null) => {
+export const getEscalationListService = async (
+  page = 1,
+  limit = 10,
+  filterUserId?: string | null,
+) => {
   const skip = (page - 1) * limit;
 
   let matchQuery: any = {};
 
   if (filterUserId) {
-   
-    const shiftInfos = await EmployeeBranchShiftModel.find({ employeeId:new mongoose.Types.ObjectId(filterUserId) }).lean();
-    
-  if (!shiftInfos || shiftInfos.length === 0) {
-      throw new ApiError("No branch assigned to your account. Please contact Admin.", 403);
+    const shiftInfos = await EmployeeBranchShiftModel.find({
+      employeeId: new mongoose.Types.ObjectId(filterUserId),
+    }).lean();
+
+    if (!shiftInfos || shiftInfos.length === 0) {
+      throw new ApiError(
+        "No branch assigned to your account. Please contact Admin.",
+        403,
+      );
     }
 
-    const assignedBranchIds = [...new Set(
-      shiftInfos.map(shift => shift.branchId?.toString()).filter(Boolean)
-    )];
+    const assignedBranchIds = [
+      ...new Set(
+        shiftInfos.map((shift) => shift.branchId?.toString()).filter(Boolean),
+      ),
+    ];
 
     if (assignedBranchIds.length === 0) {
-      throw new ApiError("Your branch assignment data is invalid or corrupted. Please contact Admin.", 403);
+      throw new ApiError(
+        "Your branch assignment data is invalid or corrupted. Please contact Admin.",
+        403,
+      );
     }
- 
-    const branchObjectIds = assignedBranchIds.map(id => new mongoose.Types.ObjectId(id));
-   const branchLeads = await Lead.find({ 
-      "preferences.branchId": { $in: branchObjectIds } 
-    }).select("_id").lean();
-    
+
+    const branchObjectIds = assignedBranchIds.map(
+      (id) => new mongoose.Types.ObjectId(id),
+    );
+    const branchLeads = await Lead.find({
+      "preferences.branchId": { $in: branchObjectIds },
+    })
+      .select("_id")
+      .lean();
+
     const branchLeadIds = branchLeads.map((lead) => lead._id);
 
     if (branchLeadIds.length === 0) {
       return {
         escalations: [],
-        meta: { totalRecords: 0, currentPage: page, totalPages: 0 }
+        meta: { totalRecords: 0, currentPage: page, totalPages: 0 },
       };
     }
-     
+
     matchQuery = { leadId: { $in: branchLeadIds } };
   }
 
   const totalRecords = await EscalationReportModel.countDocuments(matchQuery);
 
   const escalations = await EscalationReportModel.find()
-     
+
     .populate({
       path: "fromId",
       select: "firstName lastName email role",
@@ -164,31 +181,36 @@ export const updateEscalationStatusService = async (
 
   if (!escalation) throw new ApiError("Escalation record not found", 404);
   if (escalation.status !== "requested") {
-    throw new ApiError(`Cannot update. Request is already ${escalation.status}`, 400);
+    throw new ApiError(
+      `Cannot update. Request is already ${escalation.status}`,
+      400,
+    );
   }
 
-   
-  let pendingAssignment: any = null;
+  let pendingAssignments: any[] = [];
 
   if (status === "approved") {
-    pendingAssignment = await Assignment.findOne({
+    pendingAssignments = await Assignment.find({
       leadId: escalation.leadId,
       assignedTo: escalation.fromId,
-      "escalation.requested": true
+      "escalation.requested": true,
     });
 
-    if (pendingAssignment) {
-      const requiresSchedule = 
-        ["pre", "assess"].includes(pendingAssignment.phase) && 
-        pendingAssignment.status === "assigned";
+    if (pendingAssignments.length > 0) {
+      const assignmentNeedingSchedule = pendingAssignments.find(
+        (a) => ["pre", "assess"].includes(a.phase) && a.status === "assigned",
+      );
 
-      if (requiresSchedule) {
-        
-        
-        if (!newSchedule || !newSchedule.date || !newSchedule.from || !newSchedule.to) {
+      if (assignmentNeedingSchedule) {
+        if (
+          !newSchedule ||
+          !newSchedule.date ||
+          !newSchedule.from ||
+          !newSchedule.to
+        ) {
           throw new ApiError(
-            `A new schedule is mandatory. BUT BACKEND RECEIVED: ${JSON.stringify(newSchedule)}`, 
-            400
+            `A new schedule is mandatory. BUT BACKEND RECEIVED: ${JSON.stringify(newSchedule)}`,
+            400,
           );
         }
 
@@ -197,56 +219,54 @@ export const updateEscalationStatusService = async (
         const endOfDay = new Date(newSchedule.date);
         endOfDay.setHours(23, 59, 59, 999);
 
-       
         const slotConflict = await Assignment.findOne({
-          assignedTo: escalation.toId, 
+          assignedTo: escalation.toId,
           "schedule.date": { $gte: startOfDay, $lte: endOfDay },
           "schedule.from": newSchedule.from,
           status: { $ne: "rejected" },
         });
 
         if (slotConflict) {
-          throw new ApiError("The selected target consultant is already booked at this specific time slot. Please select another slot.", 409);
+          throw new ApiError(
+            "The selected target consultant is already booked at this specific time slot. Please select another slot.",
+            409,
+          );
         }
       }
     }
   }
 
-  
-  
   escalation.status = status;
   if (remarks) escalation.remarks = remarks;
   escalation.actionedAt = new Date();
-  await escalation.save();  
+  await escalation.save();
 
   if (status === "approved") {
-    
-    
     await Lead.findByIdAndUpdate(escalation.leadId, {
       $set: {
-        "preferences.consultantId": escalation.toId, 
-        "escalatedTo": escalation.toId 
-      }
-    });  
- 
-    if (pendingAssignment) {
-      const requiresSchedule = 
-        ["pre", "assess"].includes(pendingAssignment.phase) && 
+        "preferences.consultantId": escalation.toId,
+        escalatedTo: escalation.toId,
+      },
+    });
+
+    for (let pendingAssignment of pendingAssignments) {
+      const requiresSchedule =
+        ["pre", "assess"].includes(pendingAssignment.phase) &&
         pendingAssignment.status === "assigned";
 
       if (requiresSchedule && newSchedule) {
         pendingAssignment.schedule.date = new Date(newSchedule.date);
         pendingAssignment.schedule.from = newSchedule.from;
         pendingAssignment.schedule.to = newSchedule.to;
-        if (newSchedule.method) pendingAssignment.schedule.method = newSchedule.method;
+        if (newSchedule.method)
+          pendingAssignment.schedule.method = newSchedule.method;
       }
 
       pendingAssignment.assignedTo = escalation.toId;
       pendingAssignment.escalation.requested = false;
       pendingAssignment.escalation.escalatedTo = undefined;
-      await pendingAssignment.save();  
+      await pendingAssignment.save();
     }
-    
   } else if (status === "rejected") {
     await Assignment.updateMany(
       { leadId: escalation.leadId, assignedTo: escalation.fromId },
@@ -254,10 +274,8 @@ export const updateEscalationStatusService = async (
         $set: { "escalation.requested": false },
         $unset: { "escalation.escalatedTo": 1 },
       },
-    );  
+    );
   }
-  
+
   return escalation;
 };
-
- 
