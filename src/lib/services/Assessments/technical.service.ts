@@ -36,13 +36,13 @@ export const addTechnicalResult = async (payload: any) => {
 
   await LeadModel.findByIdAndUpdate(leadId, {
     "technical.status": statusTech,
-    "technical.type": type,
+    "experience.type": type,
     "experience.status": isPassed ? "verified" : "rejected",
     "experience.actionBy": actionBy,
     "status": `exp_${isPassed ? "verified" : "rejected"}`
   });
 
- if (isPassed && schedule?.date && schedule?.from && schedule?.to) {
+  if (isPassed && schedule?.date && schedule?.from && schedule?.to) {
     await Assignment.findByIdAndUpdate(assignments._id, {
       $set: {
         "schedule.date": new Date(schedule.date),
@@ -56,7 +56,7 @@ export const addTechnicalResult = async (payload: any) => {
       }
     });
   } else if (!isPassed) {
-     
+
     await Assignment.findByIdAndUpdate(assignments._id, {
       "status": "rejected"
     });

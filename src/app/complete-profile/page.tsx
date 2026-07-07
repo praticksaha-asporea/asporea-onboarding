@@ -66,7 +66,7 @@ export default function CompleteProfilePage() {
     "",
   );
 
-    const handleRegisterUser = async (values: Data) => {
+  const handleRegisterUser = async (values: Data) => {
     setLoading(true);
     const password = localStorage.getItem("temp_register_password");
 
@@ -76,10 +76,10 @@ export default function CompleteProfilePage() {
 
     const payload = {
       ...values,
-      passportNumber:
+      passportNo:
         values.passportStatus === "having" ? values.passportNumber : "",
       password,
-     profilePicData: fileInput || "",
+      profilePicData: fileInput || "",
       ...(social && {
         social: {
           type: social.provider,
@@ -151,20 +151,20 @@ export default function CompleteProfilePage() {
     }
   }, [router]);
 
-const handleFileInputChange = (file: ChangeEvent) => {
-  const { files } = file.target as HTMLInputElement;
-  if (files && files.length !== 0) {
-    const reader = new FileReader();
-    
-    reader.onload = () => {
-      const base64Data = reader.result as string;
-      setImgSrc(base64Data);     
-      setFileInput(base64Data);   
-    };
-    
-    reader.readAsDataURL(files[0]);
-  }
-};
+  const handleFileInputChange = (file: ChangeEvent) => {
+    const { files } = file.target as HTMLInputElement;
+    if (files && files.length !== 0) {
+      const reader = new FileReader();
+
+      reader.onload = () => {
+        const base64Data = reader.result as string;
+        setImgSrc(base64Data);
+        setFileInput(base64Data);
+      };
+
+      reader.readAsDataURL(files[0]);
+    }
+  };
 
   const handleFileInputReset = () => {
     setFileInput("");
@@ -335,7 +335,7 @@ const handleFileInputChange = (file: ChangeEvent) => {
                   }
                   helperText={
                     formik.touched.whatsappNumber &&
-                    formik.errors.whatsappNumber
+                      formik.errors.whatsappNumber
                       ? (formik.errors.whatsappNumber as string)
                       : undefined
                   }
@@ -390,7 +390,7 @@ const handleFileInputChange = (file: ChangeEvent) => {
                     }
                     helperText={
                       formik.touched.passportNumber &&
-                      formik.errors.passportNumber
+                        formik.errors.passportNumber
                         ? (formik.errors.passportNumber as string)
                         : undefined
                     }

@@ -192,15 +192,20 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
     }
   }, [assessAssign, candidate]);
 
-  const handleSaveAll = () => {
-    const payload = {
-      assessment: { status, method: assessAssign?.schedule?.method },
-      documents: { status: docStatus },
-      experience: { status: expStatus, type: expType },
-      //   technical: { status: techStatus, classify: classifyExp },
-    };
-    // console.log("Saving Assessment Data:", payload);
-    toast.success("Assessment details saved successfully!");
+  const handleSaveAll = async () => {
+    if (assessBasicForm.values.status === "rejected") {
+      const confirmed = await confirmToast(`Are you sure Candidate is Rejected!`);
+      if (!confirmed) { return; }
+
+      const formData = new FormData();
+      formData.append("assignmentId", assessAssign._id);
+      formData.append("status", assessBasicForm.values.status);
+
+      await updateAssignmentAssessAction(formData);
+      toast.success(`Status updated to ${CamelCase(assessBasicForm.values.status)}`);
+      assessBasicForm.setValues({ ...assessBasicForm.values, status: assessBasicForm.values.status });
+      setIsPreLocked(true);
+    }
   };
   const updateDocumentStatus = async (
     status: "verified" | "rejected" | "awaiting_approval",
@@ -326,12 +331,12 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
                     assessBasicForm.isSubmitting ||
                     isWithinSchedule(assessAssign)
                   ) &&
-                    (value === "completed" ||
-                      value === "rejected" ||
-                      value === "queued") &&
-                    assessAssign?.status !== "completed" &&
-                    assessAssign?.status !== "rejected" &&
-                    assessAssign?.status !== "queued",
+                  (value === "completed" ||
+                    value === "rejected" ||
+                    value === "queued") &&
+                  assessAssign?.status !== "completed" &&
+                  assessAssign?.status !== "rejected" &&
+                  assessAssign?.status !== "queued",
                 );
                 return assessBasicForm.handleChange(e);
               }}
@@ -439,9 +444,9 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
             value={
               assessAssign?.schedule?.from
                 ? assessAssign.schedule.from +
-                  (assessAssign.schedule.to
-                    ? " – " + assessAssign.schedule.to
-                    : "")
+                (assessAssign.schedule.to
+                  ? " – " + assessAssign.schedule.to
+                  : "")
                 : "—"
             }
           />
@@ -513,9 +518,9 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
       </Grid>
 
       {assessBasicForm?.values?.status === "queued" ||
-      assessBasicForm?.values?.status === "completed" ||
-      assessBasicForm?.values?.status === "rejected" ||
-      docStatus !== "uploaded" ? (
+        assessBasicForm?.values?.status === "completed" ||
+        assessBasicForm?.values?.status === "rejected" ||
+        docStatus !== "uploaded" ? (
         <>
           {/* --- Documents Section --- */}
           <Box className="shadow-2xl rounded-xl p-5 mt-6 bg-[var(--mui-palette-primary)]">
@@ -604,48 +609,48 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
               </Button>
             </Box>
             {showRejectBox && (
-  <Box className="mt-4 p-4   rounded-xl shadow-inner transition-all">
-    <TextField
-      fullWidth
-      multiline
-      rows={3}
-      label="Specify Rejection Reason *"
-      placeholder="Type here why you are rejecting these documents (e.g., Invalid ID, blurry image)..."
-      value={remarksText}
-      onChange={(e) => setRemarksText(e.target.value)}
-      className="mb-3"
-      slotProps={{ input: { className: "text-[14px]" } }}  
-    />
-    
-    <Box className="flex justify-end gap-2">
-      <Button 
-        variant="contained"
-        size="small" 
-        onClick={() => { 
-          setShowRejectBox(false); 
-          setRemarksText(""); 
-        }}
-        
-      >
-        Cancel
-      </Button>
-      <Button 
-        size="small" 
-        variant="contained" 
-        color="error"
-        disabled={!remarksText.trim()}  
-        onClick={() => {
-          updateDocumentStatus("rejected", remarksText);
-          setShowRejectBox(false);
-          setRemarksText("");
-        }}
-        className="!rounded-lg !font-bold px-4 normal-case shadow-sm"
-      >
-        Confirm Reject
-      </Button>
-    </Box>
-  </Box>
-)}
+              <Box className="mt-4 p-4   rounded-xl shadow-inner transition-all">
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label="Specify Rejection Reason *"
+                  placeholder="Type here why you are rejecting these documents (e.g., Invalid ID, blurry image)..."
+                  value={remarksText}
+                  onChange={(e) => setRemarksText(e.target.value)}
+                  className="mb-3"
+                  slotProps={{ input: { className: "text-[14px]" } }}
+                />
+
+                <Box className="flex justify-end gap-2">
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => {
+                      setShowRejectBox(false);
+                      setRemarksText("");
+                    }}
+
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="error"
+                    disabled={!remarksText.trim()}
+                    onClick={() => {
+                      updateDocumentStatus("rejected", remarksText);
+                      setShowRejectBox(false);
+                      setRemarksText("");
+                    }}
+                    className="!rounded-lg !font-bold px-4 normal-case shadow-sm"
+                  >
+                    Confirm Reject
+                  </Button>
+                </Box>
+              </Box>
+            )}
           </Box>
           {/* --- Experience Section ---  */}
           <Box className=" shadow-2xl rounded-xl p-5 mt-4 bg-[var(--mui-palette-secondary)]">
@@ -739,30 +744,32 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
                   label="Failed"
                 />
               </RadioGroup>
-              <FormControl fullWidth className="mt-4 md:w-1/2" size="small">
+              <FormControl fullWidth className="mt-4 md:w-1/2">
                 <InputLabel>Classify Experience</InputLabel>
                 <Select
                   value={classifyExp}
                   onChange={(e) => setClassifyExp(e.target.value)}
                   label="Classify Experience"
-                  disabled={isFoe}
+                  disabled
                 >
+                  <MenuItem value="fresher">Fresher</MenuItem>
                   <MenuItem value="domestic">Domestic</MenuItem>
-                  <MenuItem value="abroad">International</MenuItem>
+                  <MenuItem value="abroad">Abroad</MenuItem>
+                  <MenuItem value="free">Freelance</MenuItem>
                 </Select>
               </FormControl>
             </Box>
           )}
           {/* --- Common Save Button --- */}
-          {!isFoe && !showAssessmentForm && (
+          {!isFoe && !showAssessmentForm && assessBasicForm.values.status === "rejected" && (
             <Box className="flex justify-end mt-6">
               <Button
                 variant="contained"
                 onClick={handleSaveAll}
-                className="  !text-white !rounded-xl !px-10 !py-2.5 !normal-case font-bold shadow-md"
+                className="bg-[--mui-palette-error-main] !text-white !rounded-xl !px-10 !py-2.5 !normal-case shadow-md"
                 disabled={isPreLocked}
               >
-                Save
+                Reject
               </Button>
             </Box>
           )}

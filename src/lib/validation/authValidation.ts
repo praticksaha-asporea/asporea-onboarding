@@ -68,7 +68,7 @@ export const registerSchema = Joi.object({
       "any.required": "Passport status is required",
     }),
 
-  passportNumber: Joi.string()
+  passportNo: Joi.string()
     .trim()
     .max(20)
     .when("passportStatus", {
