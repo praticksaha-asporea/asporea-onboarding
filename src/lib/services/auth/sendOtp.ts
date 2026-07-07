@@ -69,6 +69,22 @@ export const sendOtpService = async (identity: string) => {
     ({ channel, destination } = resolveChannelFromIdentity(normalizedIdentity));
   }
 
+  // ── 1.  RATE LIMITER CHECK  ──────────────────────────────────
+  // Check if an OTP was recently sent to this specific destination
+  const existingOtpDoc = await Otp.findOne({ "otp.sentTo": destination });
+  
+  if (existingOtpDoc && existingOtpDoc.otp?.sentAt) {
+    const timeDifference = Date.now() - new Date(existingOtpDoc.otp.sentAt).getTime();
+    const cooldownPeriod = 60 * 1000;  
+
+    if (timeDifference < cooldownPeriod) {
+      const remainingSeconds = Math.ceil((cooldownPeriod - timeDifference) / 1000);
+     
+      throw new Error(`Too many requests. Please wait ${remainingSeconds} seconds.`);
+    }
+  }
+  // ─────────────────────────────────────────────────────────────────────────
+
   const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = new Date(
     Date.now() +
@@ -113,7 +129,8 @@ export const sendOtpService = async (identity: string) => {
           code: otpCode,
           expiresAt,
           sentTo: destination,
-          channel
+          channel,
+          sentAt: new Date(),
         },
       },
       { upsert: true, returnDocument: "after" },
@@ -126,7 +143,8 @@ export const sendOtpService = async (identity: string) => {
           code: otpCode,
           expiresAt,
           sentTo: destination,
-          channel
+          channel,
+          sentAt: new Date(),
         },
       },
       { upsert: true, returnDocument: "after" },

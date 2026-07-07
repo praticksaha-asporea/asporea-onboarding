@@ -4,6 +4,8 @@ import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
 import { Assignment, IAssignment } from "@/lib/models/Assignment.model";
+import '../../models/User.model';
+import '../../models/Position.model'
 
 export const getAwaitingApprovalDocumentsService = async (
   page = 1,

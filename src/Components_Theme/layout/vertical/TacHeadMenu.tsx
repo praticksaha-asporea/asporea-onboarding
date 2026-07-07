@@ -67,11 +67,18 @@ const TacHeadMenu = ({
         >
           Documents
         </MenuItem>
+        
         <MenuItem
           href="/tac-head/technicals"
           icon={<i className="ri-computer-line" />}
         >
           Technicals
+        </MenuItem>
+        <MenuItem
+          href="/tac-head/all-candidates"
+          icon={<i className="ri-team-line" />}
+        >
+          Candidates
         </MenuItem>
       </Menu>
     </ScrollWrapper>

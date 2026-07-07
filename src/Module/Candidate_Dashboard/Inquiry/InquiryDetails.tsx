@@ -109,6 +109,14 @@ const InquiryDetails = () => {
     }
   }, [userData]);
 
+  const handleClosePopup = () => {
+   
+  setShowInquiryPopup(false);
+  
+  
+  window.scrollTo({ top: 0, behavior: "smooth" });
+};
+
   const formik = useFormik({
     initialValues: getInitialValues(),
     enableReinitialize: true,
@@ -690,13 +698,16 @@ const InquiryDetails = () => {
 
       {/* ── Confirmation Dialog ─────────────────────────────────────────────── */}
       <Dialog
-        open={showInquiryPopup}
-        onClose={(_e, reason) => {
-          if (reason !== "backdropClick") setShowInquiryPopup(false);
-        }}
-        maxWidth="sm"
-        fullWidth
-      >
+  open={showInquiryPopup}
+  onClose={(_e, reason) => {
+    
+    if (reason !== "backdropClick") {
+      handleClosePopup();
+    }
+  }}
+  maxWidth="sm"
+  fullWidth
+>
         <DialogContent className="text-center p-8">
           <Typography variant="h4" className="mt-4">
             Inquiry Submitted
@@ -765,7 +776,7 @@ const InquiryDetails = () => {
               <Button
                 variant="contained"
                 className="normal-case rounded-[50px] py-[9.6px] px-10"
-                onClick={() => setShowInquiryPopup(false)}
+               onClick={handleClosePopup}
               >
                 Close
               </Button>
