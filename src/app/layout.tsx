@@ -14,8 +14,11 @@ import MainLayout from "@/Components/Layouts/MainLayout/MainLayout";
 import Providers from "@/Components_Theme/Providers";
 
 export const metadata = {
-  title: "Asporea Candidate Onboarding",
+  title: "Asporea - Candidate Onboarding",
   description: "Developed for future",
+  icons: {
+    icon: "/favicon.svg",
+  },
 };
 
 const RootLayout = ({ children }: ChildrenType) => {
