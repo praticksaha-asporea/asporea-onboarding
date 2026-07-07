@@ -20,4 +20,5 @@ export const createInquirySchema = Joi.object({
     .allow("", null),
   referedBy: Joi.string().trim().optional().allow("", null),
   otherReferedBy: Joi.string().trim().optional().allow(null, ""),
+  passportNo: Joi.string().trim().optional().allow("", null),
 }).options({ abortEarly: false, allowUnknown: false });

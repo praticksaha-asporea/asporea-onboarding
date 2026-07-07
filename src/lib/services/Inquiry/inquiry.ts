@@ -23,6 +23,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     referedType,
     referedBy,
     otherReferedBy,
+    passportNo
   } = body;
   const typeMapping: any = {
     "web-app": "web_app",
@@ -47,7 +48,7 @@ export const createInquiry = async (body: any, createdById: string) => {
 
   if (existingInquiry) {
     throw new ApiError(
-      `You already inquiried. \n ID - ${existingInquiry.inqNo}`,
+      `You already inquired. \n ID - ${existingInquiry.inqNo}`,
       409,
     );
   }
@@ -93,7 +94,7 @@ export const createInquiry = async (body: any, createdById: string) => {
         counterNo: s.counterNo as number,
       }));
 
-      const tacEntries = Array.from(
+    const tacEntries = Array.from(
       new Map(rawTacEntries.map((e: any) => [e.employeeId.toString(), e])).values()
     );
 
@@ -107,12 +108,12 @@ export const createInquiry = async (body: any, createdById: string) => {
         tacEntries.length > 1
           ? tacEntries.filter((e) => e.counterNo !== lastUsedCounter)
           : tacEntries;
-      
+
       if (assignmentType === "random") {
         // Pick a random TAC from the eligible pool
         const pick = eligibleEntries[Math.floor(Math.random() * eligibleEntries.length)];
         resolvedConsultantId = pick.employeeId;
-        
+
         // Update branch lastUsedCounter to the chosen counter
         await BranchModel.findByIdAndUpdate(prefferedBranch, {
           lastUsedCounter: pick.counterNo,
@@ -174,6 +175,10 @@ export const createInquiry = async (body: any, createdById: string) => {
       id: new mongoose.Types.ObjectId(createdById),
       type: "self",
     },
+    passport: {
+      status: passportNo ? "having" : "no",
+      no: passportNo || ""
+    }
   };
 
   const newInquiry = await Lead.create(leadData);
@@ -193,14 +198,14 @@ export const getTacListByBranch = async (branchId: string) => {
   const rawTacList = assignments
     .filter((a: any) => a.employeeId && a.employeeId.role === "tac")
     .map((a: any) => ({
-      _id: a.employeeId._id.toString(), 
+      _id: a.employeeId._id.toString(),
       firstName: a.employeeId.firstName,
       lastName: a.employeeId.lastName,
       role: a.employeeId.role,
-      counterNo: a.counterNo ?? null, 
+      counterNo: a.counterNo ?? null,
     }));
 
-    const uniqueTacList = Array.from(
+  const uniqueTacList = Array.from(
     new Map(rawTacList.map((tac: any) => [tac._id, tac])).values()
   );
 

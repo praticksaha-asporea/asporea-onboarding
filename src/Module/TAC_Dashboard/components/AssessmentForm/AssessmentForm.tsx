@@ -12,6 +12,7 @@ import * as yup from "yup";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import { CamelCase } from "@/Utils/common";
+import { useRouter } from "next/navigation";
 
 interface AssessmentFormProps {
   selectedCandidate: any;
@@ -49,6 +50,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
     }, {});
   }, [dbQuestions]);
 
+  const router = useRouter();
 
   const [languageLevels, setLanguageLevels] = useState<any>({
     english: { Listening: null, Speaking: null, Writing: null, Reading: null },
@@ -279,15 +281,17 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       }
       const result = await updateAssessmentScoreAction(formData);
       setAssessmentStatus(result?.data?.data?.status);
-      console.log(result?.data?.data, 5844);
+      // console.log(result?.data?.data, 5844);
 
       if (result?.data?.data?.status === "completed") {
         toast.success("Assessment result recorded: Candidate Passed.");
         assessBasicForm.status.values(result?.data?.data?.status);
+        router.refresh();
       }
       else if (result?.data?.data?.status === "rejected") {
         toast.error("Assessment result recorded: Candidate Failed.");
         assessBasicForm.status.values(result?.data?.data?.status);
+        router.refresh();
       }
     },
   });

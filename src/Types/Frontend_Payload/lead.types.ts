@@ -11,4 +11,5 @@ export interface InquiryFormValues {
   referedType: string | null;
   referedBy: string | null;
   otherReferedBy: string;
+  passportNo: string;
 }

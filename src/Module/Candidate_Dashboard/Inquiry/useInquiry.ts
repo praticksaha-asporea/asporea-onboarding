@@ -12,7 +12,7 @@ import {
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
-  import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
+import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export const inquirySteps = [
   { label: "Technical Round", description: "Start now", status: "pending" },
 ];
 
- 
+
 
 export function makeFieldHelpers(errors: Record<string, any>, submitCount: number) {
   return {
@@ -80,7 +80,7 @@ export function makeFieldHelpers(errors: Record<string, any>, submitCount: numbe
   };
 }
 
- 
+
 
 export function useInquiry() {
   const dispatch = useDispatch();
@@ -88,15 +88,15 @@ export function useInquiry() {
   useEffect(() => {
     const fetchFreshProfile = async () => {
       const userId = userData?.id || userData?._id;
-       
+
       if (!userId || userData?.leadId) return;
 
       try {
-      
-       const res = await axiosClient.get(`/user/details?id=${userId}`);
-        
+
+        const res = await axiosClient.get(`/user/details?id=${userId}`);
+
         if (res.data?.success && res.data?.data) {
-           const actualProfileData = res.data.data.user || res.data.data;          
+          const actualProfileData = res.data.data.user || res.data.data;
           dispatch(updateUserData(actualProfileData));
         }
       } catch (err) {
@@ -216,7 +216,7 @@ export function useInquiry() {
   const [showInquiryPopup, setShowInquiryPopup] = useState(false);
   const [generatedInqNo, setGeneratedInqNo] = useState("");
   const [assignedTAC, setAssignedTAC] = useState<string | null>(null);
-   const [generatedLeadId, setGeneratedLeadId] = useState("");
+  const [generatedLeadId, setGeneratedLeadId] = useState("");
 
   const handleSubmit = async (
     values: InquiryFormValues,
@@ -240,6 +240,7 @@ export function useInquiry() {
           values.referedFrom === "reffer" ? values.referedBy : null,
         referedType:
           values.referedFrom === "reffer" ? values.referedType : null,
+        passportNo: userData?.passportStatus === "having" ? userData?.passportNo : ""
       };
 
       const response = await createInquiryAction(payload);
@@ -251,15 +252,15 @@ export function useInquiry() {
         setShowInquiryPopup(true);
         setAssignedTAC(response?.data?.data?.preferences?.consultantId)
 
-      dispatch(
-        updateUserData({
-          leadId:response?.data?.data._id,
-          visitOption: Number(values.visitOption),
-          prefferedConsultant: response?.data?.data?.preferences?.consultantId
-          // values.prefferedConsultant === "" ? undefined : values.prefferedConsultant,
-        })
-      );
-         
+        dispatch(
+          updateUserData({
+            leadId: response?.data?.data._id,
+            visitOption: Number(values.visitOption),
+            prefferedConsultant: response?.data?.data?.preferences?.consultantId
+            // values.prefferedConsultant === "" ? undefined : values.prefferedConsultant,
+          })
+        );
+
         const userId = userData?.id || userData?._id;
         if (userId) {
           try {
@@ -280,7 +281,7 @@ export function useInquiry() {
         }
       }
     } catch (err: any) {
-    //   toast.error(err?.response?.data?.message || "Submission failed");
+      //   toast.error(err?.response?.data?.message || "Submission failed");
       console.error("Inquiry submission error:", err);
     } finally {
       setSubmitting(false);
@@ -302,6 +303,7 @@ export function useInquiry() {
     referedType: "",
     referedBy: "",
     otherReferedBy: "",
+    passportNo: userData?.passportStatus === "having" ? userData?.passportNo : ""
   });
 
   return {
