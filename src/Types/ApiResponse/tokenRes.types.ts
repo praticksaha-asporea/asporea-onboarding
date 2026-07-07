@@ -14,3 +14,11 @@ export interface tokenResponse {
     },
     error: string | null
 }
+
+
+export interface tokenCounter {
+    counterNo: number;
+    employeeId: string;
+    employee: string;
+    role: string;
+}

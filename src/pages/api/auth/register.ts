@@ -13,7 +13,7 @@ export default async function handler(
 
   if (req.method !== "POST")
     return ResponseHandler.sendError(res, "Method not allowed", 405);
-  
+
   try {
     const { error } = registerSchema.validate(req.body, {
       abortEarly: false,

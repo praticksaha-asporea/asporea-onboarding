@@ -93,6 +93,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     };
 
     let result: UploadResult | null = null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const assignmentAnyQueued = await Assignment.findOne({
+      assignedTo: authUser.id,
+      status: { $in: ["queued", "contacted"] },
+      "schedule.date": {
+        $gte: today,
+        $lt: tomorrow,
+      },
+    })
+      .populate({
+        path: "leadId",
+        select: "inqNo status",
+      })
+      .lean();
+
+    if (assignmentAnyQueued && status === "queued") {
+
+      if (assignmentAnyQueued.leadId.status !== "doc_awaiting_approval")
+        throw new ApiError(
+          `You already have an assignment in ${assignmentAnyQueued.status} status [ ${assignmentAnyQueued.leadId?.inqNo} ]. \r\n Please complete / reject update it first, or ask the FOE to reschedule it.`,
+          400
+        );
+    }
 
     if (files?.resume) {
 

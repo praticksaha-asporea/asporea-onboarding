@@ -162,13 +162,15 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
 
       await updateAssignmentAction(formData);
       toast.success(`Status updated to ${CamelCase(status)}`);
+      console.log(status, 5844);
+
       preForm.setValues({ ...preForm.values, preStatus: status });
       if (status === "queued") setIsPreLocked(false);
     } catch (err: any) {
       console.log(err?.response?.data?.message ?? "Update failed");
     }
   };
-  
+
   return (
     <Card className="p-6 rounded-xl   shadow-xl">
       <form onSubmit={preForm.handleSubmit}>
@@ -223,8 +225,8 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
               <Box className="flex justify-end gap-3">
                 {inqAssign && inqAssign.schedule?.method === "on" && (
                   <>
-                    <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"} onClick={() => updateAssignmentStatus("not_responded")}>Not Responded</Button>
-                    <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(inqAssign.status !== "assigned" && inqAssign.status !== "contacted") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"} onClick={() => updateAssignmentStatus("contacted")}>Call</Button>
+                    <Button variant="contained" className="!bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(inqAssign.status !== "assigned" && preForm.values.preStatus !== "contacted") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"} onClick={() => updateAssignmentStatus("not_responded")}>Not Responded</Button>
+                    <Button variant="contained" className="!bg-green-500 hover:!bg-green-600 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={(inqAssign.status !== "assigned" && preForm.values.preStatus !== "not_responded") || !isWithinSchedule(inqAssign) || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"} onClick={() => updateAssignmentStatus("contacted")}>Call</Button>
                   </>
                 )}
                 {inqAssign && inqAssign.schedule?.method === "off" && (
@@ -252,7 +254,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                 </Grid>
                 <Grid size={{ xs: 12, md: 6 }} id="resumeFile">
                   <Typography className="text-[12px] font-semibold mb-1.5">Upload Resume</Typography>
-                  <Box onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-gray-50"}`}>
+                  <Box onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-[--mui-palette-secondary-lightOpacity]"}`}>
                     <input ref={fileInputRef} hidden type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={handleFileChange} disabled={isPreLocked} />
                     <i className="ri-upload-cloud-2-line text-4xl text-blue-500 mb-3" />
                     <Typography className="font-semibold text-sm">Drag & Drop Resume</Typography>

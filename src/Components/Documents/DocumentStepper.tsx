@@ -81,7 +81,7 @@ export const DocumentStepper = ({ activeStep }: { activeStep: number }) => {
   const steps = ["Inquiry", "Counselling", "Documents", "Experience", "Assessment"];
 
   return (
-    <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />}>
+    <Stepper alternativeLabel activeStep={activeStep} connector={<ColorlibConnector />} className=" z-0">
       {steps.map((label) => (
         <Step key={label}>
           <StepLabel StepIconComponent={ColorlibStepIcon}>

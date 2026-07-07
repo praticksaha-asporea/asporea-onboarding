@@ -65,10 +65,10 @@ const responsiveTableSx = {
 // ── Status badge (mirrors DashboardTable getStatusBadge) ─────────────────────
 const getTechStatusBadge = (status: string) => {
   switch (status) {
-    case "refered": return "bg-slate-400 text-white";
-    case "passed": return "bg-green-500 text-white";
-    case "failed": return "bg-red-600 text-white";
-    default: return "bg-slate-400 text-white";
+    case "refered": return "bg-[var(--mui-palette-warning-main)] text-white";
+    case "passed": return "bg-[var(--mui-palette-success-main)] text-white";
+    case "failed": return "bg-[var(--mui-palette-error-main)] text-white";
+    default: return "bg-[--mui-palette-grey-400] text-white";
   }
 };
 
