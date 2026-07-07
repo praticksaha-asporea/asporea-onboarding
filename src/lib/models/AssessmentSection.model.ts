@@ -5,9 +5,12 @@ export interface IAssessmentSection extends Document {
   shortName: string;
   underSection: string;
   maxScore?: number;
+  isDeleted?: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
-const AssessmentSectionSchema: Schema = new Schema(
+const AssessmentSectionSchema = new Schema<IAssessmentSection>(
   {
     section: {
       type: String,
@@ -17,8 +20,8 @@ const AssessmentSectionSchema: Schema = new Schema(
     shortName: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
+      unique: true,
     },
     underSection: {
       type: String,
@@ -26,16 +29,20 @@ const AssessmentSectionSchema: Schema = new Schema(
     },
     maxScore: {
       type: Number,
-
       required: function (this: any) {
-        return this.underSection.trim() === "";
+        return !this.underSection || this.underSection.trim() === "";
       },
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true },
 );
 
-export default mongoose.model<IAssessmentSection>(
-  "AssessmentSection",
-  AssessmentSectionSchema,
-);
+export default mongoose.models.AssessmentSection ||
+  mongoose.model<IAssessmentSection>(
+    "AssessmentSection",
+    AssessmentSectionSchema,
+  );
