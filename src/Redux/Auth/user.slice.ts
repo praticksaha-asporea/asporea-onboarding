@@ -33,6 +33,7 @@ export interface UserData {
   status?: string;        
   createdAt?: string;
   updatedAt?: string;
+  isSocialLogin?: boolean;
   notificationPreference?: {
     sms: boolean;
     whatsapp: boolean;

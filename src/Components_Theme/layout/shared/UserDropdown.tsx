@@ -153,15 +153,17 @@ const UserDropdown = () => {
                     <i className='ri-user-3-line' />
                     <Typography color='text.primary'>My Profile</Typography>
                   </MenuItem>
-                  <MenuItem className='gap-3' onClick={(e) => { 
-                    e.preventDefault();
-                    e.stopPropagation();  
-                    setOpen(false); 
-                    setPasswordModalOpen(true); 
-                  }}>
-                    <i className='ri-lock-password-line' />
-                    <Typography color='text.primary'>Change Password</Typography>
-                  </MenuItem>
+               {!reduxUser?.isSocialLogin && (
+                    <MenuItem className='gap-3' onClick={(e) => { 
+                      e.preventDefault();
+                      e.stopPropagation();  
+                      setOpen(false); 
+                      setPasswordModalOpen(true); 
+                    }}>
+                      <i className='ri-lock-password-line' />
+                      <Typography color='text.primary'>Change Password</Typography>
+                    </MenuItem>
+                  )}
                   {/* <MenuItem className='gap-3' onClick={e => handleDropdownClose(e, '/profile')}>
                     <i className='ri-settings-4-line' />
                     <Typography color='text.primary'>Settings</Typography>

@@ -166,6 +166,7 @@ export const viewUser = async (userId: string) => {
   }
 
   let userDataToReturn = { ...user } as any;
+  userDataToReturn.isSocialLogin = socialLogins && socialLogins.length > 0
 
   const existingLead = await Lead.findOne({
     "createdBy.id": new mongoose.Types.ObjectId(userId)
