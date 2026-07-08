@@ -8,6 +8,7 @@ import type { ChildrenType } from '../../types'
 import { verticalNavClasses } from '../../utils/menuClasses'
 
 const StyledNavHeader = styled.div`
+  
   padding: 15px;
   padding-inline-start: 20px;
   align-items: center;
