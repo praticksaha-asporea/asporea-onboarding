@@ -31,7 +31,7 @@ async function handleSocialSignIn({
   if (socialRecord) {
     // Known social login — load linked user and refresh tokens
     dbUser = await User.findById(socialRecord.userId);
-    
+
     if (dbUser) {
       await SocialLogins.findByIdAndUpdate(socialRecord._id, { accessToken, scopes, expiresAt });
       tokens = await generateTokens({ _id: String(dbUser._id), role: String(dbUser.role ?? "user") });
@@ -52,7 +52,7 @@ async function handleSocialSignIn({
       return { appTokens: tokens, appUserId: String(existingUser._id), appUserRole: String(existingUser.role ?? "user"), isNewUser: false, userData: existingUser.toObject() };
     }
   }
-  
+
   // New user — not in DB yet, return profile data for complete-profile flow
   return {
     appTokens: undefined,
@@ -74,9 +74,13 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
     }),
     LinkedInProvider({
-      clientId: process.env.LINKEDIN_CLIENT_ID as string,
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET as string,
-      authorization: { params: { scope: "openid profile email" } },
+      clientId: process.env.LINKEDIN_CLIENT_ID!,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
+      authorization: {
+        params: {
+          scope: "r_liteprofile r_emailaddress",
+        },
+      },
     }),
   ],
 

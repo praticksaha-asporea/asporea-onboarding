@@ -352,16 +352,6 @@ const Login = ({ mode }: { mode: Mode }) => {
                   size="small"
                   color="secondary"
                   type="button"
-                  onClick={() => signIn("linkedin", { callbackUrl: "/social-callback" })}
-                >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-linkedin-box-fill text-linkedin" />
-                </Button> */}
-                {/* <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
                   onClick={() => signIn("instagram", { callbackUrl: "/social-callback" })}
                 >
                   Continue With &nbsp;{" "}
