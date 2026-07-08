@@ -20,7 +20,7 @@ const Logo = () => {
 
   return (
     <>
-      <style>{`
+      {/* <style>{`
         @keyframes slideDownLogo {
           0% {
             transform: translateY(-30px);
@@ -39,12 +39,12 @@ const Logo = () => {
           justify-content: center;
           transition: background-color 0.3s ease;
         }
-      `}</style>
+      `}</style> */}
       <div
         key={mode}
         className='logo-container-animated'
         style={{
-          background: logoBg,
+          // background: logoBg,
           borderRadius: '15px 40px 15px 40px',
           // width: '90%'
         }}
