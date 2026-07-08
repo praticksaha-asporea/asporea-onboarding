@@ -130,7 +130,7 @@ const TechnicalView = () => {
   return (
     <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
       <Typography className="text-[22px] md:text-[28px] text-[var(--mui-palette-secondary)] font-medium tracking-tight mb-6">
-        TAC Head — Technical Round
+        Technical Round
       </Typography>
 
       {/* ── Filters (mirrors DashboardFilters layout) ─────────────────────── */}

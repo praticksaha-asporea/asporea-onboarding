@@ -1,9 +1,9 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
-export const getEscalationListAction = async (page = 1, limit = 10) => {
+export const getEscalationListAction =async (page = 1, limit = 10, search = "", tacId = "") => {
   try {
-    const response = await axiosClient.get(
-      `/tac/tachead/escalation/list?page=${page}&limit=${limit}`,
+  const response = await axiosClient.get(
+      `/tac/tachead/escalation/list?page=${page}&limit=${limit}&search=${search}&tacId=${tacId}`,
     );
     return response.data;
   } catch (error: any) {
