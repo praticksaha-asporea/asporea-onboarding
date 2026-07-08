@@ -22,7 +22,6 @@ async function handleSocialSignIn({
   expiresAt?: Date;
 }) {
   await connectToDatabase();
-
   // 1. Check if this social account is already linked
   let socialRecord = await SocialLogins.findOne({ type: provider, providerId });
   let dbUser: any;
@@ -74,13 +73,12 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.FACEBOOK_CLIENT_SECRET as string,
     }),
     LinkedInProvider({
-      clientId: process.env.LINKEDIN_CLIENT_ID!,
-      clientSecret: process.env.LINKEDIN_CLIENT_SECRET!,
-      authorization: {
-        params: {
-          scope: "r_liteprofile r_emailaddress",
-        },
-      },
+      clientId: process.env.LINKEDIN_CLIENT_ID as string,
+      clientSecret: process.env.LINKEDIN_CLIENT_SECRET as string,
+      authorization: { params: { scope: "openid profile email" } },
+      issuer: "https://www.linkedin.com/oauth",
+      jwks_endpoint: 'https://www.linkedin.com/oauth/openid/jwks',
+      // need to be checked later
     }),
   ],
 
@@ -93,7 +91,6 @@ export const authOptions: NextAuthOptions = {
       const firstName = (profile as any)?.given_name ?? (profile as any)?.first_name ?? (user.name ?? "").split(" ")[0] ?? "";
       const lastName = (profile as any)?.family_name ?? (profile as any)?.last_name ?? (user.name ?? "").split(" ").slice(1).join(" ") ?? "";
       const expiresAt = account.expires_at ? new Date(account.expires_at * 1000) : undefined;
-
       try {
         const result = await handleSocialSignIn({
           email: user.email ?? null,
