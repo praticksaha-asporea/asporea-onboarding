@@ -111,7 +111,7 @@ if (res && res.success !== false) {
         className="text-[22px] md:text-[28px] text-[var(--mui-palette-secondary)]
       font-medium tracking-tight mb-6"
       >
-        TAC Head - Document Approvals
+      Document Approvals
       </Typography>
 
       <Box className="flex flex-col gap-3 mb-5">

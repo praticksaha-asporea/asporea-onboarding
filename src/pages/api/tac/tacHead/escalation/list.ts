@@ -28,9 +28,10 @@ export default async function handler(
     }
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const search = req.query.search as string;  
+    const tacId = req.query.tacId as string;
     const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
-    const result = await getEscalationListService(page, limit,filterUserId);
-
+const result = await getEscalationListService(page, limit, filterUserId, search, tacId);
     return ResponseHandler.sendSuccess(
       res,
       result,

@@ -63,15 +63,40 @@ export const createEscalationService = async (payload: EscalatePayload) => {
   return newEscalation;
 };
 
+ 
+
 export const getEscalationListService = async (
   page = 1,
   limit = 10,
   filterUserId?: string | null,
+  search?: string,
+  tacId?: string
 ) => {
   const skip = (page - 1) * limit;
 
   let matchQuery: any = {};
+  let leadMatchQuery: any = {};  
 
+   
+  if (tacId && mongoose.Types.ObjectId.isValid(tacId)) {
+    matchQuery.toId = new mongoose.Types.ObjectId(tacId);
+  }
+
+   
+  if (search) {
+    const searchRegex = new RegExp(search, "i");
+    leadMatchQuery.$or = [
+      { fullName: searchRegex },
+      { inqNo: searchRegex }
+    ];
+    
+     
+    if (!isNaN(Number(search))) {
+      leadMatchQuery.$or.push({ inquiryNumber: Number(search) });
+    }
+  }
+
+  
   if (filterUserId) {
     const shiftInfos = await EmployeeBranchShiftModel.find({
       employeeId: new mongoose.Types.ObjectId(filterUserId),
@@ -100,28 +125,29 @@ export const getEscalationListService = async (
     const branchObjectIds = assignedBranchIds.map(
       (id) => new mongoose.Types.ObjectId(id),
     );
-    const branchLeads = await Lead.find({
-      "preferences.branchId": { $in: branchObjectIds },
-    })
-      .select("_id")
-      .lean();
+    
+     
+    leadMatchQuery["preferences.branchId"] = { $in: branchObjectIds };
+  }
 
-    const branchLeadIds = branchLeads.map((lead) => lead._id);
+   
+  if (Object.keys(leadMatchQuery).length > 0) {
+    const matchingLeads = await Lead.find(leadMatchQuery).select("_id").lean();
+    const branchLeadIds = matchingLeads.map((lead) => lead._id);
 
+    
     if (branchLeadIds.length === 0) {
       return {
         escalations: [],
         meta: { totalRecords: 0, currentPage: page, totalPages: 0 },
       };
     }
-
-    matchQuery = { leadId: { $in: branchLeadIds } };
+    matchQuery.leadId = { $in: branchLeadIds };
   }
 
   const totalRecords = await EscalationReportModel.countDocuments(matchQuery);
 
-  const escalations = await EscalationReportModel.find()
-
+  const escalations = await EscalationReportModel.find(matchQuery)
     .populate({
       path: "fromId",
       select: "firstName lastName email role",
@@ -130,7 +156,11 @@ export const getEscalationListService = async (
       path: "toId",
       select: "firstName lastName email role",
     })
-    .populate("leadId")
+   
+    .populate({
+      path: "leadId",
+      select: "fullName status inqNo preferences" 
+    })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
