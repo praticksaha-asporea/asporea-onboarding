@@ -226,8 +226,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              
-             
+
+
               {authMode === "otp" && (
                 <Button
                   fullWidth
@@ -244,12 +244,12 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              
+
               {authMode === "otp" && sendOtp && (
                 <>
                   <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
                     <Typography color={countdown > 0 ? "textSecondary" : "error"} className="text-sm font-medium">
-                      {countdown > 0 
+                      {countdown > 0
                         ? `Resend in ${Math.floor(countdown / 60).toString().padStart(2, "0")}:${(countdown % 60).toString().padStart(2, "0")}`
                         : "Ready to resend!"}
                     </Typography>
@@ -290,8 +290,8 @@ const Login = ({ mode }: { mode: Mode }) => {
               )}
 
               <Divider className="gap-3">or</Divider>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
+              <div className="grid grid-cols-1 gap-3">
+                {/* <Button
                   variant="outlined"
                   size="small"
                   color="secondary"
@@ -300,18 +300,54 @@ const Login = ({ mode }: { mode: Mode }) => {
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-google-fill text-googlePlus" />
-                </Button>
+                </Button> */}
+
                 <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
+                  className="gsi-material-button"
+                  startIcon={
+                    <img
+                      src="/images/static/g-logo.png"
+                      alt="Google"
+                      width={20}
+                      height={20}
+                    />
+                  }
+                  onClick={() => signIn("google", { callbackUrl: "/social-callback" })}
+                >
+                  Sign in with Google
+                </Button>
+
+                <Button
+                  className="gsi-material-button"
+                  startIcon={
+                    <img
+                      src="/images/static/fb.png"
+                      alt="Facebook"
+                      width={20}
+                      height={20}
+                    />
+                  }
                   onClick={() => signIn("facebook", { callbackUrl: "/social-callback" })}
                 >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-facebook-fill text-facebook" />
+                  Sign in with Facebook
                 </Button>
+
                 <Button
+                  className="gsi-material-button"
+                  startIcon={
+                    <img
+                      src="/images/static/linkedin.png"
+                      alt="LinkedIn"
+                      width={20}
+                      height={20}
+                    />
+                  }
+                  onClick={() => signIn("linkedin", { callbackUrl: "/social-callback" })}
+                >
+                  Sign in with LinkedIn
+                </Button>
+
+                {/* <Button
                   variant="outlined"
                   size="small"
                   color="secondary"
@@ -320,8 +356,8 @@ const Login = ({ mode }: { mode: Mode }) => {
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-linkedin-box-fill text-linkedin" />
-                </Button>
-                <Button
+                </Button> */}
+                {/* <Button
                   variant="outlined"
                   size="small"
                   color="secondary"
@@ -330,7 +366,7 @@ const Login = ({ mode }: { mode: Mode }) => {
                 >
                   Continue With &nbsp;{" "}
                   <i className="ri-instagram-fill text-instagram" />
-                </Button>
+                </Button> */}
               </div>
             </form>
           </div>
@@ -339,7 +375,7 @@ const Login = ({ mode }: { mode: Mode }) => {
 
       <Dialog
         open={showSetupPassword}
-       onClose={(event, reason) => {
+        onClose={(event, reason) => {
           if (reason === "backdropClick" || reason === "escapeKeyDown") return;
           handleCloseDialog();
         }}

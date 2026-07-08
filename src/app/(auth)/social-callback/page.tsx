@@ -73,8 +73,10 @@ export default function SocialCallbackPage() {
         );
       }
 
-      // const role = session.appUserRole;
-      // router.replace(role === "tac" ? "/dashboard" : "/inquiry");
+      const role = session.appUserRole;
+      if (role) {
+        router.replace(role === "user" ? "/inquiry" : "/dashboard");
+      }
     }
   }, [status, session]);
 
