@@ -49,12 +49,17 @@ export function useTokenQueue({ mode }: { mode: Mode }) {
   }, []);
   useEffect(() => {
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        fetchBranches(position.coords.latitude, position.coords.longitude);
+      ({ coords }) => {
+        fetchBranches(coords.latitude, coords.longitude);
       },
-      () => {
-        // toast.error("Please allow location access to get preferred branch list");
+      (error) => {
+        console.error(error);
       },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      }
     );
   }, []);
 

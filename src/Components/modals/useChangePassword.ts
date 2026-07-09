@@ -42,7 +42,7 @@ export const useChangePassword = (onClose: () => void) => {
           onClose();
         }
       } catch (error: any) {
-        toast.error(
+        console.log(
           error?.response?.data?.message || "Failed to change password",
         );
       } finally {
