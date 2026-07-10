@@ -1,51 +1,12 @@
 "use client";
 
-import React from "react";
 import { Box, Typography, Chip, Grid, FormControl, InputLabel, Select, MenuItem } from "@mui/material";
 import { useTokenQueue } from "./useTokenQueue";
 import { Mode } from "@/@core/types";
-import Logo from "@/Components_Theme/layout/shared/Logo";
-
-/* ── colour map (by token prefix) ─────────────────────────────────────── */
-const prefixMeta: Record<string, { label: string; gradient: string; glow: string }> = {
-  A: {
-    label: "TAC",
-    gradient: "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)",
-    glow: "rgba(99,102,241,.35)",
-  },
-  C: {
-    label: "Coordinator",
-    gradient: "linear-gradient(135deg, #0ea5e9 0%, #06b6d4 100%)",
-    glow: "rgba(14,165,233,.35)",
-  },
-  T: {
-    label: "Employee",
-    gradient: "linear-gradient(135deg, #f59e0b 0%, #f97316 100%)",
-    glow: "rgba(245,158,11,.35)",
-  },
-};
-
-const fallbackMeta = {
-  label: "General",
-  gradient: "linear-gradient(135deg, #64748b 0%, #475569 100%)",
-  glow: "rgba(100,116,139,.35)",
-};
-
-const getMeta = (token: string) => {
-  const prefix = token?.charAt(0)?.toUpperCase();
-  return prefixMeta[prefix] ?? fallbackMeta;
-};
-
-/* ═══════════════════════════════════════════════════════════════════════ */
+import Image from "next/image";
 
 const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
-  const { counters, currentTime, branches, tokenBranch, handleBranchChange } = useTokenQueue({ mode });
-  interface Counter {
-    counterNo: number;
-    employeeId: string;
-    employee: string;
-    role: string;
-  }
+  const { counters, currentTime, branches, tokenBranch, handleBranchChange, getMeta, fallbackMeta } = useTokenQueue({ mode });
   return (
     <Box
       className="min-h-screen w-full flex flex-col"
@@ -63,8 +24,13 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
           borderBottom: "1px solid rgba(255,255,255,.08)",
         }}
       >
-
-        <Logo />
+        <Image
+          src={`/images/static/logo-dark.svg`}
+          alt="Logo"
+          width={270}
+          height={75}
+          priority
+        />
         <Typography
           className="tracking-wide"
           sx={{

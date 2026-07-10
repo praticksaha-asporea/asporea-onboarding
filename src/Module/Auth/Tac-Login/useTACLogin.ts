@@ -10,12 +10,17 @@ import {
 import { setUserData, updateUserData, UserData } from "@/Redux/Auth/user.slice";
 import toast from "react-hot-toast";
 import { respectiveDashboard } from "@/Utils/common";
+import { useImageVariant } from "@core/hooks/useImageVariant";
+import { Mode } from "@/@core/types";
 
-export function useTACLogin() {
+import { useFormik } from "formik";
+import { getLoginValidationSchema } from "@/Validations/loginValidation";
+
+export function useTACLogin({ mode }: { mode: Mode }) {
   const router = useRouter();
   const dispatch = useDispatch();
 
-  
+
 
   // --- UI & Toggles States ---
   const [isPasswordShown, setIsPasswordShown] = useState(false);
@@ -36,6 +41,46 @@ export function useTACLogin() {
 
   const [countdown, setCountdown] = useState<number>(0);
 
+  const darkImg = "/images/pages/auth-v1-mask-dark.png";
+  const lightImg = "/images/pages/auth-v1-mask-light.png";
+  const authBackground = useImageVariant(mode, lightImg, darkImg);
+
+
+  const formik = useFormik({
+    initialValues: {
+      identity: identity || "",
+      password: password || "",
+    },
+    enableReinitialize: true,
+
+    validateOnBlur: false,
+    validationSchema: getLoginValidationSchema(authMode),
+    onSubmit: (values) => {
+      setIdentity(values.identity);
+
+      if (authMode === "password") {
+        setPassword(values.password);
+        const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
+        handlePasswordLogin(dummyEvent);
+      } else {
+        handleSendOtp();
+      }
+    },
+  });
+
+
+
+  const handleToggleAuthMode = () => {
+    formik.resetForm({
+      values: {
+        identity: formik.values.identity,
+        password: "",
+      },
+    });
+    togglePasswordOTP();
+  };
+
+
   useEffect(() => {
     const savedExpiry = localStorage.getItem("asporea_tac_otp_expiry");
     if (savedExpiry) {
@@ -49,14 +94,14 @@ export function useTACLogin() {
     }
   }, []);
 
-  
+
   useEffect(() => {
-    if (countdown <= 0) return; 
+    if (countdown <= 0) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          localStorage.removeItem("asporea_tac_otp_expiry");  
+          localStorage.removeItem("asporea_tac_otp_expiry");
           return 0;
         }
         return prev - 1;
@@ -151,7 +196,7 @@ export function useTACLogin() {
 
           if (user) dispatch(setUserData({ userData: user as UserData }));
 
-        respectiveDashboard(user, router);
+          respectiveDashboard(user, router);
         } else {
 
           setShowSetupPassword(true);
@@ -202,5 +247,8 @@ export function useTACLogin() {
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
     countdown,
+    formik,
+    authBackground,
+    handleToggleAuthMode
   };
 }

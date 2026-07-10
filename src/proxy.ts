@@ -188,7 +188,6 @@ export function proxy(req: NextRequest) {
         allowedRoutes: protectedRouteTACHead,
         defaultRedirect: "/tac-head/dashboard",
       },
-      // New_role: { allowedRoutes: protectedRouteNaya, defaultRedirect: '/naya-dashboard' } <-- Example
     };
 
     const allKnownProtectedRoutes = Object.values(roleConfig).flatMap(

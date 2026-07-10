@@ -30,9 +30,9 @@ export default function NotFound() {
             <Logo />
           </Link>
 
-        <div className="w-72 h-72 md:w-[320px] md:h-[320px] flex items-center justify-center -mt-6 mb-2 pointer-events-none">
-  {View}
-</div>
+          <div className="w-72 h-72 md:w-[320px] md:h-[320px] flex items-center justify-center -mt-6 mb-2 pointer-events-none">
+            {View}
+          </div>
 
           {/* Texts */}
           <Typography variant="h4" className="mbe-2 font-medium text-[var(--mui-palette-primary)]

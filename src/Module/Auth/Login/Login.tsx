@@ -1,8 +1,4 @@
 "use client";
-
-import { useFormik } from "formik";
-import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
-import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
@@ -21,104 +17,38 @@ import Divider from "@mui/material/Divider";
 import { MuiOtpInput } from "mui-one-time-password-input";
 
 // Hooks & Components
-import { useImageVariant } from "@core/hooks/useImageVariant";
 import Logo from "../../../Components_Theme/layout/shared/Logo";
 import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
 import { useLogin } from "./useLogin";
-import toast from "react-hot-toast";
 
 
 const Login = ({ mode }: { mode: Mode }) => {
   const {
     isPasswordShown,
     authMode,
-    identity,
     setIdentity,
-    password,
     setPassword,
     otp,
     handleOtpChange,
-    // setNewPassword,
-    // setConfirmPassword,
     sendOtp,
     enableVerifyOTP,
     showSetupPassword,
-    setShowSetupPassword,
     loading,
     handleClickShowPassword,
-    togglePasswordOTP,
-    handlePasswordLogin,
     handleSendOtp,
     handleVerifyOtp,
-    handleSavePasswordAndRedirect,
+    handleToggleAuthMode,
+    authBackground,
     countdown,
-  } = useLogin();
-
-  const darkImg = "/images/pages/auth-v1-mask-dark.png";
-  const lightImg = "/images/pages/auth-v1-mask-light.png";
-  const authBackground = useImageVariant(mode, lightImg, darkImg);
-
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
-
-  const formik = useFormik({
-    initialValues: {
-      identity: identity || "",
-      password: password || "",
-    },
-    enableReinitialize: true,
-
-    validateOnBlur: false,
-    validationSchema: getLoginValidationSchema(authMode),
-    onSubmit: (values) => {
-      setIdentity(values.identity);
-
-      if (authMode === "password") {
-        setPassword(values.password);
-        const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
-        handlePasswordLogin(dummyEvent);
-      } else {
-        handleSendOtp();
-      }
-    },
-  });
-
-  const passwordFormik = useFormik({
-    initialValues: {
-      newPassword: "",
-      confirmPassword: "",
-    },
-    validateOnBlur: false,
-    validationSchema: passwordSetupSchema,
-    onSubmit: (values) => {
-      localStorage.setItem("temp_register_password", values.newPassword);
-
-      // setNewPassword(values.newPassword);
-      // setConfirmPassword(values.confirmPassword);
-
-      handleSavePasswordAndRedirect();
-    },
-  });
-
-
-  const handleToggleAuthMode = () => {
-    formik.resetForm({
-      values: {
-        identity: formik.values.identity,
-        password: "",
-      },
-    });
-    togglePasswordOTP();
-  };
-
-  const handleCloseDialog = () => {
-    passwordFormik.resetForm();
-    setShowSetupPassword(false);
-  };
-
-
+    formik,
+    handleCloseDialog,
+    passwordFormik,
+    showNewPassword,
+    setShowNewPassword,
+    showConfirmPassword,
+    setShowConfirmPassword
+  } = useLogin({ mode });
 
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
@@ -291,16 +221,6 @@ const Login = ({ mode }: { mode: Mode }) => {
 
               <Divider className="gap-3">or</Divider>
               <div className="grid grid-cols-1 gap-3">
-                {/* <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/social-callback" })}
-                >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-google-fill text-googlePlus" />
-                </Button> */}
 
                 <Button
                   className="gsi-material-button"

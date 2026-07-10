@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
+import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -112,11 +113,8 @@ export function useInquiry() {
 
   const fetchBranches = async (lat: number, lng: number) => {
     try {
-      const response = await fetch(
-        `/api/branch/list?lat=${lat}&lng=${lng}&radiusKm=5000&limit=50`,
-      );
-      const result = await response.json();
-      setBranches(result?.data?.data || []);
+      const response = await branchListingApi({ lat, lng });
+      setBranches(response?.data?.data?.data || []);
     } catch (error) {
       console.error("Branch fetch error:", error);
     }

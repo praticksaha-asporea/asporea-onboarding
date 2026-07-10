@@ -10,8 +10,12 @@ import {
 import { setUserData, updateUserData, UserData } from "@/Redux/Auth/user.slice";
 import toast from "react-hot-toast";
 import { respectiveDashboard } from "@/Utils/common";
+import { useImageVariant } from "@core/hooks/useImageVariant";
+import { useFormik } from "formik";
+import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
+import { Mode } from "@/@core/types";
 
-export function useLogin() {
+export function useLogin({ mode }: { mode: Mode }) {
   const router = useRouter();
   const dispatch = useDispatch();
 
@@ -23,8 +27,6 @@ export function useLogin() {
   const [identity, setIdentity] = useState("");
   const [password, setPassword] = useState("");
   const [otp, setOtp] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
 
   // --- API Flow Control States ---
   const [sendOtp, setSendOtp] = useState(false);
@@ -33,7 +35,67 @@ export function useLogin() {
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState<number>(0);
 
-    useEffect(() => {
+  const darkImg = "/images/pages/auth-v1-mask-dark.png";
+  const lightImg = "/images/pages/auth-v1-mask-light.png";
+  const authBackground = useImageVariant(mode, lightImg, darkImg);
+
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+
+  const formik = useFormik({
+    initialValues: {
+      identity: identity || "",
+      password: password || "",
+    },
+    enableReinitialize: true,
+
+    validateOnBlur: false,
+    validationSchema: getLoginValidationSchema(authMode),
+    onSubmit: (values) => {
+      setIdentity(values.identity);
+
+      if (authMode === "password") {
+        setPassword(values.password);
+        const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
+        handlePasswordLogin(dummyEvent);
+      } else {
+        handleSendOtp();
+      }
+    },
+  });
+
+  const passwordFormik = useFormik({
+    initialValues: {
+      newPassword: "",
+      confirmPassword: "",
+    },
+    validateOnBlur: false,
+    validationSchema: passwordSetupSchema,
+    onSubmit: (values) => {
+      localStorage.setItem("temp_register_password", values.newPassword);
+      handleSavePasswordAndRedirect();
+    },
+  });
+
+
+  const handleToggleAuthMode = () => {
+    formik.resetForm({
+      values: {
+        identity: formik.values.identity,
+        password: "",
+      },
+    });
+    togglePasswordOTP();
+  };
+
+  const handleCloseDialog = () => {
+    passwordFormik.resetForm();
+    setShowSetupPassword(false);
+  };
+
+
+  useEffect(() => {
     const savedExpiry = localStorage.getItem("asporea_user_otp_expiry");
     if (savedExpiry) {
       const remainingTime = Math.ceil((parseInt(savedExpiry) - Date.now()) / 1000);
@@ -46,14 +108,14 @@ export function useLogin() {
     }
   }, []);
 
-   
+
   useEffect(() => {
-    if (countdown <= 0) return;  
+    if (countdown <= 0) return;
 
     const timer = setInterval(() => {
       setCountdown((prev) => {
         if (prev <= 1) {
-          localStorage.removeItem("asporea_user_otp_expiry");  
+          localStorage.removeItem("asporea_user_otp_expiry");
         }
         return prev - 1;
       });
@@ -106,7 +168,7 @@ export function useLogin() {
 
       if (res.data?.success) {
         setSendOtp(true);
-        const expiryTime = Date.now() + 120000;  
+        const expiryTime = Date.now() + 120000;
         localStorage.setItem("asporea_user_otp_expiry", expiryTime.toString());
         setCountdown(120);
         toast.success("OTP Sent! Successfully");
@@ -162,8 +224,7 @@ export function useLogin() {
   const handleSavePasswordAndRedirect = () => {
 
     localStorage.setItem("temp_register_email", identity);
-    // localStorage.setItem("temp_register_password", );
-    
+
     setShowSetupPassword(false);
     router.push("/complete-profile");
   };
@@ -177,10 +238,6 @@ export function useLogin() {
     setPassword,
     otp,
     handleOtpChange,
-    // newPassword,
-    // setNewPassword,
-    // confirmPassword,
-    // setConfirmPassword,
     sendOtp,
     enableVerifyOTP,
     showSetupPassword,
@@ -193,5 +250,14 @@ export function useLogin() {
     handleVerifyOtp,
     handleSavePasswordAndRedirect,
     countdown,
+    formik,
+    handleToggleAuthMode,
+    authBackground,
+    handleCloseDialog,
+    passwordFormik,
+    showNewPassword,
+    setShowNewPassword,
+    showConfirmPassword,
+    setShowConfirmPassword
   };
 }

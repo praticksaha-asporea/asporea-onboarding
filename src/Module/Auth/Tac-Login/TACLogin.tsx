@@ -1,12 +1,9 @@
 "use client";
 
-import { useFormik } from "formik";
-import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
-import { useState } from "react";
 import Link from "next/link";
 
 // MUI Imports
-import { Dialog, DialogContent, Box, CircularProgress } from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -19,7 +16,6 @@ import FormControlLabel from "@mui/material/FormControlLabel";
 import { MuiOtpInput } from "mui-one-time-password-input";
 
 // Hooks & Components
-import { useImageVariant } from "@core/hooks/useImageVariant";
 import Logo from "../../../Components_Theme/layout/shared/Logo";
 import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
@@ -30,92 +26,23 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
   const {
     isPasswordShown,
     authMode,
-    identity,
     setIdentity,
-    password,
     setPassword,
     otp,
     handleOtpChange,
-    setNewPassword,
-    setConfirmPassword,
     sendOtp,
     enableVerifyOTP,
-    showSetupPassword,
-    setShowSetupPassword,
     loading,
     handleClickShowPassword,
-    togglePasswordOTP,
-    handlePasswordLogin,
     handleSendOtp,
     handleVerifyOtp,
-    handleSavePasswordAndRedirect,
     countdown,
-  } = useTACLogin();
+    formik,
+    authBackground,
+    handleToggleAuthMode
+  } = useTACLogin({ mode });
 
-  const darkImg = "/images/pages/auth-v1-mask-dark.png";
-  const lightImg = "/images/pages/auth-v1-mask-light.png";
-  const authBackground = useImageVariant(mode, lightImg, darkImg);
-   
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  
-  const formik = useFormik({
-    initialValues: {
-      identity: identity || "",
-      password: password || "",
-    },
-    enableReinitialize: true,
-    
-    validateOnBlur: false, 
-    validationSchema: getLoginValidationSchema(authMode),
-    onSubmit: (values) => {
-      setIdentity(values.identity);
-      
-      if (authMode === "password") {
-        setPassword(values.password);
-        const dummyEvent = { preventDefault: () => {} } as React.FormEvent<HTMLFormElement>;
-        handlePasswordLogin(dummyEvent);
-      } else {
-        handleSendOtp();
-      }
-    },
-  });
-
-  const passwordFormik = useFormik({
-    initialValues: {
-      newPassword: "",
-      confirmPassword: "",
-    },
-    validateOnBlur: false,
-    validationSchema: passwordSetupSchema,
-    onSubmit: (values) => {
-       
-      setNewPassword(values.newPassword);
-      setConfirmPassword(values.confirmPassword);
-      
-      
-      handleSavePasswordAndRedirect();
-    },
-  });
-
-   
-  const handleToggleAuthMode = () => {
-    formik.resetForm({
-      values: {
-        identity: formik.values.identity,  
-        password: "",
-      },
-    });
-    togglePasswordOTP();
-  };
-
-  const handleCloseDialog = () => {
-    passwordFormik.resetForm();
-    setShowSetupPassword(false);
-  };
-
- 
 
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
@@ -147,7 +74,7 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 label="Phone Number or Email"
                 value={formik.values.identity}
                 onBlur={formik.handleBlur}
-                
+
                 error={formik.submitCount > 0 && Boolean(formik.errors.identity)}
                 helperText={formik.submitCount > 0 && formik.errors.identity ? (formik.errors.identity as string) : undefined}
                 onChange={(e) => {
@@ -223,13 +150,13 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-            {/* MAIN OTP SEND BUTTON (Sirf tab chalega jab tak OTP hit na ho) */}
+              {/* MAIN OTP SEND BUTTON (Sirf tab chalega jab tak OTP hit na ho) */}
               {authMode === "otp" && (
                 <Button
                   fullWidth
                   variant="contained"
                   className="btn btn-success"
-                  type="submit" 
+                  type="submit"
                   disabled={sendOtp || loading}
                 >
                   {loading ? (
@@ -240,12 +167,12 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-              
+
               {authMode === "otp" && sendOtp && (
                 <>
                   <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
                     <Typography color={countdown > 0 ? "textSecondary" : "error"} className="text-sm font-medium">
-                      {countdown > 0 
+                      {countdown > 0
                         ? `Resend in ${Math.floor(countdown / 60).toString().padStart(2, "0")}:${(countdown % 60).toString().padStart(2, "0")}`
                         : "Ready to resend!"}
                     </Typography>
@@ -284,160 +211,11 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                   </Box>
                 </>
               )}
-
-              {/* <Divider className="gap-3">or</Divider>
-              <div className="grid grid-cols-2 gap-3">
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
-                  onClick={() => signIn("google", { callbackUrl: "/inquiry" })}
-                >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-google-fill text-googlePlus" />
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
-                  onClick={() => signIn("facebook", { callbackUrl: "/inquiry" })}
-                >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-facebook-fill text-facebook" />
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
-                  onClick={() => signIn("linkedin", { callbackUrl: "/inquiry" })}
-                >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-linkedin-box-fill text-linkedin" />
-                </Button>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  color="secondary"
-                  type="button"
-                  onClick={() => signIn("instagram", { callbackUrl: "/inquiry" })}
-                >
-                  Continue With &nbsp;{" "}
-                  <i className="ri-instagram-fill text-instagram" />
-                </Button>
-              </div> */}
             </form>
           </div>
         </CardContent>
       </Card>
 
-     <Dialog
-        open={showSetupPassword}
-        onClose={handleCloseDialog}
-        maxWidth="xs"
-        fullWidth
-        PaperProps={{ className: "rounded-[20px] p-3 relative" }}
-      >
-        <DialogContent className="flex flex-col items-center">
-          <Typography variant="h4" className="mt-4 mb-8">
-            Setup Password
-          </Typography>
-
-          {/* Form wrapper for popup formik */}
-          <form onSubmit={passwordFormik.handleSubmit} className="w-full">
-            
-            {/* NEW PASSWORD FIELD */}
-            <Box className="w-full mb-6">
-              <Typography variant="subtitle2" fontWeight="600" className="mb-2">
-                New Password
-              </Typography>
-              <TextField
-                fullWidth
-                id="newPassword"
-                name="newPassword"
-                placeholder="Enter a password"
-                type={showNewPassword ? "text" : "password"}
-                value={passwordFormik.values.newPassword}
-                onChange={passwordFormik.handleChange}
-                onBlur={passwordFormik.handleBlur}
-                error={passwordFormik.submitCount > 0 && Boolean(passwordFormik.errors.newPassword)}
-                helperText={passwordFormik.submitCount > 0 && passwordFormik.errors.newPassword ? (passwordFormik.errors.newPassword as string) : undefined}
-                sx={{
-                  "& input::-ms-reveal, & input::-ms-clear": {
-                    display: "none",
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <i className="material-symbols--lock" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
-                        <i className={showNewPassword ? "ri-eye-off-line" : "ri-eye-line"} />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  className: "rounded-[10px] !ring-0",
-                }}
-              />
-            </Box>
-
-            {/* CONFIRM PASSWORD FIELD */}
-            <Box className="w-full mb-8">
-              <Typography variant="subtitle2" fontWeight="600" className="mb-2">
-                Confirm Password
-              </Typography>
-              <TextField
-                fullWidth
-                id="confirmPassword"
-                name="confirmPassword"
-                placeholder="Enter password again"
-                type={showConfirmPassword ? "text" : "password"}
-                value={passwordFormik.values.confirmPassword}
-                onChange={passwordFormik.handleChange}
-                onBlur={passwordFormik.handleBlur}
-                error={passwordFormik.submitCount > 0 && Boolean(passwordFormik.errors.confirmPassword)}
-                helperText={passwordFormik.submitCount > 0 && passwordFormik.errors.confirmPassword ? (passwordFormik.errors.confirmPassword as string) : undefined}
-                sx={{
-                  "& input::-ms-reveal, & input::-ms-clear": {
-                    display: "none",
-                  },
-                }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <i className="material-symbols--lock" />
-                    </InputAdornment>
-                  ),
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                        <i className={showConfirmPassword ? "ri-eye-off-line" : "ri-eye-line"} />
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                  className: "rounded-[10px] !ring-0",
-                }}
-              />
-            </Box>
-
-            <Box className="flex w-full justify-center gap-4 mb-4">
-              <Button
-                variant="contained"
-                type="submit" // 🚀 Trigger passwordFormik onSubmit natively
-                className="normal-case min-w-[150px] rounded-[10px] font-semibold py-[9.6px] bg-[#007FFF]"
-              >
-                Save Password
-              </Button>
-            </Box>
-          </form>
-        </DialogContent>
-      </Dialog>
       <Illustrations maskImg={{ src: authBackground }} />
     </div>
   );
