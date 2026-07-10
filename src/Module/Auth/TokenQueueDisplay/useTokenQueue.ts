@@ -1,6 +1,6 @@
 import { Mode } from "@/@core/types";
 import { branchCountersApi, branchCounterTokensApi, branchListingApi } from "@/Services/APIs/branch/branch.actions";
-import { Counter, CounterData } from "@/Types/object.types";
+import { branchDB, Counter } from "@/Types/object.types";
 import { useState, useEffect, useCallback } from "react";
 
 /* ── Hook ──────────────────────────────────────────────────────────────── */
@@ -8,7 +8,7 @@ export function useTokenQueue({ mode }: { mode: Mode }) {
   const [counters, setCounters] = useState<Counter[]>([]);
   const [currentTime, setCurrentTime] = useState("");
   // ── Branches ────────────────────────────────────────────────────────────────
-  const [branches, setBranches] = useState<any[]>([]);
+  const [branches, setBranches] = useState<branchDB[]>([]);
   const [tokenBranch, setTokenBranch] = useState("");
 
   /* ── colour map (by token prefix) ─────────────────────────────────────── */
@@ -44,7 +44,7 @@ export function useTokenQueue({ mode }: { mode: Mode }) {
   const fetchBranches = async (lat: number, lng: number) => {
     try {
       const response = await branchListingApi({ lat, lng });
-      setBranches(response?.data?.data?.data || []);
+      setBranches(response?.data?.data?.data);
     } catch (error) {
       console.error("Branch fetch error:", error);
     }
@@ -53,9 +53,8 @@ export function useTokenQueue({ mode }: { mode: Mode }) {
     try {
       const response = await branchCountersApi({ branchId, counters });
       setCounters(response?.data?.data || []);
-      // await fetchCounterTokens(branchId, result?.data);
     } catch (error) {
-      console.error("Token fetch error:", error);
+      console.error("Counters fetch error:", error);
     }
   };
 
@@ -101,7 +100,7 @@ export function useTokenQueue({ mode }: { mode: Mode }) {
 
   useEffect(() => {
 
-    const fetchCounterTokens = async (branchId: string, counters: any) => {
+    const fetchCounterTokens = async (branchId: string, counters: Counter[]) => {
       try {
         const response = await branchCounterTokensApi({
           branchId,

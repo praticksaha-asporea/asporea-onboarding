@@ -11,9 +11,9 @@ export interface Counter {
     employeeId: string,
     employee: string,
     role: string,
-    currentToken?: string | null,
-    leadId?: string | null,
-    upcomingTokens?: string[]
+    currentToken: string | null,
+    leadId: string | null,
+    upcomingTokens: string[]
 }
 
 export interface branchDB {

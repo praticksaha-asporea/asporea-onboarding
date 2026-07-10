@@ -4,6 +4,7 @@ import { Box, Typography, Chip, Grid, FormControl, InputLabel, Select, MenuItem 
 import { useTokenQueue } from "./useTokenQueue";
 import { Mode } from "@/@core/types";
 import Image from "next/image";
+import { branchDB, Counter } from "@/Types/object.types";
 
 const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
   const { counters, currentTime, branches, tokenBranch, handleBranchChange, getMeta, fallbackMeta } = useTokenQueue({ mode });
@@ -112,7 +113,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                 onChange={(e) => handleBranchChange(e.target.value)}
                 color="primary"
               >
-                {branches.map((branch: any) => (
+                {branches.map((branch: branchDB) => (
                   <MenuItem key={branch._id} value={branch._id}>
                     {branch.title}
                   </MenuItem>
@@ -135,7 +136,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
             },
           }}
         >
-          {counters.map((counter: any) => {
+          {counters.map((counter: Counter) => {
             const meta = counter.currentToken
               ? getMeta(counter.currentToken)
               : fallbackMeta;
@@ -212,7 +213,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                           fontWeight: 800,
                           fontFamily: "'Roboto Mono', monospace",
                           lineHeight: 1.1,
-                          animation: counter.isActive
+                          animation: counter.currentToken || counter?.upcomingTokens?.length
                             ? "tokenPulse 1.5s ease-in-out infinite"
                             : "none",
                           "@keyframes tokenPulse": {
@@ -265,7 +266,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                         Up Next
                       </Typography>
                       <Box className="flex flex-wrap justify-center gap-1.5">
-                        {counter?.upcomingTokens.map((t: any, idx: any) => (
+                        {counter?.upcomingTokens.map((t: string, idx: number) => (
                           <Chip
                             key={idx}
                             label={t}
@@ -291,7 +292,7 @@ const TokenQueueDisplay = ({ mode }: { mode: Mode }) => {
                   className="py-2 text-center"
                   sx={{
                     borderTop: "1px solid rgba(255,255,255,.06)",
-                    background: counter.isActive
+                    background: counter.currentToken || counter?.upcomingTokens?.length
                       ? "rgba(34,197,94,.08)"
                       : "rgba(239,68,68,.06)",
                   }}

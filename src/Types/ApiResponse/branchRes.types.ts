@@ -4,9 +4,7 @@ export interface BranchListing {
     success: boolean,
     message: string,
     data: {
-        data: [
-            branchDB[]
-        ],
+        data: branchDB[],
         pagination: {
             total: number,
             page: number,
