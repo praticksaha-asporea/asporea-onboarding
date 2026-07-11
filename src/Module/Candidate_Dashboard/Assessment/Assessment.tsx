@@ -16,6 +16,7 @@ import { SessionScheduler } from "@/Components/Assessment/SessionScheduler";
 import { TechnicalResult } from "@/Components/Assessment/TechnicalResult";
 import { NotificationChannels } from "@/Components/Assessment/NotificationChannels";
 import { SuccessDialog } from "@/Components/Assessment/SuccessDialog";
+import { formatToDDMMYY } from "@/Utils/common";
 
 const AssessmentContent = () => {
   const {
@@ -61,21 +62,8 @@ const AssessmentContent = () => {
       </Box>
     );
   }
-
-
-  const formatToDDMMYY = (dateStr: string) => {
-    if (!dateStr) return "";
-    const d = new Date(dateStr);
-    if (isNaN(d.getTime())) return "";  
-
-    const day = String(d.getDate()).padStart(2, "0");
-    const month = String(d.getMonth() + 1).padStart(2, "0");
-    const year = String(d.getFullYear()).slice(-2);  
-    return `${day}/${month}/${year}`;
-  };
-
   return (
-   <Grid container spacing={6}>
+    <Grid container spacing={6}>
       {/* LEFT COLUMN */}
       <Grid size={{ xs: 12, md: (isBookingMode && !isAlreadyScheduled && !isAssessmentCompleted) ? 8 : 12 }}>
         {(isBookingMode || isAssessmentResult) && (
@@ -89,95 +77,95 @@ const AssessmentContent = () => {
                   Assessment Session Completed
                 </Typography>
                 <Typography variant="subtitle1" className="text-[var(--mui-palette-text-secondary)] max-w-md mx-auto mb-4">
-                  Your assessment evaluation is done and captured successfully! Our operations team is processing the next steps of your journey.
+                  Your assessment evaluation is done and captured successfully!
                 </Typography>
 
-                <Button 
-                  variant="contained" 
+                <Button
+                  variant="contained"
                   href="/applicationtracking"
                   className="mt-6 rounded-xl normal-case shadow-none px-8 py-2.5"
                 >
-                  Track Recruitment Progress
+                  Track Progress
                 </Button>
               </Box>
             ) :
-           
-            isBookingMode && isAlreadyScheduled ? (
-              <Box className="p-4 text-center bg-[var(--mui-palette-primary)] rounded-xl flex flex-col items-center justify-center min-h-[350px]">
-                <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
-                  <i className="ri-calendar-check-fill text-5xl text-blue-600"></i>
-                </Box>
-                <Typography variant="h4" className="font-bold text-[var(--mui-palette-primary)] mb-2">
-                  Assessment Already Scheduled
-                </Typography>
-                <Typography variant="subtitle1" className="text-[var(--mui-palette-secondary)] max-w-md mx-auto mb-4">
-                  Your assessment is locked and scheduled successfully. Please ensure you are ready before the scheduled time.
-                </Typography>
 
-                {scheduledDetails?.date && (
-                  <Box className="p-3 bg-[var(--mui-palette-primary)]   rounded-xl inline-block shadow-sm px-6">
-                    <Typography variant="body2" className="text-[var(--mui-palette-primary)] font-medium">
-                      📅 Date: : <strong>{formatToDDMMYY(scheduledDetails.date)}</strong>
-                    </Typography>
+              isBookingMode && isAlreadyScheduled ? (
+                <Box className="p-4 text-center bg-[var(--mui-palette-primary)] rounded-xl flex flex-col items-center justify-center min-h-[350px]">
+                  <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
+                    <i className="ri-calendar-check-fill text-5xl text-blue-600"></i>
                   </Box>
-                )}
+                  <Typography variant="h4" className="font-bold text-[var(--mui-palette-primary)] mb-2">
+                    Assessment Already Scheduled
+                  </Typography>
+                  <Typography variant="subtitle1" className="text-[var(--mui-palette-secondary)] max-w-md mx-auto mb-4">
+                    Your assessment is locked and scheduled successfully. Please ensure you are ready before the scheduled time.
+                  </Typography>
 
-                <Button 
-                  variant="contained" 
-                  onClick={() => router.push("/application-tracking")} 
-                     href="/applicationtracking"
-                  className="mt-8 rounded-xl normal-case  shadow-none px-8 py-2.5"
-                >
-                  Track Application Status
-                </Button>
-              </Box>
-            ) : isBookingMode ? (
-               
-              <>
-                <Typography variant="h4">
-                  Confirm Your Assessment Readiness
-                </Typography>
-                <Typography variant="subtitle1" className="pb-5">
-                  Please review the details below and confirm your availability
-                  and preparedness for the upcoming session.
-                </Typography>
+                  {scheduledDetails?.date && (
+                    <Box className="p-3 bg-[var(--mui-palette-primary)]   rounded-xl inline-block shadow-sm px-6">
+                      <Typography variant="body2" className="text-[var(--mui-palette-primary)] font-medium">
+                        📅 Date: : <strong>{formatToDDMMYY(scheduledDetails.date)}</strong>
+                      </Typography>
+                    </Box>
+                  )}
 
-                <ReadinessChecklist
-                  checklist={checklist}
-                  setChecklist={setChecklist}
-                  visitMethod={visitMethod}
-                />
-                <SessionScheduler
-                  visitMethod={visitMethod}
-                  setVisitMethod={setVisitMethod}
-                  date={date}
-                  setDate={setDate}
-                  todayStr={todayStr}
-                  loadingSlots={loadingSlots}
-                  slots={slots}
-                  selectedSlot={selectedSlot}
-                  setSelectedSlot={setSelectedSlot}
-                />
-
-                <Box className="flex justify-end gap-4 mt-8">
                   <Button
                     variant="contained"
-                    size="large"
-                    disabled={
-                      isSubmitting || !selectedSlot || !isChecklistComplete
-                    }
-                    onClick={handleScheduleAssessment}
-                    className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 px-8 py-2.5"
+                    onClick={() => router.push("/application-tracking")}
+                    href="/applicationtracking"
+                    className="mt-8 rounded-xl normal-case  shadow-none px-8 py-2.5"
                   >
-                    {isSubmitting ? (
-                      <CircularProgress size={24} color="inherit" />
-                    ) : (
-                      "Confirm Readiness & Book"
-                    )}
+                    Track Application Status
                   </Button>
                 </Box>
-              </>
-            ) : null}
+              ) : isBookingMode ? (
+
+                <>
+                  <Typography variant="h4">
+                    Confirm Your Assessment Readiness
+                  </Typography>
+                  <Typography variant="subtitle1" className="pb-5">
+                    Please review the details below and confirm your availability
+                    and preparedness for the upcoming session.
+                  </Typography>
+
+                  <ReadinessChecklist
+                    checklist={checklist}
+                    setChecklist={setChecklist}
+                    visitMethod={visitMethod}
+                  />
+                  <SessionScheduler
+                    visitMethod={visitMethod}
+                    setVisitMethod={setVisitMethod}
+                    date={date}
+                    setDate={setDate}
+                    todayStr={todayStr}
+                    loadingSlots={loadingSlots}
+                    slots={slots}
+                    selectedSlot={selectedSlot}
+                    setSelectedSlot={setSelectedSlot}
+                  />
+
+                  <Box className="flex justify-end gap-4 mt-8">
+                    <Button
+                      variant="contained"
+                      size="large"
+                      disabled={
+                        isSubmitting || !selectedSlot || !isChecklistComplete
+                      }
+                      onClick={handleScheduleAssessment}
+                      className="rounded-xl normal-case text-sm shadow-md hover:bg-blue-700 px-8 py-2.5"
+                    >
+                      {isSubmitting ? (
+                        <CircularProgress size={24} color="inherit" />
+                      ) : (
+                        "Confirm Readiness & Book"
+                      )}
+                    </Button>
+                  </Box>
+                </>
+              ) : null}
 
             {/* 🔹 RESULT VIEW */}
             {isAssessmentResult && (
@@ -190,7 +178,7 @@ const AssessmentContent = () => {
                     variant="h5"
                     className="text-[1.6rem] font-semibold mb-6"
                   >
-                    Applicant Assessment Tool
+                    Applicant Assessment
                   </Typography>
                   <Typography variant="body2" className="text-[0.8rem]">
                     Evaluate the candidate based on standard scoring rubrics for
@@ -222,7 +210,7 @@ const AssessmentContent = () => {
         )}
       </Grid>
 
-       
+
       {isBookingMode && !isAlreadyScheduled && !isAssessmentCompleted && (
         <Grid size={{ xs: 12, md: 4 }}>
           <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
@@ -251,7 +239,7 @@ const AssessmentContent = () => {
             setIsEditingChannels={setIsEditingChannels}
             channels={channels}
             handleChannelChange={handleChannelChange}
-            handleSavePreferences={handleSavePreferences}  
+            handleSavePreferences={handleSavePreferences}
           />
         </Grid>
       )}
@@ -262,7 +250,8 @@ const AssessmentContent = () => {
         router={router}
       />
     </Grid>
-  )}
+  )
+}
 
 const Assessment = () => {
   return (

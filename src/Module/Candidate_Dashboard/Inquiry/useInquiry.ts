@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useFormik } from "formik";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/Redux/store";
 import { updateUserData } from "@/Redux/Auth/user.slice";
@@ -13,8 +14,8 @@ import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
-import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
+import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -136,6 +137,106 @@ export function useInquiry() {
     );
   }, []);
 
+
+
+  const [hasExistingData, setHasExistingData] = useState(false);
+  const [activeStepperStep, setActiveStepperStep] = useState<number>(0);
+
+  // ── Initial form values from user data ───────────────────────────────────────
+  const getInitialValues = (): InquiryFormValues => ({
+    fullName: `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim(),
+    email: userData?.email || "",
+    phoneNumber: userData?.phoneNumber || "",
+    whatsappNumber: userData?.whatsappNumber || "",
+    fullAddress: userData?.address || "",
+    prefferedBranch: "",
+    prefferedConsultant: "",
+    visitOption: 0,
+    referedFrom: "web-app",
+    referedType: "",
+    referedBy: "",
+    otherReferedBy: "",
+    passportNo: userData?.passportStatus === "having" ? userData?.passportNo : ""
+  });
+  useEffect(() => {
+    const fetchRealProgress = async () => {
+      const existingLeadId = userData?.leadId || userData?.user?.leadId;
+
+      if (!existingLeadId) {
+        setActiveStepperStep(0);
+        return;
+      }
+
+      try {
+
+        const res = await getJourneyTimelineAction(existingLeadId);
+        if (res?.success && res?.data) {
+
+          setActiveStepperStep(res.data.activeStep);
+        } else {
+          setActiveStepperStep(1);
+        }
+      } catch (error) {
+        console.error("Failed to sync actual stepper progress:", error);
+        setActiveStepperStep(1);
+      }
+    };
+
+    fetchRealProgress();
+  }, [userData?.leadId]);
+
+
+  useEffect(() => {
+    const existingLeadId = userData?.leadId || userData?.user?.leadId;
+
+    if (existingLeadId) {
+
+      setHasExistingData(true);
+
+
+
+    }
+  }, [userData]);
+
+  const handleClosePopup = () => {
+
+    setShowInquiryPopup(false);
+
+
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const formik = useFormik({
+    initialValues: getInitialValues(),
+    enableReinitialize: true,
+    validationSchema: inquiryValidationSchema,
+    onSubmit: (values, { setSubmitting }) => {
+      handleSubmit(values, setSubmitting);
+    },
+  });
+
+  useEffect(() => {
+    fetchConsultants(formik.values.prefferedBranch);
+    formik.setFieldValue("prefferedConsultant", "");
+  }, [formik.values.prefferedBranch]);
+
+  useEffect(() => {
+    if (!formik.values.referedType) return;
+
+    fetchExternalSources(
+      formik.values.referedType,
+      formik.setFieldValue
+    );
+  }, [formik.values.referedType]);
+
+  const selectedBranchName =
+    (branches as any[]).find((b) => b._id === formik.values.prefferedBranch)
+      ?.title || "our branch";
+
+  const { err, helperText } = makeFieldHelpers(
+    formik.errors as Record<string, any>,
+    formik.submitCount,
+  );
   // ── Consultants ─────────────────────────────────────────────────────────────
   const [consultants, setConsultants] = useState<any[]>([]);
   const [loadingConsultants, setLoadingConsultants] = useState(false);
@@ -292,22 +393,7 @@ export function useInquiry() {
     }
   };
 
-  // ── Initial form values from user data ───────────────────────────────────────
-  const getInitialValues = (): InquiryFormValues => ({
-    fullName: `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim(),
-    email: userData?.email || "",
-    phoneNumber: userData?.phoneNumber || "",
-    whatsappNumber: userData?.whatsappNumber || "",
-    fullAddress: userData?.address || "",
-    prefferedBranch: "",
-    prefferedConsultant: "",
-    visitOption: 0,
-    referedFrom: "web-app",
-    referedType: "",
-    referedBy: "",
-    otherReferedBy: "",
-    passportNo: userData?.passportStatus === "having" ? userData?.passportNo : ""
-  });
+  const isFormDisabled = hasExistingData || generatedInqNo !== "";
 
   return {
     // data
@@ -330,6 +416,13 @@ export function useInquiry() {
     handlePreferenceToggle,
     handleSubmit,
     getInitialValues,
-    assignedTAC
+    assignedTAC,
+    formik,
+    isFormDisabled,
+    err,
+    helperText,
+    activeStepperStep,
+    handleClosePopup,
+    selectedBranchName
   };
 }

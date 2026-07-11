@@ -1,9 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useFormik } from "formik";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";
 
 import { Dialog, DialogContent, CircularProgress } from "@mui/material";
 import Grid from "@mui/material/Grid";
@@ -16,7 +13,6 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
-import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import {
   Box,
   capitalize,
@@ -52,104 +48,21 @@ const InquiryDetails = () => {
     isPreferenceError,
     submitting,
     showInquiryPopup,
-    setShowInquiryPopup,
     generatedInqNo,
     generatedLeadId,
     loadingConsultants,
     loadingSources,
     userData,
-    fetchConsultants,
-    fetchExternalSources,
     handlePreferenceToggle,
-    handleSubmit,
-    getInitialValues,
-    assignedTAC
+    assignedTAC,
+    formik,
+    isFormDisabled,
+    err,
+    helperText,
+    activeStepperStep,
+    handleClosePopup,
+    selectedBranchName
   } = useInquiry();
-
-  const [hasExistingData, setHasExistingData] = useState(false);
-  const [activeStepperStep, setActiveStepperStep] = useState<number>(0);
-
-  useEffect(() => {
-    const fetchRealProgress = async () => {
-      const existingLeadId = userData?.leadId || userData?.user?.leadId;
-
-      if (!existingLeadId) {
-        setActiveStepperStep(0);
-        return;
-      }
-
-      try {
-
-        const res = await getJourneyTimelineAction(existingLeadId);
-        if (res?.success && res?.data) {
-
-          setActiveStepperStep(res.data.activeStep);
-        } else {
-          setActiveStepperStep(1);
-        }
-      } catch (error) {
-        console.error("Failed to sync actual stepper progress:", error);
-        setActiveStepperStep(1);
-      }
-    };
-
-    fetchRealProgress();
-  }, [userData?.leadId]);
-
-
-  useEffect(() => {
-    const existingLeadId = userData?.leadId || userData?.user?.leadId;
-
-    if (existingLeadId) {
-
-      setHasExistingData(true);
-
-
-
-    }
-  }, [userData]);
-
-  const handleClosePopup = () => {
-   
-  setShowInquiryPopup(false);
-  
-  
-  window.scrollTo({ top: 0, behavior: "smooth" });
-};
-
-  const formik = useFormik({
-    initialValues: getInitialValues(),
-    enableReinitialize: true,
-    validationSchema: inquiryValidationSchema,
-    onSubmit: (values, { setSubmitting }) => {
-      handleSubmit(values, setSubmitting);
-    },
-  });
-
-  useEffect(() => {
-    fetchConsultants(formik.values.prefferedBranch);
-    formik.setFieldValue("prefferedConsultant", "");
-  }, [formik.values.prefferedBranch]);
-
-  useEffect(() => {
-    if (!formik.values.referedType) return;
-
-    fetchExternalSources(
-      formik.values.referedType,
-      formik.setFieldValue
-    );
-  }, [formik.values.referedType]);
-
-  const selectedBranchName =
-    (branches as any[]).find((b) => b._id === formik.values.prefferedBranch)
-      ?.title || "our branch";
-
-  const { err, helperText } = makeFieldHelpers(
-    formik.errors as Record<string, any>,
-    formik.submitCount,
-  );
-  const isFormDisabled = hasExistingData || generatedInqNo !== "";
-  const currentStepperStep = isFormDisabled ? 1 : 0;
   return (
     <>
       <Grid container spacing={6}>
@@ -217,8 +130,8 @@ const InquiryDetails = () => {
 
                 <div
                   className={`transition-all duration-500 ease-in-out ${isFormDisabled
-                      ? "blur-[2.5px] opacity-60 pointer-events-none select-none"
-                      : ""
+                    ? "blur-[2.5px] opacity-60 pointer-events-none select-none"
+                    : ""
                     }`}
                 >
                   <Card>
@@ -698,16 +611,16 @@ const InquiryDetails = () => {
 
       {/* ── Confirmation Dialog ─────────────────────────────────────────────── */}
       <Dialog
-  open={showInquiryPopup}
-  onClose={(_e, reason) => {
-    
-    if (reason !== "backdropClick") {
-      handleClosePopup();
-    }
-  }}
-  maxWidth="sm"
-  fullWidth
->
+        open={showInquiryPopup}
+        onClose={(_e, reason) => {
+
+          if (reason !== "backdropClick") {
+            handleClosePopup();
+          }
+        }}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogContent className="text-center p-8">
           <Typography variant="h4" className="mt-4">
             Inquiry Submitted
@@ -776,7 +689,7 @@ const InquiryDetails = () => {
               <Button
                 variant="contained"
                 className="normal-case rounded-[50px] py-[9.6px] px-10"
-               onClick={handleClosePopup}
+                onClick={handleClosePopup}
               >
                 Close
               </Button>

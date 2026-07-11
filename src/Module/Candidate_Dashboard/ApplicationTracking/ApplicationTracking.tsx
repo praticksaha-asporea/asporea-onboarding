@@ -89,14 +89,16 @@ const ApplicationTracking = () => {
             status={journeyData.inquiry.status}
             dateLabel="On"
             date={journeyData.inquiry.date}
-            description="A Talent Acquisition Consultant will be assigned to you shortly to guide you through the next stages."
+            description={journeyData.inquiry.status === "Done"
+              ? "This step is completed successfully, Please complete next steps."
+              : "A Talent Acquisition Consultant (TAC) will be assigned to you shortly to guide you through the next stages."}
           />
 
           <JourneyCard
             title="Pre-Counselling Readiness"
             status={journeyData.preCounselling.status}
             dateLabel={
-              journeyData.preCounselling.status === "pre_scheduled"
+              journeyData.preCounselling.status === "Scheduled"
                 ? "Scheduled For"
                 : journeyData.preCounselling.status === "Completed"
                   ? "Completed On"

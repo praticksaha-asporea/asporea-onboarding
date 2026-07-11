@@ -40,19 +40,21 @@ export default async function handler(
 
     let isPreCompleted = false;
     let isPreRejected = false;
+    let isPreScheduled = false;
     let isAssessScheduled = false;
     let isAssessRejected = false;
     let isAssessCompleted = false;
     let assessLatestStatus = {};
 
-    if (preAssignment && preAssignment.status === "completed") {
-      isPreCompleted = true;
+    if (preAssignment) {
+      isPreScheduled = true;
+      if (preAssignment.status === "completed") {
+        isPreCompleted = true;
+      }
+      if (preAssignment.status === "rejected") {
+        isPreRejected = true;
+      }
     }
-
-    if (preAssignment && preAssignment.status === "rejected") {
-      isPreRejected = true;
-    }
-
     if (assessAssignment) {
       isAssessScheduled = true;
       if (assessAssignment.status === "completed") {
@@ -147,11 +149,13 @@ export default async function handler(
       activeStep,
       inquiry: { status: "Done", date: formatDate(lead.createdAt) },
       preCounselling: {
-        status: isPreCompleted
-          ? "Completed"
-          : isPreRejected
-            ? "Rejected"
-            : "Pending",
+        status: isPreScheduled
+          ? (isPreCompleted
+            ? "Completed"
+            : isPreRejected
+              ? "Rejected"
+              : "Scheduled")
+          : "Pending",
         date: formatDate(
           preAssignment?.updatedAt || preAssignment?.schedule?.date,
         ),

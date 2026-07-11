@@ -1,182 +1,332 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
+
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { JourneyData } from "@/Types/Frontend_Payload/tracking.types";
 import { CamelCase } from "@/Utils/common";
 
 export const useApplicationTracking = () => {
   const router = useRouter();
-  const reduxUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
-  const leadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
+
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData
+  );
+
+  const leadId =
+    reduxUser?.leadId ||
+    reduxUser?.user?.leadId ||
+    "";
 
   const [isPopupOpen, setIsPopupOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [journeyData, setJourneyData] = useState<JourneyData | null>(null);
   const [isReduxReady, setIsReduxReady] = useState(false);
 
-  let docStatus = "";
-  let expStatus = "";
-  let assessDescription = "";
-  let docDescription = "";
-  let expDescription = "";
-  let preCounsellingDescription = "";
-  let assessButtonLabel: null | string = "";
-  let arePrerequisitesMet = false;
+  const [docStatus, setDocStatus] = useState("");
+  const [expStatus, setExpStatus] = useState("");
+
+  const [docDescription, setDocDescription] = useState("");
+  const [expDescription, setExpDescription] = useState("");
+  const [preCounsellingDescription, setPreCounsellingDescription] =
+    useState("");
+  const [assessDescription, setAssessDescription] = useState("");
+
+  const [assessButtonLabel, setAssessButtonLabel] =
+    useState<string | null>("");
+
+  const [arePrerequisitesMet, setArePrerequisitesMet] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsReduxReady(true), 500);
+    const timer = setTimeout(() => {
+      setIsReduxReady(true);
+    }, 500);
+
     return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    const fetchJourney = async () => {
-      if (!leadId) return;
-      try {
-        setLoading(true);
-        const res = await getJourneyTimelineAction(leadId);
-        console.log("Journey Timeline Response:", res);
+  /**
+   * Normalize status
+   */
+  const normalizeStatus = (status?: string) =>
+    (status || "").trim().toLowerCase();
 
-        if (res?.success && res.data) {
-          setJourneyData(res.data);
+  /**
+   * Document Description
+   */
+  const getDocumentDescription = useCallback((status: string) => {
+    switch (normalizeStatus(status)) {
+      case "waiting for approval":
+        return "Your documents have been submitted to the TAC Head and are currently waiting for approval.";
 
-          docStatus = res?.data?.documents?.status;
-          expStatus = res?.data?.experience?.status;
-          const isDocsUploaded = docStatus !== "" && docStatus !== "na" && docStatus !== "pending";
+      case "verified":
+        return "All uploaded documents have been verified and approved. Good job!";
 
-          docDescription = docStatus === "waiting for approval"
-            ? "Your documents have been submitted to the TAC Head and are currently waiting for approval."
-            : docStatus === "verified"
-              ? "All uploaded documents have been verified and approved. Good job!"
-              : docStatus === "rejected"
-                ? "Some of your documents were rejected. Please review and upload valid files."
-                : !isDocsUploaded
-                  ? "Please upload your required documents."
-                  : "Your uploaded documents are under review.";
+      case "rejected":
+        return "Some of your documents were rejected. Please review and upload valid files.";
 
-          const isExpSubmitted =
-            (expStatus !== "" && expStatus !== "na" && expStatus !== "pending") ||
-            !!res.data.experience?.type;
-          arePrerequisitesMet = isDocsUploaded && isExpSubmitted;
-          expDescription =
-            expStatus === "waiting for technical round"
-              ? "Your profile has been referred for a technical round evaluation. Please wait for your slot scheduling."
-              : expStatus === "verified"
-                ? "Your experience certificates and history have been successfully verified."
-                : expStatus === "rejected"
-                  ? "Your experience details were rejected. Please update with valid details."
-                  : !isExpSubmitted
-                    ? "Please fill and submit your experience details for review."
-                    : res?.data?.experience?.type
-                      ? `Your experience type has been confirmed as '${res?.data?.experience?.type === "free" ? 'Freelancer' : CamelCase(res?.data?.experience?.type)}'.`
-                      : "Your experience details are under review."
-            ;
+      case "":
+      case "na":
+      case "pending":
+        return "Please upload your required documents.";
 
-          preCounsellingDescription = res?.data.preCounselling.status === "Completed"
-            ? "Your pre-counselling session has been successfully completed and verified by the consultant."
-            : res?.data.preCounselling.status === "pre_scheduled"
-              ? "Your pre-counselling session is successfully scheduled. Please be available at your selected date and time slot."
-              : "Please confirm your readiness for pre-counselling sessions. This is a crucial step.";
+      default:
+        return "Your uploaded documents are under review.";
+    }
+  }, []);
 
-          assessButtonLabel = res?.data.assessment.hasResult
-            ? null
-            : res?.data.assessment.status === "Scheduled"
-              ? "Scheduled"
-              : res?.data.assessment.status === "Rejected" ?
-                "Rejected" :
-                res?.data.assessment.canSchedule
-                  ? arePrerequisitesMet
-                    ? "Schedule Assessment"
-                    : "Doc. & Exp."
-                  : "Wait for Pre-Counselling";
+  /**
+   * Experience Description
+   */
+  const getExperienceDescription = useCallback(
+    (status: string, experienceType?: string) => {
+      switch (normalizeStatus(status)) {
+        case "waiting for technical round":
+          return "Your profile has been referred for a technical round evaluation. Please wait for your slot scheduling.";
 
-          if (res.data.assessment.status === "Completed") {
-            assessDescription = "Your assessment has been evaluated successfully.";
-          } else if (
-            res.data.assessment.status === "Scheduled"
-          ) {
-            if (
-              docStatus === "Verified" &&
-              expStatus === "Verified"
-            ) {
-              assessDescription = "Your Documents & Experiences are verified.";
-              if (res.data.assessment.assessLatestStatus?.status === "rejected") {
-                assessDescription = "You are failed to this assessment.";
+        case "verified":
+          return "Your experience certificates and history have been successfully verified.";
 
-              }
-              else if (res.data.assessment.assessLatestStatus?.status === "completed") {
-                assessDescription = "You are passsed to this assessment.";
+        case "rejected":
+          return "Your experience details were rejected. Please update with valid details.";
 
-              }
-            }
-            else if (
-              docStatus === "Verified" &&
-              expStatus === "Waiting for Technical Round"
-            ) {
-              assessDescription =
-                "You will need to complete technical round to verify experience.";
-            }
-            else if (
-              docStatus === "Verified" &&
-              expStatus === "Filled"
-            ) {
-              assessDescription =
-                "Your Documents are verified. Now waiting for experience check.";
-            }
-            else if (
-              docStatus === "Waiting For Approval"
-            ) {
-              assessDescription = "Your Documents are waiting for approval.";
-            }
-            else if (
-              docStatus === "Rejected" &&
-              expStatus === "Rejected"
-            ) {
-              assessDescription = "Your Documents & Experiences are rejected.";
-            }
-            else if (
-              docStatus === "Rejected"
-            ) {
-              assessDescription = "Your Documents are rejected.";
-            }
-            else if (res.data.assessment.assessLatestStatus?.token?.generated) {
-              assessDescription =
-                "Your Assessment token has been generated. Please be within the Branch Premises.";
-            }
-            else {
-              assessDescription =
-                "Your Assessment is successfully Scheduled. Please be ready on your selected slot.";
-            }
-
+        case "":
+        case "na":
+        case "pending":
+          if (!experienceType) {
+            return "Please fill and submit your experience details for review.";
           }
-          else if (!arePrerequisitesMet && res.data.assessment.canSchedule) {
-            assessDescription =
-              "Documents Submission and Experience Submission are mandatory before scheduling. Please complete them from your dashboard first.";
-          } else if (res.data.assessment.canSchedule) {
-            assessDescription =
-              "Your initial online assessment is pending. Please schedule it by the deadline.";
-          } else {
-            assessDescription = "Wait for Pre-Counselling phase completion.";
-            if (res.data.assessment.assessLatestStatus?.status === "rejected") {
-              assessDescription = "You are failed to this assessment.";
-
-            }
-          }
-        } else {
-          toast.error(res?.message || "Failed to fetch application timeline", { id: "journey-error" });
-        }
-      } catch (err) {
-        toast.error("An unexpected error occurred");
-      } finally {
-        setLoading(false);
+          break;
       }
-    };
+
+      if (experienceType) {
+        return `Your experience type has been confirmed as '${experienceType === "free"
+          ? "Freelancer"
+          : CamelCase(experienceType)
+          }'.`;
+      }
+
+      return "Your experience details are under review.";
+    },
+    []
+  );
+
+  /**
+   * Assessment Description
+   */
+  const getAssessmentDescription = useCallback(
+    (
+      assessment: any,
+      normalizedDocStatus: string,
+      normalizedExpStatus: string,
+      prerequisitesMet: boolean
+    ) => {
+      if (!assessment) return "";
+
+      if (assessment.status === "Completed") {
+        return "Your assessment has been evaluated successfully.";
+      }
+
+      if (assessment.status === "Scheduled") {
+        if (
+          assessment.assessLatestStatus?.status === "rejected"
+        ) {
+          return "You have failed this assessment.";
+        }
+
+        if (
+          assessment.assessLatestStatus?.status === "completed"
+        ) {
+          return "You have passed this assessment.";
+        }
+
+        if (
+          normalizedDocStatus === "verified" &&
+          normalizedExpStatus === "verified"
+        ) {
+          return "Your Documents & Experience have been verified.";
+        }
+
+        if (
+          normalizedDocStatus === "verified" &&
+          normalizedExpStatus === "waiting for technical round"
+        ) {
+          return "You will need to complete the technical round to verify your experience.";
+        }
+
+        if (
+          normalizedDocStatus === "verified" &&
+          normalizedExpStatus === "filled"
+        ) {
+          return "Your documents are verified. Waiting for experience verification.";
+        }
+
+        if (
+          normalizedDocStatus === "waiting for approval"
+        ) {
+          return "Your documents are waiting for approval.";
+        }
+
+        if (
+          normalizedDocStatus === "rejected" &&
+          normalizedExpStatus === "rejected"
+        ) {
+          return "Your documents and experience have been rejected.";
+        }
+
+        if (normalizedDocStatus === "rejected") {
+          return "Your documents have been rejected.";
+        }
+
+        if (
+          assessment.assessLatestStatus?.token?.generated
+        ) {
+          return "Your assessment token has been generated. Please be within the Branch Premises.";
+        }
+
+        return "Your assessment has been successfully scheduled. Please be ready on your selected slot.";
+      }
+
+      if (!prerequisitesMet && assessment.canSchedule) {
+        return "Documents Submission and Experience Submission are mandatory before scheduling. Please complete them from your dashboard first.";
+      }
+
+      if (assessment.canSchedule) {
+        return "Your initial online assessment is pending. Please schedule it by the deadline.";
+      }
+
+      if (
+        assessment.assessLatestStatus?.status === "rejected"
+      ) {
+        return "You have failed this assessment.";
+      }
+
+      return "Wait for Pre-Counselling completion.";
+    },
+    []
+  );
+
+  const fetchJourney = useCallback(async () => {
+    if (!leadId) return;
+
+    try {
+      setLoading(true);
+
+      const res = await getJourneyTimelineAction(leadId);
+
+      console.log("Journey Timeline Response:", res);
+
+      if (!res?.success || !res?.data) {
+        toast.error(
+          res?.message || "Failed to fetch application timeline",
+          { id: "journey-error" }
+        );
+        return;
+      }
+
+      const data = res.data;
+
+      setJourneyData(data);
+
+      // Continue in Part 2...
+      const normalizedDocStatus = normalizeStatus(data.documents?.status);
+      const normalizedExpStatus = normalizeStatus(data.experience?.status);
+
+      setDocStatus(data.documents?.status || "");
+      setExpStatus(data.experience?.status || "");
+
+      const isDocsUploaded =
+        !["", "na", "pending"].includes(normalizedDocStatus);
+
+      const isExperienceSubmitted =
+        !["", "na", "pending"].includes(normalizedExpStatus) ||
+        !!data.experience?.type;
+
+      const prerequisitesMet =
+        isDocsUploaded && isExperienceSubmitted;
+
+      setArePrerequisitesMet(prerequisitesMet);
+
+      // Descriptions
+      setDocDescription(
+        getDocumentDescription(data.documents?.status || "")
+      );
+
+      setExpDescription(
+        getExperienceDescription(
+          data.experience?.status || "",
+          data.experience?.type
+        )
+      );
+
+      setAssessDescription(
+        getAssessmentDescription(
+          data.assessment,
+          normalizedDocStatus,
+          normalizedExpStatus,
+          prerequisitesMet
+        )
+      );
+
+      setPreCounsellingDescription(
+        data.preCounselling?.status === "Completed"
+          ? "Your pre-counselling session has been successfully completed and verified by the consultant."
+          : data.preCounselling?.status === "Scheduled"
+            ? "Your pre-counselling session is successfully scheduled. Please be available at your selected date and time slot."
+            : "Please confirm your readiness for pre-counselling sessions. This is a crucial step."
+      );
+
+      // Assessment Button
+      if (data.assessment?.hasResult) {
+        setAssessButtonLabel(null);
+      } else if (data.assessment?.status === "Scheduled") {
+        setAssessButtonLabel("Scheduled");
+      } else if (data.assessment?.status === "Rejected") {
+        setAssessButtonLabel("Rejected");
+      } else if (data.assessment?.canSchedule) {
+        setAssessButtonLabel(
+          prerequisitesMet
+            ? "Schedule Assessment"
+            : "Doc. & Exp."
+        );
+      } else {
+        setAssessButtonLabel("Wait for Pre-Counselling");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setLoading(false);
+    }
+  }, [
+    leadId,
+    getAssessmentDescription,
+    getDocumentDescription,
+    getExperienceDescription,
+  ]);
+
+  useEffect(() => {
+    if (!leadId) return;
+
     fetchJourney();
-  }, [leadId]);
+  }, [leadId, fetchJourney]);
 
   return {
-    router, leadId, isPopupOpen, setIsPopupOpen, loading, journeyData, isReduxReady, preCounsellingDescription, docDescription,
-    expDescription, assessDescription, assessButtonLabel, arePrerequisitesMet
+    router,
+    leadId,
+    loading,
+    journeyData,
+    isReduxReady,
+    isPopupOpen,
+    setIsPopupOpen,
+    docStatus,
+    expStatus,
+    docDescription,
+    expDescription,
+    preCounsellingDescription,
+    assessDescription,
+    assessButtonLabel,
+    arePrerequisitesMet,
   };
 };
