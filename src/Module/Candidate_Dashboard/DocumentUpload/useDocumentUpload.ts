@@ -66,17 +66,17 @@ export const useDocumentUpload = () => {
       }
       setCheckingStatus(true);
       try {
-        const timelineRes = await getJourneyTimelineAction(leadId);
+        const timelineRes = await getJourneyTimelineAction({ leadId });
         if (
-          timelineRes?.success === false &&
-          timelineRes?.message?.toLowerCase().includes("not found")
+          timelineRes?.data?.success === false &&
+          timelineRes?.data?.message?.toLowerCase().includes("not found")
         ) {
           setIsValidLead(false);
           return;
         }
-        if (timelineRes?.success && timelineRes.data) {
-          const currentActiveStep = timelineRes.data.activeStep;
-          const preCounsellingStatus = timelineRes.data?.preCounselling?.status;
+        if (timelineRes?.data?.success && timelineRes.data) {
+          const currentActiveStep = timelineRes?.data?.data?.activeStep;
+          const preCounsellingStatus = timelineRes?.data?.data?.preCounselling?.status;
           setActiveStep(currentActiveStep);
           if (preCounsellingStatus !== "Completed") {
             setIsPreLocked(true);
@@ -197,7 +197,7 @@ export const useDocumentUpload = () => {
       ...groupedDocs.academic,
     ];
 
-   const missingMandatory = allRequiredDocs.filter(
+    const missingMandatory = allRequiredDocs.filter(
       (d) =>
         d.isMandatory &&
         (!selectedFilesMap[d._id] || selectedFilesMap[d._id].length === 0),
@@ -208,8 +208,8 @@ export const useDocumentUpload = () => {
     setIsSubmitting(true);
     try {
       const mappedDocs = [];
-      
-      
+
+
       for (const [typeId, files] of Object.entries(selectedFilesMap)) {
         for (const file of files) {
           if (file) {
@@ -225,7 +225,7 @@ export const useDocumentUpload = () => {
         }
       }
 
-      
+
       const saveRes = await saveMappedDocumentsAction({
         leadId,
         documents: mappedDocs,

@@ -1,3 +1,5 @@
+import { NotificationPreference } from "../Frontend_Payload/auth.types"
+
 export interface loginResponse {
     success: boolean,
     message: string,
@@ -67,6 +69,36 @@ export interface ChangePasswordResponse {
         lastname: string,
         email: string,
         updatedAt: string
+    },
+    error: null
+}
+
+export interface profileUpdateResponse {
+    success: boolean,
+    message: string,
+    data: {
+        notificationPreference: NotificationPreference,
+        _id: string,
+        firstName: string,
+        lastName: string,
+        email: string,
+        phoneNumber: number,
+        whatsappNumber: number,
+        address: string,
+        role: string,
+        passportStatus: string,
+        passportNo: string,
+        status: string,
+        createdAt: string,
+        updatedAt: string,
+        __v: number,
+        enquired: string,
+        experienceInMonths: number,
+        bio: string,
+        profilePic: {
+            _id: string,
+            path: string
+        }
     },
     error: null
 }

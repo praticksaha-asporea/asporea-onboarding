@@ -1,12 +1,16 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
+import { getSlotsPayload } from "@/Types/Frontend_Payload/precounselling.types";
+import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
+import { AxiosResponse } from "axios";
 
-export const getSlotsAction = async (consultantId: string, date: string) => {
-  try {
-    const response = await axiosClient.get(`/pre-counselling/slots?consultantId=${consultantId}&date=${date}`);
-    return response.data;  
-  } catch (error: any) {
-    return { success: false, message: error.response?.data?.message || "Failed to fetch slots" };
-  }
+export const getSlotsAction = async (bodyData: getSlotsPayload): Promise<AxiosResponse<slotsResponse>> => {
+  // try {
+  const response = await axiosClient.get(`/pre-counselling/slots?consultantId=${bodyData?.consultantId}&date=${bodyData?.date}`);
+  return response;
+  // } catch (error: any) {
+  //   return { success: false, message: error.response?.data?.message || "Failed to fetch slots" };
+  // }
 };
 
 export const bookSlotAction = async (payload: any) => {
@@ -19,11 +23,7 @@ export const bookSlotAction = async (payload: any) => {
 };
 
 
-export const checkBookingStatusAction = async (leadId: string) => {
-  try {
-    const response = await axiosClient.get(`/pre-counselling/status?leadId=${leadId}`);
-    return response.data;
-  } catch (error: any) {
-    return { success: false, message: error.response?.data?.message || "Failed to check booking status" };
-  }
+export const checkBookingStatusAction = async (bodyData: trackingById): Promise<AxiosResponse<preCounsellingStatus>> => {
+  const response = await axiosClient.get(`/pre-counselling/status?leadId=${bodyData.leadId}`);
+  return response;
 };

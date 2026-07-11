@@ -10,13 +10,13 @@ import {
   checkBookingStatusAction,
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import {
-  Slot,
   ExistingBooking,
   ChecklistState,
   NotificationPreferences,
 } from "@/Types/Frontend_Payload/precounselling.types";
 import { checkBranchView } from "@/Services/APIs/PreCounselling/preCounselling.action";
-import {getJourneyTimelineAction} from "@/Services/APIs/Assessment/assessment.actions";
+import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 
 
 export const usePreCounselling = () => {
@@ -84,41 +84,41 @@ export const usePreCounselling = () => {
     }
   }, [isReduxReady, leadId, router]);
 
- useEffect(() => {
+  useEffect(() => {
     const checkStatus = async () => {
       if (!leadId) return;
       setCheckingStatus(true);
-      
+
       try {
-        
+
         try {
-          const timelineRes = await getJourneyTimelineAction(leadId);
-          if (timelineRes?.success === false && timelineRes?.message?.toLowerCase().includes("not found")) {
+          const timelineRes = await getJourneyTimelineAction({ leadId });
+          if (timelineRes?.data?.success === false && timelineRes?.data?.message?.toLowerCase().includes("not found")) {
             setIsValidLead(false);
             setCheckingStatus(false);
-            return;  
+            return;
           }
         } catch (timeErr: any) {
           if (timeErr?.response?.status === 404 || timeErr?.response?.data?.message?.toLowerCase().includes("not found")) {
             setIsValidLead(false);
             setCheckingStatus(false);
-            return;  
+            return;
           }
         }
 
-         
-        const res = await checkBookingStatusAction(leadId);
-        if (res?.success && res.data) {
-          setExistingBooking(res.data);
-          
-          if (res.data.status?.toLowerCase() === "completed") {
+
+        const res = await checkBookingStatusAction({ leadId });
+        if (res?.data?.success && res.data) {
+          setExistingBooking(res?.data?.data);
+
+          if (res?.data.data.status?.toLowerCase() === "completed") {
             setIsCompleted(true);
           }
 
-          if (res.data.schedule?.date) {
-            setDate(new Date(res.data.schedule.date).toISOString().split("T")[0]);
+          if (res?.data?.data?.schedule?.date) {
+            setDate(new Date(res?.data.data.schedule.date).toISOString().split("T")[0]);
           }
-        } else if (res?.message?.toLowerCase().includes("not found")) {
+        } else if (res?.data?.message?.toLowerCase().includes("not found")) {
           setIsValidLead(false);
         }
       } catch (err: any) {
@@ -129,7 +129,7 @@ export const usePreCounselling = () => {
         setCheckingStatus(false);
       }
     };
-    
+
     checkStatus();
   }, [leadId]);
 
@@ -165,10 +165,10 @@ export const usePreCounselling = () => {
     const fetchSlots = async () => {
       if (!consultantId) return;
       setLoadingSlots(true);
-      const res = await getSlotsAction(consultantId, date);
-      if (res?.success) setSlots(res.data);
+      const res = await getSlotsAction({ consultantId, date });
+      if (res?.data?.success) setSlots(res?.data?.data);
       else {
-        toast.error(res?.message || "Failed to fetch slots");
+        toast.error(res?.data?.message || "Failed to fetch slots");
         setSlots([]);
       }
       setLoadingSlots(false);

@@ -4,7 +4,7 @@ import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
 
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
-import { JourneyData } from "@/Types/Frontend_Payload/tracking.types";
+import { JourneyData, TrackingPhase } from "@/Types/Frontend_Payload/tracking.types";
 import { CamelCase } from "@/Utils/common";
 
 export const useApplicationTracking = () => {
@@ -117,7 +117,7 @@ export const useApplicationTracking = () => {
    */
   const getAssessmentDescription = useCallback(
     (
-      assessment: any,
+      assessment: TrackingPhase,
       normalizedDocStatus: string,
       normalizedExpStatus: string,
       prerequisitesMet: boolean
@@ -213,19 +213,19 @@ export const useApplicationTracking = () => {
     try {
       setLoading(true);
 
-      const res = await getJourneyTimelineAction(leadId);
+      const res = await getJourneyTimelineAction({ leadId });
 
-      console.log("Journey Timeline Response:", res);
+      // console.log("Journey Timeline Response:", res);
 
-      if (!res?.success || !res?.data) {
+      if (!res?.data?.success || !res?.data?.data) {
         toast.error(
-          res?.message || "Failed to fetch application timeline",
+          res?.data?.message || "Failed to fetch application timeline",
           { id: "journey-error" }
         );
         return;
       }
 
-      const data = res.data;
+      const data = res?.data?.data;
 
       setJourneyData(data);
 

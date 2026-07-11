@@ -169,10 +169,10 @@ export function useInquiry() {
 
       try {
 
-        const res = await getJourneyTimelineAction(existingLeadId);
-        if (res?.success && res?.data) {
+        const res = await getJourneyTimelineAction({ leadId: existingLeadId });
+        if (res?.data?.success && res?.data) {
 
-          setActiveStepperStep(res.data.activeStep);
+          setActiveStepperStep(res?.data?.data?.activeStep);
         } else {
           setActiveStepperStep(1);
         }

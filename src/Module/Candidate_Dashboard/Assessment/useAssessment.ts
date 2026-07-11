@@ -22,7 +22,7 @@ import {
   TechData,
 } from "@/Types/Frontend_Payload/assessment.types";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
-import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { profileUpdateApi } from "@/Services/APIs/auth/auth.actions";
 
 export const useAssessment = () => {
   const router = useRouter();
@@ -99,7 +99,7 @@ export const useAssessment = () => {
     checklist.aspirations &&
     checklist.lighting;
 
- const [channels, setChannels] = useState<NotificationChannels>({
+  const [channels, setChannels] = useState<NotificationChannels>({
     email: reduxUser?.notificationPreference?.email ?? true,
     whatsapp: reduxUser?.notificationPreference?.whatsapp ?? false,
     sms: reduxUser?.notificationPreference?.sms ?? false,
@@ -116,7 +116,7 @@ export const useAssessment = () => {
     }
   }, [reduxUser]);
 
-  
+
   const handleSavePreferences = async () => {
     if (!channels.email && !channels.whatsapp && !channels.sms) {
       return toast.error("Please select at least one notification channel", {
@@ -125,9 +125,7 @@ export const useAssessment = () => {
     }
     setIsEditingChannels(false);
     try {
-      const res = await axiosClient.patch("/user/profile-update", {
-        notificationPreference: channels,
-      });
+      const res = await profileUpdateApi({ notificationPreference: channels })
       if (res.data?.success) {
         dispatch(
           updateUserData({
@@ -141,42 +139,42 @@ export const useAssessment = () => {
     }
   };
 
-  
+
 
   const statusCardRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-   const checkAssessmentStatus = async () => {
-  if (!leadId || !isBookingMode) {
-    setCheckingStatus(false);
-    return;
-  }
-  try {
-    setCheckingStatus(true);
-    const res = await getJourneyTimelineAction(leadId);
-    
-    if (res?.success && res.data?.assessment) {
-      const currentStatus = res.data.assessment.status;
-      
-       
-      if (currentStatus === "Scheduled" || currentStatus === "scheduled") {
-        setIsAlreadyScheduled(true);
-        setScheduledDetails(res.data.assessment);
-      } 
-       
-      else if (currentStatus === "Completed" || currentStatus === "completed") {
-        setIsAssessmentCompleted(true);
-        setScheduledDetails(res.data.assessment);
+    const checkAssessmentStatus = async () => {
+      if (!leadId || !isBookingMode) {
+        setCheckingStatus(false);
+        return;
       }
-    }
+      try {
+        setCheckingStatus(true);
+        const res = await getJourneyTimelineAction({ leadId });
+
+        if (res?.data?.success && res?.data?.data?.assessment) {
+          const currentStatus = res?.data?.data?.assessment?.status;
+
+
+          if (currentStatus === "Scheduled" || currentStatus === "scheduled") {
+            setIsAlreadyScheduled(true);
+            setScheduledDetails(res?.data?.data?.assessment);
+          }
+
+          else if (currentStatus === "Completed" || currentStatus === "completed") {
+            setIsAssessmentCompleted(true);
+            setScheduledDetails(res?.data?.data?.assessment);
+          }
+        }
         if (!initialConsultantId) {
           try {
-            const bookingRes = await checkBookingStatusAction(leadId);
-            if (bookingRes?.success && bookingRes?.data?.assignedTo) {
+            const bookingRes = await checkBookingStatusAction({ leadId });
+            if (bookingRes?.data?.success && bookingRes?.data?.data?.assignedTo) {
               const tacId =
-                typeof bookingRes.data.assignedTo === "object"
-                  ? bookingRes.data.assignedTo._id
-                  : bookingRes.data.assignedTo;
+                typeof bookingRes?.data?.data?.assignedTo === "object"
+                  ? bookingRes?.data?.data?.assignedTo?._id
+                  : bookingRes?.data?.data?.assignedTo;
               setFetchedConsultantId(tacId);
             }
           } catch (bookingErr) {
@@ -190,7 +188,7 @@ export const useAssessment = () => {
       }
     };
     checkAssessmentStatus();
-    
+
   }, [leadId, isBookingMode, initialConsultantId]);
 
   useEffect(() => {
@@ -216,10 +214,10 @@ export const useAssessment = () => {
       setLoadingSlots(true);
       setSelectedSlot(null);
       try {
-        const res = await getSlotsAction(finalConsultantId, date);
-        if (res?.success) setSlots(res.data);
+        const res = await getSlotsAction({ consultantId: finalConsultantId, date });
+        if (res?.data?.success) setSlots(res?.data.data);
         else {
-          toast.error(res?.message || "Failed to fetch slots");
+          toast.error(res?.data?.message || "Failed to fetch slots");
           setSlots([]);
         }
       } catch (error) {
@@ -244,17 +242,17 @@ export const useAssessment = () => {
     fetchTechData();
   }, [isTechnicalResult, leadId]);
 
-  
+
   useEffect(() => {
     const fetchAssessmentResultData = async () => {
       if (isAssessmentResult && leadId) {
         const res = await getAssessmentResultAction(leadId);
         if (res?.success) setResultData(res.data);
-        
+
       }
     };
     fetchAssessmentResultData();
-    
+
   }, [isAssessmentResult]);
 
   const handleScheduleAssessment = async () => {
@@ -319,7 +317,7 @@ export const useAssessment = () => {
     isAlreadyScheduled,
     scheduledDetails,
     checkingStatus,
-    handleSavePreferences,  
+    handleSavePreferences,
     resultData,
     isAssessmentCompleted
   };

@@ -1,3 +1,6 @@
+import { Slot } from "../Frontend_Payload/assessment.types"
+import { JourneyData } from "../Frontend_Payload/tracking.types"
+
 export interface inquiryResponse {
 
     success: boolean,
@@ -108,4 +111,52 @@ export interface resultData {
     notes: Note[];
     passportNo: string,
     updatedAt: string
+}
+
+export interface journeyTrackingRes {
+    success: boolean,
+    message: string,
+    data: JourneyData,
+    error: null
+}
+
+export interface preCounsellingStatus {
+    success: true,
+    message: string,
+    data: {
+        _id: string,
+        leadId: string,
+        phase: string,
+        assignedTo: string | { _id: string, },
+        attended: boolean,
+        createdAt: string,
+        escalation: {
+            requested: boolean
+        },
+        schedule: {
+            date: string,
+            from: string,
+            to: string,
+            method: string
+        },
+        status: string,
+        token: {
+            generated: boolean,
+            number: string
+        },
+        updatedAt: string,
+        pre: {
+            additionalDetails: string,
+            specificNotes: string,
+            advice: string
+        }
+    },
+    error: null
+}
+
+export interface slotsResponse {
+    success: boolean,
+    message: string,
+    data: Slot[],
+    error: null
 }

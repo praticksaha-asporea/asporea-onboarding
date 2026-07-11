@@ -1,10 +1,3 @@
-export interface Slot {
-  time: string;
-  from: string;
-  to: string;
-  available: boolean;
-}
-
 export interface ExistingBooking {
   schedule?: {
     date: string;
@@ -33,4 +26,10 @@ export interface PreCounsellingPayload {
   from: string;
   to: string;
   method: string;
+}
+
+
+export interface getSlotsPayload {
+  consultantId: string,
+  date: string
 }

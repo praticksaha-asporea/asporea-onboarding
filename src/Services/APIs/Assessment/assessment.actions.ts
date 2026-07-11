@@ -1,29 +1,30 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { journeyTrackingRes } from "@/Types/ApiResponse/leadRes.types";
+import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
+import { AxiosResponse } from "axios";
 
-export const getJourneyTimelineAction = async (
-  leadId: string,
-): Promise<any> => {
-  try {
-    const response = await axiosClient.get(
-      `/tracking/journey?leadId=${leadId}`,
-    );
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message:
-        error.response?.data?.message || "Failed to fetch journey timeline",
-    };
-  }
+export const getJourneyTimelineAction = async (bodyData: trackingById): Promise<AxiosResponse<journeyTrackingRes>> => {
+  // try {
+  const response = await axiosClient.get(
+    `/tracking/journey?leadId=${bodyData?.leadId}`,
+  );
+  return response;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message:
+  //       error.response?.data?.message || "Failed to fetch journey timeline",
+  //   };
+  // }
 };
 
 export const scheduleAssessmentAction = async (data: {
   leadId: string;
-  consultantId?: string;  
+  consultantId?: string;
   date: string;
-  slotTime?: string;     
-  from?: string;         
-  to?: string;           
+  slotTime?: string;
+  from?: string;
+  to?: string;
   method: "on" | "off";
 }): Promise<any> => {
   try {
