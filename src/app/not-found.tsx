@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useLottie } from "lottie-react";
 
-import notFoundAnim from "@/assets/404 error.json";
+import notFoundAnim from "@/assets/404 Error Page.json";
 
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
