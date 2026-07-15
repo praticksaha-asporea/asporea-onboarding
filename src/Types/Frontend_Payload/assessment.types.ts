@@ -36,3 +36,13 @@ export interface TechData {
     __v: number
   }
 }
+
+export interface scheduleAssessmentPayload {
+  leadId: string;
+  consultantId?: string;
+  date: string;
+  slotTime?: string;
+  from?: string;
+  to?: string;
+  method: "on" | "off";
+}

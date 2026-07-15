@@ -273,12 +273,12 @@ export const useAssessment = () => {
         from: selectedSlot.from || selectedSlot.time.split("-")[0].trim(),
         to: selectedSlot.to || selectedSlot.time.split("-")[1].trim(),
       };
-      const res = await scheduleAssessmentAction(payload as any);
-      if (res?.success) {
+      const res = await scheduleAssessmentAction(payload);
+      if (res?.data?.success) {
         toast.success("Assessment Scheduled Successfully!");
         setIsAlreadyScheduled(true);
         setShowConfirmPopup(true);
-      } else toast.error(res?.message || "Failed to schedule Assessment.");
+      } else toast.error(res?.data?.message || "Failed to schedule Assessment.");
     } catch (error) {
       toast.error("An unexpected error occurred");
     } finally {

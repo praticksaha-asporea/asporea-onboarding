@@ -168,3 +168,32 @@ export interface technicalResultResponse {
     data: techDBData,
     error: null
 }
+
+export interface assessmentScheduleResponse {
+    success: boolean,
+    message: string,
+    data: {
+        schedule: {
+            date: string,
+            from: string,
+            to: string,
+            method: string
+        },
+        token: {
+            generated: boolean,
+            number: string | null
+        },
+        escalation: {
+            requested: boolean
+        },
+        _id: string,
+        leadId: string,
+        phase: string,
+        assignedTo: string | { _id: string, },
+        attended: boolean,
+        createdAt: string,
+        status: string,
+        updatedAt: string
+    },
+    error: null
+}
