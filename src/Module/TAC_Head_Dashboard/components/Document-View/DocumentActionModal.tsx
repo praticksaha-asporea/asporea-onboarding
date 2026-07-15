@@ -85,9 +85,9 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({
         lead?.preferences?.consultantId?.id;
       if (action === "verified" && selectedDate && consultantId) {
         setFetchingSlots(true);
-        const res = await getSlotsAction(consultantId, selectedDate);
-        if (res?.success !== false) {
-          setSlots(res?.data || []);
+        const res = await getSlotsAction({ consultantId, date: selectedDate });
+        if (res?.data?.success !== false) {
+          setSlots(res?.data?.data || []);
         } else {
           setSlots([]);
         }
@@ -143,7 +143,7 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({
       fullWidth
       PaperProps={{ className: "rounded-xl" }}
     >
-     <DialogTitle 
+      <DialogTitle
         className="font-medium text-[20px] text-white px-6 py-4"
         style={{ background: headerGradient }}
       >
@@ -236,60 +236,59 @@ const DocumentActionModal: React.FC<ActionModalProps> = ({
             </RadioGroup>
           </FormControl>
 
-          
-         {/* Verification Slots Section */}
-{action === "verified" && (
-  <Box className="mb-6 p-4 bg-[var(--mui-palette-primary)] rounded-lg  ">
-    <Typography variant="subtitle2" className="mb-3 text-[var(--mui-palette-primary-main)]
+
+          {/* Verification Slots Section */}
+          {action === "verified" && (
+            <Box className="mb-6 p-4 bg-[var(--mui-palette-primary)] rounded-lg  ">
+              <Typography variant="subtitle2" className="mb-3 text-[var(--mui-palette-primary-main)]
  font-semibold">
-      Schedule Slot For Next Steps
-    </Typography>
-    <TextField
-      type="date"
-      size="small"
-      fullWidth
-      inputProps={{ min: new Date().toISOString().split("T")[0] }}
-      value={selectedDate}
-      onChange={(e) => setSelectedDate(e.target.value)}
-      className="bg-[var(--mui-palette-primary)] mb-4"
-    />
-    
-    {selectedDate && (
-      <Box>
-        <Typography variant="subtitle2" className="mb-2 font-bold text-[var(--mui-palette-primary)]">
-          Available Slots
-        </Typography>
-        <Box className="flex flex-wrap gap-2">
-          {fetchingSlots ? (
-            <CircularProgress size={20} className="m-2" />
-          ) : slots.length === 0 ? (
-            <Typography className="text-gray-500 text-sm italic">
-              No slots available for this date.
-            </Typography>
-          ) : (
-            slots.map((slot: any, index: number) => (
-              <Button
-                key={index}
-                disabled={!slot.available}
-                variant={selectedSlot?.time === slot.time ? "contained" : "outlined"}
-                onClick={() => slot.available && setSelectedSlot(slot)}
-                className={`normal-case rounded-lg px-4 py-1 text-sm ${
-                  selectedSlot?.time === slot.time
-                    ? "bg-blue-600 border-blue-600 text-white"
-                    : slot.available
-                      ? "bg-white border-gray-300 hover:border-blue-500 text-gray-700"
-                      : "bg-gray-100 border-gray-200"
-                } disabled:text-gray-400`}
-              >
-                {slot.time}
-              </Button>
-            ))
+                Schedule Slot For Next Steps
+              </Typography>
+              <TextField
+                type="date"
+                size="small"
+                fullWidth
+                inputProps={{ min: new Date().toISOString().split("T")[0] }}
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-[var(--mui-palette-primary)] mb-4"
+              />
+
+              {selectedDate && (
+                <Box>
+                  <Typography variant="subtitle2" className="mb-2 font-bold text-[var(--mui-palette-primary)]">
+                    Available Slots
+                  </Typography>
+                  <Box className="flex flex-wrap gap-2">
+                    {fetchingSlots ? (
+                      <CircularProgress size={20} className="m-2" />
+                    ) : slots.length === 0 ? (
+                      <Typography className="text-gray-500 text-sm italic">
+                        No slots available for this date.
+                      </Typography>
+                    ) : (
+                      slots.map((slot: any, index: number) => (
+                        <Button
+                          key={index}
+                          disabled={!slot.available}
+                          variant={selectedSlot?.time === slot.time ? "contained" : "outlined"}
+                          onClick={() => slot.available && setSelectedSlot(slot)}
+                          className={`normal-case rounded-lg px-4 py-1 text-sm ${selectedSlot?.time === slot.time
+                              ? "bg-blue-600 border-blue-600 text-white"
+                              : slot.available
+                                ? "bg-white border-gray-300 hover:border-blue-500 text-gray-700"
+                                : "bg-gray-100 border-gray-200"
+                            } disabled:text-gray-400`}
+                        >
+                          {slot.time}
+                        </Button>
+                      ))
+                    )}
+                  </Box>
+                </Box>
+              )}
+            </Box>
           )}
-        </Box>
-      </Box>
-    )}
-  </Box>
-)}
           <TextField
             fullWidth
             multiline

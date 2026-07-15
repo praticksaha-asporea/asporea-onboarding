@@ -84,7 +84,7 @@ const BreakdownPdfUpload: React.FC<BreakdownPdfUploadProps> = ({ file, onChange 
 
   return (
     <>
-     
+
       <Typography variant="caption" className="font-semibold text-[var(--mui-palette-text-secondary)] mb-1 block uppercase tracking-wide">
         Breakdown PDF / Image
       </Typography>
@@ -203,7 +203,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [passingMarks, setPassingMarks] = useState<number>(0);
 
-  
+
 
   useEffect(() => {
     if (open) {
@@ -213,15 +213,15 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
     }
   }, [open]);
 
-  
+
   useEffect(() => {
     const fetchSlots = async () => {
       const consultantId = lead?.preferences?.consultantId?._id || lead?.preferences?.consultantId?.id;
       if (selectedDate && consultantId) {
         setFetchingSlots(true);
-        const res = await getSlotsAction(consultantId, selectedDate);
-        if (res?.success !== false) {
-          setSlots(res?.data || []);
+        const res = await getSlotsAction({ consultantId, date: selectedDate });
+        if (res?.data?.success !== false) {
+          setSlots(res?.data?.data || []);
         } else {
           setSlots([]);
         }
@@ -284,7 +284,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
       const currentIsPassing = Number(values.achievedScore) >= passingMarks && passingMarks > 0;
       if (currentIsPassing && (!selectedDate || !selectedSlot)) {
         toast.error("Candidate has passed! Please schedule the next assessment slot.");
-        return;  
+        return;
       }
       const formData = new FormData();
 
@@ -301,7 +301,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
         formData.append("breakdownPdf", values.breakdownPdf);
       }
 
-   if (currentIsPassing && selectedDate && selectedSlot) {
+      if (currentIsPassing && selectedDate && selectedSlot) {
         formData.append("scheduleDate", selectedDate);
         formData.append("scheduleFrom", selectedSlot.from);
         formData.append("scheduleTo", selectedSlot.to);
@@ -341,14 +341,14 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
 
     fetchFullLeadDetails();
   }, [open, lead]);
- 
+
   const isPassing = Number(technicalReviewForm.values.achievedScore) >= passingMarks && passingMarks > 0;
 
   if (!lead) return null;
 
   return (
     <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth PaperProps={{ className: "rounded-xl" }}>
-      <DialogTitle 
+      <DialogTitle
         className="font-medium text-[20px] text-white px-6 py-4"
         style={{ background: headerGradient }}
       >
@@ -543,12 +543,12 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
               />
             </Grid>
 
-       
-          {isPassing && (
+
+            {isPassing && (
               <Grid size={{ xs: 12, md: 12 }}>
                 <Box className="p-4  rounded-xl   shadow-2xl mt-2 transition-all">
                   <Typography variant="subtitle2" className="mb-3 text-[var(--mui-palette-primary-main)] font-semibold uppercase tracking-wider">
-                     Schedule Assessment Slot *
+                    Schedule Assessment Slot *
                   </Typography>
                   <TextField
                     type="date" size="small" fullWidth

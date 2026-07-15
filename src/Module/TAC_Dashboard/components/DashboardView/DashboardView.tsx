@@ -21,7 +21,7 @@ import DashboardKpiCards from "./DashboardKpiCards";
 import DashboardFilters from "./DashboardFilters";
 import DashboardTable from "./DashboardTable";
 import DashboardScheduleModal from "./DashboardScheduleModal";
-import DashboardCommunicationModal from "./DashboardCommunicationModal";  
+import DashboardCommunicationModal from "./DashboardCommunicationModal";
 
 interface DashboardProps {
   setCurrentView: (view: "dashboard" | "detail") => void;
@@ -61,7 +61,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
   const [commModalOpen, setCommModalOpen] = useState(false);
   const [commMode, setCommMode] = useState<"chat" | "email" | null>(null);
   const [commCandidate, setCommCandidate] = useState<any | null>(null);
-   
+
   const [tacList, setTacList] = useState<any[]>([]);
   const [selectedTac, setSelectedTac] = useState("");
 
@@ -151,20 +151,20 @@ const DashboardView: React.FC<DashboardProps> = () => {
 
   useEffect(() => {
     const loadSlots = async () => {
-     if (!selectedTac || !date || !modalOpen) return;
+      if (!selectedTac || !date || !modalOpen) return;
       setSlotsLoading(true);
       setSelectedSlot(null);
-      const res = await getSlotsAction(selectedTac, date);
-      if (res?.success) {
-        setSlots(res.data);
+      const res = await getSlotsAction({ consultantId: selectedTac, date });
+      if (res?.data?.success) {
+        setSlots(res?.data?.data);
       } else {
-        toast.error(res?.message || "Failed to fetch slots");
+        toast.error(res?.data?.message || "Failed to fetch slots");
         setSlots([]);
       }
       setSlotsLoading(false);
     };
     loadSlots();
- }, [selectedTac, date, modalOpen]);
+  }, [selectedTac, date, modalOpen]);
 
   const handleBookSlot = async () => {
     if (!targetLead || !selectedTac || !selectedSlot) return;
@@ -178,7 +178,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
       date,
       from: selectedSlot.from,
       to: selectedSlot.to,
-      method: method as "on" | "off",  
+      method: method as "on" | "off",
     };
 
     let res;
@@ -218,7 +218,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
         setExperienceFilter={setExperienceFilter}
       />
 
-     <DashboardTable
+      <DashboardTable
         rows={rows}
         loading={loading}
         error={error}
@@ -227,7 +227,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
         totalPages={totalPages}
         setPage={setPage}
         openScheduleModal={openScheduleModal}
-        openCommModal={openCommModal}  
+        openCommModal={openCommModal}
         onViewCandidate={(id) => router.push(`/dashboard/candidate/${id}`)}
       />
 

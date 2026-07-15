@@ -8,9 +8,9 @@ import Box from "@mui/material/Box";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {
-  Slot,
   ExistingBooking,
 } from "@/Types/Frontend_Payload/precounselling.types";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 
 interface SessionSchedulerProps {
   date: string;
@@ -85,13 +85,12 @@ export const SessionScheduler: React.FC<SessionSchedulerProps> = ({
                     selectedSlot?.time === slot.time ? "contained" : "outlined"
                   }
                   onClick={() => slot.available && setSelectedSlot(slot)}
-                  className={`normal-case rounded-[20px] px-6 ${
-                    selectedSlot?.time === slot.time
-                      ? "bg-primary border-primary text-white"
-                      : slot.available
-                        ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
-                        : "bg-[#f5f5f5] border-[#e0e0e0]"
-                  } disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]`}
+                  className={`normal-case rounded-[20px] px-6 ${selectedSlot?.time === slot.time
+                    ? "bg-primary border-primary text-white"
+                    : slot.available
+                      ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                      : "bg-[#f5f5f5] border-[#e0e0e0]"
+                    } disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]`}
                 >
                   {slot.time}
                 </Button>

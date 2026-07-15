@@ -40,19 +40,19 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
   const [action, setAction] = useState<"approved" | "rejected" | "">("");
   const [remarks, setRemarks] = useState("");
 
-   
+
   const [date, setDate] = useState("");
   const [slots, setSlots] = useState<any[]>([]);
   const [selectedSlot, setSelectedSlot] = useState<any>(null);
   const [slotsLoading, setSlotsLoading] = useState(false);
   const [submitLoading, setSubmitLoading] = useState(false);
 
-  
+
   const todayStr = new Date(new Date().getTime() + 330 * 60000)
     .toISOString()
     .split("T")[0];
 
-   
+
   useEffect(() => {
     if (open) {
       setDate(todayStr);
@@ -62,26 +62,26 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
     }
   }, [open, todayStr]);
 
-  
+
   const leadStatus = escalation?.leadId?.status || "";
   const requiresSchedule = ["pre_scheduled", "assess_scheduled"].includes(
     leadStatus,
   );
   const targetTacId = escalation?.toId?._id;
 
-  
+
   useEffect(() => {
     const fetchTargetTacSlots = async () => {
       if (action === "approved" && requiresSchedule && targetTacId && date) {
         setSlotsLoading(true);
         setSelectedSlot(null);
-        const res = await getSlotsAction(targetTacId, date);
-        if (res?.success) {
-          setSlots(res.data);
+        const res = await getSlotsAction({ consultantId: targetTacId, date });
+        if (res?.data?.success) {
+          setSlots(res?.data?.data);
         } else {
           setSlots([]);
           toast.error(
-            res?.message || "Failed to fetch slots for the Target TAC",
+            res?.data?.message || "Failed to fetch slots for the Target TAC",
           );
         }
         setSlotsLoading(false);
@@ -95,7 +95,7 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
     if (!action) return toast.error("Please select an action (Approve/Reject)");
     if (!remarks.trim()) return toast.error("Remarks are mandatory");
 
-    
+
     let schedulePayload = undefined;
     if (action === "approved" && requiresSchedule) {
       if (!selectedSlot)
@@ -233,10 +233,10 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
           rows={2}
           size="small"
           label="Remarks"
-          required  
+          required
           sx={{
             "& .MuiFormLabel-asterisk": {
-              color: "red",  
+              color: "red",
             },
           }}
           placeholder="Add reason for approval or rejection..."
@@ -303,13 +303,12 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
                           : "outlined"
                       }
                       onClick={() => slot.available && setSelectedSlot(slot)}
-                      className={`normal-case rounded-lg px-4 py-1 text-sm ${
-                        selectedSlot?.time === slot.time
+                      className={`normal-case rounded-lg px-4 py-1 text-sm ${selectedSlot?.time === slot.time
                           ? "bg-blue-600 border-blue-600 text-white"
                           : slot.available
                             ? "bg-white border-gray-300 hover:border-blue-500 text-gray-700"
                             : "bg-gray-100 border-gray-200"
-                      } disabled:text-gray-400`}
+                        } disabled:text-gray-400`}
                     >
                       {slot.time}
                     </Button>
@@ -337,11 +336,10 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
             (action === "approved" && requiresSchedule && !selectedSlot)
           }
           onClick={handleSubmit}
-          className={`rounded-lg px-6 normal-case shadow-md ${
-            action === "rejected"
+          className={`rounded-lg px-6 normal-case shadow-md ${action === "rejected"
               ? " bg-[var(--mui-palette-error-main)] hover:bg-[var(--mui-palette-error-main)]"
               : "bg-[var(--mui-palette-light-main) hover:bg-[var(--mui-palette-light-main)"
-          }`}
+            }`}
         >
           {submitLoading ? (
             <CircularProgress size={20} color="inherit" />
