@@ -234,8 +234,8 @@ export const useAssessment = () => {
     const fetchTechData = async () => {
       if (isTechnicalResult && leadId) {
         setLoadingTech(true);
-        const res = await getTechnicalResultAction(leadId);
-        if (res?.success) setTechData(res.data);
+        const res = await getTechnicalResultAction({ leadId });
+        if (res?.data?.success) setTechData(res?.data?.data);
         setLoadingTech(false);
       }
     };
@@ -246,8 +246,8 @@ export const useAssessment = () => {
   useEffect(() => {
     const fetchAssessmentResultData = async () => {
       if (isAssessmentResult && leadId) {
-        const res = await getAssessmentResultAction(leadId);
-        if (res?.success) setResultData(res.data);
+        const res = await getAssessmentResultAction({ leadId });
+        if (res?.data?.success) setResultData(res?.data?.data);
 
       }
     };

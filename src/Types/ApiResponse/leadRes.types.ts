@@ -1,5 +1,6 @@
 import { Slot } from "../Frontend_Payload/assessment.types"
 import { JourneyData } from "../Frontend_Payload/tracking.types"
+import { techDBData } from "../object.types"
 
 export interface inquiryResponse {
 
@@ -158,5 +159,12 @@ export interface slotsResponse {
     success: boolean,
     message: string,
     data: Slot[],
+    error: null
+}
+
+export interface technicalResultResponse {
+    success: boolean,
+    message: string,
+    data: techDBData,
     error: null
 }

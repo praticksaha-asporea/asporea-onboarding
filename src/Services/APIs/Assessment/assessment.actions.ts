@@ -1,5 +1,5 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { journeyTrackingRes } from "@/Types/ApiResponse/leadRes.types";
+import { journeyTrackingRes, technicalResultResponse } from "@/Types/ApiResponse/leadRes.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
 
@@ -38,20 +38,21 @@ export const scheduleAssessmentAction = async (data: {
   }
 };
 
-export const getTechnicalResultAction = async (leadId: string) => {
-  try {
-    const res = await axiosClient.get(`/assessments/technical-result?leadId=${leadId}`);
-    return res.data;
-  } catch (err) {
-    return { success: false, message: "Network Error" };
-  }
+export const getTechnicalResultAction = async (bodyData: trackingById): Promise<AxiosResponse<technicalResultResponse>> => {
+  // try {
+  const res = await axiosClient.get(`/assessments/technical-result?leadId=${bodyData?.leadId}`);
+  return res;
+  // } catch (err) {
+  //   return { success: false, message: "Network Error" };
+  // }
 };
 
-export const getAssessmentResultAction = async (leadId: string) => {
-  try {
-    const res = await axiosClient.get(`/assessments/result?leadId=${leadId}`);
-    return res.data;
-  } catch (err) {
-    return { success: false, message: "Network Error" };
-  }
+export const getAssessmentResultAction = async (bodyData: trackingById): Promise<AxiosResponse<any>> => {
+  // try {
+  const res = await axiosClient.get(`/assessments/result?leadId=${bodyData?.leadId}`);
+  return res
+  //   .data;
+  // } catch (err) {
+  //   return { success: false, message: "Network Error" };
+  // }
 };

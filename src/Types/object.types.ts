@@ -23,3 +23,19 @@ export interface branchDB {
     timeZone: string,
     distanceKm: number
 }
+
+export interface techDBData {
+    _id: string,
+    leadId: string,
+    assignmentId: string,
+    totalScore: number,
+    achievedScore: number,
+    timeTaken: string,
+    questions: number,
+    answered: number,
+    feedback: string,
+    status: string,
+    createdAt: string,
+    updatedAt: string,
+    __v: number
+}
