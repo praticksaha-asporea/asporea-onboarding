@@ -28,39 +28,31 @@ const getStatusBadge = (status: string) => {
     case "exp_submitted":
     case "assessment_submitted":
       return "bg-blue-500 text-white dark:bg-blue-500 dark:text-white";
-
     case "doc_verified":
     case "exp_verified":
     case "pre_completed":
     case "assess_completed":
       return "bg-green-500 text-white dark:bg-green-90 dark:text-white";
-
     case "pre_contacted":
     case "assess_contacted":
       return "bg-teal-500 text-white dark:bg-teal-95 dark:text-white";
-
     case "pre_queued":
     case "assess_queued":
       return "bg-orange-500 text-white dark:bg-orange-95 dark:text-white";
-
     case "pre_scheduled":
     case "assess_scheduled":
     case "assessment_scheduled":
       return "bg-amber-600 text-white dark:bg-amber-700 dark:text-white";
-
     case "pre_not_responded":
     case "assess_not_responded":
       return "bg-pink-500 text-white dark:bg-pink-96 dark:text-white";
-
     case "pre_rejected":
     case "assess_rejected":
     case "exp_rejected":
     case "doc_rejected":
       return "bg-red-600 text-white dark:bg-red-98 dark:text-white";
-
     case "exp_request_technical":
-      return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white  ";
-
+      return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white";
     default:
       return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white ";
   }
@@ -107,6 +99,11 @@ const responsiveTableSx = {
       },
     },
   },
+  // Table ko compact rakhne ke liye base table setup
+  "& table": {
+    tableLayout: "auto",
+    width: "100%",
+  }
 };
 
 interface DashboardTableProps {
@@ -162,7 +159,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
     <>
       <TableContainer
         component={Paper}
-        className="shadow-xl  "
+        className="shadow-xl w-full"
         sx={responsiveTableSx}
       >
         <Table size="small">
@@ -171,9 +168,9 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
               {cols.map((head, i) => (
                 <TableCell
                   key={i}
-                 
                   align={head === "Status" || head === "Token" ? "center" : head === "Actions" ? "right" : "left"}
-                  className="py-4 px-4 font-semibold  bg-[var(--mui-palette-primary)]   text-[var(--mui-palette-secondary-main)] whitespace-nowrap"
+                  // 🌟 HIGHLIGHT 1: Hata diya 'whitespace-nowrap', padding kam ki (!px-2), aur line-height adjust kiya
+                  className="py-3 px-2 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] text-[12px] leading-tight"
                 >
                   {head}
                 </TableCell>
@@ -213,26 +210,27 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                   className="resp-row transition-colors"
                 >
                   <TableCell
-                    className="resp-cell !py-3 !px-4"
+                    // 🌟 HIGHLIGHT 2: Sabhi TableCells ki horizontal padding (!px-4 se !px-2 kar di) taaki extra space na bache
+                    className="resp-cell !py-2 !px-2"
                     data-label="Candidate"
                   >
-                    <Box>
-                      <Typography className="font-semibold text-[13px]">
+                    <Box className="min-w-[100px]">
+                      <Typography className="font-semibold text-[12px] leading-tight">
                         {candidate.name}
                       </Typography>
-                      <Typography className="text-[12px] text-[var(--mui-palette-text-secondary)]">
+                      <Typography className="text-[11px] text-[var(--mui-palette-text-secondary)]">
                         {candidate.inqNo}
                       </Typography>
                     </Box>
                   </TableCell>
                   <TableCell
-                    className="resp-cell !py-3 !px-4 text-[13px]"
+                    className="resp-cell !py-2 !px-2 text-[12px]"
                     data-label="Stage"
                   >
-                    {candidate.stage}
+                    <span className="break-words line-clamp-2">{candidate.stage}</span>
                   </TableCell>
                   <TableCell
-                    className="resp-cell !py-3 !px-4"
+                    className="resp-cell !py-2 !px-2"
                     data-label="Visit Type"
                   >
                     <Chip
@@ -240,12 +238,12 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                       color={getVisitChipColor(candidate.visitType)}
                       size="small"
                       variant="outlined"
-                      className="text-[11px]"
+                      className="text-[10px] h-[22px]"
                     />
                   </TableCell>
                   {isFoe && (
                     <TableCell
-                      className="resp-cell !py-3 !px-4 text-[13px] font-medium text-[var(--mui-palette-primary)]"
+                      className="resp-cell !py-2 !px-2 text-[12px] font-medium text-[var(--mui-palette-primary)]"
                       data-label="Assigned TAC"
                     >
                       {candidate.assignedTacName || "Unassigned"}
@@ -253,7 +251,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                   )}
                   <TableCell
                     align="center"  
-                    className="resp-cell !py-3 !px-4 text-[13px]"
+                    className="resp-cell !py-2 !px-2 text-[12px]"
                     data-label="Token"
                   >
                     {candidate.token ?? (
@@ -262,34 +260,35 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                   </TableCell>
                   <TableCell
                     align="center" 
-                    className="resp-cell !py-3 !px-4"
+                    className="resp-cell !py-2 !px-2"
                     data-label="Status"
                   >
                     <Box
-                      className={`inline-block px-3 py-1 rounded-full text-[11px] tracking-wide font-normal whitespace-nowrap ${getStatusBadge(candidate.status)}`}
+                      className={`inline-block px-2 py-0.5 rounded-full text-[10px] tracking-wide font-normal whitespace-nowrap ${getStatusBadge(candidate.status)}`}
                     >
                       {CamelCase(candidate.status)}
                     </Box>
                   </TableCell>
                   <TableCell
-                    className="resp-cell !py-3 !px-4 text-[12px] text-gray-500"
+                    className="resp-cell !py-2 !px-2 text-[11px] text-gray-500"
                     data-label="Last Activity"
                   >
                     {dayjs(candidate.lastActivity).fromNow()}
                   </TableCell>
                   <TableCell
                     align="right"  
-                    className="resp-cell !py-3 !px-4"
+                    className="resp-cell !py-2 !px-2"
                     data-label="Actions"
                   >
-                    <Box className="flex gap-1 md:justify-end">
+                    {/* 🌟 HIGHLIGHT 3: Action buttons ke beech ka gap zero kar diya taaki minimum space lein */}
+                    <Box className="flex gap-0 md:justify-end">
                       {!isFoe && (
                         <>
                           <IconButton size="small" title="Chat" onClick={() => openCommModal(candidate, "chat")}>
-                            <i className="material-symbols-light--chat-bubble-outline" />
+                            <i className="material-symbols-light--chat-bubble-outline text-[18px]" />
                           </IconButton>
                           <IconButton size="small" title="Email" onClick={() => openCommModal(candidate, "email")}>
-                            <i className="material-symbols-light--mail-outline" />
+                            <i className="material-symbols-light--mail-outline text-[18px]" />
                           </IconButton>
                         </>
                       )}
@@ -301,7 +300,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                             openScheduleModal(candidate, false, "pre")
                           }
                         >
-                          <i className="ri-calendar-event-line text-blue-500" />
+                          <i className="ri-calendar-event-line text-blue-500 text-[18px]" />
                         </IconButton>
                       )}
                       {isFoe &&
@@ -314,7 +313,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                               openScheduleModal(candidate, true, "pre")
                             }
                           >
-                            <i className="ri-calendar-schedule-line text-orange-500 text-lg" />
+                            <i className="ri-calendar-schedule-line text-orange-500 text-[18px]" />
                           </IconButton>
                         )}
                       {isFoe &&
@@ -326,7 +325,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                               openScheduleModal(candidate, true, "assess")
                             }
                           >
-                            <i className="ri-calendar-todo-line text-pink-400 text-lg" />
+                            <i className="ri-calendar-todo-line text-pink-400 text-[18px]" />
                           </IconButton>
                         )}
                       <IconButton
@@ -334,7 +333,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                         title="View details"
                         onClick={() => onViewCandidate(candidate._id)}
                       >
-                        <i className="mdi--user" />
+                        <i className="mdi--user text-[18px]" />
                       </IconButton>
                     </Box>
                   </TableCell>
