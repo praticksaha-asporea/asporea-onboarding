@@ -189,14 +189,14 @@ const DashboardView: React.FC<DashboardProps> = () => {
       res = await scheduleAssessmentAction(payload);
     }
 
-    if (res?.success) {
+    if (res?.data?.success) {
       toast.success(
         `${schedulePhase === "pre" ? "Pre-Counselling" : "Assessment"} session scheduled successfully!`,
       );
       setModalOpen(false);
       fetchCandidates();
     } else {
-      toast.error(res?.message || "Failed to book slot");
+      toast.error(res?.data?.message || "Failed to book slot");
     }
     setBookingLoading(false);
   };

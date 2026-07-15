@@ -1,5 +1,6 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { journeyTrackingRes, technicalResultResponse } from "@/Types/ApiResponse/leadRes.types";
+import { assessmentResultResponse, assessmentScheduleResponse, journeyTrackingRes, technicalResultResponse } from "@/Types/ApiResponse/leadRes.types";
+import { scheduleAssessmentPayload } from "@/Types/Frontend_Payload/assessment.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
 
@@ -18,24 +19,17 @@ export const getJourneyTimelineAction = async (bodyData: trackingById): Promise<
   // }
 };
 
-export const scheduleAssessmentAction = async (data: {
-  leadId: string;
-  consultantId?: string;
-  date: string;
-  slotTime?: string;
-  from?: string;
-  to?: string;
-  method: "on" | "off";
-}): Promise<any> => {
-  try {
-    const response = await axiosClient.post(`/assessment/schedule`, data);
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to schedule assessment",
-    };
-  }
+export const scheduleAssessmentAction = async (data: scheduleAssessmentPayload): Promise<AxiosResponse<assessmentScheduleResponse>> => {
+  // try {
+  const response = await axiosClient.post(`/assessment/schedule`, data);
+  return response
+  //.data;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message: error.response?.data?.message || "Failed to schedule assessment",
+  //   };
+  // }
 };
 
 export const getTechnicalResultAction = async (bodyData: trackingById): Promise<AxiosResponse<technicalResultResponse>> => {
@@ -47,7 +41,7 @@ export const getTechnicalResultAction = async (bodyData: trackingById): Promise<
   // }
 };
 
-export const getAssessmentResultAction = async (bodyData: trackingById): Promise<AxiosResponse<any>> => {
+export const getAssessmentResultAction = async (bodyData: trackingById): Promise<AxiosResponse<assessmentResultResponse>> => {
   // try {
   const res = await axiosClient.get(`/assessments/result?leadId=${bodyData?.leadId}`);
   return res
