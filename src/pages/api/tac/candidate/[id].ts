@@ -59,7 +59,7 @@ export default async function handler(
       leadFilter["preferences.branchId"] = shift.branchId;
 
     } else if (userRole === "tac_head") {
-      // TAC Head apni assigned branches ke kisi bhi consultant ka lead dekh sakta hai
+       
       const shiftInfos = await EmployeeBranchShiftModel.find({
         employeeId: new mongoose.Types.ObjectId(authUser.id),
       }).lean();
@@ -149,6 +149,7 @@ export default async function handler(
         model: "Upload",
         select: "path",
       })
+      .populate("assignedTo", "firstName lastName")
       .lean();
 
     // Build a phase map for easy lookup on the frontend

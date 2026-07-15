@@ -60,7 +60,7 @@ const initialData: Data = {
 export default function CompleteProfilePage() {
   const router = useRouter();
   const [fileInput, setFileInput] = useState<string>("");
-  const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
+  const [imgSrc, setImgSrc] = useState<string>("/images/avatars/avatar.png");
   const [loading, setLoading] = useState(false);
   const [verifiedChannel, setVerifiedChannel] = useState<"email" | "sms" | "">(
     "",
@@ -168,7 +168,7 @@ export default function CompleteProfilePage() {
 
   const handleFileInputReset = () => {
     setFileInput("");
-    setImgSrc("/images/avatars/1.png");
+    setImgSrc("/images/avatars/avatar.png");
   };
 
   return (

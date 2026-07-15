@@ -99,7 +99,7 @@ const responsiveTableSx = {
       },
     },
   },
-  // Table ko compact rakhne ke liye base table setup
+  
   "& table": {
     tableLayout: "auto",
     width: "100%",
@@ -169,7 +169,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                 <TableCell
                   key={i}
                   align={head === "Status" || head === "Token" ? "center" : head === "Actions" ? "right" : "left"}
-                  // 🌟 HIGHLIGHT 1: Hata diya 'whitespace-nowrap', padding kam ki (!px-2), aur line-height adjust kiya
+                 
                   className="py-3 px-2 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] text-[12px] leading-tight"
                 >
                   {head}
@@ -210,7 +210,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                   className="resp-row transition-colors"
                 >
                   <TableCell
-                    // 🌟 HIGHLIGHT 2: Sabhi TableCells ki horizontal padding (!px-4 se !px-2 kar di) taaki extra space na bache
+                     
                     className="resp-cell !py-2 !px-2"
                     data-label="Candidate"
                   >
@@ -280,7 +280,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     className="resp-cell !py-2 !px-2"
                     data-label="Actions"
                   >
-                    {/* 🌟 HIGHLIGHT 3: Action buttons ke beech ka gap zero kar diya taaki minimum space lein */}
+                     
                     <Box className="flex gap-0 md:justify-end">
                       {!isFoe && (
                         <>
