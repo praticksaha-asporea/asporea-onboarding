@@ -386,11 +386,14 @@ export const saveAssessmentBooking = async (body: any) => {
     },
     { new: true, upsert: true }
   );
-
-  await LeadModel.findByIdAndUpdate(leadId, {
-    status: "assess_scheduled"
-  });
-
+  
+ 
+  if (newAssessmentAssignment) {
+    await LeadModel.findByIdAndUpdate(leadId, {
+      status: "assess_scheduled",
+      "preferences.consultantId": new mongoose.Types.ObjectId(consultantId)
+    });
+  }
   return newAssessmentAssignment;
 };
 
