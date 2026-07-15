@@ -20,6 +20,7 @@ import { CamelCase } from "@/Utils/common";
 import { CandidateRow } from "@/Services/APIs/tac/tac.actions";
 
 dayjs.extend(relativeTime);
+
 const getStatusBadge = (status: string) => {
   switch (status) {
     case "inquiry_submitted":
@@ -108,16 +109,6 @@ const responsiveTableSx = {
   },
 };
 
-// const COLS = [
-//   "Candidate Name",
-//   "Stage",
-//   "Visit Type",
-//   "Token",
-//   "Status",
-//   "Last Activity",
-//   "Actions",
-// ];
-
 interface DashboardTableProps {
   rows: CandidateRow[];
   loading: boolean;
@@ -134,6 +125,7 @@ interface DashboardTableProps {
   openCommModal: (candidate: any, mode: "chat" | "email") => void;  
   onViewCandidate: (id: string) => void;
 }
+
 const preRescheduleStatuses = ["pre_scheduled", "pre_contacted", "pre_queued"];
 const assessScheduleStatuses = [
   "exp_submitted",
@@ -145,6 +137,7 @@ const assessScheduleStatuses = [
   "assess_queued",
   "assess_not_responded",
 ];
+
 const DashboardTable: React.FC<DashboardTableProps> = ({
   rows,
   loading,
@@ -178,7 +171,9 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
               {cols.map((head, i) => (
                 <TableCell
                   key={i}
-                  className={`py-4 px-4 font-semibold  bg-[var(--mui-palette-primary)]   text-[var(--mui-palette-secondary-main)] whitespace-nowrap ${head === "Status" ? "text-center" : ""} ${head === "Actions" ? "text-right" : ""}`}
+                 
+                  align={head === "Status" || head === "Token" ? "center" : head === "Actions" ? "right" : "left"}
+                  className="py-4 px-4 font-semibold  bg-[var(--mui-palette-primary)]   text-[var(--mui-palette-secondary-main)] whitespace-nowrap"
                 >
                   {head}
                 </TableCell>
@@ -257,6 +252,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     </TableCell>
                   )}
                   <TableCell
+                    align="center"  
                     className="resp-cell !py-3 !px-4 text-[13px]"
                     data-label="Token"
                   >
@@ -265,6 +261,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     )}
                   </TableCell>
                   <TableCell
+                    align="center" 
                     className="resp-cell !py-3 !px-4"
                     data-label="Status"
                   >
@@ -281,6 +278,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     {dayjs(candidate.lastActivity).fromNow()}
                   </TableCell>
                   <TableCell
+                    align="right"  
                     className="resp-cell !py-3 !px-4"
                     data-label="Actions"
                   >
@@ -319,7 +317,6 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                             <i className="ri-calendar-schedule-line text-orange-500 text-lg" />
                           </IconButton>
                         )}
-                      {/* New BUTTON 3: Schedule/Reschedule Assessment */}
                       {isFoe &&
                         assessScheduleStatuses.includes(candidate.status) && (
                           <IconButton

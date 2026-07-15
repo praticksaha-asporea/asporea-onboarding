@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { EmployeeBranchShiftModel } from "../../models/EmployeeBranchShift.model";
-
+import "../../models/Lead.model";
 import "../../models/ShiftSchedule.model";
 import { Assignment } from "../../models/Assignment.model";
 import { ApiError } from "../../error/api.error";
@@ -386,11 +386,14 @@ export const saveAssessmentBooking = async (body: any) => {
     },
     { new: true, upsert: true }
   );
-
-  await LeadModel.findByIdAndUpdate(leadId, {
-    status: "assess_scheduled"
-  });
-
+  
+ 
+  if (newAssessmentAssignment) {
+    await LeadModel.findByIdAndUpdate(leadId, {
+      status: "assess_scheduled",
+      "preferences.consultantId": new mongoose.Types.ObjectId(consultantId)
+    });
+  }
   return newAssessmentAssignment;
 };
 

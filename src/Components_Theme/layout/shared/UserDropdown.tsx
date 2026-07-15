@@ -75,34 +75,42 @@ const UserDropdown = () => {
 
  
 const handleUserLogout = async () => {
-  try {
-     
-    const remIdentity = localStorage.getItem("asporea_rem_identity");
-    const remPass = localStorage.getItem("asporea_rem_pass");
-
+    try {
     
-    localStorage.clear();
+      const currentUserRole = reduxUser?.role || "";
+       
+      const remIdentity = localStorage.getItem("asporea_rem_identity");
+      const remPass = localStorage.getItem("asporea_rem_pass");
 
-    
-    if (remIdentity) localStorage.setItem("asporea_rem_identity", remIdentity);
-    if (remPass) localStorage.setItem("asporea_rem_pass", remPass);
+      
+      localStorage.clear();
 
-    
-    const allCookies = Cookies.get();
-    Object.keys(allCookies).forEach((cookieName) => {
-      if (cookieName !== 'remEmail' && cookieName !== 'remPass') {
-        Cookies.remove(cookieName);
-        Cookies.remove(cookieName, { path: '/' });
+   
+      if (remIdentity) localStorage.setItem("asporea_rem_identity", remIdentity);
+      if (remPass) localStorage.setItem("asporea_rem_pass", remPass);
+
+      
+      const allCookies = Cookies.get();
+      Object.keys(allCookies).forEach((cookieName) => {
+        if (cookieName !== 'remEmail' && cookieName !== 'remPass') {
+          Cookies.remove(cookieName);
+          Cookies.remove(cookieName, { path: '/' });
+        }
+      });
+
+      await signOut({ redirect: false });
+
+      
+      if (["tac", "foe", "tac_head"].includes(currentUserRole)) {
+        window.location.href = '/tac-login';
+      } else {
+        window.location.href = '/login';
       }
-    });
-
-    await signOut({ redirect: false });
-    window.location.href = '/login';
-  } catch (error) {
-    console.error('Logout Error:', error);
-    window.location.href = '/login';
-  }
-};
+    } catch (error) {
+      console.error('Logout Error:', error);
+      window.location.href = '/login';
+    }
+  };
 
   return (
     <>

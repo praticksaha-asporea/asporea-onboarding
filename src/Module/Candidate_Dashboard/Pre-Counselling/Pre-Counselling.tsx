@@ -128,10 +128,16 @@ const PreCounsellingContent = () => {
             ) : (
               <Card className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]">
                <Box className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2">
+                 <Box className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2">
                   <Typography variant="h4">
                     Confirm Your Pre-Counselling Readiness
                   </Typography>
-                   
+                  <Chip
+                    label={method === "on" ? "🌐 Online" : "🏢 In-Person Visit"}
+                    color={method === "on" ? "primary" : "secondary"}
+                    className="font-bold text-white text-[13px]"
+                  />
+                </Box>
                 </Box>
                 
                 <Typography variant="subtitle1" className="pb-5">
