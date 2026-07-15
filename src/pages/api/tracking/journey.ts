@@ -159,6 +159,8 @@ export default async function handler(
         date: formatDate(
           preAssignment?.updatedAt || preAssignment?.schedule?.date,
         ),
+        method: preAssignment?.schedule?.method || null,
+        schedule: preAssignment?.schedule || null,
       },
       documents: {
         status: docStatusStr,
@@ -180,6 +182,8 @@ export default async function handler(
         date: isAssessScheduled
           ? `${formatDate(assessAssignment?.schedule?.date)} (${assessAssignment?.schedule?.from} - ${assessAssignment?.schedule?.to})`
           : null,
+        method: assessAssignment?.schedule?.method || null,
+        schedule: assessAssignment?.schedule || null,
         canSchedule: isPreCompleted && !isAssessScheduled,
         hasResult: isAssessCompleted,
         assessLatestStatus

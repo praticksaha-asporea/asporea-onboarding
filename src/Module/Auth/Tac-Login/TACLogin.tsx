@@ -21,7 +21,6 @@ import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
 import { useTACLogin } from "./useTACLogin";
 
-
 const TACLogin = ({ mode }: { mode: Mode }) => {
   const {
     isPasswordShown,
@@ -39,10 +38,9 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
     countdown,
     formik,
     authBackground,
-    handleToggleAuthMode
+    handleToggleAuthMode,
+    setRememberMe,
   } = useTACLogin({ mode });
-
-
 
   return (
     <div className="flex flex-col justify-center items-center min-bs-[100dvh] relative p-6">
@@ -74,9 +72,14 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 label="Phone Number or Email"
                 value={formik.values.identity}
                 onBlur={formik.handleBlur}
-
-                error={formik.submitCount > 0 && Boolean(formik.errors.identity)}
-                helperText={formik.submitCount > 0 && formik.errors.identity ? (formik.errors.identity as string) : undefined}
+                error={
+                  formik.submitCount > 0 && Boolean(formik.errors.identity)
+                }
+                helperText={
+                  formik.submitCount > 0 && formik.errors.identity
+                    ? (formik.errors.identity as string)
+                    : undefined
+                }
                 onChange={(e) => {
                   formik.handleChange(e);
                   setIdentity(e.target.value);
@@ -92,8 +95,14 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                   label="Password"
                   value={formik.values.password}
                   onBlur={formik.handleBlur}
-                  error={formik.submitCount > 0 && Boolean(formik.errors.password)}
-                  helperText={formik.submitCount > 0 && formik.errors.password ? (formik.errors.password as string) : undefined}
+                  error={
+                    formik.submitCount > 0 && Boolean(formik.errors.password)
+                  }
+                  helperText={
+                    formik.submitCount > 0 && formik.errors.password
+                      ? (formik.errors.password as string)
+                      : undefined
+                  }
                   onChange={(e) => {
                     formik.handleChange(e);
                     setPassword(e.target.value);
@@ -107,7 +116,13 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                           edge="end"
                           onClick={handleClickShowPassword}
                         >
-                          <i className={isPasswordShown ? "ri-eye-off-line" : "ri-eye-line"} />
+                          <i
+                            className={
+                              isPasswordShown
+                                ? "ri-eye-off-line"
+                                : "ri-eye-line"
+                            }
+                          />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -120,7 +135,18 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
               >
                 {authMode === "password" && (
                   <FormControlLabel
-                    control={<Checkbox />}
+                    control={
+                      <Checkbox
+                        name="rememberMe"
+                        checked={formik.values.rememberMe || false}
+                        onChange={(e) => {
+                          formik.handleChange(e);
+
+                          setRememberMe(e.target.checked);
+                        }}
+                        color="primary"
+                      />
+                    }
                     label="Remember me"
                   />
                 )}
@@ -129,8 +155,7 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                   color="primary"
                   onClick={handleToggleAuthMode}
                 >
-                  Login via{" "}
-                  {authMode === "password" ? "OTP" : "Password"}
+                  Login via {authMode === "password" ? "OTP" : "Password"}
                 </Typography>
               </div>
 
@@ -167,13 +192,20 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-
               {authMode === "otp" && sendOtp && (
                 <>
                   <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
-                    <Typography color={countdown > 0 ? "textSecondary" : "error"} className="text-sm font-medium">
+                    <Typography
+                      color={countdown > 0 ? "textSecondary" : "error"}
+                      className="text-sm font-medium"
+                    >
                       {countdown > 0
-                        ? `Resend in ${Math.floor(countdown / 60).toString().padStart(2, "0")}:${(countdown % 60).toString().padStart(2, "0")}`
+                        ? `Resend in ${Math.floor(countdown / 60)
+                            .toString()
+                            .padStart(
+                              2,
+                              "0",
+                            )}:${(countdown % 60).toString().padStart(2, "0")}`
                         : "Ready to resend!"}
                     </Typography>
                     <Button

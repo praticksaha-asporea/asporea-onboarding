@@ -73,26 +73,36 @@ const UserDropdown = () => {
     setOpen(false);
   };
 
-  const handleUserLogout = async () => {
-    try {
-      localStorage.clear();
+ 
+const handleUserLogout = async () => {
+  try {
+     
+    const remIdentity = localStorage.getItem("asporea_rem_identity");
+    const remPass = localStorage.getItem("asporea_rem_pass");
 
-      const allCookies = Cookies.get();
-      Object.keys(allCookies).forEach((cookieName) => {
-        if (cookieName !== "remEmail" && cookieName !== "remPass") {
-          Cookies.remove(cookieName);
-          Cookies.remove(cookieName, { path: "/" });
-        }
-      });
+    
+    localStorage.clear();
 
-      await signOut({ redirect: false });
+    
+    if (remIdentity) localStorage.setItem("asporea_rem_identity", remIdentity);
+    if (remPass) localStorage.setItem("asporea_rem_pass", remPass);
 
-      window.location.href = "/login";
-    } catch (error) {
-      console.error("Logout Error:", error);
-      window.location.href = "/login";
-    }
-  };
+    
+    const allCookies = Cookies.get();
+    Object.keys(allCookies).forEach((cookieName) => {
+      if (cookieName !== 'remEmail' && cookieName !== 'remPass') {
+        Cookies.remove(cookieName);
+        Cookies.remove(cookieName, { path: '/' });
+      }
+    });
+
+    await signOut({ redirect: false });
+    window.location.href = '/login';
+  } catch (error) {
+    console.error('Logout Error:', error);
+    window.location.href = '/login';
+  }
+};
 
   return (
     <>

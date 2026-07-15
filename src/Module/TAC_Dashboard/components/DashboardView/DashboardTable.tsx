@@ -108,15 +108,15 @@ const responsiveTableSx = {
   },
 };
 
-const COLS = [
-  "Candidate Name",
-  "Stage",
-  "Visit Type",
-  "Token",
-  "Status",
-  "Last Activity",
-  "Actions",
-];
+// const COLS = [
+//   "Candidate Name",
+//   "Stage",
+//   "Visit Type",
+//   "Token",
+//   "Status",
+//   "Last Activity",
+//   "Actions",
+// ];
 
 interface DashboardTableProps {
   rows: CandidateRow[];
@@ -157,6 +157,14 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
   openCommModal,
   onViewCandidate,
 }) => {
+  const getCols = () => {
+    const base = ["Candidate Name", "Stage", "Visit Type"];
+    if (isFoe) base.push("Assigned TAC");
+    base.push("Token", "Status", "Last Activity", "Actions");
+    return base;
+  };
+
+  const cols = getCols();
   return (
     <>
       <TableContainer
@@ -167,7 +175,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
         <Table size="small">
           <TableHead>
             <TableRow className="resp-thead">
-              {COLS.map((head, i) => (
+              {cols.map((head, i) => (
                 <TableCell
                   key={i}
                   className={`py-4 px-4 font-semibold  bg-[var(--mui-palette-primary)]   text-[var(--mui-palette-secondary-main)] whitespace-nowrap ${head === "Status" ? "text-center" : ""} ${head === "Actions" ? "text-right" : ""}`}
@@ -180,14 +188,14 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={COLS.length} className="text-center py-10">
+                <TableCell colSpan={cols.length} className="text-center py-10">
                   <CircularProgress size={28} />
                 </TableCell>
               </TableRow>
             ) : error ? (
               <TableRow>
                 <TableCell
-                  colSpan={COLS.length}
+                  colSpan={cols.length}
                   className="text-center py-8 text-red-500"
                 >
                   {error}
@@ -196,7 +204,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
             ) : rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={COLS.length}
+                  colSpan={cols.length}
                   className="text-center py-8 text-gray-400"
                 >
                   No candidates found
@@ -240,6 +248,14 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                       className="text-[11px]"
                     />
                   </TableCell>
+                  {isFoe && (
+                    <TableCell
+                      className="resp-cell !py-3 !px-4 text-[13px] font-medium text-[var(--mui-palette-primary)]"
+                      data-label="Assigned TAC"
+                    >
+                      {candidate.assignedTacName || "Unassigned"}
+                    </TableCell>
+                  )}
                   <TableCell
                     className="resp-cell !py-3 !px-4 text-[13px]"
                     data-label="Token"

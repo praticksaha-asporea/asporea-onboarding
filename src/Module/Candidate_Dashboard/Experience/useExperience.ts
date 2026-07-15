@@ -118,6 +118,7 @@ export const useExperience = () => {
             "assess_scheduled",
             "assessment_scheduled",
             "assessment_submitted",
+            "assess_completed",
           ];
           const isDocUploaded =
             res.data.documentStatus === "uploaded" ||
@@ -136,6 +137,7 @@ export const useExperience = () => {
             "assess_scheduled",
             "assessment_scheduled",
             "assessment_submitted",
+            "assess_completed",
           ];
           if (submittedStages.includes(currentStatus)) {
             setIsAlreadySubmitted(true);
