@@ -39,3 +39,22 @@ export interface techDBData {
     updatedAt: string,
     __v: number
 }
+
+export interface documentTypeData {
+    _id: string,
+    title: string,
+    section: string
+}
+
+export interface positionDBData {
+    _id: string,
+    title: string,
+    details: string,
+    requiredDocuments: documentTypeData[],
+    mandatoryDocuments: documentTypeData[],
+    createdAt: string,
+    updatedAt: string,
+    __v: number
+
+}
+

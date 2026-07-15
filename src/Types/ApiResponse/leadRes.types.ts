@@ -1,6 +1,6 @@
 import { Slot } from "../Frontend_Payload/assessment.types"
 import { JourneyData } from "../Frontend_Payload/tracking.types"
-import { techDBData } from "../object.types"
+import { positionDBData, techDBData } from "../object.types"
 
 export interface inquiryResponse {
 
@@ -195,5 +195,24 @@ export interface assessmentScheduleResponse {
         status: string,
         updatedAt: string
     },
+    error: null
+}
+
+export interface documentUploadResponse {
+    success: boolean,
+    message: string,
+    data: {
+        status: string,
+        documentStatus: string,
+        realDocsCount: number,
+        experienceType: string
+    },
+    error: null
+}
+
+export interface positionResponse {
+    success: boolean,
+    message: string,
+    data: positionDBData[],
     error: null
 }

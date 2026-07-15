@@ -92,8 +92,8 @@ export const useDocumentUpload = () => {
             return;
           }
         }
-        const res = await checkDocumentStatusAction(leadId);
-        if (res?.success && res.data) {
+        const res = await checkDocumentStatusAction({ leadId });
+        if (res?.data?.success && res?.data?.data) {
           const submittedStages = [
             "doc_submitted",
             "doc_verified",
@@ -104,8 +104,8 @@ export const useDocumentUpload = () => {
             "assessment_submitted",
           ];
           if (
-            submittedStages.includes(res.data.status) ||
-            res.data.documentStatus === "uploaded" || res.data.documentStatus === "verified"
+            submittedStages.includes(res.data.data.status) ||
+            res.data.data.documentStatus === "uploaded" || res.data.data.documentStatus === "verified"
           ) {
             setIsAlreadySubmitted(true);
           }
@@ -129,8 +129,8 @@ export const useDocumentUpload = () => {
     const fetchPositions = async () => {
       setLoadingPositions(true);
       const res = await getPositionsListAction();
-      if (res?.success) setPositions(res.data);
-      else toast.error(res?.message || "Failed to load positions");
+      if (res?.data?.success) setPositions(res.data.data);
+      else toast.error(res?.data?.message || "Failed to load positions");
       setLoadingPositions(false);
     };
     fetchPositions();
