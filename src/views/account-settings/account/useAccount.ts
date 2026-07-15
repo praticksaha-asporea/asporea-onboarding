@@ -16,7 +16,7 @@ export const useAccount = () => {
   );
 
   const [fileInput, setFileInput] = useState<string>("");
-  const [imgSrc, setImgSrc] = useState<string>("/images/avatars/1.png");
+  const [imgSrc, setImgSrc] = useState<string>("/images/avatars/avatar.png");
 
   const [fetching, setFetching] = useState(true);
   const [updating, setUpdating] = useState(false);
@@ -25,7 +25,7 @@ export const useAccount = () => {
     if (reduxUser?.profilePic?.path) {
       setImgSrc(reduxUser.profilePic.path);
     } else {
-      setImgSrc("/images/avatars/1.png");
+      setImgSrc("/images/avatars/avatar.png");
     }
   }, [reduxUser]);
   useEffect(() => {
@@ -157,7 +157,7 @@ export const useAccount = () => {
 
   const handleFileInputReset = () => {
     setFileInput("REMOVE");
-    setImgSrc("/images/avatars/1.png");
+    setImgSrc("/images/avatars/avatar.png");
     toast.success("Photo removed! Click 'Save Changes' to persist.");
   };
 

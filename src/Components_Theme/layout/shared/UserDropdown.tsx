@@ -44,7 +44,7 @@ const UserDropdown = () => {
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
 
-  const avatarSrc = reduxUser?.profilePic?.path || "/images/avatars/1.png";
+  const avatarSrc = reduxUser?.profilePic?.path || "/images/avatars/avatar.png";
   // Refs
   const anchorRef = useRef<HTMLDivElement>(null);
 
