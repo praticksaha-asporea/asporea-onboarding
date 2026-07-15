@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { EmployeeBranchShiftModel } from "../../models/EmployeeBranchShift.model";
-
+import "../../models/Lead.model";
 import "../../models/ShiftSchedule.model";
 import { Assignment } from "../../models/Assignment.model";
 import { ApiError } from "../../error/api.error";
