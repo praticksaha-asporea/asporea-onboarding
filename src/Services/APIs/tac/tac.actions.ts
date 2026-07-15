@@ -14,6 +14,7 @@ export interface CandidateRow {
   lastActivity: string;
   branchId?: string | null
   contact: { phone?: string; email?: string; whatsapp?: string };
+  assignedTacName?: string;  
 }
 
 export interface CandidatesResponse {

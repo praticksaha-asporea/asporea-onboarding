@@ -6,7 +6,7 @@ import Card from "@mui/material/Card";
 import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress,Chip } from "@mui/material";
 
 import { usePreCounselling } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 import { ReadinessChecklist } from "@/Components/PreCounselling/ReadinessChecklist";
@@ -127,26 +127,38 @@ const PreCounsellingContent = () => {
               </Card>
             ) : (
               <Card className="p-2 sm:p-6 rounded-[15px] shadow-[0px_4px_18px_rgba(0,0,0,0.04)]">
-                <Typography variant="h4">
-                  Confirm Your Pre-Counselling Readiness
-                </Typography>
+               <Box className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-2">
+                  <Typography variant="h4">
+                    Confirm Your Pre-Counselling Readiness
+                  </Typography>
+                   
+                </Box>
+                
                 <Typography variant="subtitle1" className="pb-5">
                   Please review the details below and confirm your availability and
                   preparedness for the upcoming session via phone call.
                 </Typography>
 
                 {existingBooking && (
-                  <Box className="mb-8 p-4 rounded-xl border border-[#e0e0e0] bg-[var(--variant-outlinedBg)] flex items-center gap-4">
+                  <Box className="mb-8 p-4 rounded-xl shadow-2xl   bg-[var(--variant-outlinedBg)] flex items-center gap-4">
                     <Box className="w-12 h-12 rounded-full bg-[var(--variant-outlinedBg)] flex items-center justify-center shrink-0">
                       <i className="ri-calendar-check-fill text-2xl text-[var(--mui-palette-text-primary)]"></i>
                     </Box>
                     <Box>
-                      <Typography
-                        variant="h6"
-                        className="text-[var(--mui-palette-text-primary)] font-bold"
-                      >
-                        Session Already Scheduled
-                      </Typography>
+                       <Box className="flex items-center gap-3 mb-1">
+                        <Typography
+                          variant="h6"
+                          className="text-[var(--mui-palette-text-primary)] font-bold"
+                        >
+                          Session Already Scheduled
+                        </Typography>
+                        <Chip
+                          label={existingBooking.schedule?.method === "on" ? "Online" : "In-Person"}
+                          color={existingBooking.schedule?.method === "on" ? "primary" : "secondary"}
+                          size="small"
+                          className="font-medium text-xs"
+                        />
+                      </Box>
                       <Typography
                         variant="body2"
                         className="text-[var(--mui-palette-text-primary)]"

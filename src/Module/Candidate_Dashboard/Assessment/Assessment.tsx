@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import Button from "@mui/material/Button";
 import LinearProgress from "@mui/material/LinearProgress";
 import CircularProgress from "@mui/material/CircularProgress";
-
+import Chip from "@mui/material/Chip";
 import { useAssessment } from "@/Module/Candidate_Dashboard/Assessment/useAssessment";
 import { ReadinessChecklist } from "@/Components/Assessment/ReadinessChecklist";
 import { SessionScheduler } from "@/Components/Assessment/SessionScheduler";
@@ -54,6 +54,7 @@ const AssessmentContent = () => {
     resultData,
     isAssessmentCompleted
   } = useAssessment();
+  const isOnlineScheduled = scheduledDetails?.schedule?.method === "on" || scheduledDetails?.method === "on";
 
   if (checkingStatus) {
     return (
@@ -95,9 +96,16 @@ const AssessmentContent = () => {
                   <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
                     <i className="ri-calendar-check-fill text-5xl text-blue-600"></i>
                   </Box>
-                  <Typography variant="h4" className="font-bold text-[var(--mui-palette-primary)] mb-2">
-                    Assessment Already Scheduled
-                  </Typography>
+                  <Box className="flex flex-col md:flex-row items-center gap-3 mb-2">
+                    <Typography variant="h4" className="font-bold text-[var(--mui-palette-primary)]">
+                      Assessment Already Scheduled
+                    </Typography>
+                    <Chip
+                      label={isOnlineScheduled ? "🌐 Online" : "🏢 In-Person"}
+                      color={isOnlineScheduled ? "primary" : "secondary"}
+                      className="font-bold text-[13px]"
+                    />
+                  </Box>
                   <Typography variant="subtitle1" className="text-[var(--mui-palette-secondary)] max-w-md mx-auto mb-4">
                     Your assessment is locked and scheduled successfully. Please ensure you are ready before the scheduled time.
                   </Typography>

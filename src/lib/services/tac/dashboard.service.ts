@@ -58,6 +58,7 @@ export const getTacCandidates = async ({
 
   const [leads, total] = await Promise.all([
     Lead.find(filter)
+    .populate("preferences.consultantId", "firstName lastName")
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -85,6 +86,10 @@ export const getTacCandidates = async ({
   const rows = leads.map((lead: any) => {
    
     const creatorId = lead.createdBy?.id || lead.createdBy?._id || lead.createdBy;
+    let assignedTacName = "Unassigned";
+    if (lead.preferences?.consultantId && lead.preferences.consultantId.firstName) {
+      assignedTacName = `${lead.preferences.consultantId.firstName} ${lead.preferences.consultantId.lastName || ""}`.trim();
+    }
 
     return {
       _id: String(lead._id),
@@ -102,6 +107,7 @@ export const getTacCandidates = async ({
       visitType: lead.preferences?.visitType ?? null,
       contact: lead.contact,
       consultantId: lead.preferences?.consultantId ?? null,
+      assignedTacName
     };
   });
 

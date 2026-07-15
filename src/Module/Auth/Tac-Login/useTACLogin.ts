@@ -32,12 +32,14 @@ export function useTACLogin({ mode }: { mode: Mode }) {
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
 
   // --- API Flow Control States ---
   const [sendOtp, setSendOtp] = useState(false);
   const [enableVerifyOTP, setEnableVerifyOTP] = useState(false);
   const [showSetupPassword, setShowSetupPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+
 
   const [countdown, setCountdown] = useState<number>(0);
 
@@ -50,6 +52,7 @@ export function useTACLogin({ mode }: { mode: Mode }) {
     initialValues: {
       identity: identity || "",
       password: password || "",
+      rememberMe: rememberMe,
     },
     enableReinitialize: true,
 
@@ -61,12 +64,29 @@ export function useTACLogin({ mode }: { mode: Mode }) {
       if (authMode === "password") {
         setPassword(values.password);
         const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
-        handlePasswordLogin(dummyEvent);
+      handlePasswordLogin(dummyEvent, values.rememberMe);
       } else {
         handleSendOtp();
       }
     },
   });
+
+  useEffect(() => {
+    const savedIdentity = localStorage.getItem("asporea_rem_identity");
+    const savedPassword = localStorage.getItem("asporea_rem_pass");
+
+    if (savedIdentity && savedPassword) {
+      setIdentity(savedIdentity);
+      setPassword(savedPassword);
+      setRememberMe(true);
+      formik.setValues({
+        identity: savedIdentity,
+        password: savedPassword,
+         rememberMe: true,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
 
 
@@ -75,6 +95,7 @@ export function useTACLogin({ mode }: { mode: Mode }) {
       values: {
         identity: formik.values.identity,
         password: "",
+       rememberMe: formik.values.rememberMe,
       },
     });
     togglePasswordOTP();
@@ -119,15 +140,24 @@ export function useTACLogin({ mode }: { mode: Mode }) {
     setEnableVerifyOTP(newValue.length === 6);
   };
 
-  const handlePasswordLogin = async (e: FormEvent<HTMLFormElement>) => {
+  const handlePasswordLogin = async (e: FormEvent<HTMLFormElement>, shouldRemember?: boolean) => {
     e.preventDefault();
 
 
     try {
       setLoading(true);
-      const res = await loginApi({ identity, password });
-
+      const targetIdentity = formik.values.identity || identity;
+      const targetPassword = formik.values.password || password;
+      const res = await loginApi({ identity: targetIdentity, password: targetPassword });
       if (res.data?.success) {
+        const isRememberEnabled = shouldRemember ?? formik.values.rememberMe;
+        if (isRememberEnabled) {
+          localStorage.setItem("asporea_rem_identity", targetIdentity);
+          localStorage.setItem("asporea_rem_pass", targetPassword);
+        } else {
+          localStorage.removeItem("asporea_rem_identity");
+          localStorage.removeItem("asporea_rem_pass");
+        }
         const { user, tokens } = res.data.data;
 
         Cookies.set("accessToken", tokens.accessToken);
@@ -249,6 +279,7 @@ export function useTACLogin({ mode }: { mode: Mode }) {
     countdown,
     formik,
     authBackground,
-    handleToggleAuthMode
+    handleToggleAuthMode,
+    setRememberMe
   };
 }
