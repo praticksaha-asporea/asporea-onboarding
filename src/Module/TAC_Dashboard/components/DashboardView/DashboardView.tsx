@@ -144,8 +144,8 @@ const DashboardView: React.FC<DashboardProps> = () => {
     setSelectedSlot(null);
 
     if (candidate.branchId) {
-      const res = await getTacListAction(candidate.branchId as string);
-      if (res?.success) setTacList(res.data);
+      const res = await getTacListAction({ branchId: candidate.branchId });
+      if (res?.data?.success) setTacList(res?.data?.data);
     }
   };
 

@@ -1,4 +1,5 @@
-import { IUser } from "@/lib/models/User.model"
+import { IEmployeeBranchShift } from "@/lib/models/EmployeeBranchShift.model"
+import { ISocialLogins } from "@/lib/models/SocialLogins.model"
 import { UserData } from "@/Redux/Auth/user.slice"
 
 export interface userDetailsRes {
@@ -6,8 +7,8 @@ export interface userDetailsRes {
     message: string,
     data: {
         user: UserData,
-        socialLogins: [],
-        branchShifts: [],
+        socialLogins: ISocialLogins[],
+        branchShifts: IEmployeeBranchShift[],
         externalSource: null
     },
     error: null

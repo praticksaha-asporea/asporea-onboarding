@@ -1,18 +1,19 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { inquiryResponse } from "@/Types/ApiResponse/leadRes.types";
+import { externalSourceResponse, inquiryResponse, tacListResponse } from "@/Types/ApiResponse/leadRes.types";
 import { userDetailsRes } from "@/Types/ApiResponse/userRes.types";
+import { branchById, externalSourceByType } from "@/Types/Frontend_Payload/branch.types";
 import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { userById } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
 
-export const getTacListAction = async (branchId: string) => {
-  const res = await axiosClient.get(`/inquiry/tac-list?branchId=${branchId}`);
-  return res.data;
+export const getTacListAction = async (bodyData: branchById): Promise<AxiosResponse<tacListResponse>> => {
+  const res = await axiosClient.get(`/inquiry/tac-list?branchId=${bodyData.branchId}`);
+  return res;
 };
 
-export const getExternalSourcesAction = async (type: string) => {
-  const res = await axiosClient.get(`/inquiry/external-sources?type=${type}`);
-  return res.data;
+export const getExternalSourcesAction = async (bodyData: externalSourceByType): Promise<AxiosResponse<externalSourceResponse>> => {
+  const res = await axiosClient.get(`/inquiry/external-sources?type=${bodyData?.type}`);
+  return res;
 };
 
 export const createInquiryAction = async (formData: InquiryFormValues): Promise<AxiosResponse<inquiryResponse>> => {
