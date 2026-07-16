@@ -1,4 +1,6 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { branchById } from "@/Types/Frontend_Payload/branch.types";
+import { AxiosResponse } from "axios";
 
 export const getSlotsAction = async (consultantId: string, date: string) => {
   try {
@@ -18,11 +20,12 @@ export const bookSlotAction = async (payload: any) => {
   }
 };
 
-export const checkBranchView = async (branchId: string) => {
-  try {
-    const response = await axiosClient.get(`/branch/view?id=${branchId}`);
-    return response.data;
-  } catch (error: any) {
-    return { success: false, message: error.response?.data?.message || "Failed to check branch details" };
-  }
-};
+// export const checkBranchView = async (bodyData: branchById): Promise<AxiosResponse<any>> => {
+//   // try {
+//   const response = await axiosClient.get(`/branch/view?id=${bodyData?.branchId}`);
+//   return response
+//   //   .data;
+//   // } catch (error: any) {
+//   //   return { success: false, message: error.response?.data?.message || "Failed to check branch details" };
+//   // }
+// };
