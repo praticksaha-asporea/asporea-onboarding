@@ -25,3 +25,9 @@ export interface UploadMappedDocument {
   typeId: string;
   uploadId: string;
 }
+
+export interface saveMappedDocumentReq {
+  leadId: string,
+  documents: UploadMappedDocument[],
+  position: string,
+}

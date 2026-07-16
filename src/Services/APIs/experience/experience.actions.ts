@@ -1,16 +1,16 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { saveMappedExpReq } from "@/Types/Frontend_Payload/experience.types";
+import { AxiosResponse } from "axios";
 
-export const saveExperienceTypeAction = async (payload: {
-  leadId: string;
-  experienceType: string;
-}) => {
-  try {
-    const response = await axiosClient.post("/experience/save", payload);
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to save experience",
-    };
-  }
+export const saveExperienceTypeAction = async (payload: saveMappedExpReq): Promise<AxiosResponse<any>> => {
+  // try {
+  const response = await axiosClient.post("/experience/save", payload);
+  return response
+  //   .data;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message: error.response?.data?.message || "Failed to save experience",
+  //   };
+  // }
 };

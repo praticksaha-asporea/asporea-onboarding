@@ -1,4 +1,4 @@
- export interface ExperienceOption {
+export interface ExperienceOption {
   id: string;
   title: string;
   description: string;
@@ -13,4 +13,9 @@ export interface AdditionalDocument {
   isMandatory: boolean;
   multiple?: boolean;
   section: string;
+}
+
+export interface saveMappedExpReq {
+  leadId: string;
+  experienceType: string;
 }

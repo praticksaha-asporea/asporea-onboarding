@@ -7,6 +7,7 @@ import {
   Position,
   GroupedDocuments,
   DocumentRequirement,
+  saveMappedDocumentReq,
 } from "@/Types/Frontend_Payload/document.types";
 import {
   getPositionsListAction,
@@ -92,8 +93,8 @@ export const useDocumentUpload = () => {
             return;
           }
         }
-        const res = await checkDocumentStatusAction(leadId);
-        if (res?.success && res.data) {
+        const res = await checkDocumentStatusAction({ leadId });
+        if (res?.data?.success && res?.data?.data) {
           const submittedStages = [
             "doc_submitted",
             "doc_verified",
@@ -104,8 +105,8 @@ export const useDocumentUpload = () => {
             "assessment_submitted",
           ];
           if (
-            submittedStages.includes(res.data.status) ||
-            res.data.documentStatus === "uploaded" || res.data.documentStatus === "verified"
+            submittedStages.includes(res.data.data.status) ||
+            res.data.data.documentStatus === "uploaded" || res.data.data.documentStatus === "verified"
           ) {
             setIsAlreadySubmitted(true);
           }
@@ -129,8 +130,8 @@ export const useDocumentUpload = () => {
     const fetchPositions = async () => {
       setLoadingPositions(true);
       const res = await getPositionsListAction();
-      if (res?.success) setPositions(res.data);
-      else toast.error(res?.message || "Failed to load positions");
+      if (res?.data?.success) setPositions(res.data.data);
+      else toast.error(res?.data?.message || "Failed to load positions");
       setLoadingPositions(false);
     };
     fetchPositions();
@@ -150,10 +151,10 @@ export const useDocumentUpload = () => {
     }
     const fetchDocs = async () => {
       setLoadingDocs(true);
-      const res = await getPositionDetailsAction(selectedPosition);
-      if (res?.success) {
-        const required = res.data.requiredDocuments || [];
-        const mandatory = res.data.mandatoryDocuments || [];
+      const res = await getPositionDetailsAction({ positionId: selectedPosition });
+      if (res?.data?.success) {
+        const required = res?.data?.data.requiredDocuments || [];
+        const mandatory = res?.data?.data.mandatoryDocuments || [];
         if (required.length === 0 && mandatory.length === 0)
           setHasDocuments(false);
         else setHasDocuments(true);
@@ -214,8 +215,8 @@ export const useDocumentUpload = () => {
         for (const file of files) {
           if (file) {
             const uploadRes = await uploadFileAction(file);
-            if (uploadRes?.success && uploadRes.data?.uploadId) {
-              mappedDocs.push({ typeId, uploadId: uploadRes.data.uploadId });
+            if (uploadRes?.data?.success && uploadRes.data?.data?.uploadId) {
+              mappedDocs.push({ typeId, uploadId: uploadRes?.data?.data?.uploadId });
             } else {
               toast.error(`Failed to upload ${file.name}`);
               setIsSubmitting(false);
@@ -230,13 +231,13 @@ export const useDocumentUpload = () => {
         leadId,
         documents: mappedDocs,
         position: selectedPosition,
-      });
+      } as saveMappedDocumentReq);
 
-      if (saveRes?.success) {
+      if (saveRes?.data?.success) {
         toast.success("Details updated successfully!");
         router.push(`/experience?positionId=${selectedPosition}`);
       } else {
-        toast.error(saveRes?.message || "Failed to save document records.");
+        toast.error(saveRes?.data?.message || "Failed to save document records.");
       }
     } catch (err) {
       toast.error("An error occurred during the upload process.");
