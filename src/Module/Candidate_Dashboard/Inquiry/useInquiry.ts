@@ -9,6 +9,7 @@ import {
   getTacListAction,
   getExternalSourcesAction,
   createInquiryAction,
+  userDetailsAction,
 } from "@/Services/APIs/Inquiry/inquiry.action";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
@@ -16,16 +17,8 @@ import * as Yup from "yup";
 import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-
-
-export interface NotificationPreferences {
-  email: boolean;
-  sms: boolean;
-  whatsapp: boolean;
-}
+import { NotificationPreferences } from "@/Types/Frontend_Payload/precounselling.types";
+import { IUser } from "@/lib/models/User.model";
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
@@ -95,7 +88,7 @@ export function useInquiry() {
 
       try {
 
-        const res = await axiosClient.get(`/user/details?id=${userId}`);
+        const res = await userDetailsAction({ userId });
 
         if (res.data?.success && res.data?.data) {
           const actualProfileData = res.data.data.user || res.data.data;

@@ -65,3 +65,8 @@ export interface positionDBData {
 export interface positionById {
     positionId: string
 }
+
+
+export interface userById {
+    userId: string
+}
