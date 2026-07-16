@@ -1,6 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
-
 import { getAllCandidatesAction } from "@/Services/APIs/tacHead/candidate.action";
 
 export const useAllCandidates = () => {
@@ -9,7 +8,6 @@ export const useAllCandidates = () => {
   const [tacs, setTacs] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
- 
   const [filters, setFilters] = useState({
     branchId: "",
     tacId: "",
@@ -18,6 +16,10 @@ export const useAllCandidates = () => {
     limit: 10,
   });
   const [totalPages, setTotalPages] = useState(1);
+
+  // ── Debounced Search Local State & Ref tracking ──
+  const [searchInput, setSearchInput] = useState("");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const fetchCandidates = useCallback(async () => {
     setIsLoading(true);
@@ -44,7 +46,8 @@ export const useAllCandidates = () => {
             ]),
           ).values(),
         ).filter(Boolean);
-const tacMap = new Map();
+
+        const tacMap = new Map();
         data.candidates.forEach((c: any) => {
           const tac = c.preferences?.consultantId;
           const bId = c.preferences?.branchId?._id;
@@ -58,10 +61,12 @@ const tacMap = new Map();
             }
           }
         });
-       const uniqueTacs = Array.from(tacMap.values()).map((t: any) => ({
+
+        const uniqueTacs = Array.from(tacMap.values()).map((t: any) => ({
           ...t,
           branchIds: Array.from(t.branchIds),
         }));
+
         if (branches.length === 0) setBranches(uniqueBranches);
         if (tacs.length === 0) setTacs(uniqueTacs);
       }
@@ -83,7 +88,6 @@ const tacMap = new Map();
       if (name === "branchId") {
         if (value !== "") {
           const currentTac = tacs.find((t: any) => t._id === prev.tacId);
-        
           if (currentTac && !currentTac.branchIds.includes(value)) {
             updated.tacId = ""; 
           }
@@ -92,12 +96,23 @@ const tacMap = new Map();
       return updated;
     });
   };
+
+  const onSearchChange = (val: string) => {
+    setSearchInput(val);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      handleFilterChange("search", val);
+    }, 400);
+  };
+
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
-const filteredTacs = filters.branchId
+
+  const filteredTacs = filters.branchId
     ? tacs.filter((t: any) => t.branchIds.includes(filters.branchId))
     : tacs;
+
   return {
     candidates,
     branches,
@@ -105,6 +120,8 @@ const filteredTacs = filters.branchId
     filters,
     totalPages,
     isLoading,
+    searchInput,
+    onSearchChange,
     handleFilterChange,
     handlePageChange,
   };
