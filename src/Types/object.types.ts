@@ -44,6 +44,10 @@ export interface documentTypeData {
     _id: string,
     title: string,
     section: string
+    subTitle: string,
+    supportedExtensions: string[],
+    required: boolean,
+    multiple: boolean
 }
 
 export interface positionDBData {
@@ -58,3 +62,6 @@ export interface positionDBData {
 
 }
 
+export interface positionById {
+    positionId: string
+}

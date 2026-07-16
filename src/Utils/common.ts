@@ -1,4 +1,6 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { uploadResponse } from "@/Types/ApiResponse/uploadRes.types";
+import { AxiosResponse } from "axios";
 import dayjs from "dayjs";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
@@ -21,21 +23,22 @@ export const CamelCase = (text: string) => {
     ?.replace(/\b\w/g, (char) => char.toUpperCase());
 };
 
-export const uploadFileAction = async (file: File) => {
-  try {
-    const formData = new FormData();
-    formData.append("file", file);
+export const uploadFileAction = async (file: File): Promise<AxiosResponse<uploadResponse>> => {
+  // try {
+  const formData = new FormData();
+  formData.append("file", file);
 
-    const response = await axiosClient.post("/upload/local", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Upload failed",
-    };
-  }
+  const response = await axiosClient.post("/upload/local", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
+  return response
+  // .data;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message: error.response?.data?.message || "Upload failed",
+  //   };
+  // }
 };
 
 export const currentFy = () => {

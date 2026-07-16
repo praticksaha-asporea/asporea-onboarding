@@ -1,6 +1,7 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { documentUploadResponse, positionResponse } from "@/Types/ApiResponse/leadRes.types";
+import { documentUploadResponse, positionDetailResponse, positionResponse } from "@/Types/ApiResponse/leadRes.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
+import { positionById } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
 
 export const getPositionsListAction = async (): Promise<AxiosResponse<positionResponse>> => {
@@ -16,20 +17,21 @@ export const getPositionsListAction = async (): Promise<AxiosResponse<positionRe
   // }
 };
 
-export const getPositionDetailsAction = async (positionId: string) => {
-  try {
-    const response = await axiosClient.get(
-      `/document/position-details?id=${positionId}`,
-    );
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message:
-        error.response?.data?.message ||
-        "Failed to fetch document requirements",
-    };
-  }
+export const getPositionDetailsAction = async (bodyData: positionById): Promise<AxiosResponse<positionDetailResponse>> => {
+  // try {
+  const response = await axiosClient.get(
+    `/document/position-details?id=${bodyData.positionId}`,
+  );
+  return response
+  //.data;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message:
+  //       error.response?.data?.message ||
+  //       "Failed to fetch document requirements",
+  //   };
+  // }
 };
 export const saveMappedDocumentsAction = async (payload: any) => {
   try {

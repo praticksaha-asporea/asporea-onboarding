@@ -216,3 +216,10 @@ export interface positionResponse {
     data: positionDBData[],
     error: null
 }
+
+export interface positionDetailResponse {
+    success: boolean,
+    message: string,
+    data: positionDBData,
+    error: null
+}

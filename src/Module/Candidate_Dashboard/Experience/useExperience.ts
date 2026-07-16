@@ -96,8 +96,8 @@ export const useExperience = () => {
       setCheckingStatus(true);
       try {
         const res = await checkDocumentStatusAction(leadId);
-        if (res?.success && res.data) {
-          const currentStatus = res.data.status;
+        if (res?.data?.success && res.data?.data) {
+          const currentStatus = res.data.data?.status;
 
           if (
             currentStatus === "inquiry_pending" ||
@@ -121,8 +121,8 @@ export const useExperience = () => {
             "assess_completed",
           ];
           const isDocUploaded =
-            res.data.documentStatus === "uploaded" ||
-            res.data.documentStatus === "verified" ||
+            res.data.data?.documentStatus === "uploaded" ||
+            res.data.data?.documentStatus === "verified" ||
             docCompletedStatuses.includes(currentStatus);
 
           if (!isDocUploaded) {
@@ -141,8 +141,8 @@ export const useExperience = () => {
           ];
           if (submittedStages.includes(currentStatus)) {
             setIsAlreadySubmitted(true);
-            if (res.data.experienceType) {
-              setSelectedExperience(res.data.experienceType);
+            if (res.data.data?.experienceType) {
+              setSelectedExperience(res.data.data?.experienceType);
             }
           }
         }
@@ -163,10 +163,10 @@ export const useExperience = () => {
         return;
       }
       setLoadingDocs(true);
-      const res = await getPositionDetailsAction(positionId);
-      if (res?.success) {
-        const required = res.data.requiredDocuments || [];
-        const mandatory = res.data.mandatoryDocuments || [];
+      const res = await getPositionDetailsAction({ positionId });
+      if (res?.data?.success) {
+        const required = res.data.data?.requiredDocuments || [];
+        const mandatory = res.data.data?.mandatoryDocuments || [];
 
         const docMap = new Map();
         required.forEach((d: any) =>
@@ -206,8 +206,8 @@ export const useExperience = () => {
       for (const [typeId, files] of Object.entries(selectedFilesMap)) {
         for (const file of files) {
           const uploadRes = await uploadFileAction(file);
-          if (uploadRes?.success && uploadRes.data?.uploadId) {
-            mappedDocs.push({ typeId, uploadId: uploadRes.data.uploadId });
+          if (uploadRes?.data?.success && uploadRes.data?.data?.uploadId) {
+            mappedDocs.push({ typeId, uploadId: uploadRes.data.data?.uploadId });
           } else {
             toast.error(`Failed to upload ${file.name}`);
             setIsSubmitting(false);

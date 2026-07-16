@@ -150,10 +150,10 @@ export const useDocumentUpload = () => {
     }
     const fetchDocs = async () => {
       setLoadingDocs(true);
-      const res = await getPositionDetailsAction(selectedPosition);
-      if (res?.success) {
-        const required = res.data.requiredDocuments || [];
-        const mandatory = res.data.mandatoryDocuments || [];
+      const res = await getPositionDetailsAction({ positionId: selectedPosition });
+      if (res?.data?.success) {
+        const required = res?.data?.data.requiredDocuments || [];
+        const mandatory = res?.data?.data.mandatoryDocuments || [];
         if (required.length === 0 && mandatory.length === 0)
           setHasDocuments(false);
         else setHasDocuments(true);
@@ -214,8 +214,8 @@ export const useDocumentUpload = () => {
         for (const file of files) {
           if (file) {
             const uploadRes = await uploadFileAction(file);
-            if (uploadRes?.success && uploadRes.data?.uploadId) {
-              mappedDocs.push({ typeId, uploadId: uploadRes.data.uploadId });
+            if (uploadRes?.data?.success && uploadRes.data?.data?.uploadId) {
+              mappedDocs.push({ typeId, uploadId: uploadRes?.data?.data?.uploadId });
             } else {
               toast.error(`Failed to upload ${file.name}`);
               setIsSubmitting(false);

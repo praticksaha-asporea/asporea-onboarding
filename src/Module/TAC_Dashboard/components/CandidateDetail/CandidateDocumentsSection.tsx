@@ -177,10 +177,10 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
     if (!positionId || hasMissingLoaded) return;
     setLoadingMissing(true);
     try {
-      const res = await getPositionDetailsAction(positionId);
-      if (res?.success) {
-        const required: any[] = res.data.requiredDocuments ?? [];
-        const mandatory: any[] = res.data.mandatoryDocuments ?? [];
+      const res = await getPositionDetailsAction({ positionId });
+      if (res?.data?.success) {
+        const required: any[] = res.data?.data.requiredDocuments ?? [];
+        const mandatory: any[] = res.data?.data.mandatoryDocuments ?? [];
 
         const docMap = new Map<string, DocumentRequirement>();
         required.forEach((d: any) => docMap.set(d._id, { ...d, isMandatory: false }));
@@ -191,7 +191,7 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
         recomputeMissing(allDocs, uploadedDocsState);
         setHasMissingLoaded(true);
       } else {
-        toast.error(res?.message ?? "Failed to load document requirements");
+        toast.error(res?.data?.message ?? "Failed to load document requirements");
       }
     } finally {
       setLoadingMissing(false);
@@ -222,8 +222,8 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
         if (!files.length) continue;
         for (const file of files) {
           const uploadRes = await uploadFileAction(file);
-          if (uploadRes?.success && uploadRes.data?.uploadId) {
-            mappedDocs.push({ typeId, uploadId: uploadRes.data.uploadId });
+          if (uploadRes?.data?.success && uploadRes.data?.data?.uploadId) {
+            mappedDocs.push({ typeId, uploadId: uploadRes.data.data?.uploadId });
           } else {
             toast.error(`Failed to upload ${file.name}`);
             setIsSaving(false);
