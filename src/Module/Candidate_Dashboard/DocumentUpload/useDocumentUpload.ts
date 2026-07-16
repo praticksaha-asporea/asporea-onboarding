@@ -7,6 +7,7 @@ import {
   Position,
   GroupedDocuments,
   DocumentRequirement,
+  saveMappedDocumentReq,
 } from "@/Types/Frontend_Payload/document.types";
 import {
   getPositionsListAction,
@@ -230,13 +231,13 @@ export const useDocumentUpload = () => {
         leadId,
         documents: mappedDocs,
         position: selectedPosition,
-      });
+      } as saveMappedDocumentReq);
 
-      if (saveRes?.success) {
+      if (saveRes?.data?.success) {
         toast.success("Details updated successfully!");
         router.push(`/experience?positionId=${selectedPosition}`);
       } else {
-        toast.error(saveRes?.message || "Failed to save document records.");
+        toast.error(saveRes?.data?.message || "Failed to save document records.");
       }
     } catch (err) {
       toast.error("An error occurred during the upload process.");

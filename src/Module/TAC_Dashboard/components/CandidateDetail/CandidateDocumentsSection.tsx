@@ -238,7 +238,7 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
           documents: mappedDocs,
           position: positionId,
         });
-        if (saveRes?.success) {
+        if (saveRes?.data?.success) {
           const refreshed = await getCandidateDocumentsAction(leadId);
 
           if (refreshed?.success) {
@@ -253,7 +253,7 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
           setSelectedFilesMap({});
           toast.success("Documents uploaded successfully.");
         } else {
-          toast.error(saveRes?.message ?? "Failed to save documents");
+          toast.error(saveRes?.data?.message ?? "Failed to save documents");
         }
       }
     } catch {

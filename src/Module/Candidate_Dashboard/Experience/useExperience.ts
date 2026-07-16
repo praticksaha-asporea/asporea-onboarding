@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import {
   ExperienceOption,
   AdditionalDocument,
+  saveMappedExpReq,
 } from "@/Types/Frontend_Payload/experience.types";
 import {
   saveMappedDocumentsAction,
@@ -95,7 +96,7 @@ export const useExperience = () => {
 
       setCheckingStatus(true);
       try {
-        const res = await checkDocumentStatusAction(leadId);
+        const res = await checkDocumentStatusAction({ leadId });
         if (res?.data?.success && res.data?.data) {
           const currentStatus = res.data.data?.status;
 
@@ -223,8 +224,8 @@ export const useExperience = () => {
           position: positionId
         });
 
-        if (!docSaveRes?.success) {
-          toast.error(docSaveRes?.message || "Failed to save additional documents.");
+        if (!docSaveRes?.data?.success) {
+          toast.error(docSaveRes?.data?.message || "Failed to save additional documents.");
           setIsSubmitting(false);
           return;
         }
@@ -233,8 +234,8 @@ export const useExperience = () => {
       const expRes = await saveExperienceTypeAction({
         leadId,
         experienceType: selectedExperience,
-      });
-      if (expRes?.success) {
+      } as saveMappedExpReq);
+      if (expRes?.data?.success) {
         toast.success("Experience details saved successfully!");
         router.push("/applicationtracking");
       }

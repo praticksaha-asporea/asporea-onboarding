@@ -1,5 +1,7 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { documentUploadResponse, positionDetailResponse, positionResponse } from "@/Types/ApiResponse/leadRes.types";
+import { saveMappedDocumentRes } from "@/Types/ApiResponse/uploadRes.types";
+import { saveMappedDocumentReq } from "@/Types/Frontend_Payload/document.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { positionById } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
@@ -33,16 +35,17 @@ export const getPositionDetailsAction = async (bodyData: positionById): Promise<
   //   };
   // }
 };
-export const saveMappedDocumentsAction = async (payload: any) => {
-  try {
-    const response = await axiosClient.post("/document/save", payload);
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Save failed",
-    };
-  }
+export const saveMappedDocumentsAction = async (bodyData: saveMappedDocumentReq): Promise<AxiosResponse<saveMappedDocumentRes>> => {
+  // try {
+  const response = await axiosClient.post("/document/save", bodyData);
+  return response
+  //   .data;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message: error.response?.data?.message || "Save failed",
+  //   };
+  // }
 };
 
 export const checkDocumentStatusAction = async (bodyData: trackingById): Promise<AxiosResponse<documentUploadResponse>> => {
