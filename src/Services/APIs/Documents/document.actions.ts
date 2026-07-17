@@ -5,6 +5,7 @@ import { saveMappedDocumentReq } from "@/Types/Frontend_Payload/document.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { positionById } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
+import { candidateDocumentDetailsResponse } from "@/Types/ApiResponse/documentRes.types";
 
 export const getPositionsListAction = async (): Promise<AxiosResponse<positionResponse>> => {
   // try {
@@ -59,19 +60,19 @@ export const checkDocumentStatusAction = async (bodyData: trackingById): Promise
 };
 
 
-
-export const getCandidateDocumentsAction = async (leadId: string, settings?: boolean): Promise<any> => {
-  try {
-    const response = await axiosClient.get(`/tac/candidate/${leadId}`, {
-      ...settings === true &&
-      {
+export const getCandidateDocumentsAction = async (
+  leadId: string,
+  settings?: boolean
+): Promise<AxiosResponse<candidateDocumentDetailsResponse>> => {
+  const response = await axiosClient.get<candidateDocumentDetailsResponse>(
+    `/tac/candidate/${leadId}`,
+    {
+      ...(settings === true && {
         params: {
           settings: true,
-        }
-      },
-    });
-    return response?.data;
-  } catch (error: any) {
-    return { success: false, message: error.response?.data?.message || "Failed to check status" };
-  }
+        },
+      }),
+    }
+  );
+  return response;
 };

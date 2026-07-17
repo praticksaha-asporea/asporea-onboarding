@@ -302,19 +302,14 @@ const COLS = [
 
 const DocumentApprovalView = () => {
   const {
-    leads,
-    loading,
-    page,
-    setPage,
-    totalPages,
-    modalOpen,
-    setModalOpen,
-    selectedLead,
-    searchInput,
-    handleSearchChange,
-    openActionModal,
-    fetchDocuments,
+    leads, loading, filters, totalPages, modalOpen, setModalOpen,
+    selectedLead, searchInput, handleSearchChange, handlePageChange,
+    openActionModal, fetchDocuments,
   } = useDocumentApproval();
+
+  function setPage(val: number): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
@@ -386,17 +381,14 @@ const DocumentApprovalView = () => {
                     className="py-3 px-4 text-[var(--mui-palette-primary)] text-[13px]"
                     data-label="Assigned TAC"
                   >
-                    {row.preferences?.consultantId
-                      ? `${row.preferences.consultantId.firstName} ${row.preferences.consultantId.lastName}`
-                      : "Unassigned"}
+                   {row.assignedTac}
                   </TableCell>
                   <TableCell
                     className="py-3 px-4"
                     data-label="Position Applied"
                   >
                     <Chip
-                      label={row.documents?.position?.title || "N/A"}
-                      size="small"
+label={row.positionApplied}                      size="small"
                       variant="outlined"
                       className="text-[12px] text-[var(--mui-palette-primary)] font-medium border-none shadow-2xl bg-[var(--mui-palette-primary)]"
                     />
@@ -405,9 +397,7 @@ const DocumentApprovalView = () => {
                     className="py-3 px-4 text-[12px] text-[var(--mui-palette-primary)]"
                     data-label="Submitted"
                   >
-                    {row.documents?.submittedOn
-                      ? dayjs(row.documents.submittedOn).fromNow()
-                      : "N/A"}
+                   {row.submittedOnTimeAgo}
                   </TableCell>
                   <TableCell
                     className="py-3 px-4 text-right"
@@ -433,8 +423,8 @@ const DocumentApprovalView = () => {
         <Box className="flex justify-center md:justify-end mt-4">
           <Pagination
             count={totalPages}
-            page={page}
-            onChange={(_e, val) => setPage(val)}
+            page={filters.page}
+            onChange={(_e, val) => handlePageChange(val)}
             color="primary"
             size="small"
           />

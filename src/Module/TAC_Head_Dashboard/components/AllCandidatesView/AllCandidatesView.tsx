@@ -19,7 +19,6 @@ import {
 } from "@mui/material";
 import { useAllCandidates } from "./useAllCandidates";
 
-// ── Shared responsive-table sx styling mapping ──
 const responsiveTableSx = {
   "& .resp-thead": { "@media (max-width: 767px)": { display: "none" } },
   "& .resp-row": {
@@ -55,54 +54,6 @@ const responsiveTableSx = {
   },
 };
 
-const getCandidateStatusBadge = (status: string) => {
-  switch (status) {
-    case "inquiry_submitted":
-    case "doc_submitted":
-    case "exp_submitted":
-    case "assessment_submitted":
-      return "bg-blue-500 text-white dark:bg-blue-500 dark:text-white";
-
-    case "doc_verified":
-    case "exp_verified":
-    case "pre_completed":
-    case "assess_completed":
-      return "bg-green-500 text-white dark:bg-green-90 dark:text-white";
-
-    case "pre_contacted":
-    case "assess_contacted":
-      return "bg-teal-500 text-white dark:bg-teal-95 dark:text-white";
-
-    case "pre_queued":
-    case "assess_queued":
-      return "bg-orange-500 text-white dark:bg-orange-95 dark:text-white";
-
-    case "pre_scheduled":
-    case "assess_scheduled":
-    case "assessment_scheduled":
-      return "bg-amber-600 text-white dark:bg-amber-700 dark:text-white";
-
-    case "pre_not_responded":
-    case "assess_not_responded":
-      return "bg-pink-500 text-white dark:bg-pink-96 dark:text-white";
-
-    case "pre_rejected":
-    case "assess_rejected":
-    case "exp_rejected":
-    case "doc_rejected":
-      return "bg-red-600 text-white dark:bg-red-98 dark:text-white";
-
-    case "exp_request_technical":
-      return "bg-amber-400 text-white dark:bg-amber-500 dark:text-white";
-
-    case "doc_awaiting_approval":
-      return "bg-purple-500 text-white dark:bg-purple-95 dark:text-white";
-
-    default:
-      return "bg-slate-400 text-white dark:bg-gray-400 dark:text-white";
-  }
-};
-
 const COLS = ["Candidate", "Branch", "Assigned TAC", "Contact", "Status"];
 
 const AllCandidatesView = () => {
@@ -127,7 +78,6 @@ const AllCandidatesView = () => {
 
       {/* ── Filters Section ── */}
       <Box className="flex flex-col gap-3 mb-5">
-        {/* Search Input Field */}
         <TextField
           fullWidth
           size="small"
@@ -137,7 +87,6 @@ const AllCandidatesView = () => {
           slotProps={{ input: { className: "rounded-lg text-[14px]" } }}
         />
 
-        {/* Dropdowns Configuration */}
         <Box className="flex gap-2 flex-wrap">
           <Select
             displayEmpty
@@ -149,7 +98,7 @@ const AllCandidatesView = () => {
             <MenuItem value="">All Assigned Branches</MenuItem>
             {branches.map((b: any) => (
               <MenuItem key={b._id} value={b._id}>
-                {b.title || "Unknown Branch"}
+                {b.title}
               </MenuItem>
             ))}
           </Select>
@@ -210,7 +159,7 @@ const AllCandidatesView = () => {
                 </TableCell>
               </TableRow>
             ) : (
-              candidates.map((row: any) => (
+              candidates.map((row) => (
                 <TableRow
                   key={row._id}
                   hover
@@ -226,7 +175,7 @@ const AllCandidatesView = () => {
                         {row.fullName}
                       </Typography>
                       <Typography className="text-[12px] text-[var(--mui-palette-text-secondary)]">
-                        {row.inqNo || "—"}
+                        {row.inqNo}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -236,7 +185,7 @@ const AllCandidatesView = () => {
                     className="resp-cell !py-3 !px-4 text-[13px]"
                     data-label="Branch"
                   >
-                    {row.preferences?.branchId?.title || "—"}
+                    {row.branchTitle}
                   </TableCell>
 
                   {/* Assigned TAC Module User */}
@@ -244,11 +193,7 @@ const AllCandidatesView = () => {
                     className="resp-cell !py-3 !px-4 text-[13px]"
                     data-label="Assigned TAC"
                   >
-                    {row.preferences?.consultantId ? (
-                      `${row.preferences.consultantId.firstName} ${row.preferences.consultantId.lastName}`
-                    ) : (
-                      <span className="text-gray-400">Unassigned</span>
-                    )}
+                    {row.tacName}
                   </TableCell>
 
                   {/* Contact Info (Phone & Email) */}
@@ -258,13 +203,13 @@ const AllCandidatesView = () => {
                   >
                     <Box>
                       <Typography className="text-[12px]">
-                        {row.contact?.phone || "—"}
+                        {row.phone}
                       </Typography>
                       <Typography
                         className="text-[12px] truncate max-w-[150px]"
-                        title={row.contact?.email}
+                        title={row.email}
                       >
-                        {row.contact?.email || "—"}
+                        {row.email}
                       </Typography>
                     </Box>
                   </TableCell>
@@ -275,11 +220,9 @@ const AllCandidatesView = () => {
                     data-label="Status"
                   >
                     <Box
-                      className={`inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${getCandidateStatusBadge(
-                        row.status,
-                      )}`}
+                      className={`inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wide whitespace-nowrap ${row.statusClass}`}
                     >
-                      {row.status?.replace(/_/g, " ") || "—"}
+                      {row.statusLabel}
                     </Box>
                   </TableCell>
                 </TableRow>
