@@ -1,77 +1,129 @@
 import { useState, useEffect, useCallback } from "react";
 import toast from "react-hot-toast";
+import dayjs from "dayjs";
+import relativeTime from "dayjs/plugin/relativeTime";
+import { CamelCase } from "@/Utils/common";
 import { getEscalationListAction } from "@/Services/APIs/tacHead/escalation.actions";
+import { escalationListPayload } from "@/Types/Frontend_Payload/escalation.types";
+import { escalationRecord, escalationUserRef } from "@/Types/ApiResponse/escalationRes.types";
+
+dayjs.extend(relativeTime);
+
+export interface enrichedEscalationRow {
+  _id: string;
+  rawRecord: escalationRecord;
+  inqNo: string;
+  fullName: string;
+  leadStatus: string;
+  fromName: string;
+  toName: string;
+  statusLabel: string;
+  statusColor: "success" | "error" | "warning";
+  timeAgo: string;
+}
 
 export const useDashboardView = () => {
-  const [escalations, setEscalations] = useState<any[]>([]);
+  const [escalations, setEscalations] = useState<escalationRecord[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [uniqueTacs, setUniqueTacs] = useState<escalationUserRef[]>([]);
 
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedTac, setSelectedTac] = useState("");
-  const [uniqueTacs, setUniqueTacs] = useState<any[]>([]);
-  
-  // Modal State Properties
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEscalation, setSelectedEscalation] = useState<any>(null);
+  const [selectedEscalation, setSelectedEscalation] = useState<escalationRecord | null>(null);
+
+
+  const [filters, setFilters] = useState<escalationListPayload>({
+    page: 1,
+    limit: 10,
+    search: "",
+    tacId: ""
+  });
+
+  const getStatusColor = (status: string): "success" | "error" | "warning" => {
+    if (status === "approved") return "success";
+    if (status === "rejected") return "error";
+    return "warning";
+  };
 
   const fetchEscalations = useCallback(async () => {
     setLoading(true);
-    const res = await getEscalationListAction(page, 10, searchTerm, selectedTac);
-    if (res?.success) {
-      setEscalations(res.data.escalations);
-      setTotalPages(res.data.meta.totalPages);
+    try {
 
-      // Unique TAC Extraction Logic maintained exactly
-      if (page === 1 && selectedTac === "") {
-        const tacs = res.data.escalations.map((esc: any) => esc.toId).filter(Boolean);
-        const unique = Array.from(new Set(tacs.map((a: any) => a._id))).map(id => {
-          return tacs.find((a: any) => a._id === id);
-        });
-        setUniqueTacs(unique);
+      const res = await getEscalationListAction(filters);
+
+      if (res?.data?.success) {
+        const rawList = res.data.data.escalations || [];
+        setEscalations(rawList);
+        setTotalPages(res.data.data.meta.totalPages || 1);
+
+        if (filters.page === 1 && filters.tacId === "") {
+          const tacs = rawList.map((esc) => esc.toId).filter(Boolean) as escalationUserRef[];
+          const unique = Array.from(new Set(tacs.map((a) => a._id))).map(id => {
+            return tacs.find((a) => a._id === id);
+          }) as escalationUserRef[];
+          setUniqueTacs(unique);
+        }
+      } else {
+        toast.error(res?.data?.message || "Failed to load requests");
       }
-    } else {
-      toast.error(res?.message || "Failed to load requests");
+    } catch (err) {
+      toast.error("An unexpected error occurred while loading dashboard.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
-  }, [page, searchTerm, selectedTac]);
+  }, [filters]);
 
   useEffect(() => {
     fetchEscalations();
   }, [fetchEscalations]);
 
-  const openActionModal = (escalation: any) => {
+  const openActionModal = (escalation: escalationRecord) => {
     setSelectedEscalation(escalation);
     setModalOpen(true);
   };
 
   const handleResetFilters = () => {
-    setSearchTerm("");
-    setSelectedTac("");
-    setPage(1);
+    setFilters({
+      page: 1,
+      limit: 10,
+      search: "",
+      tacId: ""
+    });
   };
 
   const handleSearchChange = (val: string) => {
-    setSearchTerm(val);
-    setPage(1);
+    setFilters((prev) => ({ ...prev, search: val, page: 1 }));
   };
 
   const handleTacChange = (val: string) => {
-    setSelectedTac(val);
-    setPage(1);
+    setFilters((prev) => ({ ...prev, tacId: val, page: 1 }));
   };
 
+  const handlePageChange = (newPage: number) => {
+    setFilters((prev) => ({ ...prev, page: newPage }));
+  };
+
+  const formattedEscalationsForUI = escalations.map((row): enrichedEscalationRow => ({
+    _id: row._id,
+    rawRecord: row,
+    inqNo: row.leadId?.inqNo || "N/A",
+    fullName: row.leadId?.fullName || "—",
+    leadStatus: CamelCase(row.leadId?.status || ""),
+    fromName: row.fromId ? `${row.fromId.firstName} ${row.fromId.lastName}` : "—",
+    toName: row.toId ? `${row.toId.firstName} ${row.toId.lastName}` : "—",
+    statusLabel: CamelCase(row.status || ""),
+    statusColor: getStatusColor(row.status || ""),
+    timeAgo: dayjs(row.createdAt).fromNow()
+  }));
+
   return {
-    escalations,
+    escalations: formattedEscalationsForUI,
     loading,
-    page,
-    setPage,
+    filters,
     totalPages,
-    searchTerm,
     handleSearchChange,
-    selectedTac,
     handleTacChange,
+    handlePageChange,
     uniqueTacs,
     modalOpen,
     setModalOpen,

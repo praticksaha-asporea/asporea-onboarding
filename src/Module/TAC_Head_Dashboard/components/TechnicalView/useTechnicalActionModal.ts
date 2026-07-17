@@ -6,20 +6,24 @@ import { getCandidateDocumentsAction } from "@/Services/APIs/Documents/document.
 import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { technicalExperienceAction } from "@/Services/APIs/tacHead/experience.action";
 
+ import { deepPopulatedLeadDetails, consultantSlotItem } from "@/Types/ApiResponse/documentRes.types";
+ import { technicalActionPayload } from "@/Types/Frontend_Payload/technical.types";
+import { technicalRequestedLeadRecord } from "@/Types/ApiResponse/technicalRes.types";
+
 interface UseTechnicalActionModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  lead: any;
+  lead: technicalRequestedLeadRecord | null;  
   refreshData: () => void;
 }
 
 export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: UseTechnicalActionModalProps) => {
-  const [fullLeadData, setFullLeadData] = useState<any>(null);
+   const [fullLeadData, setFullLeadData] = useState<deepPopulatedLeadDetails | technicalRequestedLeadRecord | null>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
-  const [slots, setSlots] = useState<any[]>([]);
+  const [slots, setSlots] = useState<consultantSlotItem[]>([]);
   const [fetchingSlots, setFetchingSlots] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [selectedSlot, setSelectedSlot] = useState<consultantSlotItem | null>(null);
   const [passingMarks, setPassingMarks] = useState<number>(0);
 
   useEffect(() => {
@@ -32,11 +36,11 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
 
   useEffect(() => {
     const fetchSlots = async () => {
-      const consultantId = lead?.preferences?.consultantId?._id || lead?.preferences?.consultantId?.id;
+      const consultantId = lead?.preferences?.consultantId?._id;
       if (selectedDate && consultantId) {
         setFetchingSlots(true);
         const res = await getSlotsAction({ consultantId, date: selectedDate });
-        setSlots(res?.data?.success !== false ? (res?.data?.data || []) : []);
+         setSlots(res?.data?.success !== false ? (res?.data?.data as unknown as consultantSlotItem[] || []) : []);
         setFetchingSlots(false);
       }
     };
@@ -57,59 +61,44 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
     },
     validationSchema: yup.object({
       expType: yup.string().required("Please choose experience type first"),
-      achievedScore: yup
-        .number()
-        .typeError("Please enter achieved score")
-        .required("Please enter achieved score")
-        .min(0, "Achieved score cannot be negative")
-        .max(yup.ref("totalScore"), "Achieved score cannot be greater than total score"),
-      totalScore: yup
-        .number()
-        .typeError("Please enter total score")
-        .required("Please enter total score")
-        .min(1, "Total score must be at least 1")
-        .max(100, "Total score cannot exceed 100"),
-      answered: yup
-        .number()
-        .typeError("Please enter number of questions answered")
-        .required("Please enter number of questions answered")
-        .min(0, "Answered questions cannot be negative")
-        .max(yup.ref("questions"), "Answered questions cannot exceed total questions"),
-      questions: yup
-        .number()
-        .typeError("Please enter total number of questions")
-        .required("Please enter total number of questions")
-        .min(1, "Questions must be at least 1")
-        .max(100, "Questions cannot exceed 100"),
+      achievedScore: yup.number().typeError("Please enter achieved score").required("Please enter achieved score").min(0, "Achieved score cannot be negative").max(yup.ref("totalScore"), "Achieved score cannot be greater than total score"),
+      totalScore: yup.number().typeError("Please enter total score").required("Please enter total score").min(1, "Total score must be at least 1").max(100, "Total score cannot exceed 100"),
+      answered: yup.number().typeError("Please enter number of questions answered").required("Please enter number of questions answered").min(0, "Answered questions cannot be negative").max(yup.ref("questions"), "Answered questions cannot exceed total questions"),
+      questions: yup.number().typeError("Please enter total number of questions").required("Please enter total number of questions").min(1, "Questions must be at least 1").max(100, "Questions cannot exceed 100"),
       timeTaken: yup.string().required("Please enter total time taken for this round"),
       remarks: yup.string().max(500).optional(),
     }),
-    onSubmit: async (values) => {
+   onSubmit: async (values) => {
       const currentIsPassing = Number(values.achievedScore) >= passingMarks && passingMarks > 0;
       if (currentIsPassing && (!selectedDate || !selectedSlot)) {
         toast.error("Candidate has passed! Please schedule the next assessment slot.");
         return;
       }
       
-      const formData = new FormData();
-      formData.append("leadId", lead?._id);
-      formData.append("type", values.expType);
-      formData.append("achievedScore", values.achievedScore);
-      formData.append("totalScore", values.totalScore);
-      formData.append("answered", values.answered);
-      formData.append("questions", values.questions);
-      formData.append("timeTaken", values.timeTaken);
-      formData.append("feedback", values.remarks);
-      
-      if (values.breakdownPdf) {
-        formData.append("breakdownPdf", values.breakdownPdf);
-      }
+       const rawPayloadData: technicalActionPayload = {
+        leadId: lead?._id || "",
+        type: values.expType,
+        achievedScore: values.achievedScore,
+        totalScore: values.totalScore,
+        answered: values.answered,
+        questions: values.questions,
+        timeTaken: values.timeTaken,
+        feedback: values.remarks,
+        breakdownPdf: values.breakdownPdf,
+      };
+
       if (currentIsPassing && selectedDate && selectedSlot) {
-        formData.append("scheduleDate", selectedDate);
-        formData.append("scheduleFrom", selectedSlot.from);
-        formData.append("scheduleTo", selectedSlot.to);
+        rawPayloadData.scheduleDate = selectedDate;
+        rawPayloadData.scheduleFrom = selectedSlot.from;
+        rawPayloadData.scheduleTo = selectedSlot.to;
       }
 
+       const formData = new FormData();
+      Object.entries(rawPayloadData).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          formData.append(key, value as string | Blob);
+        }
+      });
       const res = await technicalExperienceAction(formData);
       if (res?.success !== false) {
         toast.success("Technical Experience verified successfully!");
@@ -125,10 +114,17 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
         setFetchingDetails(true);
         setFullLeadData(null);
         const res = await getCandidateDocumentsAction(lead._id, true);
-        if (res?.success && res?.data?.lead) {
-          setFullLeadData(res.data.lead);
-          technicalReviewForm.setFieldValue("totalScore", res?.data?.generalSettings?.technical?.fullMarks);
-          setPassingMarks(res?.data?.generalSettings?.technical?.passingMarks || 0);
+        
+        // 🌟 HIGHLIGHT 4: Axios Response Double nesting 'res.data.data' perfectly resolved here!
+        if (res?.data?.success && res?.data?.data?.lead) {
+          setFullLeadData(res.data.data.lead);
+          
+          // Using optional chaining safely to avoid any compiler warnings
+          const fullMarks = (res.data.data.generalSettings as any)?.technical?.fullMarks || 100;
+          const marksRequired = (res.data.data.generalSettings as any)?.technical?.passingMarks || 0;
+          
+          technicalReviewForm.setFieldValue("totalScore", fullMarks);
+          setPassingMarks(marksRequired);
         } else {
           toast.error("Failed to fetch complete document details for this candidate.");
           setFullLeadData(lead);
@@ -137,20 +133,30 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
       }
     };
     fetchFullLeadDetails();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, lead]);
 
   const isPassing = Number(technicalReviewForm.values.achievedScore) >= passingMarks && passingMarks > 0;
 
+  const consultant = 
+      (fullLeadData as deepPopulatedLeadDetails)?.preferences?.consultantId || 
+      lead?.preferences?.consultantId;
+
+   const posNode = (fullLeadData as deepPopulatedLeadDetails)?.documents?.position;
+  const safePositionTitle = (posNode && typeof posNode === 'object' && 'title' in posNode) 
+    ? posNode.title 
+    : "No Position Selected";
+
+  const modalDetails = {
+    fullName: fullLeadData?.fullName || lead?.fullName || "—",
+    inqNo: fullLeadData?.inqNo || lead?.inqNo || "—",
+    assignedTac: consultant?.firstName && consultant?.lastName
+      ? `${consultant.firstName} ${consultant.lastName}`
+      : "Unassigned",
+    positionApplied: safePositionTitle  
+  };
   return {
-    fullLeadData,
-    fetchingDetails,
-    selectedDate,
-    setSelectedDate,
-    slots,
-    fetchingSlots,
-    selectedSlot,
-    setSelectedSlot,
-    technicalReviewForm,
-    isPassing,
+    fullLeadData, fetchingDetails, selectedDate, setSelectedDate, slots, fetchingSlots,
+    selectedSlot, setSelectedSlot, technicalReviewForm, isPassing, modalDetails
   };
 };

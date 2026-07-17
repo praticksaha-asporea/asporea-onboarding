@@ -24,7 +24,6 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { CamelCase } from "@/Utils/common";
 import EscalationActionModal from "./EscalationActionModal";
 import { useDashboardView } from "./useDashboardView";
 
@@ -38,13 +37,11 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
   const {
     escalations,
     loading,
-    page,
-    setPage,
+    filters,
     totalPages,
-    searchTerm,
     handleSearchChange,
-    selectedTac,
     handleTacChange,
+    handlePageChange,
     uniqueTacs,
     modalOpen,
     setModalOpen,
@@ -59,20 +56,19 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
     if (status === "rejected") return "error";
     return "warning";
   };
-
-  return (
-    <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans">
-      <Typography className="text-[22px] text-[var(--mui-palette-primary)] md:text-[28px] font-medium tracking-tight mb-6">
+return (
+    <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
+      <Typography className="text-[22px] text-[var(--mui-palette-secondary)] md:text-[28px] font-medium tracking-tight mb-6">
         Escalation Requests
       </Typography>
 
-      {/* ── FILTER SECTION ── */}
-      <Box className="flex flex-col md:flex-row gap-4 mb-6 bg-[var(--mui-palette-primary)] p-4 rounded-xl shadow-2xl">
+      
+      <Box className="flex flex-col md:flex-row gap-4 mb-6 p-4 rounded-xl shadow-2xl">
         <TextField
           size="small"
           label="Search by Candidate or Inq No."
           variant="outlined"
-          value={searchTerm}
+          value={filters.search}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="flex-1 md:max-w-md"
         />
@@ -80,7 +76,7 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
         <FormControl size="small" className="flex-1 md:max-w-xs">
           <InputLabel>Filter by TAC</InputLabel>
           <Select
-            value={selectedTac}
+            value={filters.tacId}
             label="Filter by Target TAC"
             onChange={(e) => handleTacChange(e.target.value as string)}
           >
@@ -93,14 +89,14 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
           </Select>
         </FormControl>
 
-        {(searchTerm || selectedTac) && (
+        {(filters.search || filters.tacId) && (
           <Button variant="text" color="error" onClick={handleResetFilters} className="normal-case">
             Clear Filters
           </Button>
         )}
       </Box>
 
-      {/* ── DATA GRID TABLE ── */}
+     
       <TableContainer component={Paper} className="shadow-xl">
         <Table size="small">
           <TableHead>
@@ -123,42 +119,43 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
               </TableRow>
             ) : escalations.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="text-center py-8">
+                <TableCell colSpan={7} className="text-center py-8 text-gray-400">
                   No escalation requests found.
                 </TableCell>
               </TableRow>
             ) : (
-              escalations.map((row: any) => (
+              escalations.map((row) => (
                 <TableRow key={row._id} hover>
+                 
                   <TableCell className="py-3 px-4 text-[13px] font-bold text-[var(--mui-palette-secondary)]">
-                    {row.leadId?.inqNo || "N/A"}
+                    {row.inqNo}
                   </TableCell>
                   <TableCell className="py-3 px-4">
-                    <Typography className="font-semibold text-[13px]">{row.leadId?.fullName}</Typography>
-                    <Typography className="text-[12px] text-gray-500">{CamelCase(row.leadId?.status)}</Typography>
+                    <Typography className="font-semibold text-[13px]">{row.fullName}</Typography>
+                    <Typography className="text-[12px] text-gray-500">{row.leadStatus}</Typography>
                   </TableCell>
                   <TableCell className="py-3 px-4 text-[13px]">
-                    {row.fromId?.firstName} {row.fromId?.lastName}
+                    {row.fromName}
                   </TableCell>
                   <TableCell className="py-3 px-4 text-[13px]">
-                    {row.toId?.firstName} {row.toId?.lastName}
+                    {row.toName}
                   </TableCell>
                   <TableCell className="py-3 px-4">
                     <Chip
-                      label={CamelCase(row.status)}
-                      color={getStatusColor(row.status)}
+                      label={row.statusLabel}
+                      color={row.statusColor}
                       size="small"
                       variant="outlined"
                       className="text-[13px] border-none shadow-2xl font-bold"
                     />
                   </TableCell>
                   <TableCell className="py-3 px-4 text-[12px] text-[var(--mui-palette-primary)]">
-                    {dayjs(row.createdAt).fromNow()}
+                    {row.timeAgo}
                   </TableCell>
                   <TableCell className="py-3 px-4 text-right">
                     <IconButton
                       size="small"
-                      onClick={() => openActionModal(row)}
+                      onClick={() => openActionModal(row.rawRecord)}
                       color="primary"
                       className="bg-var(--mui-palette-primary-main)"
                     >
@@ -177,8 +174,8 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
         <Box className="flex justify-center mt-4">
           <Pagination
             count={totalPages}
-            page={page}
-            onChange={(_e, val) => setPage(val)}
+            page={filters.page}
+            onChange={(_e, val) => handlePageChange(val)}
             color="primary"
           />
         </Box>

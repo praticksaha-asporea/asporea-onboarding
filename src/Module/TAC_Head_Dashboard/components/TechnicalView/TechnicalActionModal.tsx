@@ -146,7 +146,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
 
   const {
     fullLeadData, fetchingDetails, selectedDate, setSelectedDate, slots,
-    fetchingSlots, selectedSlot, setSelectedSlot, technicalReviewForm, isPassing
+    fetchingSlots, selectedSlot, setSelectedSlot, technicalReviewForm, isPassing,modalDetails
   } = useTechnicalActionModal({ open, setOpen, lead, refreshData });
 
   if (!lead) return null;
@@ -165,7 +165,7 @@ const TechnicalActionModal: React.FC<ActionModalProps> = ({ open, setOpen, lead,
               {lead.fullName} <span className="font-mono text-xs text-[var(--mui-palette-primary)] font-medium ml-2">#{lead.inqNo}</span>
             </Typography>
             <Box className="mt-2">
-              <Chip label={fullLeadData?.documents?.position?.title || "No Position Selected"} size="small" className="text-[11px] font-bold text-[var(--mui-palette-primary)] border border-blue-100" />
+              <Chip label={modalDetails.positionApplied}size="small" className="text-[11px] font-bold text-[var(--mui-palette-primary)] border border-blue-100" />
             </Box>
           </Box>
           <Box className="bg-[var(--mui-palette-primary)] p-4 rounded-xl shadow-2xl flex flex-col justify-between">

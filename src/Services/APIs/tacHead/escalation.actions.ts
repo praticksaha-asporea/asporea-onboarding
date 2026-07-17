@@ -1,44 +1,44 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { AxiosResponse } from "axios";
+import {
+  escalationListPayload,
+  escalationViewPayload,
+  approveRejectEscalationPayload
+} from "@/Types/Frontend_Payload/escalation.types";
+import {
+  escalationListResponse,
+  escalationViewResponse,
+  escalationActionResponse
+} from "@/Types/ApiResponse/escalationRes.types";
 
-export const getEscalationListAction =async (page = 1, limit = 10, search = "", tacId = "") => {
-  try {
-  const response = await axiosClient.get(
-      `/tac/tachead/escalation/list?page=${page}&limit=${limit}&search=${search}&tacId=${tacId}`,
-    );
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to fetch escalations",
-    };
-  }
+
+export const getEscalationListAction = async (
+  payload: escalationListPayload
+): Promise<AxiosResponse<escalationListResponse>> => {
+  const { page = 1, limit = 10, search = "", tacId = "" } = payload;
+  const url = `/tac/tachead/escalation/list?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&tacId=${encodeURIComponent(tacId)}`;
+
+  const response = await axiosClient.get<escalationListResponse>(url);
+  return response;
 };
 
-export const getEscalationViewAction = async (id: string) => {
-  try {
-    const response = await axiosClient.get(
-      `/tac/tachead/escalation/view?id=${id}`,
-    );
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to view escalation",
-    };
-  }
+
+export const getEscalationViewAction = async (
+  payload: escalationViewPayload
+): Promise<AxiosResponse<escalationViewResponse>> => {
+  const url = `/tac/tachead/escalation/view?id=${encodeURIComponent(payload.id)}`;
+
+  const response = await axiosClient.get<escalationViewResponse>(url);
+  return response;
 };
 
-export const approveRejectEscalationAction = async (payload: any) => {
-  try {
-    const response = await axiosClient.post(
-      "/tac/tachead/escalation/action",
-      payload,
-    );
-    return response.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Action failed",
-    };
-  }
+
+export const approveRejectEscalationAction = async (
+  payload: approveRejectEscalationPayload
+): Promise<AxiosResponse<escalationActionResponse>> => {
+  const response = await axiosClient.post<escalationActionResponse>(
+    "/tac/tachead/escalation/action",
+    payload
+  );
+  return response;
 };

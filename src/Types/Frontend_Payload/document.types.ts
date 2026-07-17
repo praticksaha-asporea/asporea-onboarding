@@ -31,3 +31,21 @@ export interface saveMappedDocumentReq {
   documents: UploadMappedDocument[],
   position: string,
 }
+
+export interface documentApprovalListPayload {
+  page: number;
+  limit: number;
+  search: string;
+}
+
+export interface approveRejectDocumentPayload {
+  leadId: string;
+  status: "verified" | "rejected";
+  remarks?: string;
+  schedule?: {
+    date: string;
+    from: string;
+    to: string;
+    method?: "on" | "off";  
+  };
+}
