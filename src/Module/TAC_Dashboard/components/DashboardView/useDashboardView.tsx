@@ -1,7 +1,8 @@
 import { scheduleAssessmentAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { getTacListAction } from "@/Services/APIs/Inquiry/inquiry.action";
-import { bookSlotAction, getSlotsAction } from "@/Services/APIs/PreCounselling/preCounselling.action";
-import { CandidateRow, getTacCandidatesAction } from "@/Services/APIs/tac/tac.actions";
+import { bookSlotAction, getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { getTacCandidatesAction } from "@/Services/APIs/tac/tac.actions";
+import { CandidateRow } from "@/Types/object.types";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -83,10 +84,10 @@ export const useDashboardView = () => {
                 experience: experienceFilter || undefined,
                 kpis: kpis === null,
             });
-            setRows(res.data);
-            setTotalPages(res.pagination.totalPages);
-            setTotal(res.pagination.total);
-            if (res.kpis) setKpis(res.kpis);
+            setRows(res.data?.data?.data);
+            setTotalPages(res?.data?.data?.pagination.totalPages);
+            setTotal(res?.data?.data?.pagination.total);
+            if (res?.data?.data?.kpis) setKpis(res?.data?.data?.kpis);
         } catch (err: any) {
             setError(err?.response?.data?.message ?? "Failed to load candidates");
         } finally {
@@ -133,7 +134,7 @@ export const useDashboardView = () => {
             if (!selectedTac || !date || !modalOpen) return;
             setSlotsLoading(true);
             setSelectedSlot(null);
-            const res = await getSlotsAction(selectedTac, date);
+            const res = await getSlotsAction({ consultantId: selectedTac, date });
             if (res?.data?.success) {
                 setSlots(res?.data?.data);
             } else {

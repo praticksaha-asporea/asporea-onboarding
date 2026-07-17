@@ -6,13 +6,13 @@ import AssessmentBasicInfo from "./AssessmentBasicInfo";
 import AssessmentScoringTable from "./AssessmentScoringTable";
 import AssessmentNotes from "./AssessmentNotes";
 import AssessmentSignatures from "./AssessmentSignatures";
-import { getAssessmentQuestionsList, QuestionType, updateAssessmentScoreAction } from "@/Services/APIs/tac/tac.actions";
+import { getAssessmentQuestionsList, updateAssessmentScoreAction } from "@/Services/APIs/tac/tac.actions";
 import { useFormik } from "formik";
 import * as yup from "yup";
-import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import { CamelCase } from "@/Utils/common";
 import { useRouter } from "next/navigation";
+import { QuestionType } from "@/Types/object.types";
 
 interface AssessmentFormProps {
   selectedCandidate: any;

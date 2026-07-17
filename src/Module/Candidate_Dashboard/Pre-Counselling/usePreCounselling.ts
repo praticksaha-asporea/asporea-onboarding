@@ -13,6 +13,7 @@ import {
   ExistingBooking,
   ChecklistState,
   NotificationPreferences,
+  PreCounsellingPayload,
 } from "@/Types/Frontend_Payload/precounselling.types";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
@@ -224,8 +225,8 @@ export const usePreCounselling = () => {
       to: selectedSlot.to,
       method: method,
     };
-    const res = await bookSlotAction(payload);
-    if (res?.success) {
+    const res = await bookSlotAction(payload as PreCounsellingPayload);
+    if (res?.data?.success) {
       toast.success("Pre-Counselling scheduled successfully!");
       setShowConfirmPopup(true);
     }

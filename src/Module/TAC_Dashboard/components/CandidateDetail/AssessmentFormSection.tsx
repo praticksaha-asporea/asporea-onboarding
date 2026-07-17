@@ -23,12 +23,12 @@ import * as Yup from "yup";
 import { confirmToast } from "@/Utils/confirmToast";
 import dayjs from "dayjs";
 import {
-  ExpType,
   updateAssignmentAssessAction,
   updateDocumentStatusAction,
   updateExpStatusAction,
 } from "@/Services/APIs/tac/tac.actions";
 import AssessmentForm from "../AssessmentForm/AssessmentForm";
+import { ExpType } from "@/Types/object.types";
 
 interface AssessmentFormSectionProps {
   candidate: any;

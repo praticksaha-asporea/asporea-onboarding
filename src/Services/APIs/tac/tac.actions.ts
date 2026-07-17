@@ -1,112 +1,11 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { leadDocumentUpdateResponse } from "@/Types/ApiResponse/leadRes.types";
+import { CandidatesResponse, QuestionsListReponse, TacAssessmentResponse } from "@/Types/ApiResponse/tacResponse.types";
+import { GetTacCandidatesPayload } from "@/Types/Frontend_Payload/tac.types";
+import { ExpType } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
 
-export interface CandidateRow {
-  _id: string;
-  name: string;
-  inqNo: string;
-  stage: string;
-  status: string;
-  experience: string | null;
-  visitType: string | null;
-  token: string | null;
-  lastActivity: string;
-  branchId?: string | null
-  contact: { phone?: string; email?: string; whatsapp?: string };
-  assignedTacName?: string;  
-}
-
-export interface CandidatesResponse {
-  data: CandidateRow[];
-  pagination: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages: number;
-    hasNextPage: boolean;
-    hasPrevPage: boolean;
-  };
-  kpis?: {
-    openCases: number;
-    pendingCounselling: number;
-    pendingAssessment: number;
-  } | null;
-}
-
-export interface TacAssessmentResponse {
-    success: boolean,
-    message: string,
-    data: {
-        _id: string,
-        leadId: string,
-        phase: string,
-        assignedTo: string,
-        schedule: {
-            date: string,
-            from: string,
-            to: string,
-            method: string
-        },
-        status: string,
-        token: {
-            generated: boolean
-        },
-        attended: boolean,
-        escalation: {
-            requested: boolean
-        },
-        createdAt: string,
-        updatedAt: string
-    },
-    error: null
-}
-
-export interface QuestionType {
-  _id: string,
-  title: string,
-  shortName: string,
-  marks: number,
-  section: string,
-  subSection: string,
-  isDeleted: boolean,
-  type: boolean,
-  levels: string[],
-  order: number,
-  createdAt: string,
-  updatedAt: string,
-  __v: number
-}
-export interface QuestionsListReponse {
-  success: boolean,
-  message: string,
-  data: {
-    data: QuestionType[],
-    pagination: {
-      total: number,
-      page: number,
-      limit: number,
-      totalPages: number,
-      hasNextPage: boolean,
-      hasPrevPage: boolean
-    }
-  },
-  error: string
-}
-
-export type ExpType =
-  | "fresher"
-  | "domestic"
-  | "abroad"
-  | "free";
-export const getTacCandidatesAction = async (params: {
-  page?: number;
-  limit?: number;
-  search?: string;
-  status?: string;
-  experience?: string;
-  kpis?: boolean;
-}): Promise<CandidatesResponse> => {
+export const getTacCandidatesAction = async (params: GetTacCandidatesPayload): Promise<AxiosResponse<CandidatesResponse>> => {
   const query = new URLSearchParams();
   if (params.page) query.set("page", String(params.page));
   if (params.limit) query.set("limit", String(params.limit));
@@ -116,8 +15,7 @@ export const getTacCandidatesAction = async (params: {
   if (params.kpis) query.set("kpis", "true");
 
   const res = await axiosClient.get(`/tac/candidates?${query.toString()}`);
-  console.log("Fetched candidate data:", res.data);
-  return res.data.data;
+  return res;
 };
 
 export const getTacCandidateDetailAction = async (id: string) => {
@@ -148,18 +46,18 @@ type UpdateAssignmentAssessPayload =
     status?: string;
   };
 
-  type UpdateAssessmentPayload =
+type UpdateAssessmentPayload =
   | FormData
   | {
-  id: string;
-  passportNo: string,
-  note1: string,
-  note2: string,
-  note3: string,
-  note4: string,
-  candidateSign?: File | null,
-  assessorSign?: File | null;
-};
+    id: string;
+    passportNo: string,
+    note1: string,
+    note2: string,
+    note3: string,
+    note4: string,
+    candidateSign?: File | null,
+    assessorSign?: File | null;
+  };
 export const updateAssignmentAction = async (
   payload: UpdateAssignmentPayload
 ) => {
@@ -178,7 +76,7 @@ export const updateAssignmentAction = async (
 
 export const updateAssignmentAssessAction = async (
   payload: UpdateAssignmentAssessPayload
-) :Promise<AxiosResponse<any>>  => {
+): Promise<AxiosResponse<any>> => {
   return axiosClient.patch(
     "/tac/assignment/update-assessment",
     payload,
@@ -192,7 +90,7 @@ export const updateAssignmentAssessAction = async (
   );
 };
 
-export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected' | 'awaiting_approval',remarks?: string
+export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected' | 'awaiting_approval', remarks?: string
 ): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
   const payload = { id, status, remarks };
@@ -245,7 +143,7 @@ export const escalateLeadAction = async (payload: {
 };
 
 
-export const updateAssessmentScoreAction = async (payload: UpdateAssessmentPayload):Promise<AxiosResponse<TacAssessmentResponse>> => {
+export const updateAssessmentScoreAction = async (payload: UpdateAssessmentPayload): Promise<AxiosResponse<TacAssessmentResponse>> => {
   const res = await axiosClient.patch("/tac/assessment/tool-update", payload);
   return res;
 };

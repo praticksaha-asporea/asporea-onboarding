@@ -85,3 +85,42 @@ export interface externalSourceObj {
     lastName: string,
     email: string
 }
+
+
+export interface QuestionType {
+    _id: string,
+    title: string,
+    shortName: string,
+    marks: number,
+    section: string,
+    subSection: string,
+    isDeleted: boolean,
+    type: boolean,
+    levels: string[],
+    order: number,
+    createdAt: string,
+    updatedAt: string,
+    __v: number
+}
+
+export type ExpType =
+    | "fresher"
+    | "domestic"
+    | "abroad"
+    | "free";
+
+
+export interface CandidateRow {
+    _id: string;
+    name: string;
+    inqNo: string;
+    stage: string;
+    status: string;
+    experience: string | null;
+    visitType: string | null;
+    token: string | null;
+    lastActivity: string;
+    branchId?: string | null
+    contact: { phone?: string; email?: string; whatsapp?: string };
+    assignedTacName?: string;
+}
