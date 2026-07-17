@@ -3,11 +3,16 @@ import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { changePasswordApi } from "@/Services/APIs/auth/auth.actions";
 import { useSelector } from "react-redux";
+import { useState } from "react";
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
 export const useChangePassword = (onClose: () => void) => {
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
+
+  const [showOld, setShowOld] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -51,5 +56,11 @@ export const useChangePassword = (onClose: () => void) => {
     },
   });
 
-  return { formik };
+
+
+  const handleClose = () => {
+    formik.resetForm()
+    onClose()
+  }
+  return { formik, handleClose, showOld, showNew, showConfirm, setShowOld, setShowNew, setShowConfirm };
 };

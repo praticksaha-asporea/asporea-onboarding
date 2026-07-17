@@ -1,8 +1,8 @@
 'use client'
 import { useState } from 'react'
-import { 
-  Dialog, DialogTitle, DialogContent, DialogActions, 
-  Button, TextField, IconButton, InputAdornment 
+import {
+  Dialog, DialogTitle, DialogContent, DialogActions,
+  Button, TextField, IconButton, InputAdornment
 } from '@mui/material'
 import { useChangePassword } from './useChangePassword'
 
@@ -12,15 +12,7 @@ interface Props {
 }
 
 const ChangePasswordModal = ({ open, onClose }: Props) => {
-  const { formik } = useChangePassword(onClose)
-  const [showOld, setShowOld] = useState(false)
-  const [showNew, setShowNew] = useState(false)
-  const [showConfirm, setShowConfirm] = useState(false)
-
-  const handleClose = () => {
-    formik.resetForm()
-    onClose()
-  }
+  const { formik, handleClose, showOld, showNew, showConfirm, setShowOld, setShowNew, setShowConfirm } = useChangePassword(onClose)
 
   return (
     <Dialog open={open} onClose={handleClose} fullWidth maxWidth='xs'>
