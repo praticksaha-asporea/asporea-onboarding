@@ -1,0 +1,186 @@
+import { scheduleAssessmentAction } from "@/Services/APIs/Assessment/assessment.actions";
+import { getTacListAction } from "@/Services/APIs/Inquiry/inquiry.action";
+import { bookSlotAction, getSlotsAction } from "@/Services/APIs/PreCounselling/preCounselling.action";
+import { CandidateRow, getTacCandidatesAction } from "@/Services/APIs/tac/tac.actions";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+
+interface Kpis {
+    openCases: number;
+    pendingCounselling: number;
+    pendingAssessment: number;
+}
+
+export const useDashboardView = () => {
+    const router = useRouter();
+    const currentUser = useSelector(
+        (state: any) => state.userSlice?.userData || state.user?.userData,
+    );
+    const isFoe =
+        currentUser?.role === "foe" || currentUser?.user?.role === "foe";
+
+    const [search, setSearch] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const [statusFilter, setStatusFilter] = useState("");
+    const [experienceFilter, setExperienceFilter] = useState("");
+    const [page, setPage] = useState(1);
+    const LIMIT = 10;
+
+    const [rows, setRows] = useState<CandidateRow[]>([]);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [kpis, setKpis] = useState<Kpis | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const [modalOpen, setModalOpen] = useState(false);
+    const [targetLead, setTargetLead] = useState<any | null>(null);
+    const [commModalOpen, setCommModalOpen] = useState(false);
+    const [commMode, setCommMode] = useState<"chat" | "email" | null>(null);
+    const [commCandidate, setCommCandidate] = useState<any | null>(null);
+
+    const [tacList, setTacList] = useState<any[]>([]);
+    const [selectedTac, setSelectedTac] = useState("");
+
+    const serverNow = new Date();
+    const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
+    const istTime = new Date(utcTime + 330 * 60000);
+    const todayStr = istTime.toISOString().split("T")[0];
+
+    const [date, setDate] = useState(todayStr);
+    const [slots, setSlots] = useState<any[]>([]);
+    const [selectedSlot, setSelectedSlot] = useState<any>(null);
+    const [slotsLoading, setSlotsLoading] = useState(false);
+    const [bookingLoading, setBookingLoading] = useState(false);
+    const [schedulePhase, setSchedulePhase] = useState<"pre" | "assess">("pre");
+
+    const openCommModal = (candidate: any, mode: "chat" | "email") => {
+        setCommCandidate(candidate);
+        setCommMode(mode);
+        setCommModalOpen(true);
+    };
+
+    useEffect(() => {
+        const t = setTimeout(() => setSearch(searchInput), 400);
+        return () => clearTimeout(t);
+    }, [searchInput]);
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, statusFilter, experienceFilter]);
+
+    const fetchCandidates = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const res = await getTacCandidatesAction({
+                page,
+                limit: LIMIT,
+                search: search || undefined,
+                status: statusFilter || undefined,
+                experience: experienceFilter || undefined,
+                kpis: kpis === null,
+            });
+            setRows(res.data);
+            setTotalPages(res.pagination.totalPages);
+            setTotal(res.pagination.total);
+            if (res.kpis) setKpis(res.kpis);
+        } catch (err: any) {
+            setError(err?.response?.data?.message ?? "Failed to load candidates");
+        } finally {
+            setLoading(false);
+        }
+    }, [page, search, statusFilter, experienceFilter]);
+
+    useEffect(() => {
+        fetchCandidates();
+    }, [fetchCandidates]);
+
+    const openScheduleModal = async (
+        candidate: any,
+        isReschedule = false,
+        phase: "pre" | "assess" = "pre",
+    ) => {
+        setTargetLead(candidate);
+        setSchedulePhase(phase);
+        setModalOpen(true);
+        let prevId = "";
+        if (isReschedule) {
+            const rawConsultantId =
+                candidate?.preferences?.consultantId || candidate?.consultantId;
+            if (rawConsultantId) {
+                prevId =
+                    typeof rawConsultantId === "object" && rawConsultantId._id
+                        ? rawConsultantId._id.toString()
+                        : rawConsultantId.toString();
+            }
+        }
+        setSelectedTac(prevId);
+        setDate(todayStr);
+        setSlots([]);
+        setSelectedSlot(null);
+
+        if (candidate.branchId) {
+            const res = await getTacListAction({ branchId: candidate.branchId });
+            if (res?.data?.success) setTacList(res?.data?.data);
+        }
+    };
+
+    useEffect(() => {
+        const loadSlots = async () => {
+            if (!selectedTac || !date || !modalOpen) return;
+            setSlotsLoading(true);
+            setSelectedSlot(null);
+            const res = await getSlotsAction(selectedTac, date);
+            if (res?.data?.success) {
+                setSlots(res?.data?.data);
+            } else {
+                toast.error(res?.data?.message || "Failed to fetch slots");
+                setSlots([]);
+            }
+            setSlotsLoading(false);
+        };
+        loadSlots();
+    }, [selectedTac, date, modalOpen]);
+
+    const handleBookSlot = async () => {
+        if (!targetLead || !selectedTac || !selectedSlot) return;
+        setBookingLoading(true);
+        const method = (targetLead.visitType === "online" ? "on" : "off") as
+            | "on"
+            | "off";
+        const payload = {
+            leadId: targetLead._id,
+            consultantId: selectedTac,
+            date,
+            from: selectedSlot.from,
+            to: selectedSlot.to,
+            method: method as "on" | "off",
+        };
+
+        let res;
+
+        if (schedulePhase === "pre") {
+            res = await bookSlotAction(payload);
+        } else {
+            res = await scheduleAssessmentAction(payload);
+        }
+
+        if (res?.data?.success) {
+            toast.success(
+                `${schedulePhase === "pre" ? "Pre-Counselling" : "Assessment"} session scheduled successfully!`,
+            );
+            setModalOpen(false);
+            fetchCandidates();
+        } else {
+            toast.error(res?.data?.message || "Failed to book slot");
+        }
+        setBookingLoading(false);
+    };
+
+    return {
+        isFoe, kpis, total, searchInput, setSearchInput, statusFilter, setStatusFilter, experienceFilter, setExperienceFilter, rows, loading, error, page, totalPages, setPage, openScheduleModal, openCommModal, router, modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac, date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot, handleBookSlot, bookingLoading, schedulePhase, commModalOpen, setCommModalOpen, commCandidate, commMode
+    }
+}
