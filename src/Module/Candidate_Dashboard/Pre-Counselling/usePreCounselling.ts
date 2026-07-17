@@ -14,7 +14,6 @@ import {
   ChecklistState,
   NotificationPreferences,
 } from "@/Types/Frontend_Payload/precounselling.types";
-import { checkBranchView } from "@/Services/APIs/PreCounselling/preCounselling.action";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 
@@ -142,20 +141,20 @@ export const usePreCounselling = () => {
           sms: reduxUser.notificationPreference.sms ?? false,
         });
       }
-      if (reduxUser?.branch?._id && !reduxUser?.branch?.title) {
+      // if (reduxUser?.branch?._id && !reduxUser?.branch?.title) {
 
-        const res = await checkBranchView(reduxUser?.branch?._id);
+      //   const res = await checkBranchView(reduxUser?.branch?._id);
 
-        dispatch(
-          updateUserData({
-            branch: {
-              _id: reduxUser?.branch?._id,
-              title: res?.data?.title
-            },
-          }),
-        );
+      //   dispatch(
+      //     updateUserData({
+      //       branch: {
+      //         _id: reduxUser?.branch?._id,
+      //         title: res?.data?.title
+      //       },
+      //     }),
+      //   );
 
-      }
+      // }
     }
     updatePreferences()
 

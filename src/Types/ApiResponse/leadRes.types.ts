@@ -1,6 +1,6 @@
 import { Slot } from "../Frontend_Payload/assessment.types"
 import { JourneyData } from "../Frontend_Payload/tracking.types"
-import { positionDBData, techDBData } from "../object.types"
+import { externalSourceObj, positionDBData, tacData, techDBData } from "../object.types"
 
 export interface inquiryResponse {
 
@@ -221,5 +221,19 @@ export interface positionDetailResponse {
     success: boolean,
     message: string,
     data: positionDBData,
+    error: null
+}
+
+export interface tacListResponse {
+    success: boolean,
+    message: string,
+    data: tacData[],
+    error: null
+}
+
+export interface externalSourceResponse {
+    success: boolean,
+    message: string,
+    data: externalSourceObj[],
     error: null
 }

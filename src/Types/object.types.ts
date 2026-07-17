@@ -65,3 +65,23 @@ export interface positionDBData {
 export interface positionById {
     positionId: string
 }
+
+
+export interface userById {
+    userId: string
+}
+
+export interface tacData {
+    _id: string,
+    firstName: string,
+    lastName: string,
+    role: string,
+    counterNo: number
+}
+
+export interface externalSourceObj {
+    _id: string,
+    firstName: string,
+    lastName: string,
+    email: string
+}

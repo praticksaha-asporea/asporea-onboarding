@@ -12,6 +12,7 @@ import InquiryDetailsForm from "./InquiryDetailsForm";
 import PreCounsellingForm from "./PreCounsellingForm";
 import ProgressSidebar from "./ProgressSidebar";
 import AssessmentFormSection from "./AssessmentFormSection";
+import { branchById } from "@/Types/Frontend_Payload/branch.types";
 interface CandidateDetailProps {
   selectedCandidate: any;
   setSelectedCandidate: (candidate: any) => void;
@@ -53,16 +54,16 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? preferences.branchId?._id
         : preferences.branchId;
     if (!branchObjectId) return;
-    getTacListAction(String(branchObjectId))
+    getTacListAction(branchObjectId as branchById)
       .then((res) => {
-        if (res.success) {
+        if (res?.data?.success) {
           const myId = currentUser?.id || currentUser?._id;
           setTacList(
-            res.data.filter((t: any) => String(t._id) !== String(myId)),
+            res?.data?.data?.filter((t: any) => String(t._id) !== String(myId)),
           );
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [preferences.branchId, currentUser]);
 
   const handleBack = () => {
@@ -88,7 +89,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 candidate={c}
                 inqAssign={inqAssign}
                 branchId={branchId}
-              consultantId={inqAssign?.assignedTo || consultantId}
+                consultantId={inqAssign?.assignedTo || consultantId}
                 source={source}
                 preferences={preferences}
                 candidatePhone={c.contact?.phone ?? ""}

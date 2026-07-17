@@ -9,23 +9,15 @@ import {
   getTacListAction,
   getExternalSourcesAction,
   createInquiryAction,
+  userDetailsAction,
 } from "@/Services/APIs/Inquiry/inquiry.action";
-import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
 import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-
-
-export interface NotificationPreferences {
-  email: boolean;
-  sms: boolean;
-  whatsapp: boolean;
-}
+import { NotificationPreferences } from "@/Types/Frontend_Payload/precounselling.types";
+import { profileUpdateApi } from "@/Services/APIs/auth/auth.actions";
 
 // ─── Validation Schema ────────────────────────────────────────────────────────
 
@@ -95,7 +87,7 @@ export function useInquiry() {
 
       try {
 
-        const res = await axiosClient.get(`/user/details?id=${userId}`);
+        const res = await userDetailsAction({ userId });
 
         if (res.data?.success && res.data?.data) {
           const actualProfileData = res.data.data.user || res.data.data;
@@ -248,8 +240,8 @@ export function useInquiry() {
     }
     setLoadingConsultants(true);
     try {
-      const response = await getTacListAction(branchId);
-      if (response.success) setConsultants(response.data);
+      const response = await getTacListAction({ branchId });
+      if (response?.data?.success) setConsultants(response?.data?.data);
     } catch (err) {
       console.error("TAC fetch error:", err);
     } finally {
@@ -276,9 +268,9 @@ export function useInquiry() {
     }
     setLoadingSources(true);
     try {
-      const response = await getExternalSourcesAction(referedType);
-      if (response.success) {
-        setExternalSources(response.data);
+      const response = await getExternalSourcesAction({ type: referedType });
+      if (response.data.success) {
+        setExternalSources(response.data.data);
         setFieldValue("referedBy", "");
       }
     } catch (err) {
@@ -368,7 +360,7 @@ export function useInquiry() {
         const userId = userData?.id || userData?._id;
         if (userId) {
           try {
-            const res = await axiosClient.patch("/user/profile-update", {
+            const res = await profileUpdateApi({
               notificationPreference: preferences,
             });
             if (res.data?.success) {
