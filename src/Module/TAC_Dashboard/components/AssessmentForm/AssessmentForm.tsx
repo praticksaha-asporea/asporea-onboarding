@@ -104,7 +104,7 @@ const AssessmentForm: React.FC<AssessmentFormProps> = ({
       ],
     },
     {
-      id: 6, title: "ABROAD WORK EXPERIENCE (RELEVENCE TO ACAMEDIC/PROFESSIONAL QUALIFICATION)", max: 10, bg: "bg-[#f3e8ff]",
+      id: 6, title: "ABROAD WORK EXPERIENCE (RELEVENCE TO ACADEMIC/PROFESSIONAL QUALIFICATION)", max: 10, bg: "bg-[#f3e8ff]",
       options: [
         { label: questionsByShortName.ABR_WO_EXP_1?.title, score: questionsByShortName.ABR_WO_EXP_1?.marks },
         { label: questionsByShortName.ABR_WO_EXP_2_3?.title, score: questionsByShortName.ABR_WO_EXP_2_3?.marks },

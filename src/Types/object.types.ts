@@ -124,3 +124,4 @@ export interface CandidateRow {
     contact: { phone?: string; email?: string; whatsapp?: string };
     assignedTacName?: string;
 }
+

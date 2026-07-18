@@ -5,6 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { Box, CircularProgress, Typography } from "@mui/material";
 import CandidateDetail from "@/Module/TAC_Dashboard/components/CandidateDetail/CandidateDetail";
 import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
+import { IAssignment } from "@/lib/models/Assignment.model";
+import { ILead } from "@/lib/models/Lead.model";
+import { IBranchToken } from "@/lib/models/BranchToken.model";
+import { candidateDetailResponse } from "@/Types/ApiResponse/tacResponse.types";
 
 export default function CandidateDetailPage() {
   const params = useParams<{ id: string }>();
@@ -12,10 +16,10 @@ export default function CandidateDetailPage() {
   const router = useRouter();
 
   const [data, setData] = useState<{
-    lead: any;
-    branchToken: any;
-    assignments: any[];
-    assignmentByPhase: Record<string, any>;
+    lead: ILead;
+    branchToken: IBranchToken;
+    assignments: IAssignment[];
+    assignmentByPhase: Record<string, IAssignment>;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -24,11 +28,11 @@ export default function CandidateDetailPage() {
     if (!id) return;
     setLoading(true);
     getTacCandidateDetailAction(id)
-      .then(setData)
+      .then((response: any) => setData(response?.data?.data))
       .catch((err) => setError(err?.response?.data?.message ?? "Failed to load candidate"))
       .finally(() => setLoading(false));
   }, [id]);
-  
+
   if (loading) {
     return (
       <Box className="flex items-center justify-center min-h-screen">
@@ -63,14 +67,14 @@ export default function CandidateDetailPage() {
     token: data.branchToken?.tokenNo ?? null,
     lastActivity: data.lead.updatedAt,
     assignmentByPhase: data.assignmentByPhase ?? {},
-    notificationPreference: data.lead.notificationPreference ?? {},
+    notificationPreference: data?.lead?.contact ?? {},
   };
 
-  
+
   return (
     <CandidateDetail
       selectedCandidate={candidate}
-      setSelectedCandidate={() => {}}
+      setSelectedCandidate={() => { }}
       setCurrentView={() => router.back()}
     />
   );

@@ -1,4 +1,8 @@
+import { ILead } from "@/lib/models/Lead.model"
 import { CandidateRow, QuestionType } from "../object.types"
+import { IAssignment } from "@/lib/models/Assignment.model"
+import { IGeneralSetting } from "@/lib/models/GeneralSetting.model"
+import { IAssessment } from "@/lib/models/Assessment.model"
 
 
 export interface CandidatesResponse {
@@ -65,4 +69,25 @@ export interface QuestionsListReponse {
         }
     },
     error: string
+}
+
+export interface candidateDetailResponse {
+    success: boolean,
+    message: string,
+    data: {
+        lead: ILead,
+        branchToken: null,
+        assignments: IAssignment[],
+        assignmentByPhase: Record<string, IAssignment>,
+        generalSettings: IGeneralSetting,
+        assessResult: IAssessment
+    },
+    error: null
+}
+
+export interface sendEmailRes {
+    success: boolean,
+    message: string,
+    data: null,
+    error: null
 }

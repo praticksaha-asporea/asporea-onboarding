@@ -18,7 +18,7 @@ const CandidateHeader: React.FC<CandidateHeaderProps> = ({ candidate, onBack }) 
       </IconButton>
       <Box>
         <Typography className="text-[22px] font-bold leading-tight">
-          {candidate.name ?? candidate.fullName ?? "Candidate Details"}
+          {candidate?.name ?? candidate.fullName ?? "Candidate Details"}
         </Typography>
         <Typography className="text-[13px] text-gray-500">{candidate.inqNo}</Typography>
       </Box>

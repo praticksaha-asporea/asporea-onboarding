@@ -1,7 +1,10 @@
+import { IAssignment } from "@/lib/models/Assignment.model";
+import { IBranchToken } from "@/lib/models/BranchToken.model";
+import { ILead } from "@/lib/models/Lead.model";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { leadDocumentUpdateResponse } from "@/Types/ApiResponse/leadRes.types";
-import { CandidatesResponse, QuestionsListReponse, TacAssessmentResponse } from "@/Types/ApiResponse/tacResponse.types";
-import { GetTacCandidatesPayload } from "@/Types/Frontend_Payload/tac.types";
+import { candidateDetailResponse, CandidatesResponse, QuestionsListReponse, sendEmailRes, TacAssessmentResponse } from "@/Types/ApiResponse/tacResponse.types";
+import { GetTacCandidatesPayload, sendEmailTACReq, UpdateAssessmentPayload, UpdateAssignmentAssessPayload, UpdateAssignmentPayload } from "@/Types/Frontend_Payload/tac.types";
 import { ExpType } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
 
@@ -18,48 +21,19 @@ export const getTacCandidatesAction = async (params: GetTacCandidatesPayload): P
   return res;
 };
 
-export const getTacCandidateDetailAction = async (id: string) => {
+export const getTacCandidateDetailAction = async (id: string): Promise<AxiosResponse<candidateDetailResponse>> => {
   const res = await axiosClient.get(`/tac/candidate/${id}`);
-  return res.data.data as {
-    lead: any;
-    branchToken: any;
-    assignments: any[];
-    assignmentByPhase: Record<string, any>;
-  };
+  return res
+  // .data.data as {
+  //   lead: ILead;
+  //   branchToken: IBranchToken;
+  //   assignments: IAssignment[];
+  //   assignmentByPhase: Record<string, IAssignment>;
+  // };
 };
 
-type UpdateAssignmentPayload =
-  | FormData
-  | {
-    assignmentId: string;
-    status?: string;
-    additionalDetails?: string;
-    specificNotes?: string;
-    advice?: string;
-    attended?: boolean;
-  };
-
-type UpdateAssignmentAssessPayload =
-  | FormData
-  | {
-    assignmentId: string;
-    status?: string;
-  };
-
-type UpdateAssessmentPayload =
-  | FormData
-  | {
-    id: string;
-    passportNo: string,
-    note1: string,
-    note2: string,
-    note3: string,
-    note4: string,
-    candidateSign?: File | null,
-    assessorSign?: File | null;
-  };
 export const updateAssignmentAction = async (
-  payload: UpdateAssignmentPayload
+  payload: UpdateAssignmentPayload | FormData
 ) => {
   return axiosClient.patch(
     "/tac/assignment/update",
@@ -75,7 +49,7 @@ export const updateAssignmentAction = async (
 };
 
 export const updateAssignmentAssessAction = async (
-  payload: UpdateAssignmentAssessPayload
+  payload: UpdateAssignmentAssessPayload | FormData
 ): Promise<AxiosResponse<any>> => {
   return axiosClient.patch(
     "/tac/assignment/update-assessment",
@@ -143,22 +117,20 @@ export const escalateLeadAction = async (payload: {
 };
 
 
-export const updateAssessmentScoreAction = async (payload: UpdateAssessmentPayload): Promise<AxiosResponse<TacAssessmentResponse>> => {
+export const updateAssessmentScoreAction = async (payload: UpdateAssessmentPayload | FormData): Promise<AxiosResponse<TacAssessmentResponse>> => {
   const res = await axiosClient.patch("/tac/assessment/tool-update", payload);
   return res;
 };
 
-export const sendTacEmailAction = async (payload: {
-  leadId: string;
-  message: string;
-}) => {
-  try {
-    const res = await axiosClient.post("/tac/communication/send-email", payload);
-    return res.data;
-  } catch (error: any) {
-    return {
-      success: false,
-      message: error.response?.data?.message || "Failed to send email",
-    };
-  }
+export const sendTacEmailAction = async (bodyData: sendEmailTACReq): Promise<AxiosResponse<sendEmailRes>> => {
+  // try {
+  const res = await axiosClient.post("/tac/communication/send-email", bodyData);
+  return res
+  //   .data;
+  // } catch (error: any) {
+  //   return {
+  //     success: false,
+  //     message: error.response?.data?.message || "Failed to send email",
+  //   };
+  // }
 };

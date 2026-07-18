@@ -1,6 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 import { Box, Button, CircularProgress, Dialog, DialogContent, IconButton, Typography } from "@mui/material";
 import { isWithinSchedule } from "@/Utils/common";
+import { useAssessmentSignature } from "./useAssessmentSignatures";
 
 interface AssessmentSignaturesProps {
   signatureFields: {
@@ -14,45 +15,8 @@ interface AssessmentSignaturesProps {
 type SignatureField = "candidateSign" | "assessorSign";
 
 const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentForm, signatureFields, assessmentStatus, assessAssign }) => {
-  const [previews, setPreviews] = useState<Record<string, string>>({});
-  const previewsRef = useRef<Record<string, string>>({});
-  const [previewDialogFile, setPreviewDialogFile] = useState<{ name: string; url: string; isImage: boolean } | null>(null);
 
-  const handleOpenPreview = (name: string, url: string, isImg: boolean) => {
-    setPreviewDialogFile({ name, url, isImage: isImg });
-  };
-
-  const handleClosePreview = () => {
-    setPreviewDialogFile(null);
-  };
-
-  useEffect(() => {
-    previewsRef.current = previews;
-  }, [previews]);
-
-  useEffect(() => {
-    if (assessmentForm.submitCount > 0 && Object.keys(assessmentForm.errors).length > 0) {
-      const firstErrorField = Object.keys(assessmentForm.errors)[0];
-      const errorElement =
-        document.getElementById(firstErrorField) ||
-        document.getElementsByName(firstErrorField)[0];
-      if (errorElement) {
-        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-        errorElement.focus();
-      }
-    }
-  }, [assessmentForm.submitCount, assessmentForm.errors]);
-
-  useEffect(() => {
-    return () => {
-      Object.values(previewsRef.current).forEach(url => {
-        if (url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, []);
-
+  const { handleClosePreview, handleOpenPreview, previews, previewDialogFile, setPreviews } = useAssessmentSignature(assessmentForm);
   return (
     <Box className="flex flex-col gap-6">
       <Box className="flex flex-col sm:flex-row w-full gap-4 items-stretch">
@@ -271,7 +235,7 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
           </Typography>
           <Box className="flex items-center gap-2">
             {previewDialogFile?.url && (
-              <a href={previewDialogFile.url} download={previewDialogFile.name} target="_blank" rel="noreferrer">
+              <a href={previewDialogFile.url} download={previewDialogFile?.name} target="_blank" rel="noreferrer">
                 <Button size="small" variant="text" startIcon={<i className="ri-download-2-line" />}>
                   Download
                 </Button>
@@ -286,13 +250,13 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
           {previewDialogFile?.isImage ? (
             <img
               src={previewDialogFile.url}
-              alt={previewDialogFile.name}
+              alt={previewDialogFile?.name}
               className="max-w-full max-h-[75vh] object-contain p-4"
             />
           ) : previewDialogFile?.url ? (
             <iframe
               src={previewDialogFile.url}
-              title={previewDialogFile.name}
+              title={previewDialogFile?.name}
               className="w-full min-h-[75vh] border-0"
             />
           ) : null}

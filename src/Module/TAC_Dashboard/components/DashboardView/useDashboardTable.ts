@@ -1,6 +1,5 @@
 export const useDashboardTable = (isFoe: boolean) => {
 
-
     const getStatusBadge = (status: string) => {
         switch (status) {
             case "inquiry_submitted":

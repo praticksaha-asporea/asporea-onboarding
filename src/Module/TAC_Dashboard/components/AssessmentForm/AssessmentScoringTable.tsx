@@ -18,7 +18,7 @@ interface AssessmentScoringTableProps {
 
 const AssessmentScoringTable: React.FC<AssessmentScoringTableProps> = ({
   scoringSections, selectedOptions, setSelectedOptions, languageLevels, setLanguageLevels,
-  levels, skills, languageSections, levelScoreMap, finalTotal, customScores, setCustomScores
+  languageSections, levelScoreMap, finalTotal, customScores, setCustomScores
 }) => {
   return (
     <Box className="border border-gray-200 rounded-xl overflow-hidden mb-10">

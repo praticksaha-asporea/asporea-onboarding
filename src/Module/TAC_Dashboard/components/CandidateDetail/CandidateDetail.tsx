@@ -54,7 +54,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
         ? preferences.branchId?._id
         : preferences.branchId;
     if (!branchObjectId) return;
-    getTacListAction(branchObjectId as branchById)
+    getTacListAction({ branchId: branchObjectId })
       .then((res) => {
         if (res?.data?.success) {
           const myId = currentUser?.id || currentUser?._id;
@@ -92,7 +92,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 consultantId={inqAssign?.assignedTo || consultantId}
                 source={source}
                 preferences={preferences}
-                candidatePhone={c.contact?.phone ?? ""}
+                candidatePhone={c?.contact?.phone ?? ""}
               />
             )}
 

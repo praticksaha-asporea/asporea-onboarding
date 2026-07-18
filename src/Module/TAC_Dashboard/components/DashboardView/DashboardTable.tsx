@@ -113,7 +113,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                   >
                     <Box className="min-w-[100px]">
                       <Typography className="font-semibold text-[12px] leading-tight">
-                        {candidate.name}
+                        {candidate?.name}
                       </Typography>
                       <Typography className="text-[11px] text-[var(--mui-palette-text-secondary)]">
                         {candidate.inqNo}

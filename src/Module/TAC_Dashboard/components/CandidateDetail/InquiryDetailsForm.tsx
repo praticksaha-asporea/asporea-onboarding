@@ -18,7 +18,7 @@ import {
 } from "@mui/material";
 import { CamelCase } from "@/Utils/common";
 import { updateLeadAction } from "@/Services/APIs/tac/tac.actions";
- 
+
 interface InquiryDetailsFormProps {
   candidate: any;
 }
@@ -27,16 +27,16 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({
   candidate: c,
 }) => {
   // console.log("Rendering InquiryDetailsForm with candidate:", c);
-  const contact = c.contact ?? {};
+  const contact = c?.contact ?? {};
   const passport = c.passport ?? {};
   const preferences = c.preferences ?? {};
-const notifPrefs = c.notificationPreference || {};
+  const notifPrefs = c.notificationPreference || {};
   const inquiryForm = useFormik({
     initialValues: {
       fullName: c.name ?? c.fullName ?? "",
-      email: contact.email ?? "",
-      phone: contact.phone ?? "",
-      whatsapp: contact.whatsapp ?? "",
+      email: contact?.email ?? "",
+      phone: contact?.phone ?? "",
+      whatsapp: contact?.whatsapp ?? "",
       address: c.address ?? "",
       passportStatus: passport.status ?? "no",
       passportNo: passport.no ?? "",
@@ -79,14 +79,14 @@ const notifPrefs = c.notificationPreference || {};
   const fh = (field: string) =>
     inquiryForm.touched[field as keyof typeof inquiryForm.touched]
       ? (inquiryForm.errors[field as keyof typeof inquiryForm.errors] as
-          | string
-          | undefined)
+        | string
+        | undefined)
       : undefined;
 
- const getChipStyle = (isActive: boolean) => 
-  isActive 
-    ? "!bg-[var(--mui-palette-success-dark)] !text-white !font-bold !border-green-700"  
-    : "!bg-[var(--mui-palette-primary)] !text-gray-400 !border-gray-300";         
+  const getChipStyle = (isActive: boolean) =>
+    isActive
+      ? "!bg-[var(--mui-palette-success-dark)] !text-white !font-bold !border-green-700"
+      : "!bg-[var(--mui-palette-primary)] !text-gray-400 !border-gray-300";
 
   return (
     <Card className="p-6 rounded-xl   shadow-2xl">
@@ -107,7 +107,7 @@ const notifPrefs = c.notificationPreference || {};
               helperText={fh("fullName")}
             />
           </Grid>
-          
+
           <Grid
             size={{ xs: 12, md: 6 }}
             className="flex flex-col -mt-2 justify-center"
@@ -119,9 +119,9 @@ const notifPrefs = c.notificationPreference || {};
               Contact Preferences
             </Typography>
             <Box className="flex flex-wrap gap-2">
-             <Chip label="WhatsApp" size="small" className={getChipStyle(!!notifPrefs?.whatsapp)} />
-               <Chip label="Email" size="small" className={getChipStyle(!!notifPrefs?.email)} />
-               <Chip label="SMS" size="small" className={getChipStyle(!!notifPrefs?.sms)} />
+              <Chip label="WhatsApp" size="small" className={getChipStyle(!!notifPrefs?.whatsapp)} />
+              <Chip label="Email" size="small" className={getChipStyle(!!notifPrefs?.email)} />
+              <Chip label="SMS" size="small" className={getChipStyle(!!notifPrefs?.sms)} />
             </Box>
           </Grid>
           <Grid size={{ xs: 12, md: 6 }}>
