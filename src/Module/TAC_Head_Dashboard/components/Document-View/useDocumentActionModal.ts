@@ -31,7 +31,7 @@ export const useDocumentActionModal = ({ open, lead, setOpen, refreshData }: Use
                 setFetchingDetails(true);
                 setAction(""); setRemarks(""); setSelectedDate(""); setSelectedSlot(null); setSlots([]); setFullLeadData(null);
 
-                const res = await getCandidateDocumentsAction(lead._id);
+                const res = await getCandidateDocumentsAction({ leadId: lead._id });
 
                 if (res?.data?.success && res.data.data?.lead) {
                     setFullLeadData(res.data.data.lead);

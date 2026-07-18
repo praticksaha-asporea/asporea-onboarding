@@ -1,5 +1,5 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
+import { bookPreCounsellingRes, preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
 import { getSlotsPayload, PreCounsellingPayload } from "@/Types/Frontend_Payload/precounselling.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
@@ -13,7 +13,7 @@ export const getSlotsAction = async (bodyData: getSlotsPayload): Promise<AxiosRe
   // }
 };
 
-export const bookSlotAction = async (payload: PreCounsellingPayload) => {
+export const bookSlotAction = async (payload: PreCounsellingPayload): Promise<AxiosResponse<bookPreCounsellingRes>> => {
 
   // try {
   const response = await axiosClient.post("/pre-counselling/book-slot", payload);

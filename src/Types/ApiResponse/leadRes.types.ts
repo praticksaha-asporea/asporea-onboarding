@@ -237,3 +237,32 @@ export interface externalSourceResponse {
     data: externalSourceObj[],
     error: null
 }
+
+export interface bookPreCounsellingRes {
+    success: boolean,
+    message: string,
+    data: {
+        schedule: {
+            date: string,
+            from: string,
+            to: string,
+            method: string
+        },
+        token: {
+            generated: boolean,
+            number: string | null
+        },
+        escalation: {
+            requested: boolean
+        },
+        _id: string,
+        leadId: string,
+        phase: string,
+        assignedTo: string,
+        attended: boolean,
+        createdAt: string,
+        status: string,
+        updatedAt: string
+    },
+    error: null
+}

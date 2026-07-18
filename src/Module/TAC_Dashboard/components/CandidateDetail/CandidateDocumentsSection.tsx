@@ -239,11 +239,11 @@ const CandidateDocumentsSection: React.FC<CandidateDocumentsSectionProps> = ({ c
           position: positionId,
         });
         if (saveRes?.data?.success) {
-          const refreshed = await getCandidateDocumentsAction(leadId);
+          const refreshed = await getCandidateDocumentsAction({ leadId });
 
-          if (refreshed?.success) {
+          if (refreshed?.data?.success) {
             const freshDocs: UploadedDoc[] =
-              refreshed?.data?.lead?.documents?.uploadedDocs ?? [];
+              refreshed?.data?.data?.lead?.documents?.uploadedDocs ?? [];
             setUploadedDocsState(freshDocs);
             // Recompute missing list immediately from the fresh uploaded docs
             // using the already-loaded position requirements — no extra fetch needed

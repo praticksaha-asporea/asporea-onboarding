@@ -6,19 +6,19 @@ import { getCandidateDocumentsAction } from "@/Services/APIs/Documents/document.
 import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { technicalExperienceAction } from "@/Services/APIs/tacHead/experience.action";
 
- import { deepPopulatedLeadDetails, consultantSlotItem } from "@/Types/ApiResponse/documentRes.types";
- import { technicalActionPayload } from "@/Types/Frontend_Payload/technical.types";
+import { deepPopulatedLeadDetails, consultantSlotItem } from "@/Types/ApiResponse/documentRes.types";
+import { technicalActionPayload } from "@/Types/Frontend_Payload/technical.types";
 import { technicalRequestedLeadRecord } from "@/Types/ApiResponse/technicalRes.types";
 
 interface UseTechnicalActionModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  lead: technicalRequestedLeadRecord | null;  
+  lead: technicalRequestedLeadRecord | null;
   refreshData: () => void;
 }
 
 export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: UseTechnicalActionModalProps) => {
-   const [fullLeadData, setFullLeadData] = useState<deepPopulatedLeadDetails | technicalRequestedLeadRecord | null>(null);
+  const [fullLeadData, setFullLeadData] = useState<deepPopulatedLeadDetails | technicalRequestedLeadRecord | null>(null);
   const [fetchingDetails, setFetchingDetails] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [slots, setSlots] = useState<consultantSlotItem[]>([]);
@@ -40,7 +40,7 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
       if (selectedDate && consultantId) {
         setFetchingSlots(true);
         const res = await getSlotsAction({ consultantId, date: selectedDate });
-         setSlots(res?.data?.success !== false ? (res?.data?.data as unknown as consultantSlotItem[] || []) : []);
+        setSlots(res?.data?.success !== false ? (res?.data?.data as unknown as consultantSlotItem[] || []) : []);
         setFetchingSlots(false);
       }
     };
@@ -68,14 +68,14 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
       timeTaken: yup.string().required("Please enter total time taken for this round"),
       remarks: yup.string().max(500).optional(),
     }),
-   onSubmit: async (values) => {
+    onSubmit: async (values) => {
       const currentIsPassing = Number(values.achievedScore) >= passingMarks && passingMarks > 0;
       if (currentIsPassing && (!selectedDate || !selectedSlot)) {
         toast.error("Candidate has passed! Please schedule the next assessment slot.");
         return;
       }
-      
-       const rawPayloadData: technicalActionPayload = {
+
+      const rawPayloadData: technicalActionPayload = {
         leadId: lead?._id || "",
         type: values.expType,
         achievedScore: values.achievedScore,
@@ -93,7 +93,7 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
         rawPayloadData.scheduleTo = selectedSlot.to;
       }
 
-       const formData = new FormData();
+      const formData = new FormData();
       Object.entries(rawPayloadData).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
           formData.append(key, value as string | Blob);
@@ -113,16 +113,16 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
       if (open && lead?._id) {
         setFetchingDetails(true);
         setFullLeadData(null);
-        const res = await getCandidateDocumentsAction(lead._id, true);
-        
+        const res = await getCandidateDocumentsAction({ leadId: lead._id, settings: true });
+
         // 🌟 HIGHLIGHT 4: Axios Response Double nesting 'res.data.data' perfectly resolved here!
         if (res?.data?.success && res?.data?.data?.lead) {
           setFullLeadData(res.data.data.lead);
-          
+
           // Using optional chaining safely to avoid any compiler warnings
           const fullMarks = (res.data.data.generalSettings as any)?.technical?.fullMarks || 100;
           const marksRequired = (res.data.data.generalSettings as any)?.technical?.passingMarks || 0;
-          
+
           technicalReviewForm.setFieldValue("totalScore", fullMarks);
           setPassingMarks(marksRequired);
         } else {
@@ -138,13 +138,13 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
 
   const isPassing = Number(technicalReviewForm.values.achievedScore) >= passingMarks && passingMarks > 0;
 
-  const consultant = 
-      (fullLeadData as deepPopulatedLeadDetails)?.preferences?.consultantId || 
-      lead?.preferences?.consultantId;
+  const consultant =
+    (fullLeadData as deepPopulatedLeadDetails)?.preferences?.consultantId ||
+    lead?.preferences?.consultantId;
 
-   const posNode = (fullLeadData as deepPopulatedLeadDetails)?.documents?.position;
-  const safePositionTitle = (posNode && typeof posNode === 'object' && 'title' in posNode) 
-    ? posNode.title 
+  const posNode = (fullLeadData as deepPopulatedLeadDetails)?.documents?.position;
+  const safePositionTitle = (posNode && typeof posNode === 'object' && 'title' in posNode)
+    ? posNode.title
     : "No Position Selected";
 
   const modalDetails = {
@@ -153,7 +153,7 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
     assignedTac: consultant?.firstName && consultant?.lastName
       ? `${consultant.firstName} ${consultant.lastName}`
       : "Unassigned",
-    positionApplied: safePositionTitle  
+    positionApplied: safePositionTitle
   };
   return {
     fullLeadData, fetchingDetails, selectedDate, setSelectedDate, slots, fetchingSlots,

@@ -46,6 +46,11 @@ export interface approveRejectDocumentPayload {
     date: string;
     from: string;
     to: string;
-    method?: "on" | "off";  
+    method?: "on" | "off";
   };
+}
+
+export interface getCandidateDocumentsPayload {
+  leadId: string;
+  settings?: boolean;
 }

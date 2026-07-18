@@ -1,7 +1,7 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { documentUploadResponse, positionDetailResponse, positionResponse } from "@/Types/ApiResponse/leadRes.types";
 import { saveMappedDocumentRes } from "@/Types/ApiResponse/uploadRes.types";
-import { saveMappedDocumentReq } from "@/Types/Frontend_Payload/document.types";
+import { getCandidateDocumentsPayload, saveMappedDocumentReq } from "@/Types/Frontend_Payload/document.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { positionById } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
@@ -61,13 +61,12 @@ export const checkDocumentStatusAction = async (bodyData: trackingById): Promise
 
 
 export const getCandidateDocumentsAction = async (
-  leadId: string,
-  settings?: boolean
+  bodyData: getCandidateDocumentsPayload
 ): Promise<AxiosResponse<candidateDocumentDetailsResponse>> => {
   const response = await axiosClient.get<candidateDocumentDetailsResponse>(
-    `/tac/candidate/${leadId}`,
+    `/tac/candidate/${bodyData?.leadId}`,
     {
-      ...(settings === true && {
+      ...(bodyData?.settings === true && {
         params: {
           settings: true,
         },
