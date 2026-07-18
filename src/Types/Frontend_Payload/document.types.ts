@@ -54,3 +54,11 @@ export interface getCandidateDocumentsPayload {
   leadId: string;
   settings?: boolean;
 }
+
+export interface UploadedDoc {
+  _id: string;
+  title: string;
+  section: string;
+  path: string;
+  status: string;
+}

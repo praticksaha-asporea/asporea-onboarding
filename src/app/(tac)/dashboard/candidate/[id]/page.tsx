@@ -28,7 +28,7 @@ export default function CandidateDetailPage() {
       .catch((err) => setError(err?.response?.data?.message ?? "Failed to load candidate"))
       .finally(() => setLoading(false));
   }, [id]);
-  
+
   if (loading) {
     return (
       <Box className="flex items-center justify-center min-h-screen">
@@ -45,7 +45,6 @@ export default function CandidateDetailPage() {
     );
   }
 
-  // Shape the lead into the format CandidateDetail expects
   const candidate = {
     _id: data.lead._id,
     name: data.lead.fullName ?? "—",
@@ -66,7 +65,6 @@ export default function CandidateDetailPage() {
     notificationPreference: data.lead.notificationPreference ?? {},
   };
 
-  
   return (
     <CandidateDetail
       selectedCandidate={candidate}
