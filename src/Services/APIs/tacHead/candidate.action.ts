@@ -24,6 +24,6 @@ export const getAllCandidatesAction = async (
   }
 
 
-  const response = await axiosClient.get<AllCandidatesTacHeadResponse>(url);
+  const response = await axiosClient.get(url);
   return response;
 };
