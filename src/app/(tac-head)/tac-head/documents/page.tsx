@@ -1,6 +1,6 @@
  
 
-import DocumentApprovalView from "@/Module/TAC_Head_Dashboard/components/Document-View/index";
+import DocumentApprovalView from "@/Module/TAC_Head_Dashboard/components/DocumentView/index";
 
 const TACHeadDocumentsPage = () => {
   return <DocumentApprovalView />;

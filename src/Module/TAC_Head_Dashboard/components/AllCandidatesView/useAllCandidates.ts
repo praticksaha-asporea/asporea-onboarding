@@ -1,14 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import toast from "react-hot-toast";
 import { getAllCandidatesAction } from "@/Services/APIs/tacHead/candidate.action";
-import { TacHeadCandidate, CandidateBranch } from "@/Types/Frontend_Payload/tacHead.types";
-
-export interface ParsedTacConsultant {
-  _id: string;
-  firstName: string;
-  lastName: string;
-  branchIds: string[];
-}
+import { TacHeadCandidate, CandidateBranch, ParsedTacConsultant } from "@/Types/Frontend_Payload/tacHead.types";
 
 export const useAllCandidates = () => {
  

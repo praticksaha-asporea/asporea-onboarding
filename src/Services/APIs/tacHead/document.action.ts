@@ -16,14 +16,14 @@ export const getAwaitingDocumentsAction = async (
     url += `&search=${encodeURIComponent(search)}`;
   }
 
-  const response = await axiosClient.get<documentApprovalListResponse>(url);
+  const response = await axiosClient.get(url);
   return response;
 };
 
 export const approveRejectDocumentAction = async (
   payload: approveRejectDocumentPayload
 ): Promise<AxiosResponse<approveRejectDocumentResponse>> => {
-  const response = await axiosClient.post<approveRejectDocumentResponse>(
+  const response = await axiosClient.post(
     "/tac/tachead/document/action",
     payload
   );

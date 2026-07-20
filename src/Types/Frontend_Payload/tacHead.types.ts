@@ -36,3 +36,11 @@ export interface TacHeadCandidatesPayload {
   tacId?: string;
   search?: string;
 }
+
+
+export interface ParsedTacConsultant {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  branchIds: string[];
+}

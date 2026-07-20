@@ -279,35 +279,13 @@ import { CamelCase } from "@/Utils/common";
 import TechnicalActionModal from "./TechnicalActionModal";
 import { useTechnicalView } from "./useTechnicalView";
 
-const responsiveTableSx = {
-  "& .resp-thead": { "@media (max-width: 767px)": { display: "none" } },
-  "& .resp-row": {
-    "@media (max-width: 767px)": { display: "block", borderBottom: "2px solid", borderColor: "divider", mb: 1, borderRadius: 2, overflow: "hidden" },
-  },
-  "& .resp-cell": {
-    "@media (max-width: 767px)": {
-      display: "flex", justifyContent: "space-between", alignItems: "center", px: 2, py: 1, borderBottom: "1px solid", borderColor: "divider", "&:last-child": { borderBottom: "none" },
-      "&::before": { content: "attr(data-label)", fontWeight: 600, fontSize: "0.72rem", color: "text.secondary", flexShrink: 0, mr: 2, minWidth: 110 },
-    },
-  },
-};
-
-const getTechStatusBadge = (status: string) => {
-  switch (status) {
-    case "refered": return "bg-[var(--mui-palette-warning-main)] text-white";
-    case "passed": return "bg-[var(--mui-palette-success-main)] text-white";
-    case "failed": return "bg-[var(--mui-palette-error-main)] text-white";
-    default: return "bg-[--mui-palette-grey-400] text-white";
-  }
-};
-
-const COLS = ["Candidate", "Assigned TAC", "Technical Status", "Contact", "Actions"];
 
 const TechnicalView = () => {
   const {
     leads, loading, page, setPage, totalPages, modalOpen, setModalOpen,
     selectedLead, searchInput, statusFilter, handleSearchChange, handleStatusChange,
     openActionModal, fetchTechnicalRequests,
+    responsiveTableSx, getTechStatusBadge, COLS
   } = useTechnicalView();
 
   return (

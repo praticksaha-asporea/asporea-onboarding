@@ -1,9 +1,10 @@
 import React from "react";
 import { Box, IconButton, Typography, Chip } from "@mui/material";
 import { CamelCase } from "@/Utils/common";
+import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 
 interface CandidateHeaderProps {
-  candidate: any;
+  candidate: CandidateLead;
   onBack: () => void;
 }
 

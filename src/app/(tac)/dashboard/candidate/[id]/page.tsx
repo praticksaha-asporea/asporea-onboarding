@@ -8,7 +8,6 @@ import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
 import { IAssignment } from "@/lib/models/Assignment.model";
 import { ILead } from "@/lib/models/Lead.model";
 import { IBranchToken } from "@/lib/models/BranchToken.model";
-import { candidateDetailResponse } from "@/Types/ApiResponse/tacResponse.types";
 
 export default function CandidateDetailPage() {
   const params = useParams<{ id: string }>();
@@ -49,7 +48,6 @@ export default function CandidateDetailPage() {
     );
   }
 
-  // Shape the lead into the format CandidateDetail expects
   const candidate = {
     _id: data.lead._id,
     name: data.lead.fullName ?? "—",
@@ -69,7 +67,6 @@ export default function CandidateDetailPage() {
     assignmentByPhase: data.assignmentByPhase ?? {},
     notificationPreference: data?.lead?.contact ?? {},
   };
-
 
   return (
     <CandidateDetail

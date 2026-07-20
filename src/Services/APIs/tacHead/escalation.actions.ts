@@ -18,7 +18,7 @@ export const getEscalationListAction = async (
   const { page = 1, limit = 10, search = "", tacId = "" } = payload;
   const url = `/tac/tachead/escalation/list?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&tacId=${encodeURIComponent(tacId)}`;
 
-  const response = await axiosClient.get<escalationListResponse>(url);
+  const response = await axiosClient.get(url);
   return response;
 };
 
@@ -28,7 +28,7 @@ export const getEscalationViewAction = async (
 ): Promise<AxiosResponse<escalationViewResponse>> => {
   const url = `/tac/tachead/escalation/view?id=${encodeURIComponent(payload.id)}`;
 
-  const response = await axiosClient.get<escalationViewResponse>(url);
+  const response = await axiosClient.get(url);
   return response;
 };
 
@@ -36,7 +36,7 @@ export const getEscalationViewAction = async (
 export const approveRejectEscalationAction = async (
   payload: approveRejectEscalationPayload
 ): Promise<AxiosResponse<escalationActionResponse>> => {
-  const response = await axiosClient.post<escalationActionResponse>(
+  const response = await axiosClient.post(
     "/tac/tachead/escalation/action",
     payload
   );

@@ -100,8 +100,8 @@ export const useTechnicalActionModal = ({ open, setOpen, lead, refreshData }: Us
         }
       });
       const res = await technicalExperienceAction(formData);
-      if (res?.success !== false) {
-        toast.success("Technical Experience verified successfully!");
+    if (res && res.data?.success !== false) {        
+     toast.success("Technical Experience verified successfully!");
         setOpen(false);
         refreshData();
       }
