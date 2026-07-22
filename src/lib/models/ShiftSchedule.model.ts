@@ -37,7 +37,7 @@ const ShiftScheduleSchema = new Schema<IShiftSchedule>(
 );
 
 /* INDEXES */
-ShiftScheduleSchema.index({ shiftId: 1 });
+// ShiftScheduleSchema.index({ shiftId: 1 });
 
 /* EXPORT */
 export const ShiftScheduleModel =

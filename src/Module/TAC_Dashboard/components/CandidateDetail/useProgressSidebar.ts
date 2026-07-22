@@ -2,8 +2,9 @@ import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
 import { escalateLeadAction } from "@/Services/APIs/tac/tac.actions";
+import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 
-export const useProgressSidebar = (candidate: any, escalateTo: string, setEscalateTo: (val: string) => void) => {
+export const useProgressSidebar = (candidate: CandidateLead, escalateTo: string, setEscalateTo: (val: string) => void) => {
   const escalationForm = useFormik({
     initialValues: { toId: escalateTo || "", reason: "" },
     enableReinitialize: true,

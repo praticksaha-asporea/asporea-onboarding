@@ -10,11 +10,14 @@ import DashboardFilters from "./DashboardFilters";
 import DashboardTable from "./DashboardTable";
 import DashboardScheduleModal from "./DashboardScheduleModal";
 import DashboardCommunicationModal from "./DashboardCommunicationModal";
-import { useDashboardView } from "./useDashboardView";
+import { kpiTypes, useDashboardView } from "./useDashboardView";
+import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
+import { CandidateRow, tacData } from "@/Types/object.types";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 
 export interface DashboardProps {
-  setCurrentView: (view: "dashboard" | "detail") => void;
-  setSelectedCandidate: (candidate: any) => void;
+  // setCurrentView: (view: "dashboard" | "detail") => void;
+  // setSelectedCandidate: (candidate: CandidateLead) => void;
 }
 
 const DashboardView: React.FC<DashboardProps> = () => {
@@ -27,7 +30,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
         {isFoe ? "FOE  Dashboard" : "TAC Dashboard"}
       </Typography>
 
-      <DashboardKpiCards kpis={kpis} total={total} />
+      <DashboardKpiCards kpis={kpis as kpiTypes} total={total} />
 
       <DashboardFilters
         searchInput={searchInput}
@@ -54,16 +57,16 @@ const DashboardView: React.FC<DashboardProps> = () => {
       <DashboardScheduleModal
         modalOpen={modalOpen}
         setModalOpen={setModalOpen}
-        targetLead={targetLead}
+        targetLead={targetLead as CandidateRow}
         tacList={tacList}
-        selectedTac={selectedTac}
+        selectedTac={selectedTac as tacData}
         setSelectedTac={setSelectedTac}
         date={date}
         setDate={setDate}
         todayStr={todayStr}
         slotsLoading={slotsLoading}
         slots={slots}
-        selectedSlot={selectedSlot}
+        selectedSlot={selectedSlot as Slot}
         setSelectedSlot={setSelectedSlot}
         handleBookSlot={handleBookSlot}
         bookingLoading={bookingLoading}
@@ -73,7 +76,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
       <DashboardCommunicationModal
         open={commModalOpen}
         onClose={() => setCommModalOpen(false)}
-        candidate={commCandidate}
+        candidate={commCandidate as CandidateRow}
         mode={commMode}
       />
     </Box>

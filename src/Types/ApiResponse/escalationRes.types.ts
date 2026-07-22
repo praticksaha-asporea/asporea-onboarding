@@ -50,10 +50,17 @@ export interface escalationListResponse {
 }
 
 export interface escalationViewResponse {
-  success: boolean;
-  message: string;
-  data: escalationRecord;
-  error: string | null;
+    success: boolean;
+    message: string;
+    data: escalationRecord;
+    error: string | null;
+}
+
+export interface escalationActionResponse {
+    success: boolean;
+    message: string;
+    data: escalationRecord;
+    error: string | null;
 }
 
 export interface escalationActionResponse {

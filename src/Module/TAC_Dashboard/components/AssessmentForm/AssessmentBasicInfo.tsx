@@ -2,10 +2,13 @@ import React from "react";
 import { Grid, TextField, Typography } from "@mui/material";
 import dayjs from "dayjs";
 import { useSelector } from "react-redux";
+import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
+import { FormikProps } from "formik";
+import { AssessmentFormValues } from "@/Types/object.types";
 
 interface AssessmentBasicInfoProps {
-  selectedCandidate: any;
-  assessmentForm: any;
+  selectedCandidate: CandidateLead;
+  assessmentForm: FormikProps<AssessmentFormValues>;
 }
 
 const AssessmentBasicInfo: React.FC<AssessmentBasicInfoProps> = ({ selectedCandidate, assessmentForm }) => {

@@ -3,21 +3,23 @@ import {
   Box, Button, CircularProgress, Dialog, DialogActions, DialogContent,
   DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField, Typography
 } from "@mui/material";
+import { CandidateRow, tacData } from "@/Types/object.types";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 
 interface DashboardScheduleModalProps {
   modalOpen: boolean;
   setModalOpen: (val: boolean) => void;
-  targetLead: any;
-  tacList: any[];
-  selectedTac: string;
+  targetLead: CandidateRow;
+  tacList: tacData[];
+  selectedTac: tacData;
   setSelectedTac: (val: string) => void;
   date: string;
   setDate: (val: string) => void;
   todayStr: string;
   slotsLoading: boolean;
-  slots: any[];
-  selectedSlot: any;
-  setSelectedSlot: (val: any) => void;
+  slots: Slot[];
+  selectedSlot: Slot;
+  setSelectedSlot: (val: Slot) => void;
   handleBookSlot: () => void;
   bookingLoading: boolean;
   schedulePhase: "pre" | "assess";
@@ -26,15 +28,15 @@ interface DashboardScheduleModalProps {
 const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
   modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac,
   date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot,
-  handleBookSlot, bookingLoading,schedulePhase
+  handleBookSlot, bookingLoading, schedulePhase
 }) => {
   return (
     <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-xl p-2" }}>
-     <DialogTitle className="font-bold text-[20px]">
-        {schedulePhase === "assess" 
-          ? "Schedule / Reschedule Assessment" 
-          : targetLead?.status === "pre_not_responded" 
-            ? "Reschedule Pre-Counselling" 
+      <DialogTitle className="font-bold text-[20px]">
+        {schedulePhase === "assess"
+          ? "Schedule / Reschedule Assessment"
+          : targetLead?.status === "pre_not_responded"
+            ? "Reschedule Pre-Counselling"
             : "Schedule Pre-Counselling"}
       </DialogTitle>
       <DialogContent className="flex flex-col gap-5 pt-4">
@@ -75,13 +77,12 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
                     key={index} disabled={!slot.available}
                     variant={selectedSlot?.time === slot.time ? "contained" : "outlined"}
                     onClick={() => slot.available && setSelectedSlot(slot)}
-                    className={`normal-case rounded-[20px] px-6 ${
-                      selectedSlot?.time === slot.time
-                        ? "bg-primary border-primary text-white"
-                        : slot.available
-                          ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
-                          : "bg-[#f5f5f5] border-[#e0e0e0]"
-                    } disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]`}
+                    className={`normal-case rounded-[20px] px-6 ${selectedSlot?.time === slot.time
+                      ? "bg-primary border-primary text-white"
+                      : slot.available
+                        ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit"
+                        : "bg-[#f5f5f5] border-[#e0e0e0]"
+                      } disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]`}
                   >
                     {slot.time}
                   </Button>

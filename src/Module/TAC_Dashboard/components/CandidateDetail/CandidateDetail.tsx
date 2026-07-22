@@ -1,29 +1,105 @@
 "use client";
 import React from "react";
-import { Box, Grid, Stack } from "@mui/material";
+import { Box, Grid, Stack, CircularProgress, Typography } from "@mui/material";
 
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 // Components Imports 
 import CandidateHeader from "./CandidateHeader";
 import InquiryDetailsForm from "./InquiryDetailsForm";
 import PreCounsellingForm from "./PreCounsellingForm";
 import ProgressSidebar from "./ProgressSidebar";
 import AssessmentFormSection from "./AssessmentFormSection";
-import CandidateDocumentsSection from "./CandidateDocumentsSection";
 import { useCandidateDetail } from "./useCandidateDetail";
-
+import { UserData } from "@/Redux/Auth/user.slice";
+import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
+// import { IAssignment } from "@/lib/models/Assignment.model";
+// import { ILead } from "@/lib/models/Lead.model";
+// import { IBranchToken } from "@/lib/models/BranchToken.model";
 interface CandidateDetailProps {
-  selectedCandidate: any;
-  setSelectedCandidate: (candidate: any) => void;
-  setCurrentView: (view: "dashboard" | "detail") => void;
+  //   selectedCandidate: CandidateLead;
+  //   setSelectedCandidate: (candidate: CandidateLead) => void;
+  // setCurrentView: (view: "dashboard" | "detail") => void;
 }
 
-const CandidateDetail: React.FC<CandidateDetailProps> = ({
-  selectedCandidate, setSelectedCandidate, setCurrentView,
-}) => {
+const CandidateDetail: React.FC<CandidateDetailProps> = (
+  {
+    // setCurrentView
+  }
+) => {
+  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+
+  const params = useParams<{ id: string }>();
+  const id = params?.id;
+
+  // const [data, setData] = useState<{
+  //   lead: ILead;
+  //   branchToken: IBranchToken;
+  //   assignments: IAssignment[];
+  //   assignmentByPhase: Record<string, IAssignment>;
+  // } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  //, setSelectedCandidate
   const {
     c, preferences, source, branchId, consultantId, inqAssign, assessAssign,
     tacList, escalateTo, setEscalateTo, currentUser, isFoe, handleBack
-  } = useCandidateDetail(selectedCandidate, setSelectedCandidate, setCurrentView);
+    // , setSelectedCandidate
+  } = useCandidateDetail({ selectedCandidate });
+  //, setCurrentView 
+
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    getTacCandidateDetailAction(id)
+      .then((response: any) => {
+        // setData(response?.data?.data); 
+        setSelectedCandidate({
+          _id: response?.data?.data.lead._id,
+          name: response?.data?.data.lead.fullName ?? "—",
+          inqNo: response?.data?.data.lead.inqNo ?? "—",
+          stage: response?.data?.data.lead.status ?? "—",
+          status: response?.data?.data.lead.status ?? "—",
+          contact: response?.data?.data.lead.contact,
+          address: response?.data?.data.lead.address,
+          preferences: response?.data?.data.lead.preferences ? {
+            branchId: response?.data?.data.lead.preferences.branchId,
+            consultantId: response?.data?.data.lead.preferences.consultantId,
+            visitType: response?.data?.data.lead.preferences.visitType,
+          } : undefined,
+          source: response?.data?.data.lead.source,
+          experience: response?.data?.data.lead.experience,
+          documents: response?.data?.data.lead.documents,
+          technical: response?.data?.data.lead.technical,
+          passport: response?.data?.data.lead.passport,
+          token: response?.data?.data.branchToken?.tokenNo ?? null,
+          lastActivity: response?.data?.data.lead.updatedAt,
+          assignmentByPhase: response?.data?.data.assignmentByPhase ?? {},
+          notificationPreference: response?.data?.data.lead?.contact ?? {},
+        });
+      })
+      .catch((err) => setError(err?.response?.data?.message ?? "Failed to load candidate"))
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  if (loading) {
+    return (
+      <Box className="flex items-center justify-center min-h-screen">
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box className="flex items-center justify-center min-h-screen">
+        <Typography color="error">{error ?? "Candidate not found"}</Typography>
+      </Box>
+    );
+  }
+
+
 
   return (
     <Box className="w-full min-h-screen p-4 md:p-6">
@@ -51,8 +127,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
                 candidate={c}
                 assessAssign={assessAssign}
                 isFoe={isFoe}
-                branchTitle={branchId.title ?? "—"}
-                setCurrentView={setCurrentView}
+                branchTitle={
+                  typeof branchId === "string"
+                    ? branchId
+                    : (branchId as any)?.title ?? "—"
+                }
+              // setCurrentView={setCurrentView}
               />
             )}
           </Stack>
@@ -67,7 +147,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
             tacList={tacList}
             escalateTo={escalateTo}
             setEscalateTo={setEscalateTo}
-            currentUser={currentUser}
+            currentUser={currentUser as UserData}
           />
         </Grid>
       </Grid>
@@ -76,135 +156,3 @@ const CandidateDetail: React.FC<CandidateDetailProps> = ({
 };
 
 export default CandidateDetail;
-
-
-
-// "use client";
-
-// import React, { useState, useEffect } from "react";
-// import { useRouter } from "next/navigation";
-// import { Box, Grid, Stack } from "@mui/material";
-// import { useSelector } from "react-redux";
-// import { getTacListAction } from "@/Services/APIs/Inquiry/inquiry.action";
-
-// // Components Imports (Adjust paths accordingly)
-// import CandidateHeader from "./CandidateHeader";
-// import InquiryDetailsForm from "./InquiryDetailsForm";
-// import PreCounsellingForm from "./PreCounsellingForm";
-// import ProgressSidebar from "./ProgressSidebar";
-// import AssessmentFormSection from "./AssessmentFormSection";
-// import { branchById } from "@/Types/Frontend_Payload/branch.types";
-// interface CandidateDetailProps {
-//   selectedCandidate: any;
-//   setSelectedCandidate: (candidate: any) => void;
-//   setCurrentView: (view: "dashboard" | "detail") => void;
-// }
-
-// const CandidateDetail: React.FC<CandidateDetailProps> = ({
-//   selectedCandidate,
-//   setSelectedCandidate,
-//   setCurrentView,
-// }) => {
-//   const router = useRouter();
-//   const currentUser = useSelector(
-//     (state: any) => state.userSlice?.userData || state.user?.userData,
-//   );
-//   const isFoe =
-//     currentUser?.role === "foe" || currentUser?.user?.role === "foe";
-
-//   // useEffect(() => {
-//   //   window.scrollTo({ top: 0, behavior: "smooth" });
-//   // }, []);
-
-//   const c = selectedCandidate ?? {};
-//   const preferences = c.preferences ?? {};
-//   const source = c.source ?? {};
-//   const branchId = preferences.branchId ?? {};
-//   const consultantId = preferences.consultantId ?? {};
-//   const abp = c.assignmentByPhase ?? {};
-//   const inqAssign = abp["pre"] ?? null;
-//   const assessAssign = abp["assess"] ?? null;
-//   // console.log("ABP Log Check:", c);
-//   // console.log("Assessment Assign Data:", assessAssign);
-//   const [tacList, setTacList] = useState<any[]>([]);
-//   const [escalateTo, setEscalateTo] = useState("");
-
-//   useEffect(() => {
-//     const branchObjectId =
-//       typeof preferences.branchId === "object"
-//         ? preferences.branchId?._id
-//         : preferences.branchId;
-//     if (!branchObjectId) return;
-//     getTacListAction(branchObjectId as branchById)
-//       .then((res) => {
-//         if (res?.data?.success) {
-//           const myId = currentUser?.id || currentUser?._id;
-//           setTacList(
-//             res?.data?.data?.filter((t: any) => String(t._id) !== String(myId)),
-//           );
-//         }
-//       })
-//       .catch(() => { });
-//   }, [preferences.branchId, currentUser]);
-
-//   const handleBack = () => {
-//     if (window.history.length > 1) {
-//       router.back();
-//     } else {
-//       setSelectedCandidate(null);
-//       setCurrentView("dashboard");
-//     }
-//   };
-
-//   return (
-//     <Box className="w-full min-h-screen p-4 md:p-6">
-//       <CandidateHeader candidate={c} onBack={handleBack} />
-
-//       <Grid container spacing={3}>
-//         <Grid size={{ xs: 12, lg: 9 }}>
-//           <Stack spacing={3}>
-//             <InquiryDetailsForm candidate={c} />
-
-//             {!!Object.keys(abp).length && (
-//               <PreCounsellingForm
-//                 candidate={c}
-//                 inqAssign={inqAssign}
-//                 branchId={branchId}
-//                 consultantId={inqAssign?.assignedTo || consultantId}
-//                 source={source}
-//                 preferences={preferences}
-//                 candidatePhone={c.contact?.phone ?? ""}
-//               />
-//             )}
-
-//             {/* --- Assessment Form Section (Tab 3) --- */}
-//             {!!Object.keys(abp).length && inqAssign?.status === "completed" && assessAssign && (
-//               <AssessmentFormSection
-//                 candidate={c}
-//                 assessAssign={assessAssign}
-//                 isFoe={isFoe}
-//                 branchTitle={branchId.title ?? "—"}
-//                 setCurrentView={setCurrentView}
-//               />
-//             )}
-//           </Stack>
-//         </Grid>
-
-//         <Grid size={{ xs: 12, lg: 3 }}>
-//           <ProgressSidebar
-//             candidate={c}
-//             isFoe={isFoe}
-//             branchId={branchId}
-//             consultantId={consultantId}
-//             tacList={tacList}
-//             escalateTo={escalateTo}
-//             setEscalateTo={setEscalateTo}
-//             currentUser={currentUser}
-//           />
-//         </Grid>
-//       </Grid>
-//     </Box>
-//   );
-// };
-
-// export default CandidateDetail;

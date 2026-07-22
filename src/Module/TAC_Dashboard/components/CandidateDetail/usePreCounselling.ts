@@ -5,16 +5,24 @@ import toast from "react-hot-toast";
 import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
+import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
 
-export const usePreCounselling = (inqAssign: any, candidatePhone: string) => {
+export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string) => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isPreLocked, setIsPreLocked] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-  
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const existingResume = inqAssign?.pre?.initialCV?.path;
+  const initialCV = inqAssign?.pre?.initialCV;
+
+  const existingResume =
+    initialCV &&
+      typeof initialCV === "object" &&
+      "path" in initialCV
+      ? initialCV.path
+      : undefined;
 
   // Handle preview URL creation/cleanup
   useEffect(() => {
@@ -51,7 +59,7 @@ export const usePreCounselling = (inqAssign: any, candidatePhone: string) => {
   // Drag and drop handlers
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
   const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
-  
+
   const handleFileChange = (file: File | null) => {
     if (file) {
       setResumeFile(file);
@@ -60,7 +68,7 @@ export const usePreCounselling = (inqAssign: any, candidatePhone: string) => {
   };
 
   const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault(); 
+    e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files?.length) handleFileChange(e.dataTransfer.files[0]);
   };
@@ -87,12 +95,12 @@ export const usePreCounselling = (inqAssign: any, candidatePhone: string) => {
       resumeFile: Yup.mixed<File>().nullable().optional(),
     }),
     onSubmit: async (values, { setSubmitting }) => {
-      if (!inqAssign?._id) { 
-        toast.error("No pre-counselling assignment found"); 
-        setSubmitting(false); 
-        return; 
+      if (!inqAssign?._id) {
+        toast.error("No pre-counselling assignment found");
+        setSubmitting(false);
+        return;
       }
-      
+
       if (values.preStatus === "completed" || values.preStatus === "rejected") {
         const actionText = values.preStatus === "completed" ? "Completed" : "Rejected";
         const confirmed = await confirmToast(`Are you sure Candidate is ${actionText}!`);
@@ -101,7 +109,7 @@ export const usePreCounselling = (inqAssign: any, candidatePhone: string) => {
 
       try {
         const formData = new FormData();
-        formData.append("assignmentId", inqAssign._id);
+        formData.append("assignmentId", inqAssign._id.toString());
         formData.append("status", values.preStatus);
         formData.append("additionalDetails", values.additionalDetails);
         formData.append("specificNotes", values.specificNotes);
@@ -140,19 +148,19 @@ export const usePreCounselling = (inqAssign: any, candidatePhone: string) => {
       : status === "not_responded"
         ? `You contacted ${candidatePhone},\nbut the candidate did not respond?`
         : "Are you sure you are available to talk with this candidate now?";
-        
+
     const confirmed = await confirmToast(textStatus);
     if (!confirmed) return;
-    
+
     try {
       const formData = new FormData();
-      formData.append("assignmentId", inqAssign._id);
+      formData.append("assignmentId", inqAssign._id.toString());
       formData.append("status", status);
 
       await updateAssignmentAction(formData);
       toast.success(`Status updated to ${CamelCase(status)}`);
-      
-      preForm.setValues({ ...preForm.values, preStatus: status });
+
+      preForm.setValues({ ...preForm.values, preStatus: status as AssignmentStatus });
       if (status === "queued") setIsPreLocked(false);
     } catch (err: any) {
       toast.error(err?.response?.data?.message ?? "Update failed");

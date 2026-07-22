@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { Dispatch, SetStateAction } from "react";
 import { Box, TextField, ToggleButton, ToggleButtonGroup, Typography } from "@mui/material";
+import { ScoringSection, SelectedOptions } from "./useAssessmentForm";
 
 interface AssessmentScoringTableProps {
-  scoringSections: any[];
-  selectedOptions: any;
-  setSelectedOptions: any;
+  scoringSections: ScoringSection[];
+  selectedOptions: SelectedOptions;
+  setSelectedOptions: Dispatch<SetStateAction<SelectedOptions>>;
   languageLevels: any;
   setLanguageLevels: any;
   levels: string[];
@@ -150,7 +151,12 @@ const AssessmentScoringTable: React.FC<AssessmentScoringTableProps> = ({
 
             {section.options.map((opt: any, i: number) => {
               const isMulti = section.id === 4 || section.id === 10 || section.id === 11;
-              const isSelected = isMulti ? selectedOptions[section.id]?.includes(i) : selectedOptions[section.id] === i;
+              const selected = selectedOptions[section.id];
+
+              const isSelected = isMulti
+                ? Array.isArray(selected) && selected.includes(i)
+                : selected === i;
+              // const isSelected = isMulti ? selectedOptions[section.id]?.includes(i) : selectedOptions[section.id] === i;
 
               return (
                 <Box

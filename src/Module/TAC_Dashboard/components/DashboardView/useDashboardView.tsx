@@ -2,17 +2,15 @@ import { scheduleAssessmentAction } from "@/Services/APIs/Assessment/assessment.
 import { getTacListAction } from "@/Services/APIs/Inquiry/inquiry.action";
 import { bookSlotAction, getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { getTacCandidatesAction } from "@/Services/APIs/tac/tac.actions";
-import { CandidateRow } from "@/Types/object.types";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+import { CandidateRow, tacData } from "@/Types/object.types";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
-interface Kpis {
-    openCases: number;
-    pendingCounselling: number;
-    pendingAssessment: number;
-}
+
+export interface kpiTypes { openCases: number, pendingCounselling: number, pendingAssessment: number }
 
 export const useDashboardView = () => {
     const router = useRouter();
@@ -32,18 +30,18 @@ export const useDashboardView = () => {
     const [rows, setRows] = useState<CandidateRow[]>([]);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
-    const [kpis, setKpis] = useState<Kpis | null>(null);
+    const [kpis, setKpis] = useState<kpiTypes | null>(null);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     const [modalOpen, setModalOpen] = useState(false);
-    const [targetLead, setTargetLead] = useState<any | null>(null);
+    const [targetLead, setTargetLead] = useState<CandidateRow | null>(null);
     const [commModalOpen, setCommModalOpen] = useState(false);
     const [commMode, setCommMode] = useState<"chat" | "email" | null>(null);
-    const [commCandidate, setCommCandidate] = useState<any | null>(null);
+    const [commCandidate, setCommCandidate] = useState<CandidateRow | null>(null);
 
-    const [tacList, setTacList] = useState<any[]>([]);
-    const [selectedTac, setSelectedTac] = useState("");
+    const [tacList, setTacList] = useState<tacData[]>([]);
+    const [selectedTac, setSelectedTac] = useState<tacData | string>("");
 
     const serverNow = new Date();
     const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
@@ -51,13 +49,13 @@ export const useDashboardView = () => {
     const todayStr = istTime.toISOString().split("T")[0];
 
     const [date, setDate] = useState(todayStr);
-    const [slots, setSlots] = useState<any[]>([]);
-    const [selectedSlot, setSelectedSlot] = useState<any>(null);
+    const [slots, setSlots] = useState<Slot[]>([]);
+    const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [bookingLoading, setBookingLoading] = useState(false);
     const [schedulePhase, setSchedulePhase] = useState<"pre" | "assess">("pre");
 
-    const openCommModal = (candidate: any, mode: "chat" | "email") => {
+    const openCommModal = (candidate: CandidateRow, mode: "chat" | "email") => {
         setCommCandidate(candidate);
         setCommMode(mode);
         setCommModalOpen(true);
@@ -110,7 +108,8 @@ export const useDashboardView = () => {
         let prevId = "";
         if (isReschedule) {
             const rawConsultantId =
-                candidate?.preferences?.consultantId || candidate?.consultantId;
+                candidate?.preferences?.consultantId;
+            //  || candidate?.consultantId;
             if (rawConsultantId) {
                 prevId =
                     typeof rawConsultantId === "object" && rawConsultantId._id
@@ -134,7 +133,7 @@ export const useDashboardView = () => {
             if (!selectedTac || !date || !modalOpen) return;
             setSlotsLoading(true);
             setSelectedSlot(null);
-            const res = await getSlotsAction({ consultantId: selectedTac, date });
+            const res = await getSlotsAction({ consultantId: selectedTac as string, date });
             if (res?.data?.success) {
                 setSlots(res?.data?.data);
             } else {
@@ -154,10 +153,10 @@ export const useDashboardView = () => {
             | "off";
         const payload = {
             leadId: targetLead._id,
-            consultantId: selectedTac,
+            consultantId: selectedTac as string,
             date,
-            from: selectedSlot.from,
-            to: selectedSlot.to,
+            from: selectedSlot.from as keyof Slot,
+            to: selectedSlot.to as keyof Slot,
             method: method as "on" | "off",
         };
 

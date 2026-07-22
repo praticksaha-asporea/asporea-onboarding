@@ -1,6 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import { AssessmentFormValues } from "@/Types/object.types";
+import { FormikProps } from "formik";
+import { useState, useEffect, useRef } from "react";
 
-export const useAssessmentSignature = ({ assessmentForm }: { assessmentForm: any }) => {
+export const useAssessmentSignature = ({ assessmentForm }: { assessmentForm: FormikProps<AssessmentFormValues> }) => {
     const [previews, setPreviews] = useState<Record<string, string>>({});
     const previewsRef = useRef<Record<string, string>>({});
     const [previewDialogFile, setPreviewDialogFile] = useState<{ name: string; url: string; isImage: boolean } | null>(null);

@@ -3,7 +3,7 @@ import toast from "react-hot-toast";
 import { getPositionDetailsAction, saveMappedDocumentsAction, getCandidateDocumentsAction } from "@/Services/APIs/Documents/document.actions";
 import { uploadFileAction } from "@/Utils/common";
 import { DocumentRequirement, GroupedDocuments } from "@/Types/Frontend_Payload/document.types";
-import { CandidateLead,DocumentBaseCandidate } from "@/Types/Frontend_Payload/Candidate.types";
+import { DocumentBaseCandidate } from "@/Types/Frontend_Payload/Candidate.types";
 import { UploadedDoc } from "@/Types/Frontend_Payload/document.types";
 
 
@@ -26,10 +26,10 @@ export function getFileType(path: string): "image" | "pdf" | "other" {
 export const useCandidateDocumentsSection = (candidate: DocumentBaseCandidate) => {
   const docs = candidate.documents ?? {};
   const leadId: string = candidate._id;
-  
+
   const positionObj = docs.position;
-  const positionId: string = typeof positionObj === "object" && positionObj !== null 
-    ? (positionObj as { _id: string })._id 
+  const positionId: string = typeof positionObj === "object" && positionObj !== null
+    ? (positionObj as { _id: string })._id
     : (positionObj as string) ?? "";
 
   const uploadedDocs: UploadedDoc[] = Array.isArray(docs.uploadedDocs) ? docs.uploadedDocs : [];

@@ -2,8 +2,13 @@ import { IAssignment } from "@/lib/models/Assignment.model";
 import { IBranchToken } from "@/lib/models/BranchToken.model";
 import { ILead } from "@/lib/models/Lead.model";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { leadDocumentUpdateResponse } from "@/Types/ApiResponse/leadRes.types";
+import { escalationActionResponse } from "@/Types/ApiResponse/escalationRes.types";
+import { inquiryResponse, leadDocumentUpdateResponse } from "@/Types/ApiResponse/leadRes.types";
 import { candidateDetailResponse, CandidatesResponse, QuestionsListReponse, sendEmailRes, TacAssessmentResponse } from "@/Types/ApiResponse/tacResponse.types";
+import { documentStatusUpdateReq } from "@/Types/Frontend_Payload/document.types";
+import { escalateReqPayload } from "@/Types/Frontend_Payload/escalation.types";
+import { expStatusUpdateReq } from "@/Types/Frontend_Payload/experience.types";
+import { InquiryUpdatePayload } from "@/Types/Frontend_Payload/lead.types";
 import { GetTacCandidatesPayload, sendEmailTACReq, UpdateAssessmentPayload, UpdateAssignmentAssessPayload, UpdateAssignmentPayload } from "@/Types/Frontend_Payload/tac.types";
 import { ExpType } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
@@ -64,38 +69,29 @@ export const updateAssignmentAssessAction = async (
   );
 };
 
-export const updateDocumentStatusAction = async (id: string, status: 'verified' | 'rejected' | 'awaiting_approval', remarks?: string
+export const updateDocumentStatusAction = async (payload: documentStatusUpdateReq
 ): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
-  const payload = { id, status, remarks };
+  // const payload = { id, status, remarks };
   return axiosClient.patch(
     "/tac/assignment/document-verify",
     payload
   );
 };
 
-export const updateExpStatusAction = async (id: string, status: 'verified' | 'rejected' | 'request_technical', expType: ExpType
+export const updateExpStatusAction = async (payload: expStatusUpdateReq
 ): Promise<AxiosResponse<leadDocumentUpdateResponse>> => {
 
-  const payload = { id, status, expType };
+  // const payload = { id, status, expType };
   return axiosClient.patch(
     "/tac/assignment/exp-verify",
     payload
   );
 };
 
-export const updateLeadAction = async (payload: {
-  id: string;
-  fullName?: string;
-  email?: string;
-  phone?: string;
-  whatsapp?: string;
-  address?: string;
-  passportStatus?: string;
-  passportNo?: string;
-}) => {
+export const updateLeadAction = async (payload: InquiryUpdatePayload): Promise<AxiosResponse<inquiryResponse>> => {
   const res = await axiosClient.patch("/tac/lead/update", payload);
-  return res.data;
+  return res;//.data
 };
 
 export const getAssessmentQuestionsList = async (
@@ -103,17 +99,13 @@ export const getAssessmentQuestionsList = async (
   return axiosClient.get(
     "/assessment/questions/list");
 };
-export const escalateLeadAction = async (payload: {
-  leadId: string;
-  toId: string;
-  reason: string;
-}) => {
-  try {
-    const res = await axiosClient.post("/tac/escalate", payload);
-    return res.data;
-  } catch (error: any) {
-    throw error;
-  }
+export const escalateLeadAction = async (payload: escalateReqPayload): Promise<AxiosResponse<escalationActionResponse>> => {
+  // try {
+  const res = await axiosClient.post("/tac/escalate", payload);
+  return res;//.data;
+  // } catch (error: any) {
+  //   throw error;
+  // }
 };
 
 
