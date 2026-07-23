@@ -8,12 +8,25 @@ export const getUploadsList = async (query: {
   page?: number;
   limit?: number;
   role?: string;
+  userId?: string;
 }) => {
   const page = query.page || 1;
   const limit = query.limit || 10;
   const skip = (page - 1) * limit;
 
-  const pipeline: any[] = [
+  const pipeline: any[] = [];
+
+
+  if (query.userId && mongoose.Types.ObjectId.isValid(query.userId)) {
+    pipeline.push({
+      $match: {
+        userId: new mongoose.Types.ObjectId(query.userId),
+      },
+    });
+  }
+
+
+  pipeline.push(
     {
       $lookup: {
         from: "users",
@@ -28,42 +41,35 @@ export const getUploadsList = async (query: {
         preserveNullAndEmptyArrays: true,
       },
     },
-     
     {
       $addFields: {
         "user.profilePicStr": {
           $cond: {
             if: { $not: ["$user.profilePic"] },
             then: "",
-            else: { $toString: "$user.profilePic" }
-          }
-        }
-      }
+            else: { $toString: "$user.profilePic" },
+          },
+        },
+      },
     },
-   
     {
       $lookup: {
-        from: 'uploads', 
-        let: { picStr: '$user.profilePicStr' },
+        from: "uploads",
+        let: { picStr: "$user.profilePicStr" },
         pipeline: [
           {
             $match: {
               $expr: {
-                $eq: [{ $toString: '$_id' }, '$$picStr']
-              }
-            }
-          }
+                $eq: [{ $toString: "$_id" }, "$$picStr"],
+              },
+            },
+          },
         ],
-        as: 'userDpDetails'
-      }
+        as: "userDpDetails",
+      },
     }
-  ];
+  );
 
-//   pipeline.push({                       // Condition to hide profile pictures from upload page
-//     $match: {
-//       path: { $not: /^\/uploads\/profiles\// }
-//     }
-//   });
 
   if (query.role) {
     pipeline.push({
@@ -92,8 +98,7 @@ export const getUploadsList = async (query: {
             "user.lastName": 1,
             "user.email": 1,
             "user.role": 1,
-            
-            "user.profilePic": { $arrayElemAt: ["$userDpDetails.path", 0] }
+            "user.profilePic": { $arrayElemAt: ["$userDpDetails.path", 0] },
           },
         },
       ],
@@ -125,7 +130,6 @@ export const deleteUploadById = async (id: string) => {
     throw new ApiError("Upload not found", 404);
   }
 
-  
   if (upload.path && upload.path.startsWith("/uploads")) {
     const absolutePath = path.join(process.cwd(), "public", upload.path);
     if (fs.existsSync(absolutePath)) {
@@ -137,7 +141,6 @@ export const deleteUploadById = async (id: string) => {
     }
   }
 
-    
   await Upload.findByIdAndDelete(id);
   return true;
 };

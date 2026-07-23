@@ -1,9 +1,13 @@
-import mongoose, { Schema, Document } from "mongoose";
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IExternalSource extends Document {
   name: string;
 
   type: "pca" | "pcra" | "institute";
+
+  userId: Types.ObjectId;
+  subOf?: Types.ObjectId;
+
 
   status?: "active" | "inactive";
 
@@ -25,6 +29,16 @@ const ExternalSourceSchema = new Schema<IExternalSource>(
       required: true,
       index: true,
     },
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    subOf: {
+      type: Schema.Types.ObjectId,
+      ref: "ExternalSource",
+      default: null,
+    },
 
     status: {
       type: String,
@@ -38,11 +52,11 @@ const ExternalSourceSchema = new Schema<IExternalSource>(
 
 /* ================= INDEXES ================= */
 
-// prevent duplicate same source name under same type
-ExternalSourceSchema.index(
-  { name: 1, type: 1 },
-  { unique: true }
-);
+
+// ExternalSourceSchema.index(
+//   { name: 1, type: 1 },
+//   { unique: true }
+// );
 
 /* ================= EXPORT ================= */
 

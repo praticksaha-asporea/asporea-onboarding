@@ -3,6 +3,11 @@ import Joi from 'joi';
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
 
+  export const passwordSchema = Joi.string().pattern(passwordRegex).messages({
+  'string.pattern.base':
+    'Password must be 8+ chars with uppercase, lowercase, number & special char',
+});
+
 const roleSchema = Joi.string().valid(
   'admin', 'tac', 'user', 'foe', 'finance', 'coordinator',
   'pca', 'pcra', 'institute', 'sub_pca', 'branch_head', 'tac_head',
