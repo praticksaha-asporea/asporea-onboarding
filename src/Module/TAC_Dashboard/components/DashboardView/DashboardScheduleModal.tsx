@@ -58,7 +58,7 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
         </FormControl>
 
         <TextField
-          fullWidth type="date" size="small" label="Select Date"
+          fullWidth type="date" label="Select Date"
           InputLabelProps={{ shrink: true }} inputProps={{ min: todayStr }}
           value={date} onChange={(e) => setDate(e.target.value)}
         />

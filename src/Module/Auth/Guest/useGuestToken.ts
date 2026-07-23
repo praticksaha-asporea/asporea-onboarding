@@ -24,10 +24,10 @@ export function useGuestToken({ mode }: { mode: Mode }) {
     validateOnBlur: false,
     validationSchema: getGuestValidationSchema,
     onSubmit: async (values) => {
-      const res: Partial<tokenResponse> = await createBranchTokenAction(values);
-      
-      if (res?.data?.token) {
-        setTokenData(res.data);
+      const res = await createBranchTokenAction(values);
+
+      if (res?.data?.data?.token) {
+        setTokenData(res?.data?.data);
         setShowTokenModal(true);
       }
     },

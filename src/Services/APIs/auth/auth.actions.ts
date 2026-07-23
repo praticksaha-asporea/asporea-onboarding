@@ -2,7 +2,6 @@ import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { ChangePasswordResponse, loginResponse, profileUpdateResponse, sendOtpResponse, verifyOtpResponse } from "@/Types/ApiResponse/authRes.types";
 import { ChangePasswordData, loginBodyData, profileUpdateData, SendOtpData, VerifyOtpData } from "@/Types/Frontend_Payload/auth.types";
 import { AxiosResponse } from "axios";
-import { boolean } from "joi";
 
 export const loginApi = async (bodyData: loginBodyData): Promise<AxiosResponse<loginResponse>> => {
   return axiosClient.post("/auth/login", bodyData);

@@ -1,16 +1,12 @@
-import { IAssignment } from "@/lib/models/Assignment.model";
-import { IBranchToken } from "@/lib/models/BranchToken.model";
-import { ILead } from "@/lib/models/Lead.model";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 import { escalationActionResponse } from "@/Types/ApiResponse/escalationRes.types";
-import { inquiryResponse, leadDocumentUpdateResponse } from "@/Types/ApiResponse/leadRes.types";
+import { inquiryResponse, leadDocumentUpdateResponse, updateAssessmentRes } from "@/Types/ApiResponse/leadRes.types";
 import { candidateDetailResponse, CandidatesResponse, QuestionsListReponse, sendEmailRes, TacAssessmentResponse } from "@/Types/ApiResponse/tacResponse.types";
 import { documentStatusUpdateReq } from "@/Types/Frontend_Payload/document.types";
 import { escalateReqPayload } from "@/Types/Frontend_Payload/escalation.types";
 import { expStatusUpdateReq } from "@/Types/Frontend_Payload/experience.types";
 import { InquiryUpdatePayload } from "@/Types/Frontend_Payload/lead.types";
 import { GetTacCandidatesPayload, sendEmailTACReq, UpdateAssessmentPayload, UpdateAssignmentAssessPayload, UpdateAssignmentPayload } from "@/Types/Frontend_Payload/tac.types";
-import { ExpType } from "@/Types/object.types";
 import { AxiosResponse } from "axios";
 
 export const getTacCandidatesAction = async (params: GetTacCandidatesPayload): Promise<AxiosResponse<CandidatesResponse>> => {
@@ -39,7 +35,7 @@ export const getTacCandidateDetailAction = async (id: string): Promise<AxiosResp
 
 export const updateAssignmentAction = async (
   payload: UpdateAssignmentPayload | FormData
-) => {
+): Promise<AxiosResponse<updateAssessmentRes>> => {
   return axiosClient.patch(
     "/tac/assignment/update",
     payload,
@@ -55,7 +51,7 @@ export const updateAssignmentAction = async (
 
 export const updateAssignmentAssessAction = async (
   payload: UpdateAssignmentAssessPayload | FormData
-): Promise<AxiosResponse<any>> => {
+): Promise<AxiosResponse<updateAssessmentRes>> => {
   return axiosClient.patch(
     "/tac/assignment/update-assessment",
     payload,
