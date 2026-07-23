@@ -13,6 +13,7 @@ import {
   TableRow,
   Typography,
   Pagination,
+  Avatar,
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
@@ -37,7 +38,21 @@ interface DashboardTableProps {
   ) => void;
   openCommModal: (candidate: CandidateRow, mode: "chat" | "email") => void;
   onViewCandidate: (id: string) => void;
+  onPreviewImage: (url: string) => void;
 }
+
+const resolveFileSrc = (path?: string) => {
+  if (!path) return "/images/avatars/avatar.png";
+  if (
+    path.startsWith("http://") ||
+    path.startsWith("https://") ||
+    path.startsWith("data:")
+  )
+    return path;
+  const BACKEND_BASE =
+    process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000";
+  return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
+};
 
 const DashboardTable: React.FC<DashboardTableProps> = ({
   rows,
@@ -50,8 +65,17 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
   openScheduleModal,
   openCommModal,
   onViewCandidate,
+  onPreviewImage,
 }) => {
-  const { getStatusBadge, getVisitChipColor, getVisitLabel, responsiveTableSx, preRescheduleStatuses, assessScheduleStatuses, cols } = useDashboardTable(isFoe);
+  const {
+    getStatusBadge,
+    getVisitChipColor,
+    getVisitLabel,
+    responsiveTableSx,
+    preRescheduleStatuses,
+    assessScheduleStatuses,
+    cols,
+  } = useDashboardTable(isFoe);
   return (
     <>
       <TableContainer
@@ -65,8 +89,13 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
               {cols.map((head, i) => (
                 <TableCell
                   key={i}
-                  align={head === "Status" || head === "Token" ? "center" : head === "Actions" ? "right" : "left"}
-
+                  align={
+                    head === "Status" || head === "Token"
+                      ? "center"
+                      : head === "Actions"
+                        ? "right"
+                        : "left"
+                  }
                   className="py-3 px-2 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] text-[12px] leading-tight"
                 >
                   {head}
@@ -107,24 +136,43 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                   className="resp-row transition-colors"
                 >
                   <TableCell
-
                     className="resp-cell !py-2 !px-2"
                     data-label="Candidate"
                   >
-                    <Box className="min-w-[100px]">
-                      <Typography className="font-semibold text-[12px] leading-tight">
-                        {candidate?.name}
-                      </Typography>
-                      <Typography className="text-[11px] text-[var(--mui-palette-text-secondary)]">
-                        {candidate.inqNo}
-                      </Typography>
+                    <Box className="flex items-center gap-3 min-w-[160px]">
+                       
+                      <Avatar
+                        src={resolveFileSrc(candidate.profilePic)}
+                        sx={{
+                          width: 42,
+                          height: 42,
+                          cursor: "pointer",
+                          border: "2px solid #e2e8f0",
+                        }}
+                        className="hover:scale-105 transition-transform shadow-sm"
+                        onClick={() =>
+                          onPreviewImage(resolveFileSrc(candidate.profilePic))
+                        }
+                      />
+
+                      <Box>
+                        <Typography className="font-medium tracking-wide text-[13px] leading-tight text-[var(--mui-palette-primary)]
+">
+                          {candidate?.name}
+                        </Typography>
+                        <Typography className="text-[11px] mt-1 text-[var(--mui-palette-text-secondary)] font-medium">
+                          {candidate.inqNo}
+                        </Typography>
+                      </Box>
                     </Box>
                   </TableCell>
                   <TableCell
                     className="resp-cell !py-2 !px-2 text-[12px]"
                     data-label="Stage"
                   >
-                    <span className="break-words line-clamp-2">{candidate.stage}</span>
+                    <span className="break-words line-clamp-2">
+                      {candidate.stage}
+                    </span>
                   </TableCell>
                   <TableCell
                     className="resp-cell !py-2 !px-2"
@@ -177,14 +225,21 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                     className="resp-cell !py-2 !px-2"
                     data-label="Actions"
                   >
-
                     <Box className="flex gap-0 md:justify-end">
                       {!isFoe && (
                         <>
-                          <IconButton size="small" title="Chat" onClick={() => openCommModal(candidate, "chat")}>
+                          <IconButton
+                            size="small"
+                            title="Chat"
+                            onClick={() => openCommModal(candidate, "chat")}
+                          >
                             <i className="material-symbols-light--chat-bubble-outline text-[18px]" />
                           </IconButton>
-                          <IconButton size="small" title="Email" onClick={() => openCommModal(candidate, "email")}>
+                          <IconButton
+                            size="small"
+                            title="Email"
+                            onClick={() => openCommModal(candidate, "email")}
+                          >
                             <i className="material-symbols-light--mail-outline text-[18px]" />
                           </IconButton>
                         </>

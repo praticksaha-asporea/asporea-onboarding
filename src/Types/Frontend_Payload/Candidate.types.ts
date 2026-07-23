@@ -46,6 +46,7 @@ export interface DocumentBaseCandidate {
 }
 
 export interface CandidateLead extends DocumentBaseCandidate {
+  profilePic: string | undefined;
   _id: string;
   name?: string;
   fullName?: string;

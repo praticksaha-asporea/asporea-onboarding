@@ -83,8 +83,18 @@ export const getTacCandidates = async ({
     if (t.userId) tokenMap.set(String(t.userId), t.tokenNo);
   }
 
+  const creatorIds = leads.map(l => l.createdBy?.id || l.createdBy?._id || l.createdBy).filter(Boolean);
+  const users = await mongoose.model("User").find({ _id: { $in: creatorIds } })
+    .select("profilePic")
+    .populate("profilePic", "path")
+    .lean();
+
+  const userPicMap = new Map<string, string>();
+  for (const u of users) {
+    if ((u as any).profilePic?.path) userPicMap.set(String(u._id), (u as any).profilePic.path);
+  }
+
   const rows = leads.map((lead: any) => {
-   
     const creatorId = lead.createdBy?.id || lead.createdBy?._id || lead.createdBy;
     let assignedTacName = "Unassigned";
     if (lead.preferences?.consultantId && lead.preferences.consultantId.firstName) {
@@ -98,10 +108,8 @@ export const getTacCandidates = async ({
       stage: resolveStage(lead),
       status: lead.status ?? "pending",
       experience: lead.experience?.type ?? null,
-      
-     
       token: creatorId ? (tokenMap.get(String(creatorId)) ?? null) : null,
-      
+      profilePic: creatorId ? (userPicMap.get(String(creatorId)) ?? null) : null,
       lastActivity: lead.updatedAt,
       branchId: lead.preferences?.branchId ?? null,
       visitType: lead.preferences?.visitType ?? null,

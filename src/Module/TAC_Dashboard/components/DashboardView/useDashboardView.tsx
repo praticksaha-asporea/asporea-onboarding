@@ -54,6 +54,7 @@ export const useDashboardView = () => {
     const [slotsLoading, setSlotsLoading] = useState(false);
     const [bookingLoading, setBookingLoading] = useState(false);
     const [schedulePhase, setSchedulePhase] = useState<"pre" | "assess">("pre");
+    const [previewImage, setPreviewImage] = useState<string | null>(null);
 
     const openCommModal = (candidate: CandidateRow, mode: "chat" | "email") => {
         setCommCandidate(candidate);
@@ -181,6 +182,6 @@ export const useDashboardView = () => {
     };
 
     return {
-        isFoe, kpis, total, searchInput, setSearchInput, statusFilter, setStatusFilter, experienceFilter, setExperienceFilter, rows, loading, error, page, totalPages, setPage, openScheduleModal, openCommModal, router, modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac, date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot, handleBookSlot, bookingLoading, schedulePhase, commModalOpen, setCommModalOpen, commCandidate, commMode
+        isFoe, kpis, total, searchInput, setSearchInput, statusFilter, setStatusFilter, experienceFilter, setExperienceFilter, rows, loading, error, page, totalPages, setPage, openScheduleModal, openCommModal, router, modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac, date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot, handleBookSlot, bookingLoading, schedulePhase, commModalOpen, setCommModalOpen, commCandidate, commMode,previewImage, setPreviewImage
     }
 }

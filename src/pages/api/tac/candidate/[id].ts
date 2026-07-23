@@ -97,12 +97,14 @@ export default async function handler(
     if ((lead as any).createdBy && (lead as any).createdBy.id) {
       const userDoc = await mongoose.model("User")
         .findById((lead as any).createdBy.id)
-        .select("notificationPreference")
+        .select("notificationPreference profilePic")
+        .populate("profilePic", "path")
         .lean();
 
       if (userDoc) {
 
         (lead as any).notificationPreference = (userDoc as any).notificationPreference;
+        (lead as any).profilePic = (userDoc as any).profilePic?.path || null;
       }
     }
 

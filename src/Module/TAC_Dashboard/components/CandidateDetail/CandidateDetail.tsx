@@ -61,6 +61,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
           inqNo: response?.data?.data.lead.inqNo ?? "—",
           stage: response?.data?.data.lead.status ?? "—",
           status: response?.data?.data.lead.status ?? "—",
+          profilePic: response?.data?.data.lead.profilePic,  
           contact: response?.data?.data.lead.contact,
           address: response?.data?.data.lead.address,
           preferences: response?.data?.data.lead.preferences ? {

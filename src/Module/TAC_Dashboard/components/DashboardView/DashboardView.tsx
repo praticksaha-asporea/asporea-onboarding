@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import { Box, Typography } from "@mui/material";
+import { Box, Typography,Dialog, IconButton } from "@mui/material";
 
 // Sub-components
 import DashboardKpiCards from "./DashboardKpiCards";
@@ -22,7 +22,7 @@ export interface DashboardProps {
 
 const DashboardView: React.FC<DashboardProps> = () => {
 
-  const { isFoe, kpis, total, searchInput, setSearchInput, statusFilter, setStatusFilter, experienceFilter, setExperienceFilter, rows, loading, error, page, totalPages, setPage, openScheduleModal, openCommModal, router, modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac, date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot, handleBookSlot, bookingLoading, schedulePhase, commModalOpen, setCommModalOpen, commCandidate, commMode } = useDashboardView();
+  const { isFoe, kpis, total, searchInput,previewImage, setPreviewImage, setSearchInput, statusFilter, setStatusFilter, experienceFilter, setExperienceFilter, rows, loading, error, page, totalPages, setPage, openScheduleModal, openCommModal, router, modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac, date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot, handleBookSlot, bookingLoading, schedulePhase, commModalOpen, setCommModalOpen, commCandidate, commMode } = useDashboardView();
 
   return (
     <Box className="w-full rounded-[20px] shadow-2xl  p-4 md:p-8 font-sans">
@@ -52,7 +52,29 @@ const DashboardView: React.FC<DashboardProps> = () => {
         openScheduleModal={openScheduleModal}
         openCommModal={openCommModal}
         onViewCandidate={(id) => router.push(`/dashboard/candidate/${id}`)}
+        onPreviewImage={setPreviewImage}
       />
+
+      <Dialog 
+        open={!!previewImage} 
+        onClose={() => setPreviewImage(null)} 
+        maxWidth="md"
+        PaperProps={{ style: { backgroundColor: 'transparent', boxShadow: 'none' } }}
+      >
+        <Box className="relative">
+          <IconButton 
+            onClick={() => setPreviewImage(null)} 
+            className="absolute -top-4 -right-4 bg-white text-gray-800 shadow-md hover:bg-gray-200 z-50"
+          >
+            <i className="mdi--close text-xl" />
+          </IconButton>
+          <img 
+            src={previewImage || ""} 
+            alt="Candidate Preview" 
+            className="max-w-full max-h-[85vh] rounded-2xl shadow-2xl object-contain bg-white"
+          />
+        </Box>
+      </Dialog>
 
       <DashboardScheduleModal
         modalOpen={modalOpen}
