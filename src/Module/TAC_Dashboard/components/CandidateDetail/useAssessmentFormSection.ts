@@ -92,7 +92,7 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
       setExpRFT(false);
       setExpVerified(false);
     }
-  }, [assessAssign, candidate, docs, exp, tech]);
+  }, [assessAssign, candidate]);//, docs, exp, tech
 
   const updateAssignmentStatus = async (status: string) => {
     if (!assessAssign?._id) return;
@@ -137,9 +137,9 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
 
       toast.success(`Documents marked as ${CamelCase(status)}`);
       // console.log(docReject, resDocStatus, 4444);
-      setDocReject(resDocStatus === "uploaded" ? false : true);
-      setDocVerify(resDocStatus === "uploaded" ? false : true);
-      setDocRequestTL(resDocStatus === "uploaded" ? false : true);
+      setDocReject(resDocStatus === "uploaded" ? true : false);
+      setDocVerify(resDocStatus === "uploaded" ? true : false);
+      setDocRequestTL(resDocStatus === "uploaded" ? true : false);
       setExpRFT(resDocStatus === "verified");
       setExpVerified(resDocStatus === "verified");
       setDocStatus(resDocStatus);

@@ -1,3 +1,5 @@
+import { NotificationPreference } from "../Frontend_Payload/auth.types";
+
 export interface docPositionRef {
   _id: string;
   title: string;
@@ -14,11 +16,11 @@ export interface docConsultantRef {
 export interface docBranchRef {
   _id: string;
   title: string;
-   location?: string;
+  location?: string;
   timeZone?: string;
 }
 
- export interface leadUploadedDocumentItem {
+export interface leadUploadedDocumentItem {
   _id: string;
   typeId: string;
   status: "pending" | "verified" | "rejected" | "uploaded";
@@ -27,7 +29,7 @@ export interface docBranchRef {
   path: string;
 }
 
- 
+
 export interface deepPopulatedLeadDetails {
   _id: string;
   fullName: string;
@@ -54,7 +56,7 @@ export interface deepPopulatedLeadDetails {
     submittedOn?: string;
     actionBy?: string;
     remarks?: string;
-    uploadedDocs?: leadUploadedDocumentItem[];  
+    uploadedDocs?: leadUploadedDocumentItem[];
   };
   passport?: {
     status: string;
@@ -72,11 +74,7 @@ export interface deepPopulatedLeadDetails {
     submittedOn: string;
     type: string;
   };
-  notificationPreference?: {
-    email: boolean;
-    sms: boolean;
-    whatsapp: boolean;
-  };
+  notificationPreference?: NotificationPreference;
 }
 
 export interface awaitingDocLeadRecord {
@@ -115,7 +113,7 @@ export interface documentApprovalListResponse {
   error: string | null;
 }
 
- 
+
 export interface docBranchTokenRef {
   _id: string;
   tokenNo: string;
@@ -123,7 +121,7 @@ export interface docBranchTokenRef {
   generateDate: string;
 }
 
- 
+
 export interface docPhaseAssignmentItem {
   _id: string;
   phase: "pre" | "assess";
@@ -187,4 +185,12 @@ export interface consultantSlotItem {
   from: string;
   to: string;
   available: boolean;
+}
+
+export interface experienceSaveResponse {
+
+  success: boolean;
+  message: string;
+  data: deepPopulatedLeadDetails;
+  error: string | null;
 }

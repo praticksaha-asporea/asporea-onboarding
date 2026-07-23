@@ -108,8 +108,7 @@ export const useDashboardView = () => {
         let prevId = "";
         if (isReschedule) {
             const rawConsultantId =
-                candidate?.preferences?.consultantId;
-            //  || candidate?.consultantId;
+                candidate?.preferences?.consultantId || candidate?.consultantId;
             if (rawConsultantId) {
                 prevId =
                     typeof rawConsultantId === "object" && rawConsultantId._id
@@ -117,6 +116,7 @@ export const useDashboardView = () => {
                         : rawConsultantId.toString();
             }
         }
+
         setSelectedTac(prevId);
         setDate(todayStr);
         setSlots([]);
@@ -129,6 +129,8 @@ export const useDashboardView = () => {
     };
 
     useEffect(() => {
+        console.log(selectedTac, date, modalOpen, 2222);
+
         const loadSlots = async () => {
             if (!selectedTac || !date || !modalOpen) return;
             setSlotsLoading(true);
