@@ -62,6 +62,8 @@ export const userList = async ({
       { firstName: regex },
       { lastName: regex },
       { email: regex },
+      {phoneNumber:regex},
+     { whatsappNumber: regex },
     ];
   }
 
@@ -73,7 +75,7 @@ export const userList = async ({
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    UserModel.countDocuments(filter), // same filter — count also excludes self
+    UserModel.countDocuments(filter),  
   ]);
 
   const totalPages = Math.ceil(total / limit);
