@@ -33,8 +33,9 @@ export default async function handler(
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 12;
       const role = req.query.role as string;
+      const userId = req.query.userId as string;  
 
-      const uploads = await getUploadsList({ page, limit, role });
+      const uploads = await getUploadsList({ page, limit, role,userId });
 
       return ResponseHandler.sendSuccess(
         res,
