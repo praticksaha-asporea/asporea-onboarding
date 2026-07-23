@@ -150,22 +150,28 @@ export const getEscalationListService = async (
   const escalations = await EscalationReportModel.find(matchQuery)
     .populate({
       path: "fromId",
-      select: "firstName lastName email role",
+      select: "firstName lastName email role profilePic",  
+      populate: { path: "profilePic", select: "path" }    
     })
     .populate({
       path: "toId",
-      select: "firstName lastName email role",
+      select: "firstName lastName email role profilePic",  
+      populate: { path: "profilePic", select: "path" }     
     })
-   
     .populate({
       path: "leadId",
-      select: "fullName status inqNo preferences" 
+      select: "fullName status inqNo preferences createdBy",  
+      populate: { 
+        path: "createdBy.id", 
+        model: "User",
+        select: "profilePic",
+        populate: { path: "profilePic", select: "path" }  
+      }
     })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean();
-
   return {
     escalations,
     meta: {

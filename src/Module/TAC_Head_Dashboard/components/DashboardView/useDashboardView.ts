@@ -20,6 +20,9 @@ export interface enrichedEscalationRow {
   statusLabel: string;
   statusColor: "success" | "error" | "warning";
   timeAgo: string;
+  candidateAvatar: string | null;
+  fromAvatar: string | null;
+  toAvatar: string | null;
 }
 
 export const useDashboardView = () => {
@@ -102,20 +105,29 @@ export const useDashboardView = () => {
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
+const formattedEscalationsForUI = escalations.map((row: any): enrichedEscalationRow => {
+    
+   
+    const candPic = row.leadId?.createdBy?.id?.profilePic?.path || null;
+    const fromPic = row.fromId?.profilePic?.path || null;
+    const toPic = row.toId?.profilePic?.path || null;
 
-  const formattedEscalationsForUI = escalations.map((row): enrichedEscalationRow => ({
-    _id: row._id,
-    rawRecord: row,
-    inqNo: row.leadId?.inqNo || "N/A",
-    fullName: row.leadId?.fullName || "—",
-    leadStatus: CamelCase(row.leadId?.status || ""),
-    fromName: row.fromId ? `${row.fromId.firstName} ${row.fromId.lastName}` : "—",
-    toName: row.toId ? `${row.toId.firstName} ${row.toId.lastName}` : "—",
-    statusLabel: CamelCase(row.status || ""),
-    statusColor: getStatusColor(row.status || ""),
-    timeAgo: dayjs(row.createdAt).fromNow()
-  }));
-
+    return {
+      _id: row._id,
+      rawRecord: row,
+      inqNo: row.leadId?.inqNo || "N/A",
+      fullName: row.leadId?.fullName || "—",
+      leadStatus: CamelCase(row.leadId?.status || ""),
+      fromName: row.fromId ? `${row.fromId.firstName} ${row.fromId.lastName}` : "—",
+      toName: row.toId ? `${row.toId.firstName} ${row.toId.lastName}` : "—",
+      statusLabel: CamelCase(row.status || ""),
+      statusColor: getStatusColor(row.status || ""),
+      timeAgo: dayjs(row.createdAt).fromNow(),
+      candidateAvatar: candPic,
+      fromAvatar: fromPic,
+      toAvatar: toPic,
+    };
+  });
   return {
     escalations: formattedEscalationsForUI,
     loading,
