@@ -1,22 +1,21 @@
-"use client";
-import React, { useState } from "react";
+// "use client";
+// import React, { useState } from "react";
 import { Box } from "@mui/material";
 import DashboardView from "./src/Module/TAC_Dashboard/components/DashboardView/DashboardView";
 
 const TACDashboard = () => {
-  const [currentView, setCurrentView] = useState<
-    "dashboard" | "detail"
-  >("dashboard");
-  const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
+  // const [currentView, setCurrentView] = useState<
+  //   "dashboard" | "detail"
+  // >("dashboard");
 
   return (
     <Box>
-      {currentView === "dashboard" && (
-        <DashboardView
-          setCurrentView={setCurrentView}
-          setSelectedCandidate={setSelectedCandidate}
-        />
-      )}
+      {/* {currentView === "dashboard" && ( */}
+      <DashboardView
+      // setCurrentView={setCurrentView}
+      // setSelectedCandidate={setSelectedCandidate}
+      />
+      {/* )} */}
     </Box>
   );
 };

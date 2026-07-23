@@ -36,7 +36,7 @@ export interface IAssessment extends Document {
     assessor?: Types.ObjectId;
     candidate?: Types.ObjectId;
   };
-  
+
 
   createdAt: Date;
   updatedAt: Date;
@@ -117,9 +117,9 @@ const AssessmentSchema = new Schema<IAssessment>(
 );
 
 /* ================= INDEXES ================= */
-AssessmentSchema.index({ leadId: 1 });
-AssessmentSchema.index({ assessedBy: 1 });
-AssessmentSchema.index({ date: 1 });
+// AssessmentSchema.index({ leadId: 1 });
+// AssessmentSchema.index({ assessedBy: 1 });
+// AssessmentSchema.index({ date: 1 });
 
 /* ================= EXPORT ================= */
 export const AssessmentModel =

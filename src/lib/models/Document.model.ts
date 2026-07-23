@@ -54,8 +54,8 @@ const DocumentSchema = new Schema<IDocument>(
 
 /* INDEXES */
 DocumentSchema.index({ leadId: 1, typeId: 1 });
-DocumentSchema.index({ userId: 1 });
-DocumentSchema.index({ status: 1 });
+// DocumentSchema.index({ userId: 1 });
+// DocumentSchema.index({ status: 1 });
 
 export const DocumentModel =
   mongoose.models.Document ||

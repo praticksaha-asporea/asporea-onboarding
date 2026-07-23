@@ -7,7 +7,7 @@ export const protectedRoutesCandidate = [
   'applicationtracking',
   'assessment',
   'profile',
-  
+
 ];
 
 

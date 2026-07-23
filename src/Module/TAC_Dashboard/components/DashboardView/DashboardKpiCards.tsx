@@ -1,8 +1,9 @@
 import React from "react";
 import { Box, Card, CardContent, Typography } from "@mui/material";
+import { kpiTypes } from "./useDashboardView";
 
 interface DashboardKpiCardsProps {
-  kpis: any;
+  kpis: kpiTypes;
   total: number;
 }
 

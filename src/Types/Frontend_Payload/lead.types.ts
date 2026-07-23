@@ -13,3 +13,14 @@ export interface InquiryFormValues {
   otherReferedBy: string;
   passportNo: string;
 }
+
+export interface InquiryUpdatePayload {
+  id: string;
+  fullName?: string;
+  email?: string;
+  phone?: string;
+  whatsapp?: string;
+  address?: string;
+  passportStatus?: string;
+  passportNo?: string;
+}

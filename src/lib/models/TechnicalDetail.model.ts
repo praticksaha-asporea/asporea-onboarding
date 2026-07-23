@@ -69,7 +69,7 @@ const TechnicalDetailSchema = new Schema<ITechnicalDetail>(
 
 /* ================= INDEXES ================= */
 
-TechnicalDetailSchema.index({ leadId: 1 });
+// TechnicalDetailSchema.index({ leadId: 1 });
 
 /* ================= EXPORT ================= */
 

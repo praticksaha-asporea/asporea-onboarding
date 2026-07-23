@@ -10,11 +10,12 @@ import {
   IconButton,
 } from "@mui/material";
 import { useDashboardCommunication } from "./useDashboardCommunication";
+import { CandidateRow } from "@/Types/object.types";
 
 interface CommunicationModalProps {
   open: boolean;
   onClose: () => void;
-  candidate: any;
+  candidate: CandidateRow;
   mode: "chat" | "email" | null;
 }
 

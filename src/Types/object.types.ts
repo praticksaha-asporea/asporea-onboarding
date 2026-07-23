@@ -103,12 +103,8 @@ export interface QuestionType {
     __v: number
 }
 
-export type ExpType =
-    | "fresher"
-    | "domestic"
-    | "abroad"
-    | "free";
-
+export type ExpType = "fresher" | "domestic" | "abroad" | "free";
+export type ExpStatus = "selected" | "verified" | "request_technical";
 
 export interface CandidateRow {
     _id: string;
@@ -125,3 +121,16 @@ export interface CandidateRow {
     assignedTacName?: string;
 }
 
+export interface AssessBasicFormValues {
+    status?: string;
+}
+
+export interface AssessmentFormValues {
+    passportNo: string;
+    note1: string;
+    note2: string;
+    note3: string;
+    note4: string;
+    candidateSign: File | string | null;
+    assessorSign: File | string | null;
+}

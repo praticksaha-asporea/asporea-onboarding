@@ -31,11 +31,11 @@ interface DashboardTableProps {
   totalPages: number;
   setPage: (val: number) => void;
   openScheduleModal: (
-    candidate: any,
+    candidate: CandidateRow,
     isReschedule: boolean,
     phase: "pre" | "assess",
   ) => void;
-  openCommModal: (candidate: any, mode: "chat" | "email") => void;
+  openCommModal: (candidate: CandidateRow, mode: "chat" | "email") => void;
   onViewCandidate: (id: string) => void;
 }
 

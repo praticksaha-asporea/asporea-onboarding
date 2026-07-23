@@ -7,14 +7,22 @@ import {
 } from "@mui/material";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { usePreCounselling } from "./usePreCounselling";
+import { BranchType, CandidateLead, ConsultantType } from "@/Types/Frontend_Payload/Candidate.types";
+import { IAssignment } from "@/lib/models/Assignment.model";
+import { IBranch } from "@/lib/models/Branch.model";
+import { IUser } from "@/lib/models/User.model";
 
 interface PreCounsellingFormProps {
-  candidate: any;
-  inqAssign: any;
-  branchId: any;
-  consultantId: any;
-  source: any;
-  preferences: any;
+  candidate: CandidateLead;
+  inqAssign: IAssignment;
+  branchId: IBranch;
+  consultantId: IUser;
+  source: { type?: string; refType?: string; refName?: string };
+  preferences?: {
+    branchId?: BranchType | string;
+    consultantId?: ConsultantType | string;
+    visitType?: string;
+  };
   candidatePhone: string;
 }
 
@@ -33,7 +41,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
         <Typography className="text-[20px] font-bold text-center mb-5">Pre-Counselling</Typography>
         <Stack spacing={3}>
           <Grid container spacing={5}>
-            
+
             {/* Status Radio Group */}
             <Grid size={{ xs: 12 }}>
               <FormControl>
@@ -90,7 +98,8 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                   <Button variant="contained" className="!bg-orange-400 hover:!bg-orange-500 !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={!(inqAssign.status === "assigned" && isWithinSchedule(inqAssign)) || preForm.values.preStatus === "queued" || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"} onClick={() => updateAssignmentStatus("queued")}>Queue</Button>
                 )}
                 {preForm?.values?.preStatus === "queued" && (
-                  <Button variant="contained" type="button" className="bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"} onClick={() => updateAssignmentStatus("not_responded")}>Absent</Button>
+                  //  || preForm.values.preStatus === "completed" || preForm.values.preStatus === "rejected"
+                  <Button variant="contained" type="button" className="bg-[--mui-palette-error-main] hover:!bg-[--mui-palette-error-dark] !text-white !text-[13px] !font-bold !rounded-lg !normal-case" disabled={isPreLocked} onClick={() => updateAssignmentStatus("not_responded")}>Absent</Button>
                 )}
               </Box>
             </Grid>
@@ -110,7 +119,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                   <Typography className="text-[13px] font-semibold mb-1.5">Advice</Typography>
                   <TextField multiline rows={3} fullWidth name="advice" value={preForm.values.advice} onChange={preForm.handleChange} onBlur={preForm.handleBlur} slotProps={{ input: { className: "text-[13px]" } }} disabled={isPreLocked} />
                 </Grid>
-                
+
                 {/* Resume Upload Box */}
                 <Grid size={{ xs: 12, md: 6 }} id="resumeFile">
                   <Typography className="text-[12px] font-semibold mb-1.5">Upload Resume</Typography>
@@ -121,7 +130,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                     <Typography className="text-xs text-gray-500 mt-1">PDF, JPG, JPEG, PNG</Typography>
                   </Box>
                 </Grid>
-                
+
                 {/* Resume Preview */}
                 {previewUrl && (
                   <Grid size={{ xs: 12, md: 6 }}>

@@ -25,11 +25,11 @@ const updateAssessDocumentSchema = Joi.object({
       "awaiting_approval"
     )
     .optional(),
-    remarks: Joi.string().allow("", null).optional()  
+  remarks: Joi.string().allow("", null).optional()
 })
   .options({
     abortEarly: false,
-    allowUnknown: true,  
+    allowUnknown: true,
   });
 export const config = { api: { bodyParser: false } };
 
@@ -87,14 +87,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     else if (status === "awaiting_approval") {
       // TL Verify - request
     }
-    console.log(leadUpdate, 498441);
+    // console.log(leadUpdate, 498441);
 
     const updatedLead = await Lead.findByIdAndUpdate(
       assignment?.leadId,
       { $set: leadUpdate }, //here
       { returnDocument: "after", runValidators: true }
     );
-    console.log(updatedLead, 22222);
+    // console.log(updatedLead, 22222);
     await Assignment.findByIdAndUpdate(
       id,
       { $set: { attended: true } },

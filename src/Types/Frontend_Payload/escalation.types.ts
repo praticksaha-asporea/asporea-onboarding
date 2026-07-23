@@ -22,3 +22,9 @@ export interface approveRejectEscalationPayload {
   remarks: string;
   schedule?: escalationScheduleInfo;
 }
+
+export interface escalateReqPayload {
+  leadId: string;
+  toId: string;
+  reason: string;
+}

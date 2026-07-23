@@ -62,3 +62,9 @@ export interface UploadedDoc {
   path: string;
   status: string;
 }
+
+export interface documentStatusUpdateReq {
+  id: string,
+  status: 'verified' | 'rejected' | 'awaiting_approval',
+  remarks?: string
+}

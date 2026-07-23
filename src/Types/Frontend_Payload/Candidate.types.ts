@@ -41,7 +41,7 @@ export interface DocumentBaseCandidate {
   documents?: {
     status?: string;
     position?: { _id: string; title: string } | string;
-    uploadedDocs?: any[];  
+    uploadedDocs?: any[];
   };
 }
 
@@ -51,25 +51,32 @@ export interface CandidateLead extends DocumentBaseCandidate {
   fullName?: string;
   inqNo: string;
   status: string;
-  contact: { phone: string; whatsapp: string; email: string };
-  address: string;
-  preferences: {
-    branchId: BranchType | string;
-    consultantId: ConsultantType | string;
-    visitType: string;
+  contact?: {
+    phone?: string;
+    whatsapp?: string;
+    email?: string;
   };
-  source: { type: string; refType?: string; refName?: string };
-  experience?: { type: ExpType; status?: string };
+
+  address?: string;
+  preferences?: {
+    branchId?: BranchType | string;
+    consultantId?: ConsultantType | string;
+    visitType?: string;
+  };
+  source?: { type?: string; refType?: string; refName?: string };
+  experience?: { type?: ExpType; status?: string };
   documents?: {
     status?: string;
     position?: { _id: string; title: string } | string;
-    uploadedDocs?: any[]; 
+    uploadedDocs?: any[];
   };
- 
+
   technical?: { status?: string; classify?: string };
-  passport?: { status: string; no?: string };
-  lastActivity?: string;
-  updatedAt?: string;
-  notificationPreference?: { email: boolean; sms: boolean; whatsapp: boolean };
-  assignmentByPhase?: Record<string, AssignmentPhase>;
+  passport?: { status?: string; no?: string };
+  lastActivity?: string | Date;
+  updatedAt?: string | Date;
+  notificationPreference?: { email?: boolean; sms?: boolean; whatsapp?: boolean } | any;
+  assignmentByPhase?: Record<string, any>;
+  stage?: string;
+  token?: string | null;
 }

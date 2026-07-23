@@ -5,6 +5,7 @@ import mongoose, {
   model,
   models,
 } from "mongoose";
+import { IUpload } from "./Upload.model";
 
 export const ASSIGNMENT_PHASES = [
   // "inq",
@@ -35,7 +36,7 @@ export interface IAssignment extends Document {
 
   assignedTo?: Types.ObjectId;
 
-  schedule?: {
+  schedule: {
     date?: Date;
     from?: string;
     to?: string;
@@ -55,7 +56,7 @@ export interface IAssignment extends Document {
     additionalDetails?: string;
     advice?: string;
     specificNotes?: string;
-    initialCV?: Types.ObjectId;
+    initialCV?: Types.ObjectId | IUpload;
   };
 
   escalation?: {
@@ -185,9 +186,9 @@ AssignmentSchema.index({
   status: 1,
 });
 
-AssignmentSchema.index({
-  "token.number": 1,
-});
+// AssignmentSchema.index({
+//   "token.number": 1,
+// });
 
 /**
  * Optional:

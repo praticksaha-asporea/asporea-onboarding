@@ -64,8 +64,8 @@ const EscalationReportSchema = new Schema<IEscalationReport>(
 
 /* ================= INDEXES ================= */
 EscalationReportSchema.index({ assignmentId: 1 });
-EscalationReportSchema.index({ fromId: 1 });
-EscalationReportSchema.index({ toId: 1 });
+// EscalationReportSchema.index({ fromId: 1 });
+// EscalationReportSchema.index({ toId: 1 });
 
 /* ================= EXPORT ================= */
 export const EscalationReportModel =

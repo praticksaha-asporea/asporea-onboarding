@@ -2,21 +2,23 @@ import React from "react";
 import { Box, Button, CircularProgress, Dialog, DialogContent, IconButton, Typography } from "@mui/material";
 import { isWithinSchedule } from "@/Utils/common";
 import { useAssessmentSignature } from "./useAssessmentSignatures";
+import { AssessmentFormValues } from "@/Types/object.types";
+import { FormikProps } from "formik";
+import { IAssignment } from "@/lib/models/Assignment.model";
+import { SignatureFieldItem } from "./useAssessmentForm";
+
 
 interface AssessmentSignaturesProps {
-  signatureFields: {
-    label: string;
-    field: string;
-  }[];
-  assessmentForm: any;
+  signatureFields: SignatureFieldItem[];
+  assessmentForm: FormikProps<AssessmentFormValues>;
   assessmentStatus: string;
-  assessAssign: any;
+  assessAssign: IAssignment;
 }
-type SignatureField = "candidateSign" | "assessorSign";
+
 
 const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentForm, signatureFields, assessmentStatus, assessAssign }) => {
 
-  const { handleClosePreview, handleOpenPreview, previews, previewDialogFile, setPreviews } = useAssessmentSignature(assessmentForm);
+  const { handleClosePreview, handleOpenPreview, previews, previewDialogFile, setPreviews } = useAssessmentSignature({ assessmentForm });
   return (
     <Box className="flex flex-col gap-6">
       <Box className="flex flex-col sm:flex-row w-full gap-4 items-stretch">
@@ -69,8 +71,6 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
           )
         })} */}
         {signatureFields.map(({ label, field }) => {
-          const fieldName = field as SignatureField;
-
           const file = assessmentForm.values[field];
 
           let previewUrl = null;
@@ -78,7 +78,7 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
           let fileName = "";
 
           if (file) {
-            if (file instanceof File || file instanceof Blob) {
+            if (file instanceof File) {
               isImage = file.type.startsWith("image/");
               previewUrl = previews[field] || null;
               fileName = "name" in file ? (file as File).name : "Uploaded File";
@@ -94,7 +94,7 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
               <Box
                 component="label"
                 className={`border-2 border-dashed rounded-xl p-4 min-h-[150px] flex-1 flex flex-col items-center justify-center cursor-pointer relative
-          ${assessmentForm.touched[fieldName] && assessmentForm.errors[fieldName]
+          ${assessmentForm.touched[field] && assessmentForm.errors[field]
                     ? "border-red-500"
                     : "border-gray-300"
                   }
@@ -207,13 +207,13 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
                 )}
               </Box>
 
-              {assessmentForm.touched[fieldName] &&
-                assessmentForm.errors[fieldName] && (
+              {assessmentForm.touched[field] &&
+                assessmentForm.errors[field] && (
                   <Typography
                     variant="caption"
                     className="text-[var(--mui-palette-error-light)] text-center mt-1 block"
                   >
-                    {assessmentForm.errors[fieldName] as string}
+                    {assessmentForm.errors[field] as string}
                   </Typography>
                 )}
             </Box>
