@@ -10,7 +10,7 @@ import { getEscalationListService } from "@/lib/services/tac/escalate.service";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,
+  res: NextApiResponse,   
 ) {
   await connectToDatabase();
   if (req.method !== "GET") {
