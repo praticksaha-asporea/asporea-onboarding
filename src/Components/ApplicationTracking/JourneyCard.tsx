@@ -12,7 +12,7 @@ interface JourneyCardProps {
   status: string;
   dateLabel?: string;
   date?: string;
-  description: string;
+  description: React.ReactNode;
   buttonLabel?: string | null;
   disabledButton?: boolean;
   onClick?: () => void;

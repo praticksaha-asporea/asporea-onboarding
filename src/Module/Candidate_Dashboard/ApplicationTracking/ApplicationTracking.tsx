@@ -11,6 +11,26 @@ import { TrackingStepper } from "@/Components/ApplicationTracking/TrackingSteppe
 import { JourneyCard } from "@/Components/ApplicationTracking/JourneyCard";
 import { AssessmentDialog } from "@/Components/ApplicationTracking/AssessmentDialog";
 
+const formatDescription = (desc?: React.ReactNode) => {
+  if (!desc || typeof desc !== "string") return desc;
+
+  const parts = desc.split(/(\[Mode: [^\]]+\])/);
+
+  return parts.map((part, index) =>
+    part.startsWith("[Mode:") ? (
+      <strong
+        key={index}
+        className="font-bold text-[var(--mui-palette-primary-main)]
+"
+      >
+        {part}
+      </strong>
+    ) : (
+      part
+    ),
+  );
+};
+
 const ApplicationTracking = () => {
   const {
     router,
@@ -25,7 +45,7 @@ const ApplicationTracking = () => {
     expDescription,
     assessDescription,
     assessButtonLabel,
-    arePrerequisitesMet
+    arePrerequisitesMet,
   } = useApplicationTracking();
 
   if (!isReduxReady) {
@@ -89,9 +109,11 @@ const ApplicationTracking = () => {
             status={journeyData.inquiry.status}
             dateLabel="On"
             date={journeyData.inquiry.date}
-            description={journeyData.inquiry.status === "Done"
-              ? "This step is completed successfully, Please complete next steps."
-              : "A Talent Acquisition Consultant (TAC) will be assigned to you shortly to guide you through the next stages."}
+            description={
+              journeyData.inquiry.status === "Done"
+                ? "This step is completed successfully, Please complete next steps."
+                : "A Talent Acquisition Consultant (TAC) will be assigned to you shortly to guide you through the next stages."
+            }
           />
 
           <JourneyCard
@@ -132,7 +154,7 @@ const ApplicationTracking = () => {
                   : undefined
             }
             date={journeyData.assessment.date}
-            description={assessDescription}
+            description={formatDescription(assessDescription)}
             buttonLabel={assessButtonLabel}
             disabledButton={
               !journeyData.assessment.canSchedule ||

@@ -31,8 +31,7 @@ export const useApplicationTracking = () => {
   const [expDescription, setExpDescription] = useState("");
   const [preCounsellingDescription, setPreCounsellingDescription] =
     useState("");
-  const [assessDescription, setAssessDescription] = useState("");
-
+const [assessDescription, setAssessDescription] = useState<React.ReactNode>("");
   const [assessButtonLabel, setAssessButtonLabel] =
     useState<string | null>("");
 
@@ -51,6 +50,23 @@ export const useApplicationTracking = () => {
    */
   const normalizeStatus = (status?: string) =>
     (status || "").trim().toLowerCase();
+
+  const getVisitMethodLabel = (assessment?: any) => {
+    if (!assessment) return "";
+    const method =
+      assessment?.method ||
+      assessment?.schedule?.method ||
+      assessment?.assessLatestStatus?.method ||
+      assessment?.visitMethod;
+
+    if (method === "on" || method === "online" || method === 2) {
+      return "Online (Video Call)";
+    }
+    if (method === "off" || method === "offline" || method === 1) {
+      return "Branch Visit (On-Site)";
+    }
+    return "";
+  };
 
   /**
    * Document Description
@@ -128,7 +144,11 @@ export const useApplicationTracking = () => {
         return "Your assessment has been evaluated successfully.";
       }
 
+
+
       if (assessment.status === "Scheduled") {
+        const methodLabel = getVisitMethodLabel(assessment);
+        const methodSuffix = methodLabel ? ` [Mode: ${methodLabel}]` : "";
         if (
           assessment.assessLatestStatus?.status === "rejected"
         ) {
@@ -152,20 +172,20 @@ export const useApplicationTracking = () => {
           normalizedDocStatus === "verified" &&
           normalizedExpStatus === "waiting for technical round"
         ) {
-          return "You will need to complete the technical round to verify your experience.";
+          return `You will need to complete the technical round to verify your experience${methodSuffix}.`;
         }
 
         if (
           normalizedDocStatus === "verified" &&
           normalizedExpStatus === "filled"
         ) {
-          return "Your documents are verified. Waiting for experience verification.";
+          return `Your documents are verified. Waiting for experience verification${methodSuffix}.`;
         }
 
         if (
           normalizedDocStatus === "waiting for approval"
         ) {
-          return "Your documents are waiting for approval.";
+          return `Your documents are waiting for approval${methodSuffix}.`;
         }
 
         if (
@@ -182,10 +202,10 @@ export const useApplicationTracking = () => {
         if (
           assessment.assessLatestStatus?.token?.generated
         ) {
-          return "Your assessment token has been generated. Please be within the Branch Premises.";
+          return `Your assessment token has been generated${methodSuffix}. Please be within the Branch Premises.`;
         }
 
-        return "Your assessment has been successfully scheduled. Please be ready on your selected slot.";
+        return `Your assessment has been successfully scheduled${methodSuffix}. Please be ready on your selected slot.`;
       }
 
       if (!prerequisitesMet && assessment.canSchedule) {
