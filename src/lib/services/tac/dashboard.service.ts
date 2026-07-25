@@ -3,11 +3,12 @@ import { Lead } from "../../models/Lead.model";
 import { BranchTokenModel } from "../../models/BranchToken.model";
 import "../../models/User.model";
 import "../../models/Branch.model";
+import "../../models/Upload.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 
 export interface CandidateListParams {
-  userId: string;  
-  role: string;     
+  userId: string;
+  role: string;
   search?: string;
   status?: string;
   experience?: string;
@@ -27,18 +28,18 @@ export const getTacCandidates = async ({
   const userObjectId = new mongoose.Types.ObjectId(userId);
   let filter: Record<string, unknown> = {};
 
-   
+
   if (role === "foe") {
-     
+
     const shift = await EmployeeBranchShiftModel.findOne({ employeeId: userObjectId });
     if (shift) {
       filter["preferences.branchId"] = shift.branchId;
     } else {
-      
-      filter["preferences.branchId"] = null; 
+
+      filter["preferences.branchId"] = null;
     }
   } else {
-    
+
     filter["preferences.consultantId"] = userObjectId;
   }
 
@@ -58,7 +59,7 @@ export const getTacCandidates = async ({
 
   const [leads, total] = await Promise.all([
     Lead.find(filter)
-    .populate("preferences.consultantId", "firstName lastName")
+      .populate("preferences.consultantId", "firstName lastName")
       .sort({ updatedAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -66,19 +67,19 @@ export const getTacCandidates = async ({
     Lead.countDocuments(filter),
   ]);
 
-  
+
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  
- 
+
+
   const tokens = await BranchTokenModel.find({
     generateDate: { $gte: today },
   })
     .select("tokenNo userId branchId status")
     .lean();
 
- const tokenMap = new Map<string, string>();
+  const tokenMap = new Map<string, string>();
   for (const t of tokens) {
     if (t.userId) tokenMap.set(String(t.userId), t.tokenNo);
   }
