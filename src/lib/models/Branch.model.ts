@@ -13,6 +13,7 @@ export interface IBranch extends Document {
   };
   lastUsedCounter: number;
   coordinatorCounters?: number;
+  status: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -47,6 +48,8 @@ const BranchSchema = new Schema<IBranch>(
         required: true,
       },
     },
+
+    status: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
