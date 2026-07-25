@@ -1,6 +1,7 @@
 import { EscalationReportModel } from "@/lib/models/EscalationReport.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 import "@/lib/models/User.model";
+import "@/lib/models/Upload.model"
 import { Assignment } from "@/lib/models/Assignment.model";
 import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
