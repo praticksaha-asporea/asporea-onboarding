@@ -101,7 +101,7 @@ export const dashboardItemsList = async () => {
                 },
             ]),
             BranchModel.find().select("title timeZone counters status").lean(),
-            Lead.find().populate("preferences.branchId", "title").lean(),
+            Lead.countDocuments(),
             Lead.aggregate([
                 {
                     $lookup: {
