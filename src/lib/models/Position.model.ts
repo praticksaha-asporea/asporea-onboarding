@@ -8,6 +8,7 @@ export interface IPosition extends Document {
   mandatoryDocuments?: Types.ObjectId[];
 
   positionBrochure?: Types.ObjectId;
+  status?: boolean;
 
   createdAt: Date;
   updatedAt: Date;
@@ -41,6 +42,7 @@ const PositionSchema = new Schema<IPosition>(
       type: Schema.Types.ObjectId,
       ref: "Upload",
     },
+    status: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
