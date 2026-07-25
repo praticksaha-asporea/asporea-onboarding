@@ -43,7 +43,8 @@ const PreCounsellingContent = () => {
     isChecklistComplete,
     reduxUser,
     isValidLead,
-    isCompleted
+    isCompleted,
+    activeStepperStep,
   } = usePreCounselling();
 
   const formatToDDMMYY = (dateStr: string) => {
@@ -239,8 +240,8 @@ const PreCounsellingContent = () => {
       </Grid>
 
       <Grid size={{ xs: 12, md: 4 }}>
-        <ProgressSidebar />
-        <NotificationChannels
+          <ProgressSidebar activeStep={activeStepperStep} />       
+           <NotificationChannels
           isEditingChannels={isEditingChannels}
           setIsEditingChannels={setIsEditingChannels}
           preferences={preferences}
