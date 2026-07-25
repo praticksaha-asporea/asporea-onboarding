@@ -2,6 +2,7 @@
 
 import { useState, useEffect, ChangeEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { toast } from "react-hot-toast";
 
 import { useFormik } from "formik";
@@ -59,6 +60,8 @@ const initialData: Data = {
 
 export default function CompleteProfilePage() {
   const router = useRouter();
+  const { data: session } = useSession();
+
   const [fileInput, setFileInput] = useState<string>("");
   const [imgSrc, setImgSrc] = useState<string>("/images/avatars/avatar.png");
   const [loading, setLoading] = useState(false);
@@ -70,7 +73,6 @@ export default function CompleteProfilePage() {
     setLoading(true);
     const password = localStorage.getItem("temp_register_password");
 
-    // Attach social login data if the user came from OAuth
     const socialRaw = localStorage.getItem("temp_social_profile");
     const social = socialRaw ? JSON.parse(socialRaw) : undefined;
 
@@ -82,7 +84,7 @@ export default function CompleteProfilePage() {
       profilePicData: fileInput || "",
       ...(social && {
         social: {
-          type: social.provider,
+          type: social.provider || "google",
           providerId: social.providerId,
           accessToken: social.accessToken,
           scopes: social.scopes,
@@ -90,8 +92,6 @@ export default function CompleteProfilePage() {
         },
       }),
     };
-
-    // console.log("🚀 SENDING PAYLOAD TO BACKEND:", payload);
 
     try {
       const res = await axios.post("/api/auth/register", payload);
@@ -133,23 +133,55 @@ export default function CompleteProfilePage() {
     formik.setFieldValue("email", isEmail ? savedIdentity : "");
     formik.setFieldValue("phoneNumber", !isEmail ? savedIdentity : "");
 
-    // Pre-fill name fields from social profile if available
+    const sessionGoogleImage = (session?.user as any)?.image;
+
     const socialRaw = localStorage.getItem("temp_social_profile");
+    let localStorageImage = "";
+
     if (socialRaw) {
       try {
         const social = JSON.parse(socialRaw);
-        if (social.firstName) formik.setFieldValue("firstName", social.firstName);
-        if (social.lastName) formik.setFieldValue("lastName", social.lastName);
-        // Email from social takes priority if it exists
-        if (social.email) {
-          formik.setFieldValue("email", social.email);
+        console.log("DEBUG: Social profile data in storage ->", social);
+
+        localStorageImage =
+          social?.user?.image ||
+          social?.image ||
+          social?.userData?.image ||
+          social?.picture ||
+          "";
+
+        const fName =
+          social?.userData?.firstName ||
+          social?.firstName ||
+          social?.user?.name?.split(" ")[0];
+
+        const lName =
+          social?.userData?.lastName ||
+          social?.lastName ||
+          social?.user?.name?.split(" ").slice(1).join(" ");
+
+        if (fName) formik.setFieldValue("firstName", fName);
+        if (lName) formik.setFieldValue("lastName", lName);
+
+        const socialEmail =
+          social?.userData?.email || social?.user?.email || social?.email;
+        if (socialEmail) {
+          formik.setFieldValue("email", socialEmail);
           setVerifiedChannel("email");
         }
-      } catch {
-        // malformed JSON — ignore
+      } catch (error) {
+        console.error("Error parsing social profile JSON:", error);
       }
     }
-  }, [router]);
+
+    const finalDetectedImage = sessionGoogleImage || localStorageImage;
+
+    if (finalDetectedImage) {
+      console.log("DEBUG: Final Google Avatar set ->", finalDetectedImage);
+      setImgSrc(finalDetectedImage);
+      setFileInput(finalDetectedImage);
+    }
+  }, [router, session]);
 
   const handleFileInputChange = (file: ChangeEvent) => {
     const { files } = file.target as HTMLInputElement;
@@ -191,9 +223,10 @@ export default function CompleteProfilePage() {
             <img
               height={100}
               width={100}
-              className="rounded"
+              className="rounded-full object-cover border-2 border-gray-200"
               src={imgSrc}
               alt="Profile"
+              referrerPolicy="no-referrer"
             />
             <div className="flex flex-grow flex-col gap-4">
               <div className="flex flex-col sm:flex-row gap-4">
@@ -335,7 +368,7 @@ export default function CompleteProfilePage() {
                   }
                   helperText={
                     formik.touched.whatsappNumber &&
-                      formik.errors.whatsappNumber
+                    formik.errors.whatsappNumber
                       ? (formik.errors.whatsappNumber as string)
                       : undefined
                   }
@@ -390,7 +423,7 @@ export default function CompleteProfilePage() {
                     }
                     helperText={
                       formik.touched.passportNumber &&
-                        formik.errors.passportNumber
+                      formik.errors.passportNumber
                         ? (formik.errors.passportNumber as string)
                         : undefined
                     }
