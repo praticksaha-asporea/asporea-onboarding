@@ -72,6 +72,7 @@ export const userList = async ({
   const [users, total] = await Promise.all([
     UserModel.find(filter)
       .select('-password')
+      .populate('profilePic', 'path')  
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),

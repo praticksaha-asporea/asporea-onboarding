@@ -122,7 +122,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
         }
         toast.success("Status Updated successfully");
       } catch (err: any) {
-        toast.error(err?.response?.data?.message ?? "Save failed");
+        // toast.error(err?.response?.data?.message ?? "Save failed");
       } finally {
         setSubmitting(false);
       }
@@ -163,7 +163,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       preForm.setValues({ ...preForm.values, preStatus: status as AssignmentStatus });
       if (status === "queued") setIsPreLocked(false);
     } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? "Update failed");
+    //   toast.error(err?.response?.data?.message ?? "Update failed");
     }
   };
 
