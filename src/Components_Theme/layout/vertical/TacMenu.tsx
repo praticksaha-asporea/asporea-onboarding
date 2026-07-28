@@ -2,10 +2,10 @@ import { useTheme } from "@mui/material/styles";
 
 import PerfectScrollbar from "react-perfect-scrollbar";
 
- 
+
 import type { VerticalMenuContextProps } from "../../../@menu/components/vertical-menu/Menu";
 
- 
+
 import {
   Menu,
   MenuItem,
@@ -55,13 +55,13 @@ const TacMenu = ({
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
-            className: "bs-full overflow-y-auto overflow-x-hidden",
-            onScroll: (container) => scrollMenu(container, false),
-          }
+          className: "bs-full overflow-y-auto overflow-x-hidden",
+          onScroll: (container) => scrollMenu(container, false),
+        }
         : {
-            options: { wheelPropagation: false, suppressScrollX: true },
-            onScrollY: (container) => scrollMenu(container, true),
-          })}
+          options: { wheelPropagation: false, suppressScrollX: true },
+          onScrollY: (container) => scrollMenu(container, true),
+        })}
     >
       {/* Vertical Menu */}
       <Menu
@@ -81,6 +81,42 @@ const TacMenu = ({
         >
           Dashboard
         </MenuItem>
+        {/* <MenuItem
+          href="/inquiries"
+          icon={<i className="ri-question-line" />}
+        >
+          Inquiries
+        </MenuItem>
+        <MenuItem
+          href="/assigned-candidates"
+          icon={<i className="ri-user-2-line" />}
+        >
+          Assigned Candidates
+        </MenuItem>
+        <MenuItem
+          href="/todays-schedule"
+          icon={<i className="ri-bar-chart-2-line" />}
+        >
+          TAC Workload
+        </MenuItem>
+        <MenuItem
+          href="/todays-schedule"
+          icon={<i className="ri-calendar-check-line" />}
+        >
+          Scheduling
+        </MenuItem>
+        <MenuItem
+          href="/todays-schedule"
+          icon={<i className="ri-calendar-schedule-line" />}
+        >
+          Today's Schedule
+        </MenuItem>
+        <MenuItem
+          href="/escalations"
+          icon={<i className="ri-alert-line" />}
+        >
+          Escalations
+        </MenuItem> */}
       </Menu>
     </ScrollWrapper>
   );

@@ -26,20 +26,20 @@ import {
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import EscalationActionModal from "./EscalationActionModal";
-import { useDashboardView } from "./useDashboardView";
+import { useEscalationsView } from "./useEscalationsView";
 
 dayjs.extend(relativeTime);
 
-interface DashboardViewProps {
-  setCurrentView: (view: "dashboard" | "detail") => void;
+interface EscalationsViewProps {
+  // setCurrentView: (view: "dashboard" | "detail") => void;
 }
 const resolveFileSrc = (path?: string | null) => {
-  if (!path) return "/images/avatars/avatar.png";  
+  if (!path) return "/images/avatars/avatar.png";
   if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:")) return path;
   const BACKEND_BASE = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000";
   return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
-const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
+const EscalationsView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView }
   const {
     escalations,
     loading,
@@ -55,20 +55,20 @@ const DashboardView: React.FC<DashboardViewProps> = ({ setCurrentView }) => {
     openActionModal,
     handleResetFilters,
     fetchEscalations,
-  } = useDashboardView();
+  } = useEscalationsView();
 
   const getStatusColor = (status: string) => {
     if (status === "approved") return "success";
     if (status === "rejected") return "error";
     return "warning";
   };
-return (
+  return (
     <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
       <Typography className="text-[22px] text-[var(--mui-palette-secondary)] md:text-[28px] font-medium tracking-tight mb-6">
         Escalation Requests
       </Typography>
 
-      
+
       <Box className="flex flex-col md:flex-row gap-4 mb-6 p-4 rounded-xl shadow-2xl">
         <TextField
           size="small"
@@ -102,7 +102,7 @@ return (
         )}
       </Box>
 
-     
+
       <TableContainer component={Paper} className="shadow-xl">
         <Table size="small">
           <TableHead>
@@ -132,44 +132,44 @@ return (
             ) : (
               escalations.map((row) => (
                 <TableRow key={row._id} hover>
-                 
+
                   <TableCell className="py-3 px-4 text-[13px] font-bold text-[var(--mui-palette-secondary)]">
                     {row.inqNo}
                   </TableCell>
 
                   <TableCell className="py-3 px-4">
-        <Box className="flex items-center gap-3">
-          <Avatar 
-            src={resolveFileSrc(row.candidateAvatar)} 
-            sx={{ width: 36, height: 36, border: '2px solid #e2e8f0' }} 
-            className="shadow-sm" 
-          />
-          <Box>
-            <Typography className="font-semibold text-[13px] leading-tight">{row.fullName}</Typography>
-            <Typography className="text-[12px] text-gray-500">{row.leadStatus}</Typography>
-          </Box>
-        </Box>
-      </TableCell>
-                 <TableCell className="py-3 px-4">
-        <Box className="flex items-center gap-2">
-          <Avatar 
-            src={resolveFileSrc(row.fromAvatar)} 
-            sx={{ width: 28, height: 28 }} 
-            className="shadow-sm"
-          />
-          <Typography className="text-[13px]">{row.fromName}</Typography>
-        </Box>
-      </TableCell>
+                    <Box className="flex items-center gap-3">
+                      <Avatar
+                        src={resolveFileSrc(row.candidateAvatar)}
+                        sx={{ width: 36, height: 36, border: '2px solid #e2e8f0' }}
+                        className="shadow-sm"
+                      />
+                      <Box>
+                        <Typography className="font-semibold text-[13px] leading-tight">{row.fullName}</Typography>
+                        <Typography className="text-[12px] text-gray-500">{row.leadStatus}</Typography>
+                      </Box>
+                    </Box>
+                  </TableCell>
                   <TableCell className="py-3 px-4">
-        <Box className="flex items-center gap-2">
-          <Avatar 
-            src={resolveFileSrc(row.toAvatar)} 
-            sx={{ width: 28, height: 28 }} 
-            className="shadow-sm"
-          />
-          <Typography className="text-[13px] font-medium text-blue-700">{row.toName}</Typography>
-        </Box>
-      </TableCell>
+                    <Box className="flex items-center gap-2">
+                      <Avatar
+                        src={resolveFileSrc(row.fromAvatar)}
+                        sx={{ width: 28, height: 28 }}
+                        className="shadow-sm"
+                      />
+                      <Typography className="text-[13px]">{row.fromName}</Typography>
+                    </Box>
+                  </TableCell>
+                  <TableCell className="py-3 px-4">
+                    <Box className="flex items-center gap-2">
+                      <Avatar
+                        src={resolveFileSrc(row.toAvatar)}
+                        sx={{ width: 28, height: 28 }}
+                        className="shadow-sm"
+                      />
+                      <Typography className="text-[13px] font-medium text-blue-700">{row.toName}</Typography>
+                    </Box>
+                  </TableCell>
                   <TableCell className="py-3 px-4">
                     <Chip
                       label={row.statusLabel}
@@ -222,4 +222,4 @@ return (
   );
 };
 
-export default DashboardView;
+export default EscalationsView;

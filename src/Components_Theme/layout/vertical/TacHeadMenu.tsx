@@ -59,6 +59,12 @@ const TacHeadMenu = ({
           href="/tac-head/dashboard"
           icon={<i className="ri-shield-check-line" />}
         >
+          Dashboard
+        </MenuItem>
+        <MenuItem
+          href="/tac-head/escalations"
+          icon={<i className="ri-shield-check-line" />}
+        >
           Escalations
         </MenuItem>
         <MenuItem
@@ -67,7 +73,7 @@ const TacHeadMenu = ({
         >
           Documents
         </MenuItem>
-        
+
         <MenuItem
           href="/tac-head/technicals"
           icon={<i className="ri-computer-line" />}

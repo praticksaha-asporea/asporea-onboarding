@@ -164,7 +164,7 @@ const AssessmentSignatures: React.FC<AssessmentSignaturesProps> = ({ assessmentF
                         className="w-full flex justify-center mb-2 cursor-pointer relative group/prev"
                         onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleOpenPreview(fileName, previewUrl, true); }}
                       >
-                        <img src={previewUrl} alt="preview" className="h-16 object-contain rounded-md shadow-sm" />
+                        <img src={previewUrl} alt="preview" className="w-20 h-20 rounded-md shadow-sm" />
                         <Box className="absolute inset-0 bg-black/30 opacity-0 group-hover/prev:opacity-100 transition-opacity rounded-md flex items-center justify-center">
                           <i className="ri-eye-line text-white text-xl" />
                         </Box>

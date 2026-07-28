@@ -18,7 +18,6 @@ import DashboardTable from "./DashboardTable";
 import DashboardScheduleModal from "./DashboardScheduleModal";
 import DashboardCommunicationModal from "./DashboardCommunicationModal";
 import { kpiTypes, useDashboardView } from "./useDashboardView";
-import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 import { CandidateRow, tacData } from "@/Types/object.types";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 import { CamelCase } from "@/Utils/common";
@@ -87,10 +86,10 @@ const DashboardView: React.FC<DashboardProps> = () => {
   return (
     <Box className="w-full rounded-[20px] shadow-2xl  p-4 md:p-8 font-sans">
       <Typography className="text-[22px] md:text-[28px] font-medium tracking-tight mb-6">
-        {isFoe ? "FOE  Dashboard" : "TAC Dashboard"}
+        {isFoe ? "FOE Dashboard" : "TAC Dashboard"}
       </Typography>
 
-      <DashboardKpiCards kpis={kpis as kpiTypes} total={total} />
+      <DashboardKpiCards kpis={kpis as kpiTypes} variant={isFoe ? "foe" : "tac"} />
 
       {lastCandidate && page === 1 && !loading && (
         <Box className="mb-6 p-4 md:p-5 bg-white dark:bg-[var(--mui-palette-background-paper)] rounded-2xl  dark:border-gray-800 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">

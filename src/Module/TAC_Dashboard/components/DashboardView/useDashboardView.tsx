@@ -12,11 +12,8 @@ import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
-export interface kpiTypes {
-  openCases: number;
-  pendingCounselling: number;
-  pendingAssessment: number;
-}
+
+export interface kpiTypes { openCases: number, pendingCounselling: number, pendingAssessment: number, escalationsRaised: number, unassignedInquiries: number } //dueToday: number,
 
 export const useDashboardView = () => {
   const router = useRouter();
@@ -33,12 +30,12 @@ export const useDashboardView = () => {
   const [page, setPage] = useState(1);
   const LIMIT = 10;
 
-  const [rows, setRows] = useState<CandidateRow[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [total, setTotal] = useState(0);
-  const [kpis, setKpis] = useState<kpiTypes | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+    const [rows, setRows] = useState<CandidateRow[]>([]);
+    const [totalPages, setTotalPages] = useState(1);
+    // const [total, setTotal] = useState(0);
+    const [kpis, setKpis] = useState<kpiTypes | null>(null);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [targetLead, setTargetLead] = useState<CandidateRow | null>(null);
@@ -91,7 +88,7 @@ export const useDashboardView = () => {
       });
       setRows(res.data?.data?.data);
       setTotalPages(res?.data?.data?.pagination.totalPages);
-      setTotal(res?.data?.data?.pagination.total);
+    //   setTotal(res?.data?.data?.pagination.total);
       if (res?.data?.data?.kpis) setKpis(res?.data?.data?.kpis);
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Failed to load candidates");
@@ -197,7 +194,7 @@ export const useDashboardView = () => {
   return {
     isFoe,
     kpis,
-    total,
+    // total,
     searchInput,
     setSearchInput,
     statusFilter,

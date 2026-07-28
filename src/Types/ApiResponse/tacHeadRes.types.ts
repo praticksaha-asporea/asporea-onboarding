@@ -4,7 +4,7 @@ export interface AllCandidatesTacHeadResponse {
   success: boolean;
   message: string;
   data: {
-    candidates: TacHeadCandidate[]; 
+    candidates: TacHeadCandidate[];
     total: number;
     page: number;
     totalPages: number;

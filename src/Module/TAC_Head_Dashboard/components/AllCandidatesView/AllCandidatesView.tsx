@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import {
   Box,
   Typography,
@@ -132,9 +131,8 @@ const AllCandidatesView = () => {
               {COLS.map((head, i) => (
                 <TableCell
                   key={i}
-                  className={`py-4 px-4 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] whitespace-nowrap ${
-                    head === "Status" ? "text-center" : ""
-                  }`}
+                  className={`py-4 px-4 font-semibold bg-[var(--mui-palette-primary)] text-[var(--mui-palette-secondary-main)] whitespace-nowrap ${head === "Status" ? "text-center" : ""
+                    }`}
                 >
                   {head}
                 </TableCell>
