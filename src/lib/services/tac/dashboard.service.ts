@@ -5,6 +5,7 @@ import "../../models/User.model";
 import "../../models/Branch.model";
 import "../../models/Upload.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
+import { Assignment } from "../../models/Assignment.model";
 
 export interface CandidateListParams {
   userId: string;
@@ -28,18 +29,17 @@ export const getTacCandidates = async ({
   const userObjectId = new mongoose.Types.ObjectId(userId);
   let filter: Record<string, unknown> = {};
 
-
-  if (role === "foe") {
-
+if (role === "admin") {
+    
+  } else if (role === "foe") {
     const shift = await EmployeeBranchShiftModel.findOne({ employeeId: userObjectId });
     if (shift) {
       filter["preferences.branchId"] = shift.branchId;
     } else {
-
       filter["preferences.branchId"] = null;
     }
   } else {
-
+    
     filter["preferences.consultantId"] = userObjectId;
   }
 
@@ -86,13 +86,37 @@ export const getTacCandidates = async ({
 
   const creatorIds = leads.map(l => l.createdBy?.id || l.createdBy?._id || l.createdBy).filter(Boolean);
   const users = await mongoose.model("User").find({ _id: { $in: creatorIds } })
-    .select("profilePic")
-    .populate("profilePic", "path")
+.select("profilePic googlePic avatar")    
+.populate("profilePic", "path")
+    .lean();
+const userPicMap = new Map<string, string>();
+for (const u of users) {
+  const pic = (u as any).profilePic || (u as any).googlePic || (u as any).avatar;
+if (typeof pic === "string") {
+    userPicMap.set(String(u._id), pic);
+  } else if (pic?.path) {
+    userPicMap.set(String(u._id), pic.path);
+  }
+}
+   
+  const leadIds = leads.map((l) => l._id);
+  const assignments = await Assignment.find({ leadId: { $in: leadIds } })
+    .sort({ createdAt: -1 })
+    .select("leadId schedule.method createdAt")
     .lean();
 
-  const userPicMap = new Map<string, string>();
-  for (const u of users) {
-    if ((u as any).profilePic?.path) userPicMap.set(String(u._id), (u as any).profilePic.path);
+  const latestVisitTypeMap = new Map<string, string>();
+  for (const ass of assignments) {
+    const lId = String(ass.leadId);
+    if (!latestVisitTypeMap.has(lId) && ass.schedule?.method) {
+      const mappedType =
+        ass.schedule.method === "on"
+          ? "online"
+          : ass.schedule.method === "off"
+          ? "offline"
+          : ass.schedule.method;
+      latestVisitTypeMap.set(lId, mappedType);
+    }
   }
 
   const rows = leads.map((lead: any) => {
@@ -101,6 +125,12 @@ export const getTacCandidates = async ({
     if (lead.preferences?.consultantId && lead.preferences.consultantId.firstName) {
       assignedTacName = `${lead.preferences.consultantId.firstName} ${lead.preferences.consultantId.lastName || ""}`.trim();
     }
+
+    
+    const resolvedVisitType =
+      latestVisitTypeMap.get(String(lead._id)) ??
+      lead.preferences?.visitType ??
+      null;
 
     return {
       _id: String(lead._id),
@@ -113,7 +143,7 @@ export const getTacCandidates = async ({
       profilePic: creatorId ? (userPicMap.get(String(creatorId)) ?? null) : null,
       lastActivity: lead.updatedAt,
       branchId: lead.preferences?.branchId ?? null,
-      visitType: lead.preferences?.visitType ?? null,
+      visitType: resolvedVisitType,
       contact: lead.contact,
       consultantId: lead.preferences?.consultantId ?? null,
       assignedTacName
@@ -139,7 +169,9 @@ export const getTacKpis = async (userId: string, role: string) => {
   const userObjectId = new mongoose.Types.ObjectId(userId);
   let base: any = {};
 
-  if (role === "foe") {
+if (role === "admin") {
+   
+  } else if (role === "foe") {
     const shift = await EmployeeBranchShiftModel.findOne({ employeeId: userObjectId });
     if (shift) base["preferences.branchId"] = shift.branchId;
   } else {

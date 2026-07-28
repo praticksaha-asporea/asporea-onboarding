@@ -37,13 +37,22 @@ export const useDashboardTable = (isFoe: boolean) => {
         }
     };
 
-    const getVisitChipColor = (
-        v: string | null,
-    ): "primary" | "secondary" | "default" =>
-        v === "online" ? "primary" : v === "offline" ? "secondary" : "default";
+   const getVisitChipColor = (
+    v: string | null
+  ): "primary" | "secondary" | "default" =>
+    v === "online" || v === "on"
+      ? "primary"
+      : v === "offline" || v === "off"
+      ? "secondary"
+      : "default";
 
-    const getVisitLabel = (v: string | null) =>
-        v === "online" ? "🌐 Online" : v === "offline" ? "🏢 In-Person" : "—";
+  
+  const getVisitLabel = (v: string | null) =>
+    v === "online" || v === "on"
+      ? "🌐 Online"
+      : v === "offline" || v === "off"
+      ? "🏢 In-Person"
+      : "—";
 
     const responsiveTableSx = {
         "& .resp-thead": { "@media (max-width: 767px)": { display: "none" } },

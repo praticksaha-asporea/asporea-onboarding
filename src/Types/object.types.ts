@@ -107,6 +107,8 @@ export type ExpType = "fresher" | "domestic" | "abroad" | "free";
 export type ExpStatus = "selected" | "verified" | "request_technical";
 
 export interface CandidateRow {
+    profilePic(profilePic: (profilePic: any) => string | undefined): string | undefined;
+    profilePic(profilePic: any): string | undefined;
     _id: string;
     name: string;
     inqNo: string;

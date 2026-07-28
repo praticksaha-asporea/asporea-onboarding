@@ -459,8 +459,7 @@ const InquiryDetails = () => {
                                   </MenuItem>
                                   {externalSources.map((src) => (
                                     <MenuItem key={src._id} value={src._id}>
-                                      {`${src.firstName} ${src.lastName || ""}`}
-                                    </MenuItem>
+                                  {src.name || `${src.firstName || ""} ${src.lastName || ""}`.trim()}                                    </MenuItem>
                                   ))}
                                 </Select>
                                 {err("referedBy") && (
