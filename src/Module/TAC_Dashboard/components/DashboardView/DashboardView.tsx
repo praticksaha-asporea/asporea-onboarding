@@ -13,6 +13,7 @@ import DashboardCommunicationModal from "./DashboardCommunicationModal";
 import { kpiTypes, useDashboardView } from "./useDashboardView";
 import { CandidateRow, tacData } from "@/Types/object.types";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+import TodaysSchedule from "./TodaysSchedule";
 
 export interface DashboardProps {
   // setCurrentView: (view: "dashboard" | "detail") => void;
@@ -30,6 +31,8 @@ const DashboardView: React.FC<DashboardProps> = () => {
       </Typography>
 
       <DashboardKpiCards kpis={kpis as kpiTypes} variant={isFoe ? "foe" : "tac"} />
+
+      {/* <TodaysSchedule /> */}
 
       <DashboardFilters
         searchInput={searchInput}
