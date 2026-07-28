@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
  *   if (!ok) return;
  */
 export function confirmToast(message: string): Promise<boolean> {
+  toast.dismiss();
   return new Promise((resolve) => {
     toast(
       (t) => (

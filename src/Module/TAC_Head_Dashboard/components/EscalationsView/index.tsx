@@ -3,13 +3,13 @@
 import React, { Suspense } from "react";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import DashboardView from "./DashboardView";
+import EscalationsView from "./EscalationsView";
 
-interface DashboardViewWrapperProps {
+interface EscalationsViewWrapperProps {
   setCurrentView: (view: "dashboard" | "detail") => void;
 }
 
-const DashboardViewIndex: React.FC<DashboardViewWrapperProps> = ({
+const EscalationsViewIndex: React.FC<EscalationsViewWrapperProps> = ({
   setCurrentView,
 }) => {
   return (
@@ -20,9 +20,9 @@ const DashboardViewIndex: React.FC<DashboardViewWrapperProps> = ({
         </Box>
       }
     >
-      <DashboardView setCurrentView={setCurrentView} />
+      <EscalationsView />
     </Suspense>
   );
 };
 
-export default DashboardViewIndex;
+export default EscalationsViewIndex;

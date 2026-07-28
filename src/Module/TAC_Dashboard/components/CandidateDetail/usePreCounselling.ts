@@ -25,6 +25,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       : undefined;
 
   // Handle preview URL creation/cleanup
+
   useEffect(() => {
     let objectUrl: string | null = null;
     if (resumeFile) {
@@ -33,8 +34,11 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     } else {
       setPreviewUrl(existingResume ?? null);
     }
+
     return () => {
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
     };
   }, [resumeFile, existingResume]);
 
@@ -46,12 +50,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
   useEffect(() => {
     if (inqAssign?.status === "completed" || inqAssign?.status === "rejected") {
       setIsPreLocked(true);
-    } else if (
-      inqAssign?.status === "queued" &&
-      isWithinSchedule(inqAssign) &&
-      inqAssign?.schedule?.from !== "" &&
-      inqAssign?.schedule?.to !== ""
-    ) {
+    } else if (inqAssign?.status === "queued" && (isWithinSchedule(inqAssign) && inqAssign?.schedule?.from != "" && inqAssign?.schedule?.to != "")) {
       setIsPreLocked(false);
     }
   }, [inqAssign]);
@@ -163,7 +162,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       preForm.setValues({ ...preForm.values, preStatus: status as AssignmentStatus });
       if (status === "queued") setIsPreLocked(false);
     } catch (err: any) {
-    //   toast.error(err?.response?.data?.message ?? "Update failed");
+      //   toast.error(err?.response?.data?.message ?? "Update failed");
     }
   };
 

@@ -22,6 +22,9 @@ export interface CandidatesResponse {
             openCases: number,
             pendingCounselling: number,
             pendingAssessment: number
+            // dueToday: number,
+            escalationsRaised: number,
+            unassignedInquiries: number
         }
     },
     error: null

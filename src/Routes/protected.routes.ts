@@ -18,6 +18,7 @@ export const protectedRouteTAC = [
 
 export const protectedRouteTACHead = [
   'tac-head/dashboard',
+  'tac-head/escalations',
   'tac-head/documents',
   'tac-head/technicals',
   'my-profile',

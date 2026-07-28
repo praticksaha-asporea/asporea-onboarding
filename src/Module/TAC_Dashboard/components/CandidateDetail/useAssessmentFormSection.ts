@@ -81,8 +81,8 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
       setDocReject(docs?.status === "uploaded");
       setDocVerify(docs?.status === "uploaded");
       setDocRequestTL(docs?.status === "uploaded");
-      setExpRFT(docs?.status === "verified");
-      setExpVerified(docs?.status === "verified");
+      setExpRFT(docs?.status === "verified" && expStatus === "selected");
+      setExpVerified(docs?.status === "verified" && expStatus === "selected");
       setShowAssessmentForm(docs?.status === "verified" && candidate?.experience?.status === "verified");
     }
 
@@ -137,9 +137,9 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
 
       toast.success(`Documents marked as ${CamelCase(status)}`);
       // console.log(docReject, resDocStatus, 4444);
-      setDocReject(resDocStatus === "uploaded" ? true : false);
-      setDocVerify(resDocStatus === "uploaded" ? true : false);
-      setDocRequestTL(resDocStatus === "uploaded" ? true : false);
+      setDocReject(false);
+      setDocVerify(false);
+      setDocRequestTL(false);
       setExpRFT(resDocStatus === "verified");
       setExpVerified(resDocStatus === "verified");
       setDocStatus(resDocStatus);

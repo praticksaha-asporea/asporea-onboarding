@@ -5,6 +5,8 @@ import "../../models/User.model";
 import "../../models/Branch.model";
 import "../../models/Upload.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
+import { Assignment } from "@/lib/models/Assignment.model";
+import { EscalationReportModel } from "@/lib/models/EscalationReport.model";
 
 export interface CandidateListParams {
   userId: string;
@@ -145,14 +147,18 @@ export const getTacKpis = async (userId: string, role: string) => {
   } else {
     base["preferences.consultantId"] = userObjectId;
   }
-
-  const [openCases, pendingCounselling, pendingAssessment] = await Promise.all([
+  // const today = new Date().toISOString().split("T")[0];
+  const [openCases, pendingCounselling, pendingAssessment, escalationsRaised, unassignedInquiries] = await Promise.all([
     Lead.countDocuments({ ...base }),
     Lead.countDocuments({ ...base, status: "inquiry_submitted" }),
     Lead.countDocuments({ ...base, status: "assess_scheduled" }),
+    // Assignment.countDocuments({ assignedTo: userObjectId, "schedule.date": today }),
+    EscalationReportModel.countDocuments({ fromId: userObjectId, status: "requested" }),
+    Lead.countDocuments({ ...base, "preferences.consultantId": null, status: { $in: ["assess_scheduled", "pre_scheduled", "inquiry_submitted"] } }),
+
   ]);
 
-  return { openCases, pendingCounselling, pendingAssessment };
+  return { openCases, pendingCounselling, pendingAssessment, escalationsRaised, unassignedInquiries };
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

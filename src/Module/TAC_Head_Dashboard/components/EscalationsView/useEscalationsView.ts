@@ -25,7 +25,7 @@ export interface enrichedEscalationRow {
   toAvatar: string | null;
 }
 
-export const useDashboardView = () => {
+export const useEscalationsView = () => {
   const [escalations, setEscalations] = useState<escalationRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
@@ -105,9 +105,9 @@ export const useDashboardView = () => {
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
-const formattedEscalationsForUI = escalations.map((row: any): enrichedEscalationRow => {
-    
-   
+  const formattedEscalationsForUI = escalations.map((row: any): enrichedEscalationRow => {
+
+
     const candPic = row.leadId?.createdBy?.id?.profilePic?.path || null;
     const fromPic = row.fromId?.profilePic?.path || null;
     const toPic = row.toId?.profilePic?.path || null;

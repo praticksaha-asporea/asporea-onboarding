@@ -33,7 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const status = typeof req.query.status === "string" ? req.query.status : undefined;
     const experience = typeof req.query.experience === "string" ? req.query.experience : undefined;
     const includeKpis = req.query.kpis === "true";
-    console.log(authUser.role, 1151);
+    // console.log(authUser.role, 1151);
 
     const [candidates, kpis] = await Promise.all([
       getTacCandidates({ userId: authUser.id, role: authUser.role, search, status, experience, page, limit }),
@@ -42,7 +42,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     return ResponseHandler.sendSuccess(res, { ...candidates, kpis }, "Candidates fetched");
   } catch (error: unknown) {
-    console.log(error, 1151);
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
     return ResponseHandler.sendError(res, "Unknown error occurred", 500);
