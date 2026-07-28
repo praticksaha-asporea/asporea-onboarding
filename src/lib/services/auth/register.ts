@@ -49,16 +49,29 @@ export const register = async (body: RegisterPayload & { profilePicData?: string
     address,
     role: "user"
   });
+if (profilePicData) {
+    let finalImagePath = "";
 
-  if (profilePicData) {
-    const uploadDoc = await Upload.create({
-      userId: newUser._id,
-      path: profilePicData  
-    });
+    if (profilePicData.startsWith("http")) {
+     
+      finalImagePath = profilePicData;
+    } else if (profilePicData.startsWith("data:image")) {
+       
+      finalImagePath = profilePicData; 
+    } else {
+      
+      finalImagePath = profilePicData;
+    }
 
-    
-    newUser.profilePic = uploadDoc._id;
-    await newUser.save();
+    if (finalImagePath) {
+      const uploadDoc = await Upload.create({
+        userId: newUser._id,
+        path: finalImagePath  
+      });
+
+      newUser.profilePic = uploadDoc._id;
+      await newUser.save();
+    }
   }
   if (social) {
     await SocialLogins.create({

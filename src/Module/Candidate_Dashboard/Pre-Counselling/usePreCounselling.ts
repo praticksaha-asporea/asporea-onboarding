@@ -58,7 +58,7 @@ export const usePreCounselling = () => {
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [isValidLead, setIsValidLead] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
-
+const [activeStepperStep, setActiveStepperStep] = useState<number>(1);  
   const [checklist, setChecklist] = useState<ChecklistState>({
     materials: true,
     environment: true,
@@ -92,7 +92,13 @@ export const usePreCounselling = () => {
       try {
 
         try {
-          const timelineRes = await getJourneyTimelineAction({ leadId });
+        const timelineRes = await getJourneyTimelineAction({ leadId });
+          
+         
+          if (timelineRes?.data?.success && timelineRes?.data?.data) {
+             setActiveStepperStep(timelineRes.data.data.activeStep ?? 1);
+          }
+
           if (timelineRes?.data?.success === false && timelineRes?.data?.message?.toLowerCase().includes("not found")) {
             setIsValidLead(false);
             setCheckingStatus(false);
@@ -264,6 +270,8 @@ export const usePreCounselling = () => {
     isChecklistComplete,
     reduxUser,
     isValidLead,
-    isCompleted
+    isCompleted,
+    activeStepperStep, 
+
   };
 };
