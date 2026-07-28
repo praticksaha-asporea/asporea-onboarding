@@ -22,6 +22,10 @@ import { useTacHeadDashboard } from "./useTacHeadDashboard";
 import { formatDistanceToNow } from "date-fns";
 import { CamelCase } from "@/Utils/common";
 import { useRouter } from "next/navigation";
+import { TacHeadDashData, teamOverview } from "@/Types/ApiResponse/tacHeaddashboard.types";
+import { IEscalationReport } from "@/lib/models/EscalationReport.model";
+import { escalationRecord } from "@/Types/ApiResponse/escalationRes.types";
+import { technicalRequestedLeadRecord } from "@/Types/ApiResponse/technicalRes.types";
 
 // ---- Mock data — TODO: replace with API calls ----
 
@@ -128,16 +132,15 @@ const TacHeadDashboard: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {/* {id: "ASP-INQ-0169", candidate: "ANIL Yaduvanshi", from: "Pratik Deshmukh", to: "Anil Lokande", status: "Pending", date: "2 hours ago" } */}
-                {escalations?.map((e: any, i: number) => (
-                  <TableRow key={e.id}>
+                {escalations?.map((e: escalationRecord) => (
+                  <TableRow key={e._id}>
                     <TableCell>
                       <Typography className="text-sm font-medium text-gray-700">{e.leadId?.fullName}</Typography>
                       <Typography className="text-xs text-gray-400">{e.leadId?.inqNo}</Typography>
                     </TableCell>
                     <TableCell>
                       <Typography className="text-sm text-gray-500">
-                        {e.fromId.firstName} {e.fromId.lastName} → {e.toId.firstName} {e.toId.lastName}
+                        {e.fromId?.firstName} {e.fromId?.lastName} → {e.toId?.firstName} {e.toId?.lastName}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -178,9 +181,9 @@ const TacHeadDashboard: React.FC = () => {
                 <Typography className="text-sm text-gray-400">Nothing referred for review.</Typography>
               ) : (
                 <Stack spacing={2}>
-                  {technicalReviews?.map((t: any) => (
+                  {technicalReviews?.map((t: technicalRequestedLeadRecord) => (
                     <Stack
-                      key={t.id}
+                      key={t._id}
                       direction="row"
                       alignItems="center"
                       justifyContent="space-between"
@@ -192,7 +195,7 @@ const TacHeadDashboard: React.FC = () => {
                           {t.inqNo} &middot; {t.preferences?.consultantId?.firstName} {t.preferences?.consultantId?.lastName}
                         </Typography>
                       </Box>
-                      <Chip label={CamelCase(t.technical?.status)} size="small" color="warning" sx={{ fontWeight: 600 }} />
+                      <Chip label={CamelCase(t?.technical?.status as keyof technicalRequestedLeadRecord)} size="small" color="warning" sx={{ fontWeight: 600 }} />
                     </Stack>
                   ))}
                 </Stack>
@@ -207,7 +210,7 @@ const TacHeadDashboard: React.FC = () => {
               <Typography className="text-sm text-gray-400 mb-4">Active cases per TAC</Typography>
 
               <Stack spacing={3}>
-                {teamOverview?.map((t: any) => {
+                {teamOverview?.map((t: teamOverview) => {
                   return (
                     <Box key={t.assignedTo}>
                       <Stack direction="row" alignItems="center" spacing={1.5} className="mb-1.5">

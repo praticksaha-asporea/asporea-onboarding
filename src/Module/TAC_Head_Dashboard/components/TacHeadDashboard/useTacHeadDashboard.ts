@@ -1,12 +1,7 @@
 import { getTacHeadCandidatesAction } from "@/Services/APIs/tacHead/dashboard.action";
+import { TacHeadDashData, tacHeadKpis } from "@/Types/ApiResponse/tacHeaddashboard.types";
 import { useCallback, useEffect, useState } from "react";
 
-export interface TacHeadKpiTypes {
-    pendingEscalations?: number;
-    documentsAwaiting?: number;
-    pendingTechnical?: number;
-    candidatesSupervised?: number;
-}
 
 type KpiColor = "primary" | "info" | "warning" | "error" | "success";
 
@@ -26,8 +21,8 @@ const resolveFileSrc = (path?: string | null) => {
 };
 export const useTacHeadDashboard = () => {
     // const theme = useTheme();
-    const [kpis, setKpis] = useState<TacHeadKpiTypes | null>(null);
-    const [data, setData] = useState<any>(null);
+    const [kpis, setKpis] = useState<tacHeadKpis | null>(null);
+    const [data, setData] = useState<TacHeadDashData | null>(null);
 
     const fetchDashboardItems = useCallback(async () => {
         try {
