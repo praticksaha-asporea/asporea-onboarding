@@ -3,7 +3,7 @@ import { EmployeeBranchShiftModel } from "../../models/EmployeeBranchShift.model
 import UserModel from "../../models/User.model";
 import { ApiError } from "../../error/api.error";
 import mongoose from "mongoose";
-
+import { ExternalSourceModel } from "@/lib/models/ExternalSource.model";
 import { BranchModel } from "../../models/Branch.model";
 import { GeneralSettingModel } from "../../models/GeneralSetting.model";
 import { generateInquiryNo } from "@/Utils/generateInquiryNo";
@@ -221,11 +221,11 @@ export const getExternalSourcesByType = async (type: string) => {
     throw new ApiError("Invalid source type provided", 400);
   }
 
-  const sources = await UserModel.find({
-    role: mappedType as any,
+   const sources = await ExternalSourceModel.find({
+    type: mappedType as any,
     status: "active",
   })
-    .select("firstName lastName email")
+    .select("_id name type userId subOf status")
     .lean();
 
   return sources;

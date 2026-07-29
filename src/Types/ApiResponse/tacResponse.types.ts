@@ -25,7 +25,8 @@ export interface CandidatesResponse {
             // dueToday: number,
             escalationsRaised: number,
             unassignedInquiries: number
-        }
+        },
+        todaySchedule: todaySchedule[]
     },
     error: null
 }
@@ -93,4 +94,19 @@ export interface sendEmailRes {
     message: string,
     data: null,
     error: null
+}
+export interface todaySchedule {
+    _id: string,
+    leadId: {
+        _id: string,
+        fullName: string
+    },
+    phase: string,
+    schedule: {
+        date: string,
+        from: string,
+        to: string,
+        method: string
+    },
+    status: string
 }

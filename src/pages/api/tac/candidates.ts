@@ -4,7 +4,7 @@ import ResponseHandler from "@/lib/utils/responseUtil";
 import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 import { applyCors } from "@/lib/cors";
-import { getTacCandidates, getTacKpis } from "@/lib/services/tac/dashboard.service";
+import { getTacCandidates, getTacKpis, getTodaySchedule } from "@/lib/services/tac/dashboard.service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
@@ -19,7 +19,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    if (authUser.role !== "tac" && authUser.role !== "foe") throw new ApiError("TAC or FOE access required", 403);
+    if (authUser.role !== "tac" && authUser.role !== "foe" && authUser.role !== "admin") throw new ApiError("TAC or FOE access required", 403);
 
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
@@ -35,12 +35,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const includeKpis = req.query.kpis === "true";
     // console.log(authUser.role, 1151);
 
-    const [candidates, kpis] = await Promise.all([
+    const [candidates, kpis, todaySchedule] = await Promise.all([
       getTacCandidates({ userId: authUser.id, role: authUser.role, search, status, experience, page, limit }),
       includeKpis ? getTacKpis(authUser.id, authUser.role) : Promise.resolve(null),
+      includeKpis ? getTodaySchedule(authUser.id) : Promise.resolve(null),
+
     ]);
 
-    return ResponseHandler.sendSuccess(res, { ...candidates, kpis }, "Candidates fetched");
+    return ResponseHandler.sendSuccess(res, { ...candidates, kpis, todaySchedule }, "Candidates fetched");
   } catch (error: unknown) {
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
