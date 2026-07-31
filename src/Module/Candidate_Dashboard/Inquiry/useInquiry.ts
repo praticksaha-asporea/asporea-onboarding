@@ -163,7 +163,9 @@ export function useInquiry() {
 
         const res = await getJourneyTimelineAction({ leadId: existingLeadId });
         if (res?.data?.success && res?.data) {
-
+          // Backend 1-indexed (1..6) ko MUI Stepper ke 0-indexed (0..5) me convert kiya
+        const stepIndex = Math.max(0, (res?.data?.data?.activeStep || 1) - 1);
+        setActiveStepperStep(stepIndex);
           setActiveStepperStep(res?.data?.data?.activeStep);
         } else {
           setActiveStepperStep(1);

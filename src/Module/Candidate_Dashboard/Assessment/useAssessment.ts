@@ -85,7 +85,7 @@ export const useAssessment = () => {
   const [isAssessmentCompleted, setIsAssessmentCompleted] = useState<boolean>(false);
   const [scheduledDetails, setScheduledDetails] = useState<any>(null);
   const [checkingStatus, setCheckingStatus] = useState<boolean>(true);
-
+  const [activeStepperStep, setActiveStepperStep] = useState<number>(1);
   const [checklist, setChecklist] = useState<Checklist>({
     documents: false,
     environment: false,
@@ -142,8 +142,7 @@ export const useAssessment = () => {
 
 
   const statusCardRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
+useEffect(() => {
     const checkAssessmentStatus = async () => {
       if (!leadId || !isBookingMode) {
         setCheckingStatus(false);
@@ -153,18 +152,20 @@ export const useAssessment = () => {
         setCheckingStatus(true);
         const res = await getJourneyTimelineAction({ leadId });
 
-        if (res?.data?.success && res?.data?.data?.assessment) {
-          const currentStatus = res?.data?.data?.assessment?.status;
+        if (res?.data?.success && res?.data?.data) {
+         
+          setActiveStepperStep(res.data.data.activeStep ?? 1);
 
+          if (res?.data?.data?.assessment) {
+            const currentStatus = res?.data?.data?.assessment?.status;
 
-          if (currentStatus === "Scheduled" || currentStatus === "scheduled") {
-            setIsAlreadyScheduled(true);
-            setScheduledDetails(res?.data?.data?.assessment);
-          }
-
-          else if (currentStatus === "Completed" || currentStatus === "completed") {
-            setIsAssessmentCompleted(true);
-            setScheduledDetails(res?.data?.data?.assessment);
+            if (currentStatus === "Scheduled" || currentStatus === "scheduled") {
+              setIsAlreadyScheduled(true);
+              setScheduledDetails(res?.data?.data?.assessment);
+            } else if (currentStatus === "Completed" || currentStatus === "completed") {
+              setIsAssessmentCompleted(true);
+              setScheduledDetails(res?.data?.data?.assessment);
+            }
           }
         }
         if (!initialConsultantId) {
@@ -188,7 +189,6 @@ export const useAssessment = () => {
       }
     };
     checkAssessmentStatus();
-
   }, [leadId, isBookingMode, initialConsultantId]);
 
   useEffect(() => {
@@ -319,6 +319,7 @@ export const useAssessment = () => {
     checkingStatus,
     handleSavePreferences,
     resultData,
-    isAssessmentCompleted
+    isAssessmentCompleted,
+    activeStepperStep
   };
 };

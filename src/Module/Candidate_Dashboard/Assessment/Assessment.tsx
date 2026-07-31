@@ -18,6 +18,16 @@ import { NotificationChannels } from "@/Components/Assessment/NotificationChanne
 import { SuccessDialog } from "@/Components/Assessment/SuccessDialog";
 import { formatToDDMMYY } from "@/Utils/common";
 
+ 
+const STEP_NAMES: Record<number, string> = {
+  1: "Inquiry",
+  2: "Pre-Counselling",
+  3: "Document Upload",
+  4: "Experience Selection",
+  5: "Assessment Status", 
+  6: "Technical Round",
+};
+
 const AssessmentContent = () => {
   const {
     router,
@@ -52,9 +62,16 @@ const AssessmentContent = () => {
     checkingStatus,
     handleSavePreferences,
     resultData,
-    isAssessmentCompleted
+    isAssessmentCompleted,
+    activeStepperStep,  
   } = useAssessment();
+
   const isOnlineScheduled = scheduledDetails?.schedule?.method === "on" || scheduledDetails?.method === "on";
+
+   
+  const currentStep = activeStepperStep || 1;
+  const currentStepName = STEP_NAMES[currentStep] || "Inquiry";
+  const progressPercentage = Math.round((currentStep / 6) * 100);
 
   if (checkingStatus) {
     return (
@@ -63,12 +80,13 @@ const AssessmentContent = () => {
       </Box>
     );
   }
+
   return (
     <Grid container spacing={6}>
       {/* LEFT COLUMN */}
       <Grid size={{ xs: 12, md: (isBookingMode && !isAlreadyScheduled && !isAssessmentCompleted) ? 8 : 12 }}>
         {(isBookingMode || isAssessmentResult) && (
-          <Card className="p-4 sm:p-12 rounded-[15px] shadow-2xl mb-6  bg-[var(--mui-palette-primary)]">
+          <Card className="p-4 sm:p-12 rounded-[15px] shadow-2xl mb-6 bg-[var(--mui-palette-primary)]">
             {isBookingMode && isAssessmentCompleted ? (
               <Box className="p-4 text-center bg-[var(--mui-palette-primary)] rounded-xl flex flex-col items-center justify-center min-h-[350px]">
                 <Box className="w-20 h-20 bg-[var(--mui-palette-primary)] rounded-full flex items-center justify-center mb-5 mx-auto">
@@ -111,7 +129,7 @@ const AssessmentContent = () => {
                   </Typography>
 
                   {scheduledDetails?.date && (
-                    <Box className="p-3 bg-[var(--mui-palette-primary)]   rounded-xl inline-block shadow-sm px-6">
+                    <Box className="p-3 bg-[var(--mui-palette-primary)] rounded-xl inline-block shadow-sm px-6">
                       <Typography variant="body2" className="text-[var(--mui-palette-primary)] font-medium">
                         📅 Date: : <strong>{formatToDDMMYY(scheduledDetails.date)}</strong>
                       </Typography>
@@ -121,8 +139,7 @@ const AssessmentContent = () => {
                   <Button
                     variant="contained"
                     onClick={() => router.push("/applicationtracking")}
-                    
-                    className="mt-8 rounded-xl normal-case  shadow-none px-8 py-2.5"
+                    className="mt-8 rounded-xl normal-case shadow-none px-8 py-2.5"
                   >
                     Track Application Status
                   </Button>
@@ -175,7 +192,7 @@ const AssessmentContent = () => {
                 </>
               ) : null}
 
-            {/* 🔹 RESULT VIEW */}
+   
             {isAssessmentResult && (
               <Box
                 ref={statusCardRef}
@@ -218,30 +235,34 @@ const AssessmentContent = () => {
         )}
       </Grid>
 
-
+    
       {isBookingMode && !isAlreadyScheduled && !isAssessmentCompleted && (
         <Grid size={{ xs: 12, md: 4 }}>
+         
           <Card className="rounded-[15px] mb-12 border border-[#e0e0e0] shadow-none">
             <CardContent className="p-6">
               <Typography variant="h6" fontWeight="bold" className="mb-3">
                 Your Application Progress
               </Typography>
               <Typography variant="body2" className="mb-4">
-                Assessment: 5 of 6 steps complete
+                {currentStepName}: {currentStep} of 6 steps complete
               </Typography>
               <LinearProgress
                 variant="determinate"
-                value={85}
+                value={progressPercentage}
                 className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
               />
               <Typography
                 variant="caption"
                 className="text-[#1976d2] font-bold"
               >
-                You're almost there!
+                {currentStep === 6
+                  ? "All steps completed!"
+                  : "You're almost there! Just a few steps left."}
               </Typography>
             </CardContent>
           </Card>
+
           <NotificationChannels
             isEditingChannels={isEditingChannels}
             setIsEditingChannels={setIsEditingChannels}
@@ -258,8 +279,8 @@ const AssessmentContent = () => {
         router={router}
       />
     </Grid>
-  )
-}
+  );
+};
 
 const Assessment = () => {
   return (

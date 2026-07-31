@@ -20,11 +20,11 @@ export const ProgressSidebar = ({ activeStep }: ProgressSidebarProps) => {
   ];
 
   const totalSteps = steps.length;
- 
-  const safeActiveStep = Math.min(Math.max(activeStep, 0), totalSteps - 1);
-  
-  const currentStepName = steps[safeActiveStep];
-  const progressValue = Math.round(((safeActiveStep + 1) / totalSteps) * 100);
+ const currentStepNumber = Math.min(Math.max(activeStep || 1, 1), totalSteps);
+  const stepIndex = currentStepNumber - 1;
+
+  const currentStepName = steps[stepIndex];
+  const progressValue = Math.round((currentStepNumber / totalSteps) * 100);
 
   return (
     <Card className="rounded-[15px] mb-12 shadow-2xl  ">
@@ -33,7 +33,7 @@ export const ProgressSidebar = ({ activeStep }: ProgressSidebarProps) => {
           Your Application Progress
         </Typography>
         <Typography variant="body2" className="mb-4">
-          {currentStepName}: {safeActiveStep + 1} of {totalSteps} steps complete
+          {currentStepName}: {currentStepNumber} of {totalSteps} steps complete
         </Typography>
         <LinearProgress
           variant="determinate"
