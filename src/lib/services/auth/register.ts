@@ -4,6 +4,7 @@ import { Upload } from '@/lib/models/Upload.model';
 import { hashPassword } from '@/lib/utils/bcryptUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { SocialLogins } from '@/lib/models/SocialLogins.model';
+import { uploadFileService } from '../upload.service';
 
 export const register = async (body: RegisterPayload & { profilePicData?: string }) => {
 
@@ -49,24 +50,56 @@ export const register = async (body: RegisterPayload & { profilePicData?: string
     address,
     role: "user"
   });
-if (profilePicData) {
+  if (profilePicData) {
     let finalImagePath = "";
 
     if (profilePicData.startsWith("http")) {
-     
-      finalImagePath = profilePicData;
+      // console.log(222);
+      if (profilePicData.includes('google') || profilePicData.includes('fbcdn')) {
+        // Download image
+        const response = await fetch(profilePicData);
+
+        if (!response.ok) {
+          throw new Error("Failed to download profile image");
+        }
+
+        const arrayBuffer = await response.arrayBuffer();
+        const buffer = Buffer.from(arrayBuffer);
+
+        const extension =
+          response.headers.get("content-type")?.split("/")[1] || "jpg";
+
+        const file = {
+          originalFilename: `profile${profilePicData}.${extension}`,
+          mimetype: response.headers.get("content-type") || "image/jpeg",
+          buffer,
+          size: buffer.length,
+        };
+        console.log(file, 555);
+
+
+        const uploadResult: any = await uploadFileService({
+          file,
+          userId: newUser?._id as any
+        });
+        console.log(uploadResult, 3333);
+
+        newUser.profilePic = uploadResult.uploadId;
+        await newUser.save();
+      }
+      else {
+        finalImagePath = profilePicData;
+      }
     } else if (profilePicData.startsWith("data:image")) {
-       
-      finalImagePath = profilePicData; 
+      finalImagePath = profilePicData;
     } else {
-      
       finalImagePath = profilePicData;
     }
 
     if (finalImagePath) {
       const uploadDoc = await Upload.create({
         userId: newUser._id,
-        path: finalImagePath  
+        path: finalImagePath
       });
 
       newUser.profilePic = uploadDoc._id;
