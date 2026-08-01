@@ -4,7 +4,7 @@ import { Upload } from '@/lib/models/Upload.model';
 import { hashPassword } from '@/lib/utils/bcryptUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { SocialLogins } from '@/lib/models/SocialLogins.model';
-
+import { handleProfilePicUpload } from '@/lib/utils/uploadUtil';
 export const register = async (body: RegisterPayload & { profilePicData?: string }) => {
 
   const {
@@ -49,30 +49,14 @@ export const register = async (body: RegisterPayload & { profilePicData?: string
     address,
     role: "user"
   });
-if (profilePicData) {
-    let finalImagePath = "";
-
-    if (profilePicData.startsWith("http")) {
-     
-      finalImagePath = profilePicData;
-    } else if (profilePicData.startsWith("data:image")) {
-       
-      finalImagePath = profilePicData; 
-    } else {
-      
-      finalImagePath = profilePicData;
-    }
-
-    if (finalImagePath) {
-      const uploadDoc = await Upload.create({
-        userId: newUser._id,
-        path: finalImagePath  
-      });
-
-      newUser.profilePic = uploadDoc._id;
+  if (profilePicData) {
+    const newPicId = await handleProfilePicUpload(newUser._id.toString(), profilePicData);
+    if (newPicId) {
+      newUser.profilePic = newPicId;
       await newUser.save();
     }
   }
+
   if (social) {
     await SocialLogins.create({
       userId: newUser?._id,
@@ -81,7 +65,7 @@ if (profilePicData) {
       accessToken: social?.accessToken,
       scopes: social?.scopes,
       expiresAt: social?.expiresAt
-    })
+    });
   }
-  return { newUser }
+  return { newUser };
 };
