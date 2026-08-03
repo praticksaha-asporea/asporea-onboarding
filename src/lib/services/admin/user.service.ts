@@ -13,7 +13,7 @@ import { Lead } from '../../models/Lead.model';
 import { Upload } from '../../models/Upload.model';
 import fs from 'fs';
 import path from 'path';
-
+import { handleProfilePicUpload } from '../../utils/uploadUtil';  
 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
@@ -243,46 +243,14 @@ export const updateUser = async (userId: string, body: any) => {
       ? Number(update.experienceInMonths)
       : null;
 
-if (body.profilePicData === "REMOVE") {
-  update['profilePic'] = null; 
-} else if (body.profilePicData && body.profilePicData.startsWith('data:image')) {
-  
-   
-  const matches = body.profilePicData.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
-  
-  if (matches && matches.length === 3) {
-    const imageType = matches[1];  
-    const base64Data = matches[2];  
-    const buffer = Buffer.from(base64Data, 'base64');
-    
-    
-    const extension = imageType.split('/')[1] || 'jpeg';
-    const fileName = `profile_${userId}_${Date.now()}.${extension}`;
-    
-     
-    const uploadDir = path.join(process.cwd(), 'public', 'uploads', 'profiles');
-    
-    
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+if (body.profilePicData) {
+    if (body.profilePicData === "REMOVE") {
+      update['profilePic'] = null;
+    } else {
+      const newPicId = await handleProfilePicUpload(userId, body.profilePicData);
+      if (newPicId) update['profilePic'] = newPicId;
     }
-    
-    const filePath = path.join(uploadDir, fileName);
-    
-    
-    fs.writeFileSync(filePath, buffer);
-    
-     
-    const dbFilePath = `/uploads/profiles/${fileName}`;
-    
-    const uploadDoc = await Upload.create({
-      userId: new mongoose.Types.ObjectId(userId),
-      path: dbFilePath  
-    });
-    
-    update['profilePic'] = uploadDoc._id;
   }
-}
 const updated = await UserModel.findByIdAndUpdate(
     userId,
     { $set: update },

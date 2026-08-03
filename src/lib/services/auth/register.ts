@@ -4,8 +4,7 @@ import { Upload } from '@/lib/models/Upload.model';
 import { hashPassword } from '@/lib/utils/bcryptUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { SocialLogins } from '@/lib/models/SocialLogins.model';
-import { uploadFileService } from '../upload.service';
-
+import { handleProfilePicUpload } from '@/lib/utils/uploadUtil';
 export const register = async (body: RegisterPayload & { profilePicData?: string }) => {
 
   const {
@@ -51,61 +50,13 @@ export const register = async (body: RegisterPayload & { profilePicData?: string
     role: "user"
   });
   if (profilePicData) {
-    let finalImagePath = "";
-
-    if (profilePicData.startsWith("http")) {
-      // console.log(222);
-      if (profilePicData.includes('google') || profilePicData.includes('fbcdn')) {
-        // Download image
-        const response = await fetch(profilePicData);
-
-        if (!response.ok) {
-          throw new Error("Failed to download profile image");
-        }
-
-        const arrayBuffer = await response.arrayBuffer();
-        const buffer = Buffer.from(arrayBuffer);
-
-        const extension =
-          response.headers.get("content-type")?.split("/")[1] || "jpg";
-
-        const file = {
-          originalFilename: `profile${profilePicData}.${extension}`,
-          mimetype: response.headers.get("content-type") || "image/jpeg",
-          buffer,
-          size: buffer.length,
-        };
-        console.log(file, 555);
-
-
-        const uploadResult: any = await uploadFileService({
-          file,
-          userId: newUser?._id as any
-        });
-        console.log(uploadResult, 3333);
-
-        newUser.profilePic = uploadResult.uploadId;
-        await newUser.save();
-      }
-      else {
-        finalImagePath = profilePicData;
-      }
-    } else if (profilePicData.startsWith("data:image")) {
-      finalImagePath = profilePicData;
-    } else {
-      finalImagePath = profilePicData;
-    }
-
-    if (finalImagePath) {
-      const uploadDoc = await Upload.create({
-        userId: newUser._id,
-        path: finalImagePath
-      });
-
-      newUser.profilePic = uploadDoc._id;
+    const newPicId = await handleProfilePicUpload(newUser._id.toString(), profilePicData);
+    if (newPicId) {
+      newUser.profilePic = newPicId;
       await newUser.save();
     }
   }
+
   if (social) {
     await SocialLogins.create({
       userId: newUser?._id,
@@ -114,7 +65,7 @@ export const register = async (body: RegisterPayload & { profilePicData?: string
       accessToken: social?.accessToken,
       scopes: social?.scopes,
       expiresAt: social?.expiresAt
-    })
+    });
   }
-  return { newUser }
+  return { newUser };
 };
