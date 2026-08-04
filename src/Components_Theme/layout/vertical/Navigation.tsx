@@ -63,18 +63,18 @@ const Navigation = () => {
     // eslint-disable-next-line lines-around-comment
     // Sidebar Vertical Menu
     <VerticalNav customStyles={navigationCustomStyles(theme)}>
-      
-      <NavHeader>
+
+      <NavHeader>{isBreakpointReached && <i className='ri-close-line text-xl cursor-pointer' onClick={() => toggleVerticalNav(false)} />}
         <Link href='/'>
           <Logo />
         </Link>
-        {isBreakpointReached && <i className='ri-close-line text-xl' onClick={() => toggleVerticalNav(false)} />}
+
       </NavHeader>
       <StyledBoxForShadow ref={shadowRef} />
-      
-       
-        <CandidateMenu scrollMenu={scrollMenu} />
-      
+
+
+      <CandidateMenu scrollMenu={scrollMenu} />
+
     </VerticalNav>
   )
 }
