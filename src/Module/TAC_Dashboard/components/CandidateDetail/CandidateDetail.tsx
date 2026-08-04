@@ -4,7 +4,7 @@ import { Box, Grid, Stack, CircularProgress, Typography } from "@mui/material";
 
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
-// Components Imports 
+// Components Imports
 import CandidateHeader from "./CandidateHeader";
 import InquiryDetailsForm from "./InquiryDetailsForm";
 import PreCounsellingForm from "./PreCounsellingForm";
@@ -25,7 +25,7 @@ interface CandidateDetailProps {
 const CandidateDetail: React.FC<CandidateDetailProps> = (
   {
     // setCurrentView
-  }
+  },
 ) => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
@@ -43,32 +43,46 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
 
   //, setSelectedCandidate
   const {
-    c, preferences, source, branchId, consultantId, inqAssign, assessAssign,
-    tacList, escalateTo, setEscalateTo, currentUser, isFoe, handleBack
+    c,
+    preferences,
+    source,
+    branchId,
+    consultantId,
+    inqAssign,
+    assessAssign,
+    tacList,
+    escalateTo,
+    setEscalateTo,
+    currentUser,
+    isFoe,
+    handleBack,
     // , setSelectedCandidate
   } = useCandidateDetail({ selectedCandidate });
-  //, setCurrentView 
+  //, setCurrentView
 
   useEffect(() => {
     if (!id) return;
     setLoading(true);
     getTacCandidateDetailAction(id)
       .then((response: any) => {
-        // setData(response?.data?.data); 
+        // setData(response?.data?.data);
         setSelectedCandidate({
           _id: response?.data?.data.lead._id,
           name: response?.data?.data.lead.fullName ?? "—",
           inqNo: response?.data?.data.lead.inqNo ?? "—",
           stage: response?.data?.data.lead.status ?? "—",
           status: response?.data?.data.lead.status ?? "—",
-          profilePic: response?.data?.data.lead.profilePic,  
+          profilePic: response?.data?.data.lead.profilePic,
           contact: response?.data?.data.lead.contact,
           address: response?.data?.data.lead.address,
-          preferences: response?.data?.data.lead.preferences ? {
-            branchId: response?.data?.data.lead.preferences.branchId,
-            consultantId: response?.data?.data.lead.preferences.consultantId,
-            visitType: response?.data?.data.lead.preferences.visitType,
-          } : undefined,
+          preferences: response?.data?.data.lead.preferences
+            ? {
+                branchId: response?.data?.data.lead.preferences.branchId,
+                consultantId:
+                  response?.data?.data.lead.preferences.consultantId,
+                visitType: response?.data?.data.lead.preferences.visitType,
+              }
+            : undefined,
           source: response?.data?.data.lead.source,
           experience: response?.data?.data.lead.experience,
           documents: response?.data?.data.lead.documents,
@@ -77,10 +91,13 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
           token: response?.data?.data.branchToken?.tokenNo ?? null,
           lastActivity: response?.data?.data.lead.updatedAt,
           assignmentByPhase: response?.data?.data.assignmentByPhase ?? {},
-          notificationPreference: response?.data?.data.lead?.contact ?? {},
+          notificationPreference:
+            response?.data?.data.lead?.notificationPreference ?? {},
         });
       })
-      .catch((err) => setError(err?.response?.data?.message ?? "Failed to load candidate"))
+      .catch((err) =>
+        setError(err?.response?.data?.message ?? "Failed to load candidate"),
+      )
       .finally(() => setLoading(false));
   }, [id]);
 
@@ -99,8 +116,6 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
       </Box>
     );
   }
-
-
 
   return (
     <Box className="w-full min-h-screen p-4 md:p-6">
@@ -123,19 +138,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
               />
             )}
 
-            {!!Object.keys(c.assignmentByPhase ?? {}).length && inqAssign?.status === "completed" && assessAssign && (
-              <AssessmentFormSection
-                candidate={c}
-                assessAssign={assessAssign}
-                isFoe={isFoe}
-                branchTitle={
-                  typeof branchId === "string"
-                    ? branchId
-                    : (branchId as any)?.title ?? "—"
-                }
-              // setCurrentView={setCurrentView}
-              />
-            )}
+            {!!Object.keys(c.assignmentByPhase ?? {}).length &&
+              inqAssign?.status === "completed" &&
+              assessAssign && (
+                <AssessmentFormSection
+                  candidate={c}
+                  assessAssign={assessAssign}
+                  isFoe={isFoe}
+                  branchTitle={
+                    typeof branchId === "string"
+                      ? branchId
+                      : ((branchId as any)?.title ?? "—")
+                  }
+                  // setCurrentView={setCurrentView}
+                />
+              )}
           </Stack>
         </Grid>
 
