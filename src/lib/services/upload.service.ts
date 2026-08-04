@@ -1,5 +1,6 @@
-import path from "path";
 import fs from "fs";
+import path from "path";
+import crypto from "crypto";
 import { Upload } from "@/lib/models/Upload.model";
 
 interface UploadFileParams {
@@ -17,24 +18,43 @@ export const uploadFileService = async ({
 
     const uploadedFile = Array.isArray(file) ? file[0] : file;
 
-    const originalExt = path.extname(
-        uploadedFile.originalFilename || "",
-    );
+    // Determine extension
+    let extension =
+        path.extname(uploadedFile.originalFilename || "") ||
+        path.extname(uploadedFile.filepath || "");
 
-    const hasOriginalExt =
-        uploadedFile.newFilename?.endsWith(originalExt);
+    if (!extension && uploadedFile.mimetype) {
+        extension = `.${uploadedFile.mimetype.split("/")[1]}`;
+    }
 
-    const finalFilename = hasOriginalExt
-        ? uploadedFile.newFilename
-        : `${uploadedFile.newFilename}${originalExt}`;
+    if (!extension) {
+        extension = ".jpg";
+    }
 
-    const finalPath = path.join(
-        process.cwd(),
-        "public/uploads",
-        finalFilename,
-    );
+    // Generate filename if newFilename doesn't exist
+    const finalFilename = uploadedFile.newFilename
+        ? uploadedFile.newFilename.endsWith(extension)
+            ? uploadedFile.newFilename
+            : `${uploadedFile.newFilename}${extension}`
+        : `${crypto.randomUUID()}${extension}`;
 
-    fs.renameSync(uploadedFile.filepath, finalPath);
+    const uploadDir = path.join(process.cwd(), "public/uploads");
+
+    // Ensure upload directory exists
+    if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+    }
+
+    const finalPath = path.join(uploadDir, finalFilename);
+
+    // Handle both Formidable uploads and downloaded buffers
+    if (uploadedFile.buffer) {
+        fs.writeFileSync(finalPath, uploadedFile.buffer);
+    } else if (uploadedFile.filepath) {
+        fs.renameSync(uploadedFile.filepath, finalPath);
+    } else {
+        throw new Error("Invalid file object");
+    }
 
     const filePath = `/uploads/${finalFilename}`;
 
@@ -47,5 +67,6 @@ export const uploadFileService = async ({
     return {
         uploadId: newUpload._id,
         path: filePath,
+        filename: finalFilename,
     };
 };
