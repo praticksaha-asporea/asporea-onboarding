@@ -9,6 +9,7 @@ export interface IPosition extends Document {
 
   positionBrochure?: Types.ObjectId;
   status?: boolean;
+  type?: string[];
 
   createdAt: Date;
   updatedAt: Date;
@@ -23,6 +24,7 @@ const PositionSchema = new Schema<IPosition>(
     },
 
     details: String,
+    type: [String],
 
     requiredDocuments: [
       {
