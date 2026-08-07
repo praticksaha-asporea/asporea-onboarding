@@ -71,10 +71,10 @@ const GeneralSettingSchema = new Schema<IGeneralSetting>(
     /* Inquiry Number Format */
     inquiryNumberFormat: {
       type: String,
-      default: "ASP-INQ-0000",
+      default: "ASP-INQ-00000",
       trim: true,
     },
-  assessment: {
+    assessment: {
       fullMarks: { type: Number, default: 100 },
       passingMarks: { type: Number, default: 40 }
     },

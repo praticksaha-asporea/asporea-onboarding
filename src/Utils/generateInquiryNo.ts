@@ -4,7 +4,7 @@ import { currentFy } from "./common";
 
 export const generateInquiryNo = async (): Promise<string> => {
 
-  const currentFYear =currentFy();
+  const currentFYear = currentFy();
 
   let settings = await GeneralSettingModel.findOne();
 
@@ -12,7 +12,7 @@ export const generateInquiryNo = async (): Promise<string> => {
     settings = await GeneralSettingModel.create({
       lastInq: 0,
       lastFy: currentFYear,
-      inquiryNumberFormat: "ASP-INQ-0000",
+      inquiryNumberFormat: "ASP-INQ-00000",
     });
   }
 
@@ -22,7 +22,7 @@ export const generateInquiryNo = async (): Promise<string> => {
     settings.lastInq = 0;
   }
 
-  const format = settings.inquiryNumberFormat || "ASP-INQ-0000";
+  const format = settings.inquiryNumberFormat || "ASP-INQ-00000";
 
   const generateNumber = (num: number) => {
     const zeroMatch = format.match(/0+$/);
@@ -51,7 +51,7 @@ export const generateInquiryNo = async (): Promise<string> => {
     nextInqNo++;
     inquiryNo = generateNumber(nextInqNo);
   }
-  
+
   settings.lastInq = nextInqNo;
   settings.lastFy = currentFYear;
 
