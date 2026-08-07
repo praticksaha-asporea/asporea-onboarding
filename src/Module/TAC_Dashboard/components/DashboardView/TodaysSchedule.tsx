@@ -19,7 +19,7 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ slots }) => {
     <>
       <Card
         elevation={0}
-        className="mb-6 p-4 md:p-5 bg-white dark:bg-[var(--mui-palette-background-paper)] rounded-2xl dark:border-gray-800 shadow-sm"
+        className="mb-6 p-4 md:p-5 bg-[var(--mui-palette-background-paper)] dark:bg-[var(--mui-palette-background-paper)] rounded-2xl dark:border-gray-800 shadow-sm"
       >
         <CardContent className="p-5">
           <Box className="flex items-center justify-between mb-5">
