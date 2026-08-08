@@ -9,7 +9,7 @@ export interface IUser extends Document {
   address?: string;
 
   password?: string;
-  role?: "admin" | "tac" | "user" | "foe" | "finance" | "coordinator" | "pca" | "pcra" | "institute"  | "branch_head" | "tac_head", //employer
+  role?: "admin" | "tac" | "user" | "foe" | "finance" | "coordinator" | "pca" | "pcra" | "institute" | "branch_head" | "tac_head", //employer
   passportStatus?: "having" | "not" | "applied";
   passportNo: string;
   enquired?: "yes" | "no";
@@ -28,6 +28,24 @@ export interface IUser extends Document {
 
   reviewer?: Types.ObjectId;
   createdBy?: Types.ObjectId;
+
+  // Only applicable when role === "user"
+  candidateProfile?: {
+    leadId?: Types.ObjectId;
+    technicalQualification?: string;
+    academic?: string;
+    nationality?: string;
+  };
+
+  // Only applicable when role === "tac"
+  tacProfile?: {
+    designation?: string;
+    areasOfExp?: string[];
+    languagesKnown?: string[];
+    industryExp?: string[];
+    specialization?: string[];
+    mode?: "online" | "offline" | "both";
+  };
 
   createdAt: Date;
   updatedAt: Date;
@@ -80,7 +98,27 @@ const UserSchema = new Schema<IUser>(
       ref: "User",
     },
     experienceInMonths: Number,
-    bio: String
+    bio: String,
+
+    candidateProfile: {
+      leadId: { type: Schema.Types.ObjectId, ref: "Lead" },
+      technicalQualification: { type: String, trim: true },
+      academic: { type: String, trim: true },
+      nationality: { type: String, trim: true },
+    },
+
+    tacProfile: {
+      designation: { type: String, trim: true },
+      areasOfExp: { type: [String], default: [] },
+      languagesKnown: { type: [String], default: [] },
+      industryExp: { type: [String], default: [] },
+      specialization: { type: [String], default: [] },
+      mode: {
+        type: String,
+        enum: ["online", "offline", "both"],
+        default: "both",
+      },
+    },
 
   },
   { timestamps: true }

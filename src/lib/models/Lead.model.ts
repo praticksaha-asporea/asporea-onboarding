@@ -27,6 +27,10 @@ export interface ILead extends Document {
   status?: string;
   inqNo?: string;
   inqFy?: string;
+  inqForType?: string;
+  inqForPosition?: Types.ObjectId;
+  followUpRequired?: boolean;
+  followUpAssignedTo?: Types.ObjectId;
 
   experience?: {
     type?: "fresher" | "domestic" | "abroad" | "free";
@@ -60,7 +64,12 @@ export interface ILead extends Document {
   escalatedTo?: Types.ObjectId;
 
   createdAt: Date;
-  updatedAt: Date;
+  updatedAt: Date;// add to ILead interface
+  inquiryStages?: {
+    stage1?: "pending" | "done";
+    stage2?: "pending" | "done";
+    stage3?: "pending" | "done";
+  };
 }
 
 const LeadSchema = new Schema<ILead>(
@@ -105,7 +114,28 @@ const LeadSchema = new Schema<ILead>(
       type: String,
       sparse: true,
     },
-
+    inqForType: {
+      type: String,
+      enum: ['skill', 'language', 'country', 'career'],
+      default: 'career'
+    },
+    inqForPosition: {
+      type: Schema.Types.ObjectId,
+      ref: "Position"
+    },
+    inquiryStages: {
+      stage1: { type: String, enum: ["pending", "done"], default: "pending" },
+      stage2: { type: String, enum: ["pending", "done"], default: "pending" },
+      stage3: { type: String, enum: ["pending", "done"], default: "pending" },
+    },
+    followUpRequired: {
+      type: Boolean,
+      default: false,
+    },
+    followUpAssignedTo: {
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    },
     inqFy: {
       type: String,
       sparse: true,
