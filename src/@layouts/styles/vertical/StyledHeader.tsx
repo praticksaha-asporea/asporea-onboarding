@@ -13,12 +13,25 @@ type StyledHeaderProps = {
 }
 
 const StyledHeader = styled.header<StyledHeaderProps>`
+  position: sticky;
+  top: 0;
+  z-index: 1000;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  inline-size: 100%;
+align-items: center !important;
+justify-content: flex-end !important;
+inline-size: 100% !important;
   flex-shrink: 0;
   min-block-size: var(--header-height);
+  background-color: transparent !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+
+  /* Template ki detached class ko override karo */
+  &.${verticalLayoutClasses.headerDetached} {
+    background-color: transparent !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
 
   .${verticalLayoutClasses.navbar} {
     position: relative;
@@ -27,6 +40,8 @@ const StyledHeader = styled.header<StyledHeaderProps>`
     inline-size: 100%;
     margin-inline: auto;
     max-inline-size: ${themeConfig.compactContentWidth}px;
+    margin-inline-start: auto !important; 
+    margin-inline-end: 0 !important;
   }
 
   ${({ overrideStyles }) => overrideStyles}

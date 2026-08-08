@@ -15,11 +15,14 @@ import { verticalLayoutClasses } from '../../../@layouts/utils/layoutClasses'
 
 const NavbarContent = () => {
   return (
-    <div className={classnames(verticalLayoutClasses.navbarContent, 'flex items-center justify-between gap-4 is-full')}>
-      <div className='flex items-center gap-2 sm:gap-4'>
+   <div className={classnames(verticalLayoutClasses.navbarContent, 'flex items-center justify-between w-full')}>
+      {/* 🟢 LEFT: Plain Toggle Icon (Mobile Only - No capsule, no bg) */}
+      <div className='flex items-center lg:hidden'>
         <NavToggle />
       </div>
-      <div className='flex items-center'>
+
+      {/* 🟢 RIGHT: Capsule Pill (Sirf DarkMode + Profile icon ke liye) */}
+      <div className='flex items-center gap-1.5 rounded-full px-2.5 py-1.5 ml-auto bg-[var(--mui-palette-background-paper)] border border-[var(--mui-palette-divider)] shadow-md'>
         <ModeDropdown />
         <UserDropdown />
       </div>

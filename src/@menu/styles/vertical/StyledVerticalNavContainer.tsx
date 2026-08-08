@@ -10,8 +10,7 @@ const StyledVerticalNavContainer = styled.div<StyledVerticalNavContainerProps>`
   position: relative;
   block-size: 100%;
   inline-size: 100%;
-  border-inline-end: 1px solid #efefef;
-
+  border-right: 1px solid var(--mui-palette-divider, #e2e8f0);
   /* Transition */
   transition-property: inline-size, inset-inline-start;
   transition-duration: ${({ transitionDuration }) => `${transitionDuration}ms`};

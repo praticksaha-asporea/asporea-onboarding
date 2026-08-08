@@ -4,7 +4,8 @@ export interface ILeadLog extends Document {
     leadId: Types.ObjectId;
     actionType: string;
     actionNote: string;
-    actionBy?: Types.ObjectId;
+    actionBy?: Types.ObjectId;        
+    triggeredBy: "USER" | "SYSTEM";   
     eventDate?: Date;
     createdAt: Date;
 }
@@ -31,9 +32,14 @@ const LeadLogSchema = new Schema<ILeadLog>(
             type: Schema.Types.ObjectId,
             ref: "User",
         },
+        triggeredBy: {                  
+            type: String,
+            enum: ["USER", "SYSTEM"],
+            required: true,
+            default: "SYSTEM",
+        },
         eventDate: {
             type: Date,
-            // default: Date.now,
         },
     },
     {
@@ -41,7 +47,9 @@ const LeadLogSchema = new Schema<ILeadLog>(
     }
 );
 
+// Indexes
 LeadLogSchema.index({ leadId: 1, createdAt: -1 });
+LeadLogSchema.index({ leadId: 1, triggeredBy: 1 }); 
 
 export const LeadLog =
     (mongoose.models.LeadLog as mongoose.Model<ILeadLog>) ||
