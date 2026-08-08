@@ -1,6 +1,6 @@
 
 
-export interface escalationUserRef {
+export interface transferUserRef {
     _id: string;
     firstName: string;
     lastName: string;
@@ -10,7 +10,7 @@ export interface escalationUserRef {
     whatsappNumber?: string;
 }
 
-export interface escalationLeadRef {
+export interface transferLeadRef {
     _id: string;
     fullName: string;
     status: string;
@@ -22,11 +22,11 @@ export interface escalationLeadRef {
     };
 }
 
-export interface escalationRecord {
+export interface transferRecord {
     _id: string;
-    fromId?: escalationUserRef;
-    toId?: escalationUserRef;
-    leadId?: escalationLeadRef;
+    fromId?: transferUserRef;
+    toId?: transferUserRef;
+    leadId?: transferLeadRef;
     reason: string;
     status: "requested" | "approved" | "rejected";
     remarks?: string;
@@ -35,11 +35,11 @@ export interface escalationRecord {
     actionedAt?: string;
 }
 
-export interface escalationListResponse {
+export interface transferListResponse {
     success: boolean;
     message: string;
     data: {
-        escalations: escalationRecord[];
+        transfers: transferRecord[];
         meta: {
             totalRecords: number;
             currentPage: number;
@@ -49,23 +49,23 @@ export interface escalationListResponse {
     error: string | null;
 }
 
-export interface escalationViewResponse {
+export interface transferViewResponse {
     success: boolean;
     message: string;
-    data: escalationRecord;
+    data: transferRecord;
     error: string | null;
 }
 
-export interface escalationActionResponse {
+export interface transferActionResponse {
     success: boolean;
     message: string;
-    data: escalationRecord;
+    data: transferRecord;
     error: string | null;
 }
 
-export interface escalationActionResponse {
+export interface transferActionResponse {
     success: boolean;
     message: string;
-    data: escalationRecord;
+    data: transferRecord;
     error: string | null;
 }

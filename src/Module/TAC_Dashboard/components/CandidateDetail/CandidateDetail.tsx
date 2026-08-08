@@ -51,8 +51,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
     inqAssign,
     assessAssign,
     tacList,
-    escalateTo,
-    setEscalateTo,
+    transferTo,
+    setTransferTo,
     currentUser,
     isFoe,
     handleBack,
@@ -77,11 +77,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
           address: response?.data?.data.lead.address,
           preferences: response?.data?.data.lead.preferences
             ? {
-                branchId: response?.data?.data.lead.preferences.branchId,
-                consultantId:
-                  response?.data?.data.lead.preferences.consultantId,
-                visitType: response?.data?.data.lead.preferences.visitType,
-              }
+              branchId: response?.data?.data.lead.preferences.branchId,
+              consultantId:
+                response?.data?.data.lead.preferences.consultantId,
+              visitType: response?.data?.data.lead.preferences.visitType,
+            }
             : undefined,
           source: response?.data?.data.lead.source,
           experience: response?.data?.data.lead.experience,
@@ -150,7 +150,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
                       ? branchId
                       : ((branchId as any)?.title ?? "—")
                   }
-                  // setCurrentView={setCurrentView}
+                // setCurrentView={setCurrentView}
                 />
               )}
           </Stack>
@@ -163,8 +163,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = (
             branchId={branchId}
             consultantId={consultantId}
             tacList={tacList}
-            escalateTo={escalateTo}
-            setEscalateTo={setEscalateTo}
+            transferTo={transferTo}
+            setTransferTo={setTransferTo}
             currentUser={currentUser as UserData}
           />
         </Grid>

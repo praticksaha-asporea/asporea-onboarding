@@ -1,13 +1,13 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { escalationActionResponse } from "@/Types/ApiResponse/escalationRes.types";
+import { transferActionResponse } from "@/Types/ApiResponse/transferRes.types";
 import { inquiryResponse, leadDocumentUpdateResponse, updateAssessmentRes } from "@/Types/ApiResponse/leadRes.types";
 import { candidateDetailResponse, CandidatesResponse, QuestionsListReponse, sendEmailRes, TacAssessmentResponse } from "@/Types/ApiResponse/tacResponse.types";
 import { documentStatusUpdateReq } from "@/Types/Frontend_Payload/document.types";
-import { escalateReqPayload } from "@/Types/Frontend_Payload/escalation.types";
 import { expStatusUpdateReq } from "@/Types/Frontend_Payload/experience.types";
 import { InquiryUpdatePayload } from "@/Types/Frontend_Payload/lead.types";
 import { GetTacCandidatesPayload, sendEmailTACReq, UpdateAssessmentPayload, UpdateAssignmentAssessPayload, UpdateAssignmentPayload } from "@/Types/Frontend_Payload/tac.types";
 import { AxiosResponse } from "axios";
+import { transferReqPayload } from "@/Types/Frontend_Payload/transfer.types";
 
 export const getTacCandidatesAction = async (params: GetTacCandidatesPayload): Promise<AxiosResponse<CandidatesResponse>> => {
   const query = new URLSearchParams();
@@ -95,9 +95,9 @@ export const getAssessmentQuestionsList = async (
   return axiosClient.get(
     "/assessment/questions/list");
 };
-export const escalateLeadAction = async (payload: escalateReqPayload): Promise<AxiosResponse<escalationActionResponse>> => {
+export const transferLeadAction = async (payload: transferReqPayload): Promise<AxiosResponse<transferActionResponse>> => {
   // try {
-  const res = await axiosClient.post("/tac/escalate", payload);
+  const res = await axiosClient.post("/tac/transfer", payload);
   return res;//.data;
   // } catch (error: any) {
   //   throw error;

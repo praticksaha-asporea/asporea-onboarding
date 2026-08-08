@@ -1,20 +1,21 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import {
+  transferListPayload,
+  transferViewPayload,
+  approveRejecttransferPayload,
+} from "@/Types/Frontend_Payload/transfer.types";
+import {
+  transferListResponse,
+  transferViewResponse,
+  transferActionResponse,
+} from "@/Types/ApiResponse/transferRes.types";
 import { AxiosResponse } from "axios";
-import {
-  escalationListPayload,
-  escalationViewPayload,
-  approveRejectEscalationPayload
-} from "@/Types/Frontend_Payload/escalation.types";
-import {
-  escalationListResponse,
-  escalationViewResponse,
-  escalationActionResponse
-} from "@/Types/ApiResponse/escalationRes.types";
+
 
 
 export const getEscalationListAction = async (
-  payload: escalationListPayload
-): Promise<AxiosResponse<escalationListResponse>> => {
+  payload: transferListPayload
+): Promise<AxiosResponse<transferListResponse>> => {
   const { page = 1, limit = 10, search = "", tacId = "" } = payload;
   const url = `/tac/tachead/escalation/list?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&tacId=${encodeURIComponent(tacId)}`;
 
@@ -24,8 +25,8 @@ export const getEscalationListAction = async (
 
 
 export const getEscalationViewAction = async (
-  payload: escalationViewPayload
-): Promise<AxiosResponse<escalationViewResponse>> => {
+  payload: transferViewPayload
+): Promise<AxiosResponse<transferViewResponse>> => {
   const url = `/tac/tachead/escalation/view?id=${encodeURIComponent(payload.id)}`;
 
   const response = await axiosClient.get(url);
@@ -33,9 +34,9 @@ export const getEscalationViewAction = async (
 };
 
 
-export const approveRejectEscalationAction = async (
-  payload: approveRejectEscalationPayload
-): Promise<AxiosResponse<escalationActionResponse>> => {
+export const approveRejectTransgerAction = async (
+  payload: approveRejecttransferPayload
+): Promise<AxiosResponse<transferActionResponse>> => {
   const response = await axiosClient.post(
     "/tac/tachead/escalation/action",
     payload

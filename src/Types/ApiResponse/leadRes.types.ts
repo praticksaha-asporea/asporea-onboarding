@@ -132,7 +132,7 @@ export interface preCounsellingStatus {
         assignedTo: string | { _id: string, },
         attended: boolean,
         createdAt: string,
-        escalation: {
+        transfer: {
             requested: boolean
         },
         schedule: {
@@ -184,7 +184,7 @@ export interface assessmentScheduleResponse {
             generated: boolean,
             number: string | null
         },
-        escalation: {
+        transfer: {
             requested: boolean
         },
         _id: string,
@@ -253,7 +253,7 @@ export interface bookPreCounsellingRes {
             generated: boolean,
             number: string | null
         },
-        escalation: {
+        transfer: {
             requested: boolean
         },
         _id: string,

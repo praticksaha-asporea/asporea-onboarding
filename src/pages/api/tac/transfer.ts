@@ -3,7 +3,7 @@ import connectToDatabase from "@/lib/mongodb";
 import ResponseHandler from "@/lib/utils/responseUtil";
 import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
-import { createEscalationService } from "@/lib/services/tac/escalate.service";
+import { createTransferLeadService } from "@/lib/services/tac/transfer.service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();
@@ -13,22 +13,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-  
+
     const token = getTokenFromHeader(req);
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    
-    
-    if (authUser.role !== "tac" ) {
+
+
+    if (authUser.role !== "tac") {
       throw new ApiError("Unauthorized access", 403);
     }
 
     const { leadId, toId, reason } = req.body;
 
-    
-    const newEscalation = await createEscalationService({
-      fromId: authUser.id,  
+
+    const newEscalation = await createTransferLeadService({
+      fromId: authUser.id,
       toId,
       leadId,
       reason,
@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return ResponseHandler.sendSuccess(
       res,
       newEscalation,
-      "Lead escalated successfully. Waiting for manager approval."
+      "Lead transfer requested successfully. Waiting for approval."
     );
 
   } catch (error: unknown) {

@@ -2,18 +2,18 @@ import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { CamelCase } from "@/Utils/common";
 import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
-import { approveRejectEscalationAction } from "@/Services/APIs/tacHead/escalation.actions";
-import { approveRejectEscalationPayload } from "@/Types/Frontend_Payload/escalation.types";
-import { escalationRecord } from "@/Types/ApiResponse/escalationRes.types";
+import { approveRejectTransgerAction } from "@/Services/APIs/tacHead/escalation.actions";
+import { approveRejecttransferPayload } from "@/Types/Frontend_Payload/transfer.types";
+import { transferRecord } from "@/Types/ApiResponse/transferRes.types";
 
 interface UseModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  escalation: escalationRecord | null;
+  transfer: transferRecord | null;
   refreshData: () => void;
 }
 
-export const useEscalationActionModal = ({ open, setOpen, escalation, refreshData }: UseModalProps) => {
+export const useEscalationActionModal = ({ open, setOpen, transfer, refreshData }: UseModalProps) => {
   const [action, setAction] = useState<"approved" | "rejected" | "">("");
   const [remarks, setRemarks] = useState("");
 
@@ -34,10 +34,10 @@ export const useEscalationActionModal = ({ open, setOpen, escalation, refreshDat
     }
   }, [open, todayStr]);
 
-  const rawStatus = escalation?.leadId?.status || "";
+  const rawStatus = transfer?.leadId?.status || "";
   const leadStatus = CamelCase(rawStatus);
   const requiresSchedule = ["pre_scheduled", "assess_scheduled"].includes(rawStatus);
-  const targetTacId = escalation?.toId?._id;
+  const targetTacId = transfer?.toId?._id;
 
   useEffect(() => {
     const fetchTargetTacSlots = async () => {
@@ -63,7 +63,7 @@ export const useEscalationActionModal = ({ open, setOpen, escalation, refreshDat
   }, [action, date, requiresSchedule, targetTacId]);
 
   const handleSubmit = async () => {
-    if (!escalation) return;
+    if (!transfer) return;
     if (!action) return toast.error("Please select an action (Approve/Reject)");
     if (!remarks.trim()) return toast.error("Remarks are mandatory");
 
@@ -74,21 +74,21 @@ export const useEscalationActionModal = ({ open, setOpen, escalation, refreshDat
         date,
         from: selectedSlot.from,
         to: selectedSlot.to,
-        method: escalation?.leadId?.preferences?.visitType === "offline" ? ("off" as const) : ("on" as const),
+        method: transfer?.leadId?.preferences?.visitType === "offline" ? ("off" as const) : ("on" as const),
       };
     }
 
     setSubmitLoading(true);
     try {
-      
-      const payload: approveRejectEscalationPayload = {
-        escalationId: escalation._id,
+
+      const payload: approveRejecttransferPayload = {
+        transferId: transfer._id,
         status: action,
         remarks,
         schedule: schedulePayload,
       };
 
-      const res = await approveRejectEscalationAction(payload);
+      const res = await approveRejectTransgerAction(payload);
 
       if (res?.data?.success) {
         toast.success(res.data.message || `Escalation executed successfully!`);

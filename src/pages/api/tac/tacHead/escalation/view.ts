@@ -6,7 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { getEscalationByIdService } from "@/lib/services/tac/escalate.service";
+import { getETransferLeadByIdService } from "@/lib/services/tac/transfer.service";
 
 export default async function handler(
   req: NextApiRequest,
@@ -33,7 +33,7 @@ export default async function handler(
 
     const { id } = req.query;
 
-    const escalationDetails = await getEscalationByIdService(id as string);
+    const escalationDetails = await getETransferLeadByIdService(id as string);
 
     return ResponseHandler.sendSuccess(
       res,

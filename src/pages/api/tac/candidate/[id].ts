@@ -43,7 +43,7 @@ export default async function handler(
       throw new ApiError("Unauthorized access. Insufficient permissions.", 403);
 
     const { id, settings } = req.query;
-    
+
     if (!id || typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id))
       throw new ApiError("Invalid candidate ID", 400);
     let leadFilter: Record<string, unknown> = {
@@ -59,7 +59,7 @@ export default async function handler(
       leadFilter["preferences.branchId"] = shift.branchId;
 
     } else if (userRole === "tac_head") {
-       
+
       const shiftInfos = await EmployeeBranchShiftModel.find({
         employeeId: new mongoose.Types.ObjectId(authUser.id),
       }).lean();
@@ -144,7 +144,7 @@ export default async function handler(
     // All assignments for this lead, keyed by phase
     const assignments = await Assignment.find({ leadId: id })
       .select(
-        "phase status schedule token attended escalation assignedTo createdAt updatedAt pre",
+        "phase status schedule token attended transfer assignedTo createdAt updatedAt pre",
       )
       .populate({
         path: "pre.initialCV",
@@ -164,19 +164,18 @@ export default async function handler(
       generalSettings = await GeneralSettingModel.findOne().lean();
     }
     // console.log(assignmentByPhase["assess"],1612165);
-    
-    if(assignmentByPhase?.["assess"]?.status==="completed")
-    {
-      assessResult= await AssessmentModel.findOne({leadId: lead?._id})
+
+    if (assignmentByPhase?.["assess"]?.status === "completed") {
+      assessResult = await AssessmentModel.findOne({ leadId: lead?._id })
     }
     return ResponseHandler.sendSuccess(
       res,
-      { lead, branchToken, assignments, assignmentByPhase, generalSettings,assessResult },
+      { lead, branchToken, assignments, assignmentByPhase, generalSettings, assessResult },
       "Candidate fetched",
     );
   } catch (error: unknown) {
-    console.log(error,13516);
-    
+    console.log(error, 13516);
+
     if (error instanceof ApiError)
       return ResponseHandler.sendError(
         res,

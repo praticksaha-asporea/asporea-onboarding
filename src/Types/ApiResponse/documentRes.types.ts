@@ -144,9 +144,9 @@ export interface docPhaseAssignmentItem {
     generated: boolean;
     number: string | null;
   };
-  escalation?: {
+  transfer?: {
     requested: boolean;
-    escalatedTo?: string;
+    transferredTo?: string;
   };
   pre?: {
     additionalDetails?: string;

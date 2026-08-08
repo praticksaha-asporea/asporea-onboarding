@@ -1,9 +1,9 @@
 import { Assignment } from "@/lib/models/Assignment.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
-import { EscalationReportModel } from "@/lib/models/EscalationReport.model";
+import { TransferLeadModel } from "@/lib/models/TransferLead.model";
 import { Lead } from "@/lib/models/Lead.model";
 import mongoose from "mongoose";
-import { getEscalationListService } from "../tac/escalate.service";
+import { getTransferListService } from "../tac/transfer.service";
 import { getTechnicalListService } from "../tac/technical.service";
 
 export const getTeamOverview = async ({
@@ -111,12 +111,12 @@ export const getTeamOverview = async ({
       },
     },
   ]);
-  const recentEscalations = await getEscalationListService(1, 5);
+  const recentTransfers = await getTransferListService(1, 5);
   const technicalRequested = await getTechnicalListService(1, 5, '', '', 'refered');
 
   return {
     teamOverview: assignmentSummary,
-    recentEscalations,
+    recentTransfers,
     technicalReviews: technicalRequested
 
   };
@@ -166,12 +166,12 @@ export const getTacHeadKpis = async (userId: string, role: string) => {
   const candidateIds = await Lead.distinct("_id", baseQuery);
 
   const [
-    pendingEscalations,
+    pendingTransfers,
     documentsAwaiting,
     pendingTechnical,
     candidatesSupervised,
   ] = await Promise.all([
-    EscalationReportModel.countDocuments({
+    TransferLeadModel.countDocuments({
       status: "requested",
       leadId: { $in: candidateIds },
     }),
@@ -190,7 +190,7 @@ export const getTacHeadKpis = async (userId: string, role: string) => {
   ]);
 
   return {
-    pendingEscalations,
+    pendingTransfers,
     documentsAwaiting,
     pendingTechnical,
     candidatesSupervised,

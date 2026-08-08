@@ -1,4 +1,4 @@
-import { escalationRecord } from "./escalationRes.types"
+import { transferRecord } from "./transferRes.types"
 import { technicalRequestedLeadRecord } from "./technicalRes.types"
 
 export interface teamOverview {
@@ -9,15 +9,15 @@ export interface teamOverview {
     profilePic: string
 }
 export interface tacHeadKpis {
-    pendingEscalations: number,
+    pendingTransfers: number,
     documentsAwaiting: number,
     pendingTechnical: number,
     candidatesSupervised: number
 }
 export interface TacHeadDashData {
     teamOverview: teamOverview[],
-    recentEscalations: {
-        escalations: escalationRecord[]
+    recentTransfers: {
+        transfers: transferRecord[]
     },
     technicalReviews: {
         technicalRequestedLeads: technicalRequestedLeadRecord[],

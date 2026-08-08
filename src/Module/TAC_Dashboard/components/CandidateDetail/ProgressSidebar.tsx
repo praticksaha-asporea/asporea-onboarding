@@ -9,11 +9,11 @@ import { UserData } from "@/Redux/Auth/user.slice";
 
 interface ProgressSidebarProps {
   candidate: CandidateLead; isFoe: boolean; branchId: IBranch; consultantId: IUser;
-  tacList: IUser[]; escalateTo: string; setEscalateTo: (val: string) => void; currentUser: UserData;
+  tacList: IUser[]; transferTo: string; setTransferTo: (val: string) => void; currentUser: UserData;
 }
 
-const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ candidate, isFoe, branchId, consultantId, tacList, escalateTo, setEscalateTo, currentUser }) => {
-  const { escalationForm, fe, fh } = useProgressSidebar(candidate, escalateTo, setEscalateTo);
+const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ candidate, isFoe, branchId, consultantId, tacList, transferTo, setTransferTo, currentUser }) => {
+  const { transferForm, fe, fh } = useProgressSidebar(candidate, transferTo, setTransferTo);
 
   return (
     <Card className="p-5 sticky top-6 rounded-xl shadow-2xl">
@@ -26,21 +26,21 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ candidate, isFoe, bra
       </Box>
 
       {!isFoe && (
-        <form onSubmit={escalationForm.handleSubmit}>
+        <form onSubmit={transferForm.handleSubmit}>
           <FormControl fullWidth className="mb-4" error={fe("toId")}>
-            <InputLabel>Escalate</InputLabel>
-            <Select label="Escalate" name="toId" value={escalationForm.values.toId} onChange={(e) => { escalationForm.handleChange(e); setEscalateTo(e.target.value as string); }} onBlur={escalationForm.handleBlur}>
+            <InputLabel>Transfer</InputLabel>
+            <Select label="Transfer" name="toId" value={transferForm.values.toId} onChange={(e) => { transferForm.handleChange(e); setTransferTo(e.target.value as string); }} onBlur={transferForm.handleBlur}>
               <MenuItem value="">-- Select TAC --</MenuItem>
               {tacList.map((tac) => (<MenuItem key={tac._id.toString()}
                 value={tac._id.toString()}>{`${tac.firstName} ${tac.lastName ?? ""}`.trim()}</MenuItem>))}
             </Select>
             {fh("toId") && <FormHelperText>{fh("toId")}</FormHelperText>}
           </FormControl>
-          <TextField fullWidth multiline rows={3} label="Reason *" name="reason" placeholder="Enter reason for escalation..." className="mb-4" slotProps={{ input: { className: "text-[14px]" } }} value={escalationForm.values.reason} onChange={escalationForm.handleChange} onBlur={escalationForm.handleBlur} error={fe("reason")} helperText={fh("reason")} />
-          <Typography className="text-[12px] text-[var(--mui-palette-error-light)] mb-4 font-medium">NOTE: This will need approval of your manager.</Typography>
+          <TextField fullWidth multiline rows={3} label="Reason *" name="reason" placeholder="Enter reason for transfer..." className="mb-4" slotProps={{ input: { className: "text-[14px]" } }} value={transferForm.values.reason} onChange={transferForm.handleChange} onBlur={transferForm.handleBlur} error={fe("reason")} helperText={fh("reason")} />
+          <Typography className="text-[12px] text-[var(--mui-palette-error-light)] mb-4 font-medium">NOTE: This will need approval.</Typography>
           <Box className="flex justify-center">
-            <Button variant="contained" type="submit" disabled={escalationForm.isSubmitting} className="w-full normal-case rounded-xl shadow-md">
-              {escalationForm.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Submit"}
+            <Button variant="contained" type="submit" disabled={transferForm.isSubmitting} className="w-full normal-case rounded-xl shadow-md">
+              {transferForm.isSubmitting ? <CircularProgress size={24} color="inherit" /> : "Submit"}
             </Button>
           </Box>
         </form>

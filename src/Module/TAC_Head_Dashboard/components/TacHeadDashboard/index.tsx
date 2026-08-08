@@ -23,14 +23,13 @@ import { formatDistanceToNow } from "date-fns";
 import { CamelCase } from "@/Utils/common";
 import { useRouter } from "next/navigation";
 import { TacHeadDashData, teamOverview } from "@/Types/ApiResponse/tacHeaddashboard.types";
-import { IEscalationReport } from "@/lib/models/EscalationReport.model";
-import { escalationRecord } from "@/Types/ApiResponse/escalationRes.types";
 import { technicalRequestedLeadRecord } from "@/Types/ApiResponse/technicalRes.types";
+import { transferRecord } from "@/Types/ApiResponse/transferRes.types";
 
 // ---- Mock data — TODO: replace with API calls ----
 
 
-const escalationStatusColor: Record<string, "success" | "warning" | "error"> = {
+const transferStatusColor: Record<string, "success" | "warning" | "error"> = {
   approved: "success",
   requested: "warning",
   rejected: "error",
@@ -39,8 +38,8 @@ const escalationStatusColor: Record<string, "success" | "warning" | "error"> = {
 const TacHeadDashboard: React.FC = () => {
   const theme = useTheme();
   const router = useRouter();
-
-  const { kpiCards, escalations, technicalReviews, teamOverview, resolveFileSrc } = useTacHeadDashboard();
+  // escalations,
+  const { kpiCards, technicalReviews, teamOverview, resolveFileSrc } = useTacHeadDashboard();
   return (
     <Box>
       <Typography className="text-2xl md:text-3xl font-semibold mb-1 text-[var(--mui-paletter-text-primary)]">
@@ -106,8 +105,7 @@ const TacHeadDashboard: React.FC = () => {
       </>
 
       <Box className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-6">
-        {/* Recent Escalations */}
-        <Card
+        {/* <Card
           elevation={0}
           className="lg:col-span-2 rounded-2xl border border-gray-100 shadow-md h-full"
         >
@@ -132,7 +130,7 @@ const TacHeadDashboard: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {escalations?.map((e: escalationRecord) => (
+                {escalations?.map((e: transferRecord) => (
                   <TableRow key={e._id}>
                     <TableCell>
                       <Typography className="text-sm font-medium text-gray-700">{e.leadId?.fullName}</Typography>
@@ -147,7 +145,7 @@ const TacHeadDashboard: React.FC = () => {
                       <Chip
                         label={CamelCase(e.status)}
                         size="small"
-                        color={escalationStatusColor[e.status] ?? "default"}
+                        color={transferStatusColor[e.status] ?? "default"}
                         sx={{ fontWeight: 600 }}
                       />
                     </TableCell>
@@ -169,7 +167,7 @@ const TacHeadDashboard: React.FC = () => {
               </TableBody>
             </Table>
           </CardContent>
-        </Card>
+        </Card> */}
 
         {/* Right column */}
         <Stack spacing={3}>

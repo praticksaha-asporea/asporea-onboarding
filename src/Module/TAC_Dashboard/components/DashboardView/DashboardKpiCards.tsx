@@ -54,9 +54,10 @@ const DashboardKpiCards: React.FC<DashboardKpiCardsProps> = ({ kpis, variant = "
         icon: "ri-inbox-line",
         color: "secondary",
       }
-      : {
-        title: "Escalations Raised",
-        value: kpis?.escalationsRaised ?? "—",
+      :
+      {
+        title: "Transfers Raised",
+        value: "—",//kpis?.escalationsRaised
         desc: "Awaiting manager approval",
         icon: "ri-alarm-warning-line",
         color: "error",

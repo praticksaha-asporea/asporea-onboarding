@@ -1,29 +1,29 @@
-export interface escalationScheduleInfo {
+export interface transferScheduleInfo {
   date: string;
   from: string;
   to: string;
   method: "on" | "off";
 }
 
-export interface escalationListPayload {
+export interface transferListPayload {
   page?: number;
   limit?: number;
   search?: string;
   tacId?: string;
 }
 
-export interface escalationViewPayload {
+export interface transferViewPayload {
   id: string;
 }
 
-export interface approveRejectEscalationPayload {
-  escalationId: string;
+export interface approveRejecttransferPayload {
+  transferId: string;
   status: "approved" | "rejected";
   remarks: string;
-  schedule?: escalationScheduleInfo;
+  schedule?: transferScheduleInfo;
 }
 
-export interface escalateReqPayload {
+export interface transferReqPayload {
   leadId: string;
   toId: string;
   reason: string;

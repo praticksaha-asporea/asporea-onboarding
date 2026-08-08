@@ -13,7 +13,11 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 
 
-export interface kpiTypes { openCases: number, pendingCounselling: number, pendingAssessment: number, escalationsRaised: number, unassignedInquiries: number } //dueToday: number,
+export interface kpiTypes {
+  openCases: number, pendingCounselling: number, pendingAssessment: number,
+  // escalationsRaised: number,
+  unassignedInquiries: number
+} //dueToday: number,
 
 export const useDashboardView = () => {
   const router = useRouter();

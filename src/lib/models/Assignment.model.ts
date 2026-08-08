@@ -59,9 +59,9 @@ export interface IAssignment extends Document {
     initialCV?: Types.ObjectId | IUpload;
   };
 
-  escalation?: {
+  transfer?: {
     requested: boolean;
-    escalatedTo?: Types.ObjectId;
+    transferredTo?: Types.ObjectId;
   };
 
   createdAt: Date;
@@ -152,13 +152,13 @@ const AssignmentSchema = new Schema<IAssignment>(
       },
     },
 
-    escalation: {
+    transfer: {
       requested: {
         type: Boolean,
         default: false,
       },
 
-      escalatedTo: {
+      transferredTo: {
         type: Schema.Types.ObjectId,
         ref: "User",
       },

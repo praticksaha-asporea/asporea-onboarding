@@ -23,7 +23,7 @@ export interface CandidatesResponse {
             pendingCounselling: number,
             pendingAssessment: number
             // dueToday: number,
-            escalationsRaised: number,
+            // escalationsRaised: number,
             unassignedInquiries: number
         },
         todaySchedule: todaySchedule[]
@@ -49,7 +49,7 @@ export interface TacAssessmentResponse {
             generated: boolean
         },
         attended: boolean,
-        escalation: {
+        transfer: {
             requested: boolean
         },
         createdAt: string,

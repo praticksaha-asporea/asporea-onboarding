@@ -61,7 +61,7 @@ export interface ILead extends Document {
     type?: "self" | "tac" | "pca" | "pcra" | "sub_pca" | "institute";
   };
 
-  escalatedTo?: Types.ObjectId;
+  transferredTo?: Types.ObjectId;
 
   createdAt: Date;
   updatedAt: Date;// add to ILead interface
@@ -201,7 +201,7 @@ const LeadSchema = new Schema<ILead>(
       },
     },
 
-    escalatedTo: {
+    transferredTo: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },

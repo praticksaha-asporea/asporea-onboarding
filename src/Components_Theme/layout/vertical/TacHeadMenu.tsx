@@ -62,10 +62,10 @@ const TacHeadMenu = ({
           Dashboard
         </MenuItem>
         <MenuItem
-          href="/tac-head/escalations"
+          href="/tac-head/transfers"
           icon={<i className="ri-shield-check-line" />}
         >
-          Escalations
+          Transfers
         </MenuItem>
         <MenuItem
           href="/tac-head/documents"

@@ -1,7 +1,7 @@
-import EscalationsView from "@/Module/TAC_Head_Dashboard/components/EscalationsView/EscalationsView";
+import TransfersView from "@/Module/TAC_Head_Dashboard/components/TransfersView/TransfersView";
 
 const TACHeadDashboardPage = () => {
-    return <EscalationsView />;
+    return <TransfersView />;
 };
 
 export default TACHeadDashboardPage;

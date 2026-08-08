@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 
-export interface IEscalationReport extends Document {
+export interface ITransferLead extends Document {
   fromId: Types.ObjectId;
   toId: Types.ObjectId;
 
@@ -17,7 +17,7 @@ export interface IEscalationReport extends Document {
   updatedAt: Date;
 }
 
-const EscalationReportSchema = new Schema<IEscalationReport>(
+const TransferLeadSchema = new Schema<ITransferLead>(
   {
     fromId: {
       type: Schema.Types.ObjectId,
@@ -63,14 +63,14 @@ const EscalationReportSchema = new Schema<IEscalationReport>(
 );
 
 /* ================= INDEXES ================= */
-EscalationReportSchema.index({ assignmentId: 1 });
-// EscalationReportSchema.index({ fromId: 1 });
-// EscalationReportSchema.index({ toId: 1 });
+TransferLeadSchema.index({ assignmentId: 1 });
+// TransferLeadSchema.index({ fromId: 1 });
+// TransferLeadSchema.index({ toId: 1 });
 
 /* ================= EXPORT ================= */
-export const EscalationReportModel =
-  mongoose.models.EscalationReport ||
-  mongoose.model<IEscalationReport>(
-    "EscalationReport",
-    EscalationReportSchema
+export const TransferLeadModel =
+  mongoose.models.TransferLead ||
+  mongoose.model<ITransferLead>(
+    "TransferLead",
+    TransferLeadSchema
   );

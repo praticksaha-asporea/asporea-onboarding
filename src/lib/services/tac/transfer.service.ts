@@ -1,4 +1,4 @@
-import { EscalationReportModel } from "@/lib/models/EscalationReport.model";
+import { TransferLeadModel } from "@/lib/models/TransferLead.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 import "@/lib/models/User.model";
 import "@/lib/models/Upload.model"
@@ -7,7 +7,7 @@ import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
 
-interface EscalatePayload {
+interface TransferPayload {
   fromId: string;
   toId: string;
   leadId: string;
@@ -21,29 +21,29 @@ interface NewScheduleInfo {
   method?: "on" | "off";
 }
 
-export const createEscalationService = async (payload: EscalatePayload) => {
+export const createTransferLeadService = async (payload: TransferPayload) => {
   const { fromId, toId, leadId, reason } = payload;
 
   if (!leadId || !toId || !reason) {
-    throw new ApiError("Lead ID, Escalation TAC, and Reason are required", 400);
+    throw new ApiError("Lead ID, Transfer TAC, and Reason are required", 400);
   }
 
-  const existingEscalation = await EscalationReportModel.findOne({
+  const existingTransfer = await TransferLeadModel.findOne({
     leadId,
     status: { $in: ["requested", "approved"] },
   });
 
-  if (existingEscalation) {
-    if (existingEscalation.status === "requested") {
+  if (existingTransfer) {
+    if (existingTransfer.status === "requested") {
       throw new ApiError(
-        "Escalation request already submitted and awaiting manager approval.",
+        "Transfer request already submitted and awaiting manager approval.",
         400,
       );
     } else {
-      throw new ApiError("This candidate has a history of escalation.", 400);
+      throw new ApiError("This candidate has a history of transfer.", 400);
     }
   }
-  const newEscalation = await EscalationReportModel.create({
+  const newTransfer = await TransferLeadModel.create({
     fromId,
     toId,
     leadId,
@@ -55,18 +55,18 @@ export const createEscalationService = async (payload: EscalatePayload) => {
     { leadId: leadId, assignedTo: fromId },
     {
       $set: {
-        "escalation.requested": true,
-        "escalation.escalatedTo": toId,
+        "transfer.requested": true,
+        "transfer.transferredTo": toId,
       },
     },
   );
 
-  return newEscalation;
+  return newTransfer;
 };
 
- 
 
-export const getEscalationListService = async (
+
+export const getTransferListService = async (
   page = 1,
   limit = 10,
   filterUserId?: string | null,
@@ -76,28 +76,28 @@ export const getEscalationListService = async (
   const skip = (page - 1) * limit;
 
   let matchQuery: any = {};
-  let leadMatchQuery: any = {};  
+  let leadMatchQuery: any = {};
 
-   
+
   if (tacId && mongoose.Types.ObjectId.isValid(tacId)) {
     matchQuery.toId = new mongoose.Types.ObjectId(tacId);
   }
 
-   
+
   if (search) {
     const searchRegex = new RegExp(search, "i");
     leadMatchQuery.$or = [
       { fullName: searchRegex },
       { inqNo: searchRegex }
     ];
-    
-     
+
+
     if (!isNaN(Number(search))) {
       leadMatchQuery.$or.push({ inquiryNumber: Number(search) });
     }
   }
 
-  
+
   if (filterUserId) {
     const shiftInfos = await EmployeeBranchShiftModel.find({
       employeeId: new mongoose.Types.ObjectId(filterUserId),
@@ -126,47 +126,47 @@ export const getEscalationListService = async (
     const branchObjectIds = assignedBranchIds.map(
       (id) => new mongoose.Types.ObjectId(id),
     );
-    
-     
+
+
     leadMatchQuery["preferences.branchId"] = { $in: branchObjectIds };
   }
 
-   
+
   if (Object.keys(leadMatchQuery).length > 0) {
     const matchingLeads = await Lead.find(leadMatchQuery).select("_id").lean();
     const branchLeadIds = matchingLeads.map((lead) => lead._id);
 
-    
+
     if (branchLeadIds.length === 0) {
       return {
-        escalations: [],
+        transfers: [],
         meta: { totalRecords: 0, currentPage: page, totalPages: 0 },
       };
     }
     matchQuery.leadId = { $in: branchLeadIds };
   }
 
-  const totalRecords = await EscalationReportModel.countDocuments(matchQuery);
+  const totalRecords = await TransferLeadModel.countDocuments(matchQuery);
 
-  const escalations = await EscalationReportModel.find(matchQuery)
+  const transfers = await TransferLeadModel.find(matchQuery)
     .populate({
       path: "fromId",
-      select: "firstName lastName email role profilePic",  
-      populate: { path: "profilePic", select: "path" }    
+      select: "firstName lastName email role profilePic",
+      populate: { path: "profilePic", select: "path" }
     })
     .populate({
       path: "toId",
-      select: "firstName lastName email role profilePic",  
-      populate: { path: "profilePic", select: "path" }     
+      select: "firstName lastName email role profilePic",
+      populate: { path: "profilePic", select: "path" }
     })
     .populate({
       path: "leadId",
-      select: "fullName status inqNo preferences createdBy",  
-      populate: { 
-        path: "createdBy.id", 
+      select: "fullName status inqNo preferences createdBy",
+      populate: {
+        path: "createdBy.id",
         model: "User",
         select: "profilePic",
-        populate: { path: "profilePic", select: "path" }  
+        populate: { path: "profilePic", select: "path" }
       }
     })
     .sort({ createdAt: -1 })
@@ -174,7 +174,7 @@ export const getEscalationListService = async (
     .limit(limit)
     .lean();
   return {
-    escalations,
+    transfers,
     meta: {
       totalRecords,
       currentPage: page,
@@ -183,12 +183,12 @@ export const getEscalationListService = async (
   };
 };
 
-export const getEscalationByIdService = async (escalationId: string) => {
-  if (!escalationId || !mongoose.Types.ObjectId.isValid(escalationId)) {
-    throw new ApiError("Valid Escalation ID is required", 400);
+export const getETransferLeadByIdService = async (transferId: string) => {
+  if (!transferId || !mongoose.Types.ObjectId.isValid(transferId)) {
+    throw new ApiError("Valid Transfer ID is required", 400);
   }
 
-  const escalation = await EscalationReportModel.findById(escalationId)
+  const transfer = await TransferLeadModel.findById(transferId)
 
     .populate({
       path: "fromId",
@@ -201,25 +201,25 @@ export const getEscalationByIdService = async (escalationId: string) => {
     .populate("leadId")
     .lean();
 
-  if (!escalation) {
-    throw new ApiError("Escalation record not found", 404);
+  if (!transfer) {
+    throw new ApiError("Transfer record not found", 404);
   }
 
-  return escalation;
+  return transfer;
 };
 
-export const updateEscalationStatusService = async (
-  escalationId: string,
+export const updateTransferLeadStatusService = async (
+  transferId: string,
   status: "approved" | "rejected",
   remarks?: string,
   newSchedule?: NewScheduleInfo,
 ) => {
-  const escalation = await EscalationReportModel.findById(escalationId);
+  const transfer = await TransferLeadModel.findById(transferId);
 
-  if (!escalation) throw new ApiError("Escalation record not found", 404);
-  if (escalation.status !== "requested") {
+  if (!transfer) throw new ApiError("Transfer record not found", 404);
+  if (transfer.status !== "requested") {
     throw new ApiError(
-      `Cannot update. Request is already ${escalation.status}`,
+      `Cannot update. Request is already ${transfer.status}`,
       400,
     );
   }
@@ -228,9 +228,9 @@ export const updateEscalationStatusService = async (
 
   if (status === "approved") {
     pendingAssignments = await Assignment.find({
-      leadId: escalation.leadId,
-      assignedTo: escalation.fromId,
-      "escalation.requested": true,
+      leadId: transfer.leadId,
+      assignedTo: transfer.fromId,
+      "transfer.requested": true,
     });
 
     if (pendingAssignments.length > 0) {
@@ -257,7 +257,7 @@ export const updateEscalationStatusService = async (
         endOfDay.setHours(23, 59, 59, 999);
 
         const slotConflict = await Assignment.findOne({
-          assignedTo: escalation.toId,
+          assignedTo: transfer.toId,
           "schedule.date": { $gte: startOfDay, $lte: endOfDay },
           "schedule.from": newSchedule.from,
           status: { $ne: "rejected" },
@@ -273,16 +273,16 @@ export const updateEscalationStatusService = async (
     }
   }
 
-  escalation.status = status;
-  if (remarks) escalation.remarks = remarks;
-  escalation.actionedAt = new Date();
-  await escalation.save();
+  transfer.status = status;
+  if (remarks) transfer.remarks = remarks;
+  transfer.actionedAt = new Date();
+  await transfer.save();
 
   if (status === "approved") {
-    await Lead.findByIdAndUpdate(escalation.leadId, {
+    await Lead.findByIdAndUpdate(transfer.leadId, {
       $set: {
-        "preferences.consultantId": escalation.toId,
-        escalatedTo: escalation.toId,
+        "preferences.consultantId": transfer.toId,
+        transferredTo: transfer.toId,
       },
     });
 
@@ -299,20 +299,20 @@ export const updateEscalationStatusService = async (
           pendingAssignment.schedule.method = newSchedule.method;
       }
 
-      pendingAssignment.assignedTo = escalation.toId;
-      pendingAssignment.escalation.requested = false;
-      pendingAssignment.escalation.escalatedTo = undefined;
+      pendingAssignment.assignedTo = transfer.toId;
+      pendingAssignment.transfer.requested = false;
+      pendingAssignment.transfer.transferredTo = undefined;
       await pendingAssignment.save();
     }
   } else if (status === "rejected") {
     await Assignment.updateMany(
-      { leadId: escalation.leadId, assignedTo: escalation.fromId },
+      { leadId: transfer.leadId, assignedTo: transfer.fromId },
       {
-        $set: { "escalation.requested": false },
-        $unset: { "escalation.escalatedTo": 1 },
+        $set: { "transfer.requested": false },
+        $unset: { "transfer.transferredTo": 1 },
       },
     );
   }
 
-  return escalation;
+  return transfer;
 };

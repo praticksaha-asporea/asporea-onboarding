@@ -26,7 +26,7 @@ import { useEscalationActionModal } from "./useEscalationActionModal";
 interface ActionModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  escalation: any;
+  transfer: any;
   refreshData: () => void;
 }
 
@@ -40,7 +40,7 @@ const resolveFileSrc = (path?: string | null) => {
 const EscalationActionModal: React.FC<ActionModalProps> = ({
   open,
   setOpen,
-  escalation,
+  transfer,
   refreshData,
 }) => {
   const theme = useTheme();
@@ -62,19 +62,19 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
     leadStatus,
     requiresSchedule,
     handleSubmit,
-  } = useEscalationActionModal({ open, setOpen, escalation, refreshData });
+  } = useEscalationActionModal({ open, setOpen, transfer, refreshData });
 
-  if (!escalation) return null;
+  if (!transfer) return null;
 
-  const cPic = escalation?.leadId?.createdBy?.id?.profilePic?.path || null;
-  const fPic = escalation?.fromId?.profilePic?.path || null;
-  const tPic = escalation?.toId?.profilePic?.path || null;
+  const cPic = transfer?.leadId?.createdBy?.id?.profilePic?.path || null;
+  const fPic = transfer?.fromId?.profilePic?.path || null;
+  const tPic = transfer?.toId?.profilePic?.path || null;
 
   return (
     <Dialog
       open={open}
       onClose={() => setOpen(false)}
-      maxWidth="md"  
+      maxWidth="md"
       fullWidth
       PaperProps={{ className: "rounded-xl" }}
     >
@@ -83,14 +83,14 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
       </DialogTitle>
 
       <DialogContent className="flex flex-col gap-5 pt-6">
-        
+
         <Box className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          
+
           {/* Candidate Info Card */}
           <Box className="p-4 rounded-xl shadow-2xl flex items-center gap-4">
-            <Avatar 
-              src={resolveFileSrc(cPic)} 
-              sx={{ width: 56, height: 56, border: '2px solid #eee', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }} 
+            <Avatar
+              src={resolveFileSrc(cPic)}
+              sx={{ width: 56, height: 56, border: '2px solid #eee', boxShadow: '0 2px 8px rgba(0,0,0,0.1)' }}
             />
             <Box>
               <Typography variant="subtitle2" className="text-[12px] uppercase tracking-wider text-[var(--mui-palette-primary)]
@@ -98,8 +98,8 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
                 Candidate Detail
               </Typography>
               <Typography className="font-medium text-[16px] mt-1">
-                {escalation.leadId?.fullName}{" "}
-                <span className="font-mono text-xs font-medium ml-1 text-gray-500">#{escalation.leadId?.inqNo}</span>
+                {transfer.leadId?.fullName}{" "}
+                <span className="font-mono text-xs font-medium ml-1 text-gray-500">#{transfer.leadId?.inqNo}</span>
               </Typography>
               <Chip label={CamelCase(leadStatus)} size="small" className="mt-1 h-[20px] text-[10px] font-bold text-white bg-green-500" />
             </Box>
@@ -116,7 +116,7 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
                 <Box className="flex items-center gap-2">
                   <Avatar src={resolveFileSrc(fPic)} sx={{ width: 32, height: 32 }} />
                   <Typography className="font-medium text-[14px]">
-                    {escalation.fromId?.firstName} {escalation.fromId?.lastName}
+                    {transfer.fromId?.firstName} {transfer.fromId?.lastName}
                   </Typography>
                 </Box>
               </Box>
@@ -128,7 +128,7 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
                 <Box className="flex items-center gap-2">
                   <Avatar src={resolveFileSrc(tPic)} sx={{ width: 32, height: 32 }} />
                   <Typography className="font-medium text-[14px] text-blue-600">
-                    {escalation.toId?.firstName} {escalation.toId?.lastName}
+                    {transfer.toId?.firstName} {transfer.toId?.lastName}
                   </Typography>
                 </Box>
               </Box>
@@ -143,7 +143,7 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
           </Typography>
           <Typography className="text-[15px] italic Escalation Reason
  p-4 rounded-lg ">
-            "{escalation.reason}"
+            "{transfer.reason}"
           </Typography>
         </Box>
 
@@ -195,7 +195,7 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
                 Candidate is in the <b>{CamelCase(leadStatus)}</b> stage. Please
                 select an available slot for{" "}
                 <b>
-                  {escalation.toId?.firstName} {escalation.toId?.lastName}
+                  {transfer.toId?.firstName} {transfer.toId?.lastName}
                 </b>.
               </Typography>
 
@@ -237,13 +237,12 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
                               : "outlined"
                           }
                           onClick={() => slot.available && setSelectedSlot(slot)}
-                          className={`normal-case rounded-lg px-4 py-1 text-sm ${
-                            selectedSlot?.time === slot.time
-                              ? "bg-blue-600 border-blue-600 text-white"
-                              : slot.available
-                                ? "bg-white border-gray-300 hover:border-blue-500 text-gray-700"
-                                : "bg-gray-100 border-gray-200"
-                          } disabled:text-gray-400`}
+                          className={`normal-case rounded-lg px-4 py-1 text-sm ${selectedSlot?.time === slot.time
+                            ? "bg-blue-600 border-blue-600 text-white"
+                            : slot.available
+                              ? "bg-white border-gray-300 hover:border-blue-500 text-gray-700"
+                              : "bg-gray-100 border-gray-200"
+                            } disabled:text-gray-400`}
                         >
                           {slot.time}
                         </Button>
@@ -290,11 +289,10 @@ const EscalationActionModal: React.FC<ActionModalProps> = ({
             (action === "approved" && requiresSchedule && !selectedSlot)
           }
           onClick={handleSubmit}
-          className={`rounded-lg px-6 normal-case shadow-md ${
-            action === "rejected"
-              ? "!bg-red-500"
-              : "!bg-blue-600"
-          }`}
+          className={`rounded-lg px-6 normal-case shadow-md ${action === "rejected"
+            ? "!bg-red-500"
+            : "!bg-blue-600"
+            }`}
         >
           {submitLoading ? (
             <CircularProgress size={20} color="inherit" />

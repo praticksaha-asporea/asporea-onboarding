@@ -6,11 +6,11 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { getEscalationListService } from "@/lib/services/tac/escalate.service";
+import { getTransferListService } from "@/lib/services/tac/transfer.service";
 
 export default async function handler(
   req: NextApiRequest,
-  res: NextApiResponse,   
+  res: NextApiResponse,
 ) {
   await connectToDatabase();
   if (req.method !== "GET") {
@@ -28,10 +28,10 @@ export default async function handler(
     }
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
-    const search = req.query.search as string;  
+    const search = req.query.search as string;
     const tacId = req.query.tacId as string;
     const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
-const result = await getEscalationListService(page, limit, filterUserId, search, tacId);
+    const result = await getTransferListService(page, limit, filterUserId, search, tacId);
     return ResponseHandler.sendSuccess(
       res,
       result,

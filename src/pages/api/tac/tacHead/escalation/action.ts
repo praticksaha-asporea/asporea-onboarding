@@ -6,7 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { updateEscalationStatusService } from "@/lib/services/tac/escalate.service";
+import { updateTransferLeadStatusService } from "@/lib/services/tac/transfer.service";
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,7 +32,7 @@ export default async function handler(
       );
     }
 
-    const { escalationId, status, remarks,schedule } = req.body;
+    const { escalationId, status, remarks, schedule } = req.body;
 
     if (!escalationId || !status) {
       throw new ApiError("Escalation ID and Status are required", 400);
@@ -46,7 +46,7 @@ export default async function handler(
     //   throw new ApiError("New schedule (date, from, to) is required when approving an escalation.", 400);
     // }
 
-    const updatedEscalation = await updateEscalationStatusService(
+    const updatedEscalation = await updateTransferLeadStatusService(
       escalationId,
       status,
       remarks,

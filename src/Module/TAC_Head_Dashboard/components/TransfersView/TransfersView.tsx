@@ -39,7 +39,7 @@ const resolveFileSrc = (path?: string | null) => {
   const BACKEND_BASE = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000";
   return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
-const EscalationsView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView }
+const TransfersView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView }
   const {
     escalations,
     loading,
@@ -215,11 +215,11 @@ const EscalationsView: React.FC<EscalationsViewProps> = () => {//{ setCurrentVie
       <EscalationActionModal
         open={modalOpen}
         setOpen={setModalOpen}
-        escalation={selectedEscalation}
+        transfer={selectedEscalation}
         refreshData={fetchEscalations}
       />
     </Box>
   );
 };
 
-export default EscalationsView;
+export default TransfersView;

@@ -37,7 +37,7 @@ export const useCandidateDetail = ({
   const assessAssign = abp["assess"] ?? null;
 
   const [tacList, setTacList] = useState<any[]>([]);
-  const [escalateTo, setEscalateTo] = useState("");
+  const [transferTo, setTransferTo] = useState("");
 
   useEffect(() => {
     const branchObjectId =
@@ -70,6 +70,6 @@ export const useCandidateDetail = ({
 
   return {
     c, preferences, source, branchId, consultantId, inqAssign, assessAssign,
-    tacList, escalateTo, setEscalateTo, currentUser, isFoe, handleBack
+    tacList, transferTo, setTransferTo, currentUser, isFoe, handleBack
   };
 };

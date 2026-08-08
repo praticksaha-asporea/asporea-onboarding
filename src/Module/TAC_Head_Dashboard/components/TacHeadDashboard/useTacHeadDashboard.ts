@@ -40,7 +40,7 @@ export const useTacHeadDashboard = () => {
         fetchDashboardItems();
     }, [fetchDashboardItems]);
 
-    const escalations = data?.recentEscalations?.escalations;
+    // const escalations = data?.recentEscalations?.escalations;
 
     const technicalReviews = data?.technicalReviews?.technicalRequestedLeads;
 
@@ -48,13 +48,13 @@ export const useTacHeadDashboard = () => {
     const teamOverview = data?.teamOverview;
     // { name: "Pratik Deshmukh", cases: 3, capacity: 10 },
     const kpiCards: KpiCardConfig[] = [
-        {
-            title: "Pending Escalations",
-            value: kpis?.pendingEscalations ?? "—",
-            desc: "Awaiting your approval",
-            icon: "ri-shield-flash-line",
-            color: "error",
-        },
+        // {
+        //     title: "Pending Escalations",
+        //     value: kpis?.pendingEscalations ?? "—",
+        //     desc: "Awaiting your approval",
+        //     icon: "ri-shield-flash-line",
+        //     color: "error",
+        // },
         {
             title: "Pending Documents",
             value: kpis?.documentsAwaiting ?? "—",
@@ -79,6 +79,7 @@ export const useTacHeadDashboard = () => {
     ];
 
     return {
-        kpiCards, escalations, technicalReviews, teamOverview, resolveFileSrc
+        //escalations,
+        kpiCards, technicalReviews, teamOverview, resolveFileSrc
     }
 };

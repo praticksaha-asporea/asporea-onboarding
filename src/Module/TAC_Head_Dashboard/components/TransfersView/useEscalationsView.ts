@@ -4,14 +4,14 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { CamelCase } from "@/Utils/common";
 import { getEscalationListAction } from "@/Services/APIs/tacHead/escalation.actions";
-import { escalationListPayload } from "@/Types/Frontend_Payload/escalation.types";
-import { escalationRecord, escalationUserRef } from "@/Types/ApiResponse/escalationRes.types";
+import { transferRecord, transferUserRef } from "@/Types/ApiResponse/transferRes.types";
+import { transferListPayload } from "@/Types/Frontend_Payload/transfer.types";
 
 dayjs.extend(relativeTime);
 
 export interface enrichedEscalationRow {
   _id: string;
-  rawRecord: escalationRecord;
+  rawRecord: transferRecord;
   inqNo: string;
   fullName: string;
   leadStatus: string;
@@ -26,16 +26,16 @@ export interface enrichedEscalationRow {
 }
 
 export const useEscalationsView = () => {
-  const [escalations, setEscalations] = useState<escalationRecord[]>([]);
+  const [escalations, setEscalations] = useState<transferRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
-  const [uniqueTacs, setUniqueTacs] = useState<escalationUserRef[]>([]);
+  const [uniqueTacs, setUniqueTacs] = useState<transferUserRef[]>([]);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEscalation, setSelectedEscalation] = useState<escalationRecord | null>(null);
+  const [selectedEscalation, setSelectedEscalation] = useState<transferRecord | null>(null);
 
 
-  const [filters, setFilters] = useState<escalationListPayload>({
+  const [filters, setFilters] = useState<transferListPayload>({
     page: 1,
     limit: 10,
     search: "",
@@ -55,15 +55,15 @@ export const useEscalationsView = () => {
       const res = await getEscalationListAction(filters);
 
       if (res?.data?.success) {
-        const rawList = res.data.data.escalations || [];
+        const rawList = res.data.data.transfers || [];
         setEscalations(rawList);
         setTotalPages(res.data.data.meta.totalPages || 1);
 
         if (filters.page === 1 && filters.tacId === "") {
-          const tacs = rawList.map((esc) => esc.toId).filter(Boolean) as escalationUserRef[];
+          const tacs = rawList.map((esc) => esc.toId).filter(Boolean) as transferUserRef[];
           const unique = Array.from(new Set(tacs.map((a) => a._id))).map(id => {
             return tacs.find((a) => a._id === id);
-          }) as escalationUserRef[];
+          }) as transferUserRef[];
           setUniqueTacs(unique);
         }
       } else {
@@ -80,7 +80,7 @@ export const useEscalationsView = () => {
     fetchEscalations();
   }, [fetchEscalations]);
 
-  const openActionModal = (escalation: escalationRecord) => {
+  const openActionModal = (escalation: transferRecord) => {
     setSelectedEscalation(escalation);
     setModalOpen(true);
   };
