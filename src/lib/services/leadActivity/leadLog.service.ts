@@ -1,12 +1,12 @@
 import mongoose from "mongoose";
 import { LeadLog } from "@/lib/models/LeadLog.model";
+import "../../models/User.model"
 import { ApiError } from "@/lib/error/api.error";
-
 export const createLeadLogService = async (
   leadId: string,
   actionType: string,
   actionNote: string,
-  actionBy: string,
+  actionBy?: string,
   eventDate?: Date
 ) => {
   if (!leadId || !mongoose.Types.ObjectId.isValid(leadId)) {
@@ -16,11 +16,23 @@ export const createLeadLogService = async (
     throw new ApiError("actionType and actionNote are required", 400);
   }
 
+  // if actionBy is provided, validate it otherwise it will be considered as SYSTEM triggered log
+
+  if (actionBy && !mongoose.Types.ObjectId.isValid(actionBy)) {
+    throw new ApiError("Valid actionBy User ID is required", 400);
+  }
+  const triggeredBy = actionBy ? "USER" : "SYSTEM";
+
+
   const newLog = await LeadLog.create({
     leadId: new mongoose.Types.ObjectId(leadId),
     actionType,
     actionNote,
-    actionBy: new mongoose.Types.ObjectId(actionBy),
+    triggeredBy,
+
+    //if actionBy is provided, convert it to ObjectId, otherwise don't include it in the document
+
+    ...(actionBy && { actionBy: new mongoose.Types.ObjectId(actionBy) }),
     eventDate: eventDate,
   });
 
