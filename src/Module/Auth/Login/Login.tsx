@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
+import styles from './login-captcha.module.css'
 // MUI Imports
 import { Dialog, DialogContent, Box, CircularProgress } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -21,6 +22,7 @@ import Logo from "../../../Components_Theme/layout/shared/Logo";
 import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
 import { useLogin } from "./useLogin";
+import { LoadCanvasTemplate } from "react-simple-captcha";
 
 
 const Login = ({ mode }: { mode: Mode }) => {
@@ -47,7 +49,7 @@ const Login = ({ mode }: { mode: Mode }) => {
     showNewPassword,
     setShowNewPassword,
     showConfirmPassword,
-    setShowConfirmPassword
+    setShowConfirmPassword,
   } = useLogin({ mode });
 
   return (
@@ -121,6 +123,44 @@ const Login = ({ mode }: { mode: Mode }) => {
                 />
               )}
 
+              {/* <div className="flex justify-start">
+                <LoadCanvasTemplate reloadText="&#x27f3;" reloadColor="#125da3" />
+              </div>
+              {authMode === "password" && (
+                <div className="flex flex-col gap-3">
+                  <TextField
+                    fullWidth
+                    size="small"
+                    placeholder="Enter Captcha"
+                    value={captchaValue}
+                    onChange={(e) => setCaptchaValue(e.target.value)}
+                  />
+                </div>
+              )} */}
+              <div className={styles.captchaSection}>
+                <div className={styles.captchaBox}>
+                  <LoadCanvasTemplate
+                    reloadText="↻"
+                    reloadColor="#125da3"
+                  />
+                </div>
+
+                <TextField
+                  fullWidth
+                  size="small"
+                  name="captchaValue"
+                  placeholder="Enter Captcha"
+                  value={formik.values.captchaValue}
+                  // onChange={(e) => setCaptchaValue(e.target.value)}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={formik.submitCount > 0 && Boolean(formik.errors.captchaValue)}
+                  helperText={formik.submitCount > 0 && formik.errors.captchaValue ? (formik.errors.captchaValue as string) : undefined}
+                  autoComplete="off"
+                />
+              </div>
               <div
                 className={`flex items-center gap-x-3 gap-y-1 flex-wrap ${authMode === "password" ? "justify-between" : "justify-center"}`}
               >

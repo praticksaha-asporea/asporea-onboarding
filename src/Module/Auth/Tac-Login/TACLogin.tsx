@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import styles from '../Login/login-captcha.module.css'
+
 // MUI Imports
 import { Box, CircularProgress } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -20,6 +22,7 @@ import Logo from "../../../Components_Theme/layout/shared/Logo";
 import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
 import { useTACLogin } from "./useTACLogin";
+import { LoadCanvasTemplate } from "react-simple-captcha";
 
 const TACLogin = ({ mode }: { mode: Mode }) => {
   const {
@@ -129,7 +132,30 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                   }}
                 />
               )}
+              <div className={styles.captchaSection}>
+                <div className={styles.captchaBox}>
+                  <LoadCanvasTemplate
+                    reloadText="↻"
+                    reloadColor="#125da3"
+                  />
+                </div>
 
+                <TextField
+                  fullWidth
+                  size="small"
+                  name="captchaValue"
+                  placeholder="Enter Captcha"
+                  value={formik.values.captchaValue}
+                  // onChange={(e) => setCaptchaValue(e.target.value)}
+                  onChange={(e) => {
+                    formik.handleChange(e);
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={formik.submitCount > 0 && Boolean(formik.errors.captchaValue)}
+                  helperText={formik.submitCount > 0 && formik.errors.captchaValue ? (formik.errors.captchaValue as string) : undefined}
+                  autoComplete="off"
+                />
+              </div>
               <div
                 className={`flex items-center gap-x-3 gap-y-1 flex-wrap ${authMode === "password" ? "justify-between" : "justify-center"}`}
               >
@@ -201,11 +227,11 @@ const TACLogin = ({ mode }: { mode: Mode }) => {
                     >
                       {countdown > 0
                         ? `Resend in ${Math.floor(countdown / 60)
-                            .toString()
-                            .padStart(
-                              2,
-                              "0",
-                            )}:${(countdown % 60).toString().padStart(2, "0")}`
+                          .toString()
+                          .padStart(
+                            2,
+                            "0",
+                          )}:${(countdown % 60).toString().padStart(2, "0")}`
                         : "Ready to resend!"}
                     </Typography>
                     <Button

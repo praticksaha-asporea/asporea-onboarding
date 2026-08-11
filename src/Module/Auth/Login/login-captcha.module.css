@@ -1,0 +1,80 @@
+.captchaSection {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.captchaBox {
+    width: 100%;
+    height: 58px;
+    padding: 6px 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid #d0d5dd;
+    border-radius: 6px;
+
+    background: #f8fafc;
+
+    overflow: hidden;
+}
+
+/* Package outer wrapper */
+.captchaBox> :global(div) {
+    width: 100%;
+    height: 100%;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* CAPTCHA canvas */
+.captchaBox :global(#canv) {
+    width: 150px !important;
+    height: 30px !important;
+
+    display: block;
+}
+
+/* Wrapper containing refresh */
+.captchaBox :global(#canv + div) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin-left: 12px;
+}
+
+/* Refresh button */
+.captchaBox :global(#reload_href) {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    border-radius: 6px;
+
+    color: #125da3 !important;
+
+    font-size: 22px !important;
+    line-height: 1;
+
+    text-decoration: none !important;
+
+    cursor: pointer !important;
+
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease;
+}
+
+.captchaBox :global(#reload_href:hover) {
+    background: #e8f1f9;
+    color: #0b477d !important;
+}

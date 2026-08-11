@@ -15,6 +15,7 @@ import { Mode } from "@/@core/types";
 
 import { useFormik } from "formik";
 import { getLoginValidationSchema } from "@/Validations/loginValidation";
+import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 
 export function useTACLogin({ mode }: { mode: Mode }) {
   const router = useRouter();
@@ -47,12 +48,24 @@ export function useTACLogin({ mode }: { mode: Mode }) {
   const lightImg = "/images/pages/auth-v1-mask-light.png";
   const authBackground = useImageVariant(mode, lightImg, darkImg);
 
+  useEffect(() => {
+    if (authMode === "password") {
+      setTimeout(() => {
+        try {
+          loadCaptchaEnginge(6);
+        } catch (e) {
+          console.error("Captcha loading error:", e);
+        }
+      }, 500);
+    }
+  }, [authMode]);
 
   const formik = useFormik({
     initialValues: {
       identity: identity || "",
       password: password || "",
       rememberMe: rememberMe,
+      captchaValue: "",
     },
     enableReinitialize: true,
 
@@ -64,7 +77,7 @@ export function useTACLogin({ mode }: { mode: Mode }) {
       if (authMode === "password") {
         setPassword(values.password);
         const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
-      handlePasswordLogin(dummyEvent, values.rememberMe);
+        handlePasswordLogin(dummyEvent, values.rememberMe);
       } else {
         handleSendOtp();
       }
@@ -82,7 +95,8 @@ export function useTACLogin({ mode }: { mode: Mode }) {
       formik.setValues({
         identity: savedIdentity,
         password: savedPassword,
-         rememberMe: true,
+        rememberMe: true,
+        captchaValue: ""
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -95,7 +109,8 @@ export function useTACLogin({ mode }: { mode: Mode }) {
       values: {
         identity: formik.values.identity,
         password: "",
-       rememberMe: formik.values.rememberMe,
+        rememberMe: formik.values.rememberMe,
+        captchaValue: ""
       },
     });
     togglePasswordOTP();
@@ -143,6 +158,14 @@ export function useTACLogin({ mode }: { mode: Mode }) {
   const handlePasswordLogin = async (e: FormEvent<HTMLFormElement>, shouldRemember?: boolean) => {
     e.preventDefault();
 
+
+
+    if (validateCaptcha(formik.values.captchaValue) === false) {
+      toast.error("Captcha Does Not Match!");
+      formik.setFieldValue("captchaValue", "");
+      loadCaptchaEnginge(6);
+      return;
+    }
 
     try {
       setLoading(true);
