@@ -21,6 +21,7 @@ export const getLoginValidationSchema = (authMode: string) => {
       authMode === "password"
         ? yup.string().required("Password is required")
         : yup.string().notRequired(),
+    captchaValue: yup.string().required("Captcha is required"),
   });
 };
 

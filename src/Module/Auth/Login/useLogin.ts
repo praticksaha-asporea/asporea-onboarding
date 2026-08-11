@@ -14,6 +14,7 @@ import { useImageVariant } from "@core/hooks/useImageVariant";
 import { useFormik } from "formik";
 import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
 import { Mode } from "@/@core/types";
+import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 
 export function useLogin({ mode }: { mode: Mode }) {
   const router = useRouter();
@@ -42,11 +43,26 @@ export function useLogin({ mode }: { mode: Mode }) {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
+  // --- Captcha State ---
+  // const [captchaValue, setCaptchaValue] = useState("");
+
+  useEffect(() => {
+    if (authMode === "password") {
+      setTimeout(() => {
+        try {
+          loadCaptchaEnginge(6);
+        } catch (e) {
+          console.error("Captcha loading error:", e);
+        }
+      }, 500);
+    }
+  }, [authMode]);
 
   const formik = useFormik({
     initialValues: {
       identity: identity || "",
       password: password || "",
+      captchaValue: "",
     },
     enableReinitialize: true,
 
@@ -84,6 +100,7 @@ export function useLogin({ mode }: { mode: Mode }) {
       values: {
         identity: formik.values.identity,
         password: "",
+        captchaValue: ""
       },
     });
     togglePasswordOTP();
@@ -135,6 +152,12 @@ export function useLogin({ mode }: { mode: Mode }) {
   const handlePasswordLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
+    if (validateCaptcha(formik.values.captchaValue) === false) {
+      toast.error("Captcha Does Not Match!");
+      formik.setFieldValue("captchaValue", "");
+      loadCaptchaEnginge(6);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -258,6 +281,8 @@ export function useLogin({ mode }: { mode: Mode }) {
     showNewPassword,
     setShowNewPassword,
     showConfirmPassword,
-    setShowConfirmPassword
+    setShowConfirmPassword,
+    // captchaValue,
+    // setCaptchaValue
   };
 }
