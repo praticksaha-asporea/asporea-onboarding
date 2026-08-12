@@ -27,6 +27,9 @@ export const createPositionSchema = Joi.object({
   requiredDocuments: Joi.array().items(objectIdSchema).optional(),
   mandatoryDocuments: Joi.array().items(objectIdSchema).optional(),
   positionBrochure: objectIdSchema.optional(),
+  type: Joi.array().items(objectIdSchema).optional(),
+  programTypes: Joi.array().items(objectIdSchema).optional(), 
+  country: objectIdSchema.optional(),    
 })
   .custom(validateMandatorySubset)
   .options({ abortEarly: false, allowUnknown: false });
@@ -38,6 +41,9 @@ export const updatePositionSchema = Joi.object({
   requiredDocuments: Joi.array().items(objectIdSchema).optional(),
   mandatoryDocuments: Joi.array().items(objectIdSchema).optional(),
   positionBrochure: objectIdSchema.optional(),
+  type: Joi.array().items(objectIdSchema).optional(),
+  programTypes: Joi.array().items(objectIdSchema).optional(),
+  country: objectIdSchema.optional(),
 })
   .custom(validateMandatorySubset)
   .options({ abortEarly: false, allowUnknown: false });

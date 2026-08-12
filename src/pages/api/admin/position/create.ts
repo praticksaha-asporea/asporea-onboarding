@@ -8,7 +8,6 @@ import { createPositionSchema } from "@/lib/validation/positionValidation";
 import { createPosition } from "@/lib/services/admin/position.service";
 import { parseForm, normalizeFormFields } from "@/lib/utils/parseForm";
 
-// Disable Next.js body parser — formidable handles multipart
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -27,7 +26,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields } = await parseForm(req);
     const body = normalizeFormFields(
       fields,
-      ["requiredDocuments", "mandatoryDocuments"], // array fields
+      ["requiredDocuments", "mandatoryDocuments", "type", "programTypes",],  
     );
 
     const { error, value } = createPositionSchema.validate(body);
