@@ -28,7 +28,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const { fields } = await parseForm(req);
     const body = normalizeFormFields(
       fields,
-      ["requiredDocuments", "mandatoryDocuments"], // array fields
+      ["requiredDocuments", "mandatoryDocuments", "type", "programTypes", "countries"], // array fields
     );
 
     const { error, value } = updatePositionSchema.validate(body);

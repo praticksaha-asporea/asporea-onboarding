@@ -1,6 +1,8 @@
 import { ApiError } from "@/lib/error/api.error";
 import { Position } from "@/lib/models/Position.model";
 import "../../models/DocumentType.model";
+import "../../models/Pathway.model";
+import "../../models/Country.model";
 import mongoose from "mongoose";
 
 export const createPosition = async (body: any) => {
@@ -10,6 +12,9 @@ export const createPosition = async (body: any) => {
     requiredDocuments,
     mandatoryDocuments,
     positionBrochure,
+    type,
+    programTypes,
+    country,
   } = body;
 
   const existing = await Position.findOne({
@@ -24,6 +29,8 @@ export const createPosition = async (body: any) => {
     requiredDocuments,
     mandatoryDocuments,
     positionBrochure,
+    type: type || programTypes || [],  
+   country: country || null,        
   });
 };
 
@@ -48,6 +55,8 @@ export const positionList = async ({
     Position.find(filter)
       .populate("requiredDocuments", "title section")
       .populate("mandatoryDocuments", "title section")
+      .populate("type", "title underPathway")
+      .populate("country", "name code")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -77,6 +86,8 @@ export const viewPosition = async (positionId: string) => {
   const position = await Position.findById(positionId)
     .populate("requiredDocuments", "title section")
     .populate("mandatoryDocuments", "title section")
+    .populate("type", "title underPathway")
+    .populate("countries", "name code")
     .populate("positionBrochure", "url")
     .lean();
 
@@ -90,15 +101,10 @@ export const viewPositionForUser = async (positionId: string) => {
     throw new ApiError("Invalid position ID", 400);
 
   const position = await Position.findById(positionId)
-
-    .populate(
-      "requiredDocuments",
-      "title section subTitle supportedExtensions multiple required",
-    )
-    .populate(
-      "mandatoryDocuments",
-      "title section subTitle supportedExtensions multiple required",
-    )
+    .populate("requiredDocuments", "title section subTitle supportedExtensions multiple required")
+    .populate("mandatoryDocuments", "title section subTitle supportedExtensions multiple required")
+    .populate("type", "title underPathway")
+    .populate("countries", "name code")
     .populate("positionBrochure", "url")
     .lean();
 
@@ -129,10 +135,17 @@ export const updatePosition = async (positionId: string, body: any) => {
     "requiredDocuments",
     "mandatoryDocuments",
     "positionBrochure",
+    "type",
+    "country",
   ];
+
   const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
+  }
+
+  if (body.programTypes !== undefined && body.type === undefined) {
+    update.type = body.programTypes;
   }
 
   return await Position.findByIdAndUpdate(
@@ -141,7 +154,9 @@ export const updatePosition = async (positionId: string, body: any) => {
     { new: true, runValidators: true },
   )
     .populate("requiredDocuments", "title section")
-    .populate("mandatoryDocuments", "title section");
+    .populate("mandatoryDocuments", "title section")
+    .populate("type", "title underPathway")
+    .populate("country", "name code");
 };
 
 export const deletePosition = async (positionId: string) => {
