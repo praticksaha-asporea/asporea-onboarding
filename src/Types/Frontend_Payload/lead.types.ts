@@ -12,6 +12,12 @@ export interface InquiryFormValues {
   referedBy: string | null;
   otherReferedBy: string;
   passportNo: string;
+  inquiryCategory: string;
+  inquiryFor: string;
+  nationality: string;
+  latestAcademic: string;
+  latestTechnical: string;
+  workExperience: string;
 }
 
 export interface InquiryUpdatePayload {

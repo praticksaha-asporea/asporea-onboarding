@@ -15,7 +15,6 @@ import Select from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import {
   Box,
-  capitalize,
   Checkbox,
   FormControlLabel,
   FormGroup,
@@ -24,25 +23,44 @@ import {
   Radio,
   RadioGroup,
   Step,
-  StepContent,
   StepLabel,
   Stepper,
+  Chip,
 } from "@mui/material";
-
+import ListSubheader from "@mui/material/ListSubheader";
 import {
   useInquiry,
-  inquiryValidationSchema,
   inquirySteps,
-  makeFieldHelpers,
 } from "./useInquiry";
+
+// ─── Local constants ──────────────────────────────────────────────────────
+// Fields validated/submitted in each step. Adjust names to match your
+// formik/inquiryValidationSchema field names exactly.
+const STEP1_FIELDS = [
+  "fullName",
+  "email",
+  "phoneNumber",
+  "whatsappNumber",
+  "inquiryCategory",
+  "inquiryFor",
+];
+
+const STEP2_FIELDS = [
+  "nationality",
+  "latestAcademic",
+  "latestTechnical",
+  "workExperience",
+  "referedFrom",
+  "referedType",
+  "referedBy",
+  "otherReferedBy",
+];
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
 const InquiryDetails = () => {
   const router = useRouter();
   const {
-    branches,
-    consultants,
     externalSources,
     preferences,
     isPreferenceError,
@@ -50,7 +68,6 @@ const InquiryDetails = () => {
     showInquiryPopup,
     generatedInqNo,
     generatedLeadId,
-    loadingConsultants,
     loadingSources,
     userData,
     handlePreferenceToggle,
@@ -61,367 +78,212 @@ const InquiryDetails = () => {
     helperText,
     activeStepperStep,
     handleClosePopup,
-    selectedBranchName
+    selectedBranchName,
+    categories,
+    handleCategoryChange,
+    positionData,
+
+    // ── New: two-step create/update wiring ───────────────────────────
+    // formStep: 0 = "basic details" (create), 1 = "additional details" (update)
+    // inquiryId: set after step 1's create call succeeds; used by step 2's update call
+    // creatingInquiry / updatingInquiry: separate loading flags per step
+    // handleCreateStep / handleUpdateStep: call these instead of formik.handleSubmit
+    formStep,
+    inquiryId,
+    creatingInquiry,
+    updatingInquiry,
+    handleCreateStep,
+    handleUpdateStep,
+    goBackToStep1,
   } = useInquiry();
+
+  const step1HasErrors = STEP1_FIELDS.some((f) => err(f));
+  const step2HasErrors = STEP2_FIELDS.some((f) => err(f));
+
   return (
     <>
       <Grid container spacing={6}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Card>
             <CardContent>
-              <Typography variant="h4">Generate Inquiry</Typography>
+              <Typography variant="h4">Generate inquiry</Typography>
               <Typography variant="subtitle1" className="pb-5">
-                Please fill out the form below to register an inquiry
+                Step {formStep + 1} of 2 —{" "}
+                {formStep === 0
+                  ? "Basic details create the record"
+                  : "Additional details update the record"}
               </Typography>
 
-              <form onSubmit={formik.handleSubmit}>
+              {isFormDisabled && (
+                <Box
+                  className="mb-6 p-4 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4"
+                  style={{
+                    backgroundColor: "rgba(25, 118, 210, 0.08)",
+                    borderColor: "rgba(25, 118, 210, 0.3)",
+                  }}
+                >
+                  <Box className="flex items-center gap-3 text-left">
+                    <Box className="w-14 h-14 rounded-full bg-[var(--mui-palette-primary-main)] flex items-center justify-center text-white shrink-0 shadow-sm">
+                      <i className="ri-information-line text-xl" />
+                    </Box>
+                    <Box>
+                      <Typography variant="h6" className="font-bold leading-tight">
+                        Inquiry already submitted
+                      </Typography>
+                      <Typography variant="body2" className="mt-2 font-medium">
+                        Please proceed to the pre-counselling section.
+                      </Typography>
+                    </Box>
+                  </Box>
 
-                {isFormDisabled && (
-                  <Box
-                    className="mb-6 p-4 rounded-xl bg-[var(--mui-palette-primary-dark)]   flex flex-col sm:flex-row items-center justify-between gap-4 animate-fade-in"
-                    style={{
-                      backgroundColor: "rgba(25, 118, 210, 0.08)",
-                      borderColor: "rgba(25, 118, 210, 0.3)",
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      const existingLeadId = userData?.leadId || userData?.user?.leadId;
+                      const existingVisitOption =
+                        userData?.visitOption ?? userData?.user?.visitOption;
+                      const existingConsultant =
+                        userData?.prefferedConsultant || userData?.user?.prefferedConsultant;
+                      const method = existingVisitOption === 2 ? "on" : "off";
+                      router.push(
+                        `/pre-counselling?leadId=${existingLeadId}&consultantId=${existingConsultant || ""}&method=${method}`,
+                      );
+                    }}
+                    className="rounded-xl normal-case font-semibold px-5 py-2 shrink-0 shadow-none text-xs sm:text-sm"
+                  >
+                    Go to pre-counselling
+                  </Button>
+                </Box>
+              )}
+
+              {!isFormDisabled && (
+                <>
+                  {/* ── Compact step indicator ─────────────────────────── */}
+                  <Stepper
+                    activeStep={formStep}
+                    alternativeLabel
+                    className="mb-8"
+                  >
+                    <Step completed={formStep > 0}>
+                      <StepLabel
+                        optional={
+                          formStep > 0 ? (
+                            <Typography
+                              variant="caption"
+                              className="text-[var(--mui-palette-success-main)] font-medium"
+                            >
+                              Saved
+                            </Typography>
+                          ) : undefined
+                        }
+                      >
+                        Basic details
+                      </StepLabel>
+                    </Step>
+                    <Step>
+                      <StepLabel>Additional details</StepLabel>
+                    </Step>
+                  </Stepper>
+
+                  {formStep === 1 && generatedInqNo && (
+                    <Chip
+                      icon={<i className="ri-check-line" />}
+                      label={`Inquiry created — ID ${generatedInqNo}`}
+                      color="success"
+                      variant="outlined"
+                      className="mb-5"
+                    />
+                  )}
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (formStep === 0) {
+                        handleCreateStep();
+                      } else {
+                        handleUpdateStep();
+                      }
                     }}
                   >
-                    <Box className="flex items-center gap-3 text-left">
-                      <Box className="w-14 h-14 rounded-full  bg-[var(--mui-palette-primary)] flex items-center justify-center text-[var(--mui-palette-text-secondary)] shrink-0 shadow-sm">
-                        <i className="ri-information-line text-xl"></i>
-                      </Box>
-                      <Box>
-                        <Typography
-                          variant="h6"
-                          className="font-bold text-[var(--mui-palette-text-primary)] leading-tight"
-                        >
-                          Inquiry Already Submitted!
-                        </Typography>
-                        <Typography
-                          variant="body2"
-                          className="text-[var(--mui-palette-text-primary)] mt-2 font-medium  "
-                        >
-                          Please proceed to the Pre-Counselling section.
-                        </Typography>
-                      </Box>
-                    </Box>
-
-
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        const existingLeadId =
-                          userData?.leadId || userData?.user?.leadId;
-                        const existingVisitOption =
-                          userData?.visitOption ?? userData?.user?.visitOption;
-                        const existingConsultant =
-                          userData?.prefferedConsultant ||
-                          userData?.user?.prefferedConsultant;
-                        const method = existingVisitOption === 2 ? "on" : "off";
-
-                        router.push(
-                          `/pre-counselling?leadId=${existingLeadId}&consultantId=${existingConsultant || ""}&method=${method}`,
-                        );
-                      }}
-                      className="rounded-xl normal-case bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 shrink-0 shadow-none text-xs sm:text-sm"
-                    >
-                      Go to Pre-Counselling
-                    </Button>
-                  </Box>
-                )}
-
-                <div
-                  className={`transition-all duration-500 ease-in-out ${isFormDisabled
-                    ? "blur-[2.5px] opacity-60 pointer-events-none select-none"
-                    : ""
-                    }`}
-                >
-                  <Card>
-                    <CardContent className="mbe-5">
-                      <Grid container spacing={5}>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            fullWidth
-                            name="fullName"
-                            label="Full Name"
-                            value={formik.values.fullName}
-                            placeholder="Kunal Chettri"
-                            onChange={formik.handleChange}
-                            disabled={isFormDisabled}
-                            error={err("fullName")}
-                            helperText={helperText("fullName")}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            fullWidth
-                            name="email"
-                            label="Email Address"
-                            value={formik.values.email}
-                            placeholder="kunal.chettri@gmail.com"
-                            onChange={formik.handleChange}
-                            disabled={isFormDisabled}
-                            error={err("email")}
-                            helperText={helperText("email")}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            fullWidth
-                            type="tel"
-                            name="phoneNumber"
-                            label="Phone Number"
-                            value={formik.values.phoneNumber}
-                            placeholder="9876543210"
-                            onChange={formik.handleChange}
-                            disabled={isFormDisabled}
-                            error={err("phoneNumber")}
-                            helperText={helperText("phoneNumber")}
-                          />
-                        </Grid>
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <TextField
-                            fullWidth
-                            type="tel"
-                            name="whatsappNumber"
-                            label="WhatsApp Number"
-                            value={formik.values.whatsappNumber}
-                            placeholder="9876543210"
-                            onChange={formik.handleChange}
-                            disabled={isFormDisabled}
-                            error={err("whatsappNumber")}
-                            helperText={helperText("whatsappNumber")}
-                          />
-                        </Grid>
-
-                        {/* Branch */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <FormControl fullWidth error={err("prefferedBranch")}>
-                            <InputLabel>Preferred Branch</InputLabel>
-                            <Select
-                              label="Preferred Branch"
-                              name="prefferedBranch"
-                              value={formik.values.prefferedBranch}
-                              onChange={formik.handleChange}
-                              disabled={isFormDisabled}
-                            >
-                              {branches.map((branch: any, index: number) => (
-                                <MenuItem key={branch._id} value={branch._id}>
-                                  {branch.title}
-                                  {branch.distanceKm !== undefined &&
-                                    ` (${index === 0 ? "Recommend - " : ""}${branch.distanceKm < 1
-                                      ? "Within 1 Km"
-                                      : `${branch.distanceKm.toFixed(2)} Km`
-                                    })`}
-                                </MenuItem>
-                              ))}
-                            </Select>
-
-                            {err("prefferedBranch") && (
-                              <FormHelperText>
-                                {helperText("prefferedBranch")}
-                              </FormHelperText>
-                            )}
-                          </FormControl>
-                        </Grid>
-
-                        {/* Consultant */}
-                        <Grid size={{ xs: 12, md: 6 }}>
-                          <FormControl
-                            fullWidth
-                            disabled={
-                              loadingConsultants ||
-                              !formik.values.prefferedBranch
-                            }
-                            error={err("prefferedConsultant")}
-                          >
-                            <InputLabel>
-                              {loadingConsultants
-                                ? "Loading..."
-                                : "Preferred Consultant"}
-                            </InputLabel>
-                            <Select
-                              name="prefferedConsultant"
-                              label="Preferred Consultant"
-                              value={formik.values.prefferedConsultant}
-                              onChange={formik.handleChange}
-                              disabled={isFormDisabled}
-                            >
-                              <MenuItem value="">
-                                <em>None (No Consultant)</em>
-                              </MenuItem>
-                              {consultants.length === 0 ? (
-                                <MenuItem value="" disabled>
-                                  No TAC found
-                                </MenuItem>
-                              ) : (
-                                consultants.map((tac) => (
-                                  <MenuItem key={tac._id} value={tac._id} disabled={isFormDisabled}>
-                                    {`${tac.firstName} ${tac.lastName}`}
-                                  </MenuItem>
-                                ))
-                              )}
-                            </Select>
-                            {err("prefferedConsultant") && (
-                              <FormHelperText>
-                                {helperText("prefferedConsultant")}
-                              </FormHelperText>
-                            )}
-                          </FormControl>
-                        </Grid>
-
-                        {/* Visit Option */}
-                        <Grid size={{ xs: 12 }}>
-                          <FormControl fullWidth error={err("visitOption")}>
-                            <RadioGroup
-                              name="visitOption"
-                              value={Number(formik.values.visitOption)}
-                              onChange={(e) =>
-                                formik.setFieldValue(
-                                  "visitOption",
-                                  Number(e.target.value),
-                                )
-                              }
-                            >
-                              <FormControlLabel
-                                value={0}
-                                control={<Radio />}
-                                label="Are you currently now in this branch? (Only use while you are in branch premises)"
-                                disabled={isFormDisabled}
-                              />
-                              <FormControlLabel
-                                value={1}
-                                control={<Radio />}
-                                label="Are you visiting this branch? (Only use while you are outside and willing to visit in-person)"
-                                disabled={isFormDisabled}
-                              />
-                              <FormControlLabel
-                                value={2}
-                                control={<Radio />}
-                                label="Want to visit online rather than in-person branch visit"
-                                disabled={isFormDisabled}
-                              />
-                            </RadioGroup>
-                            <FormHelperText className="py-2">
-                              NOTE: Online Schedule you can choose from next
-                              screen, if you have a preferred consultant.
-                            </FormHelperText>
-                          </FormControl>
-                        </Grid>
-
-                        {/* Address */}
-                        <Grid size={{ xs: 12 }}>
-                          <TextField
-                            fullWidth
-                            name="fullAddress"
-                            label="Full Address"
-                            value={formik.values.fullAddress}
-                            placeholder={`123 Talent Lane, Darjeeling,\nWest Bengal,\n700001`}
-                            multiline
-                            rows={3}
-                            onChange={formik.handleChange}
-                            disabled={isFormDisabled}
-                            error={err("fullAddress")}
-                            helperText={helperText("fullAddress")}
-                          />
-                        </Grid>
-                      </Grid>
-                    </CardContent>
-                  </Card>
-
-                  {/* Referral */}
-
-                  <Card className="mt-5">
-                    <CardContent className="mbe-5">
-                      <Grid container spacing={5}>
-                        <Grid size={{ xs: 12 }}>
-                          <FormControl fullWidth error={err("referedFrom")}>
-                            <FormLabel component="legend">
-                              How did you hear about us?
-                            </FormLabel>
-                            <RadioGroup
-                              row
-                              name="referedFrom"
-                              value={formik.values.referedFrom}
-                              onChange={(e) => {
-                                formik.handleChange(e);
-                                if (e.target.value !== "reffer") {
-                                  formik.setFieldValue("referedType", "");
-                                  formik.setFieldValue("referedBy", "");
-                                  formik.setFieldValue("otherReferedBy", "");
-                                }
-                              }}
-
-                            >
-                              <FormControlLabel
-                                value="web-app"
-                                control={<Radio />}
-                                label="Asporea Website/App"
-                                disabled={isFormDisabled}
-                              />
-                              <FormControlLabel
-                                value="call"
-                                control={<Radio />}
-                                label="Tele Caller"
-                                disabled={isFormDisabled}
-                              />
-                              <FormControlLabel
-                                value="social"
-                                control={<Radio />}
-                                label="Social Media"
-                                disabled={isFormDisabled}
-                              />
-                              <FormControlLabel
-                                value="reffer"
-                                control={<Radio />}
-                                label="Referral"
-                                disabled={isFormDisabled}
-                              />
-                            </RadioGroup>
-                            {err("referedFrom") && (
-                              <FormHelperText>
-                                {helperText("referedFrom")}
-                              </FormHelperText>
-                            )}
-                          </FormControl>
-                        </Grid>
-
-                        {formik.values.referedFrom === "reffer" && (
-                          <>
+                    {/* ── Step 1: basic details (create) ─────────────────── */}
+                    {formStep === 0 && (
+                      <Card variant="outlined">
+                        <CardContent className="mbe-5">
+                          <Grid container spacing={5}>
                             <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl fullWidth error={err("referedType")}>
-                                <FormLabel component="legend">
-                                  Referred By
-                                </FormLabel>
-                                <RadioGroup
-                                  row
-                                  name="referedType"
-                                  value={formik.values.referedType || ""}
-                                  onChange={formik.handleChange}
+                              <TextField
+                                fullWidth
+                                name="fullName"
+                                label="Full name"
+                                value={formik.values.fullName}
+                                placeholder="Samson Wolf"
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={err("fullName")}
+                                helperText={helperText("fullName")}
+                              />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <TextField
+                                fullWidth
+                                name="email"
+                                label="Email address"
+                                value={formik.values.email}
+                                placeholder="name@email.com"
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={err("email")}
+                                helperText={helperText("email")}
+                              />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <TextField
+                                fullWidth
+                                type="tel"
+                                name="phoneNumber"
+                                label="Phone number"
+                                value={formik.values.phoneNumber}
+                                placeholder="9876543210"
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={err("phoneNumber")}
+                                helperText={helperText("phoneNumber")}
+                              />
+                            </Grid>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <TextField
+                                fullWidth
+                                type="tel"
+                                name="whatsappNumber"
+                                label="WhatsApp number"
+                                value={formik.values.whatsappNumber}
+                                placeholder="9876543210"
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={err("whatsappNumber")}
+                                helperText={helperText("whatsappNumber")}
+                              />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FormControl fullWidth error={err("inquiryCategory")}>
+                                <InputLabel id="inquiry-category-label">Inquiry for</InputLabel>
+                                <Select
+                                  labelId="inquiry-category-label"
+                                  name="inquiryCategory"
+                                  value={formik.values.inquiryCategory}
+                                  onChange={(e) => handleCategoryChange(e.target.value)}
+                                  onBlur={formik.handleBlur}
+                                  label="Inquiry for"
                                 >
-                                  <FormControlLabel
-                                    value="pca"
-                                    control={<Radio />}
-                                    label="PCA"
-                                  />
-                                  <FormControlLabel
-                                    value="pcra"
-                                    control={<Radio />}
-                                    label="PCRA"
-                                  />
-                                  <FormControlLabel
-                                    value="institution"
-                                    control={<Radio />}
-                                    label="Institution"
-                                  />
-                                  <FormControlLabel
-                                    value="other"
-                                    control={<Radio />}
-                                    label="Other"
-                                  />
-                                </RadioGroup>
-                                {err("referedType") && (
-                                  <FormHelperText>
-                                    {helperText("referedType")}
-                                  </FormHelperText>
+                                  {categories.map((c: any) => (
+                                    <MenuItem key={c._id} value={c._id}>
+                                      {c.title}
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+                                {err("inquiryCategory") && (
+                                  <FormHelperText>{helperText("inquiryCategory")}</FormHelperText>
                                 )}
                               </FormControl>
                             </Grid>
@@ -429,91 +291,277 @@ const InquiryDetails = () => {
                             <Grid size={{ xs: 12, md: 6 }}>
                               <FormControl
                                 fullWidth
-                                disabled={
-                                  loadingSources ||
-                                  formik.values.referedType === "other"
-                                }
-                                error={err("referedBy")}
+                                error={err("inquiryFor")}
+                                disabled={!formik.values.inquiryCategory}
                               >
-                                <InputLabel>
-                                  {loadingSources
-                                    ? "Loading..."
-                                    : `Name of ${capitalize(formik.values.referedType || "Referrer")}`}
+                                <InputLabel id="inquiry-position-label">
+                                  {formik.values.inquiryCategory ? "Select position" : "Select a category first"}
                                 </InputLabel>
                                 <Select
-                                  name="referedBy"
-                                  label={`Name of ${capitalize(formik.values.referedType || "Referrer")}`}
-                                  value={formik.values.referedBy}
-                                  onChange={(e) => {
-                                    formik.handleChange(e);
-                                    if (e.target.value === "other") {
-                                      formik.setFieldValue(
-                                        "referedType",
-                                        "other",
-                                      );
-                                    }
-                                  }}
+                                  labelId="inquiry-position-label"
+                                  label={
+                                    formik.values.inquiryCategory
+                                      ? "Select position"
+                                      : "Select a category first"
+                                  }
+                                  name="inquiryFor"
+                                  value={formik.values.inquiryFor}
+                                  onChange={formik.handleChange}
+                                  onBlur={formik.handleBlur}
+                                  MenuProps={{ PaperProps: { sx: { maxHeight: 400 } } }}
                                 >
-                                  <MenuItem value="">
-                                    <em>None</em>
-                                  </MenuItem>
-                                  {externalSources.map((src) => (
-                                    <MenuItem key={src._id} value={src._id}>
-                                  {src.name || `${src.firstName || ""} ${src.lastName || ""}`.trim()}                                    </MenuItem>
-                                  ))}
+                                  {positionData &&
+                                    !positionData.grouped &&
+                                    positionData.positions.map((p: any) => (
+                                      <MenuItem key={p._id} value={p._id}>
+                                        {p.title}
+                                      </MenuItem>
+                                    ))}
+
+                                  {positionData &&
+                                    positionData.grouped &&
+                                    positionData.groups.flatMap((g: any) => [
+                                      <ListSubheader key={`h-${g.subgroup}`}>{g.subgroup}</ListSubheader>,
+                                      ...g.positions.map((p: any) => (
+                                        <MenuItem key={p._id} value={p._id}>
+                                          {p.title}
+                                        </MenuItem>
+                                      )),
+                                    ])}
                                 </Select>
-                                {err("referedBy") && (
-                                  <FormHelperText>
-                                    {helperText("referedBy")}
-                                  </FormHelperText>
+                                {err("inquiryFor") && (
+                                  <FormHelperText>{helperText("inquiryFor")}</FormHelperText>
+                                )}
+                              </FormControl>
+                            </Grid>
+                          </Grid>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    {/* ── Step 2: additional details (update) ────────────── */}
+                    {formStep === 1 && (
+                      <Card variant="outlined">
+                        <CardContent className="mbe-5">
+                          <Grid container spacing={5}>
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FormControl fullWidth error={err("nationality")}>
+                                <InputLabel id="inquiry-nationality-label">Nationality</InputLabel>
+                                <Select
+                                  labelId="inquiry-nationality-label"
+                                  label="Nationality"
+                                  name="nationality"
+                                  value={formik.values.nationality || ""}
+                                  onChange={formik.handleChange}
+                                  onBlur={formik.handleBlur}
+                                >
+                                  <MenuItem value="indian">Indian</MenuItem>
+                                  <MenuItem value="nepalese">Nepalese</MenuItem>
+                                  <MenuItem value="bhutanese">Bhutanese</MenuItem>
+                                  <MenuItem value="tibetan">Tibetan</MenuItem>
+                                  <MenuItem value="bangladeshi">Bangladeshi</MenuItem>
+                                </Select>
+                                {err("nationality") && (
+                                  <FormHelperText>{helperText("nationality")}</FormHelperText>
                                 )}
                               </FormControl>
                             </Grid>
 
-                            {formik.values.referedType === "other" && (
-                              <Grid size={{ xs: 12 }}>
-                                <TextField
-                                  fullWidth
-                                  name="otherReferedBy"
-                                  label="Please specify referrer name"
-                                  value={formik.values.otherReferedBy || ""}
-                                  placeholder="Eg: John Singh"
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <FormControl fullWidth error={err("latestAcademic")}>
+                                <InputLabel id="inquiry-latestAcademic-label">
+                                  Latest academic qualification
+                                </InputLabel>
+                                <Select
+                                  labelId="inquiry-latestAcademic-label"
+                                  label="Latest academic qualification"
+                                  name="latestAcademic"
+                                  value={formik.values.latestAcademic || ""}
                                   onChange={formik.handleChange}
-                                  error={err("otherReferedBy")}
-                                  helperText={helperText("otherReferedBy")}
-                                />
-                              </Grid>
+                                  onBlur={formik.handleBlur}
+                                >
+                                  <MenuItem value="secondary">Secondary</MenuItem>
+                                  <MenuItem value="higher_secondary">Higher secondary</MenuItem>
+                                  <MenuItem value="graduate">Graduate</MenuItem>
+                                  <MenuItem value="post_graduate">Post graduate</MenuItem>
+                                </Select>
+                                {err("latestAcademic") && (
+                                  <FormHelperText>{helperText("latestAcademic")}</FormHelperText>
+                                )}
+                              </FormControl>
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <TextField
+                                fullWidth
+                                name="latestTechnical"
+                                label="Latest technical qualification"
+                                value={formik.values.latestTechnical || ""}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={err("latestTechnical")}
+                                helperText={helperText("latestTechnical")}
+                              />
+                            </Grid>
+
+                            <Grid size={{ xs: 12, md: 6 }}>
+                              <TextField
+                                fullWidth
+                                name="workExperience"
+                                label="Work experience"
+                                value={formik.values.workExperience || ""}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={err("workExperience")}
+                                helperText={helperText("workExperience")}
+                              />
+                            </Grid>
+
+                            <Grid size={{ xs: 12 }}>
+                              <FormControl fullWidth error={err("referedFrom")}>
+                                <FormLabel component="legend">How did you hear about us?</FormLabel>
+                                <RadioGroup
+                                  row
+                                  name="referedFrom"
+                                  value={formik.values.referedFrom}
+                                  onChange={(e) => {
+                                    formik.handleChange(e);
+                                    if (e.target.value !== "reffer") {
+                                      formik.setFieldValue("referedType", "");
+                                      formik.setFieldValue("referedBy", "");
+                                      formik.setFieldValue("otherReferedBy", "");
+                                    }
+                                  }}
+                                >
+                                  <FormControlLabel value="web-app" control={<Radio />} label="Asporea website/app" />
+                                  <FormControlLabel value="call" control={<Radio />} label="Tele caller" />
+                                  <FormControlLabel value="social" control={<Radio />} label="Social media" />
+                                  <FormControlLabel value="reffer" control={<Radio />} label="Referral" />
+                                </RadioGroup>
+                                {err("referedFrom") && (
+                                  <FormHelperText>{helperText("referedFrom")}</FormHelperText>
+                                )}
+                              </FormControl>
+                            </Grid>
+
+                            {formik.values.referedFrom === "reffer" && (
+                              <>
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <FormControl fullWidth error={err("referedType")}>
+                                    <FormLabel component="legend">Referred by</FormLabel>
+                                    <RadioGroup
+                                      row
+                                      name="referedType"
+                                      value={formik.values.referedType || ""}
+                                      onChange={formik.handleChange}
+                                    >
+                                      <FormControlLabel value="pca" control={<Radio />} label="PCA" />
+                                      <FormControlLabel value="pcra" control={<Radio />} label="PCRA" />
+                                      <FormControlLabel value="institution" control={<Radio />} label="Institution" />
+                                      <FormControlLabel value="other" control={<Radio />} label="Other" />
+                                    </RadioGroup>
+                                    {err("referedType") && (
+                                      <FormHelperText>{helperText("referedType")}</FormHelperText>
+                                    )}
+                                  </FormControl>
+                                </Grid>
+
+                                <Grid size={{ xs: 12, md: 6 }}>
+                                  <FormControl
+                                    fullWidth
+                                    disabled={loadingSources || formik.values.referedType === "other"}
+                                    error={err("referedBy")}
+                                  >
+                                    <InputLabel>
+                                      {loadingSources ? "Loading..." : "Name of referrer"}
+                                    </InputLabel>
+                                    <Select
+                                      name="referedBy"
+                                      label="Name of referrer"
+                                      value={formik.values.referedBy}
+                                      onChange={(e) => {
+                                        formik.handleChange(e);
+                                        if (e.target.value === "other") {
+                                          formik.setFieldValue("referedType", "other");
+                                        }
+                                      }}
+                                    >
+                                      <MenuItem value="">
+                                        <em>None</em>
+                                      </MenuItem>
+                                      {externalSources.map((src: any) => (
+                                        <MenuItem key={src._id} value={src._id}>
+                                          {src.name || `${src.firstName || ""} ${src.lastName || ""}`.trim()}
+                                        </MenuItem>
+                                      ))}
+                                    </Select>
+                                    {err("referedBy") && (
+                                      <FormHelperText>{helperText("referedBy")}</FormHelperText>
+                                    )}
+                                  </FormControl>
+                                </Grid>
+
+                                {formik.values.referedType === "other" && (
+                                  <Grid size={{ xs: 12 }}>
+                                    <TextField
+                                      fullWidth
+                                      name="otherReferedBy"
+                                      label="Referrer name"
+                                      value={formik.values.otherReferedBy || ""}
+                                      placeholder="John Singh"
+                                      onChange={formik.handleChange}
+                                      error={err("otherReferedBy")}
+                                      helperText={helperText("otherReferedBy")}
+                                    />
+                                  </Grid>
+                                )}
+                              </>
                             )}
-                          </>
-                        )}
+                          </Grid>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                    <CardContent className="mbe-5 mt-4">
+                      <Grid container spacing={5}>
+                        <Grid size={{ xs: 12 }} className="flex gap-4 flex-wrap justify-between">
+                          {formStep === 1 ? (
+                            <Button
+                              variant="outlined"
+                              onClick={goBackToStep1}
+                              disabled={updatingInquiry}
+                              className="rounded-xl normal-case text-sm"
+                            >
+                              Back
+                            </Button>
+                          ) : (
+                            <span />
+                          )}
+
+                          <Button
+                            variant="contained"
+                            type="submit"
+                            disabled={
+                              formStep === 0
+                                ? creatingInquiry || step1HasErrors
+                                : updatingInquiry || step2HasErrors
+                            }
+                            className="rounded-xl normal-case text-sm shadow-md"
+                          >
+                            {creatingInquiry || updatingInquiry ? (
+                              <CircularProgress size={24} color="inherit" />
+                            ) : formStep === 0 ? (
+                              "Save and continue"
+                            ) : (
+                              "Submit inquiry"
+                            )}
+                          </Button>
+                        </Grid>
                       </Grid>
                     </CardContent>
-                  </Card>
-                </div>
-                <CardContent className="mbe-5 mt-4">
-                  <Grid container spacing={5}>
-                    <Grid
-                      size={{ xs: 12 }}
-                      className="flex gap-4 flex-wrap justify-end"
-                    >
-                      <Button
-                        variant="contained"
-                        type="submit"
-                        disabled={
-                          submitting || formik.isSubmitting || isFormDisabled
-                        }
-                        className="rounded-xl normal-case text-sm shadow-md"
-                      >
-                        {submitting || formik.isSubmitting ? (
-                          <CircularProgress size={24} color="inherit" />
-                        ) : (
-                          "Submit"
-                        )}
-                      </Button>
-                    </Grid>
-                  </Grid>
-                </CardContent>
-              </form>
+                  </form>
+                </>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -525,7 +573,7 @@ const InquiryDetails = () => {
               <Card className="hidden md:block">
                 <CardContent>
                   <Typography variant="h4" className="mb-5">
-                    Application Progress
+                    Application progress
                   </Typography>
                   <Stepper activeStep={activeStepperStep} orientation="vertical">
                     {inquirySteps.map((step, index) => (
@@ -533,19 +581,28 @@ const InquiryDetails = () => {
                         <StepLabel
                           optional={
                             index < activeStepperStep ? (
-                              <Typography variant="caption" className="text-[var(--mui-palette-success-main)] text-[12px] font-bold">Completed</Typography>
+                              <Typography
+                                variant="caption"
+                                className="text-[var(--mui-palette-success-main)] text-[12px] font-bold"
+                              >
+                                Completed
+                              </Typography>
                             ) : index === activeStepperStep ? (
-                              <Typography variant="caption" className="text-[var(--mui-palette-primary-main)] text-[12px] font-bold">Active</Typography>
+                              <Typography
+                                variant="caption"
+                                className="text-[var(--mui-palette-primary-main)] text-[12px] font-bold"
+                              >
+                                Active
+                              </Typography>
                             ) : (
-                              <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] text-[12px]">Pending</Typography>
+                              <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] text-[12px]">
+                                Pending
+                              </Typography>
                             )
                           }
                         >
                           {step.label}
                         </StepLabel>
-                        {/* <StepContent>
-                          <Typography>{step.description}</Typography>
-                        </StepContent> */}
                       </Step>
                     ))}
                   </Stepper>
@@ -553,51 +610,39 @@ const InquiryDetails = () => {
               </Card>
             </Grid>
 
+            {/* Contact preferences only matters once the record exists,
+               so it's tucked next to step 2 conceptually but can stay
+               visible throughout — remove the formStep check to always show it. */}
             <Grid size={{ xs: 12 }}>
               <Card>
                 <CardContent>
-                  <FormControl
-                    className="mbs-4 mie-4"
-                    error={formik.submitCount > 0 && isPreferenceError}
-                  >
+                  <FormControl className="mbs-4 mie-4" error={formik.submitCount > 0 && isPreferenceError}>
                     <Typography variant="h5" className="pb-5">
-                      Contact Preferences
+                      Contact preferences
                     </Typography>
                     <FormGroup>
                       <FormControlLabel
-                        label="Receive updates via Email"
+                        label="Receive updates via email"
                         control={
-                          <Checkbox
-                            checked={preferences.email}
-                            onChange={() => handlePreferenceToggle("email")}
-                          />
+                          <Checkbox checked={preferences.email} onChange={() => handlePreferenceToggle("email")} />
                         }
                       />
                       <FormControlLabel
                         label="Receive updates via WhatsApp"
                         control={
-                          <Checkbox
-                            checked={preferences.whatsapp}
-                            onChange={() => handlePreferenceToggle("whatsapp")}
-                          />
+                          <Checkbox checked={preferences.whatsapp} onChange={() => handlePreferenceToggle("whatsapp")} />
                         }
                       />
                       <FormControlLabel
                         label="Receive updates via SMS"
                         control={
-                          <Checkbox
-                            checked={preferences.sms}
-                            onChange={() => handlePreferenceToggle("sms")}
-                          />
+                          <Checkbox checked={preferences.sms} onChange={() => handlePreferenceToggle("sms")} />
                         }
                       />
                     </FormGroup>
-                    <FormHelperText
-                      className="pt-3"
-                      error={formik.submitCount > 0 && isPreferenceError}
-                    >
+                    <FormHelperText className="pt-3" error={formik.submitCount > 0 && isPreferenceError}>
                       {formik.submitCount > 0 && isPreferenceError
-                        ? "At least choose one preference to proceed"
+                        ? "Choose at least one preference to proceed"
                         : null}
                     </FormHelperText>
                   </FormControl>
@@ -608,11 +653,10 @@ const InquiryDetails = () => {
         </Grid>
       </Grid>
 
-      {/* ── Confirmation Dialog ─────────────────────────────────────────────── */}
+      {/* ── Confirmation Dialog (unchanged) ────────────────────────────── */}
       <Dialog
         open={showInquiryPopup}
         onClose={(_e, reason) => {
-
           if (reason !== "backdropClick") {
             handleClosePopup();
           }
@@ -622,7 +666,7 @@ const InquiryDetails = () => {
       >
         <DialogContent className="text-center p-8">
           <Typography variant="h4" className="mt-4">
-            Inquiry Submitted
+            Inquiry submitted
           </Typography>
           <Typography variant="h6" className="mt-2 mb-8" color="primary">
             ID: {generatedInqNo}
@@ -631,48 +675,32 @@ const InquiryDetails = () => {
           <Box className="mb-8">
             {formik.values.prefferedConsultant || assignedTAC != null ? (
               formik.values.visitOption === 0 ? (
-                <Typography
-                  variant="body1"
-                  className="mb-4 leading-loose text-red-500 font-normal"
-                >
-                  As you are now inside our{" "}
-                  <span className="underline">{selectedBranchName}</span>{" "}
-                  Branch.
+                <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
+                  As you are now inside our <span className="underline">{selectedBranchName}</span> branch.
                   <br />
-                  Be ready for Pre-Counselling.
+                  Be ready for pre-counselling.
                 </Typography>
               ) : formik.values.visitOption === 1 ? (
-                <Typography
-                  variant="body1"
-                  className="mb-4 text-red-500 leading-loose font-normal"
-                >
+                <Typography variant="body1" className="mb-4 text-red-500 leading-loose font-normal">
                   As you are visiting our{" "}
-                  <span className="underline font-bold">
-                    {selectedBranchName}
-                  </span>{" "}
-                  Branch.
+                  <span className="underline font-bold">{selectedBranchName}</span> branch.
                   <br />
-                  For Pre-counselling, please reach to the FOE (Front Office Executive).
+                  For pre-counselling, please reach the FOE (front office executive).
                 </Typography>
               ) : (
                 <Typography variant="body1" className="mb-4">
-                  You are assigned to a Talent Acquisition Consultant (TAC).
+                  You are assigned to a talent acquisition consultant (TAC).
                   <br />
-                  Be ready for Pre-Counselling.
+                  Be ready for pre-counselling.
                 </Typography>
               )
             ) : (
-              <Typography
-                variant="body1"
-                className="mb-4 leading-loose text-red-500 font-normal"
-              >
-                As you&apos;re in{" "}
-                <span className="font-bold">{selectedBranchName}</span> Branch.
+              <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
+                As you&apos;re in <span className="font-bold">{selectedBranchName}</span> branch.
                 <br />
-                For Pre-counselling, please reach to the FOE (Front Office Executive).
+                For pre-counselling, please reach the FOE (front office executive).
                 <br />
-                The FOE(Front Office Executive) will generate a token on your
-                behalf.
+                The FOE will generate a token on your behalf.
               </Typography>
             )}
 
@@ -682,7 +710,7 @@ const InquiryDetails = () => {
                 className="normal-case rounded-[50px] py-[9.6px] px-10"
                 href={`/pre-counselling?leadId=${generatedLeadId}&consultantId=${formik.values.prefferedConsultant}&method=${formik.values.visitOption === 2 ? "on" : "off"}`}
               >
-                Schedule Pre-Counselling
+                Schedule pre-counselling
               </Button>
             ) : (
               <Button
