@@ -3,21 +3,21 @@ export interface InquiryFormValues {
   email: string;
   phoneNumber: string;
   whatsappNumber: string;
-  prefferedBranch: string;
-  prefferedConsultant: string | null;
-  visitOption: number;
-  fullAddress: string;
-  referedFrom: string;
-  referedType: string | null;
-  referedBy: string | null;
-  otherReferedBy: string;
-  passportNo: string;
+  // prefferedBranch: string;
+  // prefferedConsultant: string | null;
+  // visitOption: number;
+  // fullAddress: string;
+  referedFrom?: string;
+  referedType?: string | null;
+  referedBy?: string | null;
+  otherReferedBy?: string;
+  // passportNo: string;
   inquiryCategory: string;
   inquiryFor: string;
-  nationality: string;
-  latestAcademic: string;
-  latestTechnical: string;
-  workExperience: string;
+  nationality?: string;
+  latestAcademic?: string;
+  latestTechnical?: string;
+  workExperience?: string;
 }
 
 export interface InquiryUpdatePayload {

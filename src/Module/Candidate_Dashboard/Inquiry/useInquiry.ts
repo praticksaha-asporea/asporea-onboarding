@@ -22,13 +22,6 @@ import { NotificationPreferences } from "@/Types/Frontend_Payload/precounselling
 import { profileUpdateApi } from "@/Services/APIs/auth/auth.actions";
 import { getPathwayPositionsAction, getPathwayTopLevelAction } from "@/Services/APIs/Pathway/pathway.action";
 
-// ─── Validation Schema ────────────────────────────────────────────────────────
-// Split by step so each step only blocks on its own fields. prefferedBranch,
-// prefferedConsultant, visitOption and fullAddress are intentionally left out —
-// those inputs are currently commented out in the UI, so requiring them would
-// permanently block submission. Re-add them to whichever step's schema once
-// the corresponding fields come back into the form.
-
 export const stepOneValidationSchema = Yup.object({
   fullName: Yup.string().trim().required("Full Name is required"),
   email: Yup.string()
@@ -170,7 +163,7 @@ export function useInquiry() {
     email: userData?.email || "",
     phoneNumber: userData?.phoneNumber || "",
     whatsappNumber: userData?.whatsappNumber || "",
-    fullAddress: userData?.address || "",
+    // fullAddress: userData?.address || "",
     prefferedBranch: "",
     prefferedConsultant: "",
     visitOption: 0,
@@ -417,10 +410,10 @@ export function useInquiry() {
         whatsappNumber: String(values.whatsappNumber),
         inquiryCategory: values.inquiryCategory,
         inquiryFor: values.inquiryFor,
-        passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
+        // passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
       };
 
-      const response = await createInquiryAction(payload as any);
+      const response = await createInquiryAction(payload);
 
       if (response?.data?.success) {
         toast.success(response?.data?.message);
@@ -434,7 +427,7 @@ export function useInquiry() {
         setFormStep(1);
       }
     } catch (err: any) {
-      toast.error(err?.response?.data?.message || "Could not create inquiry. Please try again.");
+      // toast.error(err?.response?.data?.message || "Could not create inquiry. Please try again.");
       console.error("Inquiry create error:", err);
     } finally {
       setCreatingInquiry(false);
@@ -466,8 +459,8 @@ export function useInquiry() {
         referedBy: values.referedFrom === "reffer" ? values.referedBy : null,
         otherReferedBy:
           values.referedFrom === "reffer" && values.referedType === "other" ? values.otherReferedBy : null,
-        prefferedConsultant: values.prefferedConsultant === "" ? null : values.prefferedConsultant,
-        visitOption: Number(values.visitOption),
+        // prefferedConsultant: values.prefferedConsultant === "" ? null : values.prefferedConsultant,
+        // visitOption: Number(values.visitOption),
       };
 
       const response = await updateInquiryAction(inquiryId, payload);
@@ -482,7 +475,7 @@ export function useInquiry() {
         dispatch(
           updateUserData({
             leadId: inquiryId,
-            visitOption: Number(values.visitOption),
+            // visitOption: Number(values.visitOption),
             prefferedConsultant: response?.data?.data?.preferences?.consultantId,
           }),
         );

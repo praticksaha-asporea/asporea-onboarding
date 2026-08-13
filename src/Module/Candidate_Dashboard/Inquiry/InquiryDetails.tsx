@@ -653,7 +653,7 @@ const InquiryDetails = () => {
         </Grid>
       </Grid>
 
-      {/* ── Confirmation Dialog (unchanged) ────────────────────────────── */}
+      {/* ── Confirmation Dialog (unchanged) ────────────────────────────── 
       <Dialog
         open={showInquiryPopup}
         onClose={(_e, reason) => {
@@ -723,7 +723,7 @@ const InquiryDetails = () => {
             )}
           </Box>
         </DialogContent>
-      </Dialog>
+      </Dialog>*/}
     </>
   );
 };

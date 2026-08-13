@@ -178,6 +178,11 @@ export const createInquiry = async (body: any, createdById: string) => {
     passport: {
       status: passportNo ? "having" : "no",
       no: passportNo || ""
+    },
+    inquiryStages: {
+      stage1: `done`,
+      stage2: 'pending',
+      stage3: 'pending'
     }
   };
 
@@ -221,7 +226,7 @@ export const getExternalSourcesByType = async (type: string) => {
     throw new ApiError("Invalid source type provided", 400);
   }
 
-   const sources = await ExternalSourceModel.find({
+  const sources = await ExternalSourceModel.find({
     type: mappedType as any,
     status: "active",
   })
