@@ -1,3 +1,7 @@
+import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { countryResponse, pathwayResponse } from "@/Types/ApiResponse/pathway.types";
+import { AxiosResponse } from "axios";
+
 const MOCK_CATEGORIES = [
     { _id: "cat-career", title: "Mobility - Career Pathway " },
     { _id: "cat-country", title: "Mobility - Country Pathway " },
@@ -159,15 +163,17 @@ const MOCK_POSITIONS: Record<string, any> = {
     },
 };
 
-// ─── Actions (mocked; swap body for real axios call once backend is ready) ─
 
-export const getPathwayTopLevelAction = async () => {
-    // TODO: replace with real call once backend is ready:
-    // return axiosInstance.get("/pathways/top-level");
-
-    await new Promise((r) => setTimeout(r, 300)); // simulate latency
-    return { data: { success: true, data: MOCK_CATEGORIES } };
+export const getPathwayTopLevelAction = async (): Promise<AxiosResponse<pathwayResponse>> => {
+    const res = await axiosClient.get(`/pathways`);
+    return res;
 };
+
+export const getCountriesAction = async (): Promise<AxiosResponse<countryResponse>> => {
+    const res = await axiosClient.get(`/countries`);
+    return res;
+};
+
 
 export const getPathwayPositionsAction = async ({ pathwayId }: { pathwayId: string }) => {
     // TODO: replace with real call once backend is ready:

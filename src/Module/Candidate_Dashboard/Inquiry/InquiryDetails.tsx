@@ -95,6 +95,7 @@ const InquiryDetails = () => {
     handleCreateStep,
     handleUpdateStep,
     goBackToStep1,
+    categoryOptions
   } = useInquiry();
 
   const step1HasErrors = STEP1_FIELDS.some((f) => err(f));
@@ -265,7 +266,7 @@ const InquiryDetails = () => {
                               />
                             </Grid>
 
-                            <Grid size={{ xs: 12, md: 6 }}>
+                            {/* <Grid size={{ xs: 12, md: 6 }}>
                               <FormControl fullWidth error={err("inquiryCategory")}>
                                 <InputLabel id="inquiry-category-label">Inquiry for</InputLabel>
                                 <Select
@@ -285,6 +286,55 @@ const InquiryDetails = () => {
                                 {err("inquiryCategory") && (
                                   <FormHelperText>{helperText("inquiryCategory")}</FormHelperText>
                                 )}
+                              </FormControl>
+                            </Grid> */}
+                            <Grid size={{ xs: 12, md: 12 }}>
+                              <FormControl fullWidth error={err("inquiryCategory")}>
+                                <InputLabel id="inquiry-category-label">Inquiry For</InputLabel>
+
+                                <Select
+                                  labelId="inquiry-category-label"
+                                  id="inquiry-category"
+                                  name="inquiryCategory"
+                                  value={formik.values.inquiryCategory || ""}
+                                  onChange={(e) => handleCategoryChange(e.target.value)}
+                                  label="Inquiry For"
+                                  disabled={isFormDisabled}
+                                  MenuProps={{
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 450,
+                                        "& .MuiListSubheader-root": {
+                                          backgroundColor: "#f5f8fc",
+                                          color: "#0054a6",
+                                          fontWeight: 600,
+                                          fontSize: "14px",
+                                          lineHeight: "36px",
+                                        },
+                                        "& .inquiry-child": { paddingLeft: "32px", fontSize: "14px" },
+                                        "& .inquiry-grandchild": { paddingLeft: "52px", fontSize: "14px" },
+                                      },
+                                    },
+                                  }}
+                                >
+                                  {categoryOptions.map((option) =>
+                                    option.kind === "header" ? (
+                                      <ListSubheader key={option.key} sx={{ pl: option.level === 0 ? 2 : 4 }}>
+                                        {option.label}
+                                      </ListSubheader>
+                                    ) : (
+                                      <MenuItem
+                                        key={option.key}
+                                        value={option.value}
+                                        className={option.level === 1 ? "inquiry-child" : option.level >= 2 ? "inquiry-grandchild" : ""}
+                                      >
+                                        {option.label}
+                                      </MenuItem>
+                                    ),
+                                  )}
+                                </Select>
+
+                                {err("inquiryCategory") && <FormHelperText>{helperText("inquiryCategory")}</FormHelperText>}
                               </FormControl>
                             </Grid>
 

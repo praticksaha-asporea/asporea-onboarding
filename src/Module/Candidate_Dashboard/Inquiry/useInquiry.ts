@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFormik } from "formik";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/Redux/store";
@@ -9,9 +9,8 @@ import {
   getTacListAction,
   getExternalSourcesAction,
   createInquiryAction,
-  // updateInquiryAction, // TODO: add this action next to createInquiryAction — PATCH /inquiry/:id
-  userDetailsAction,
   updateInquiryAction,
+  userDetailsAction,
 } from "@/Services/APIs/Inquiry/inquiry.action";
 import toast from "react-hot-toast";
 import * as Yup from "yup";
@@ -20,13 +19,15 @@ import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { NotificationPreferences } from "@/Types/Frontend_Payload/precounselling.types";
 import { profileUpdateApi } from "@/Services/APIs/auth/auth.actions";
-import { getPathwayPositionsAction, getPathwayTopLevelAction } from "@/Services/APIs/Pathway/pathway.action";
+import {
+  getCountriesAction,
+  getPathwayPositionsAction,
+  getPathwayTopLevelAction,
+} from "@/Services/APIs/Pathway/pathway.action";
 
 export const stepOneValidationSchema = Yup.object({
   fullName: Yup.string().trim().required("Full Name is required"),
-  email: Yup.string()
-    .email("Enter a valid email address")
-    .required("Email is required"),
+  email: Yup.string().email("Enter a valid email address").required("Email is required"),
   phoneNumber: Yup.string()
     .matches(/^[0-9]{10}$/, "Please provide a valid 10-digit phone number")
     .required("Phone Number required"),
@@ -60,9 +61,9 @@ export const stepTwoValidationSchema = Yup.object({
   }),
 });
 
-// Combined schema kept for anything external that still imports the old name
-// (e.g. a shared TS type derived from it). Not used internally anymore —
-// internal validation runs per-step, see `validate` inside useFormik below.
+// Combined schema kept for anything external that still imports the old name.
+// Not used internally — internal validation runs per-step, see `validate`
+// inside useFormik below.
 export const inquiryValidationSchema = stepOneValidationSchema.concat(stepTwoValidationSchema);
 
 // ─── Steps ────────────────────────────────────────────────────────────────────
@@ -81,6 +82,69 @@ export function makeFieldHelpers(errors: Record<string, any>, submitCount: numbe
     err: (field: string) => submitCount > 0 && Boolean(errors[field]),
     helperText: (field: string) => (submitCount > 0 ? errors[field] : undefined),
   };
+}
+
+// ─── Category tree + country wildcard ─────────────────────────────────────
+// Any pathway category whose title contains "countr" (case-insensitive —
+// matches "Country", "Countries", "Study by Country", etc.) has its children
+// replaced with the live countries list instead of its actual sub-pathways.
+const COUNTRY_CATEGORY_MATCH = /countr/i;
+
+export function isCountryCategory(title?: string) {
+  return COUNTRY_CATEGORY_MATCH.test(title || "");
+}
+
+export type CategoryOption =
+  | { kind: "header"; key: string; label: string; level: number }
+  | { kind: "item"; key: string; value: string; label: string; level: number };
+
+/**
+ * Flattens the category tree (with the country wildcard applied) into a
+ * list the component can map straight onto <ListSubheader>/<MenuItem>,
+ * so the tree-building logic doesn't have to live inline in JSX.
+ */
+export function buildCategoryOptions(categories: any[], countries: any[]): CategoryOption[] {
+  const activeCategories = (categories || []).filter((c: any) => c.isActive);
+  const roots = activeCategories.filter((c: any) => !c.underPathway || c.underPathway === "");
+  const getChildren = (parentId: string) =>
+    activeCategories.filter((c: any) => c.underPathway === parentId);
+
+  const renderNode = (parent: any, level = 0): CategoryOption[] => {
+    if (isCountryCategory(parent.title)) {
+      const header: CategoryOption = {
+        kind: "header",
+        key: `header-${parent._id}`,
+        label: parent.title,
+        level,
+      };
+
+      const countryItems: CategoryOption[] = (countries || []).map((country: any) => ({
+        kind: "item",
+        key: String(country._id || country.code),
+        value: String(country._id || country.code),
+        label: country.name || country.title,
+        level: level + 1,
+      }));
+
+      return [header, ...countryItems];
+    }
+
+    const children = getChildren(parent._id);
+
+    if (children.length === 0) {
+      return [{ kind: "item", key: parent._id, value: parent._id, label: parent.title, level }];
+    }
+
+    const items: CategoryOption[] = [
+      { kind: "header", key: `header-${parent._id}`, label: parent.title, level },
+    ];
+    children.forEach((child: any) => {
+      items.push(...renderNode(child, level + 1));
+    });
+    return items;
+  };
+
+  return roots.flatMap((root: any) => renderNode(root));
 }
 
 export function useInquiry() {
@@ -139,6 +203,7 @@ export function useInquiry() {
   const [hasExistingData, setHasExistingData] = useState(false);
   const [activeStepperStep, setActiveStepperStep] = useState<number>(0);
   const [categories, setCategories] = useState<any[]>([]);
+  const [countries, setCountries] = useState<any[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [positionData, setPositionData] = useState<any>(null);
   const [loadingPositions, setLoadingPositions] = useState(false);
@@ -163,7 +228,6 @@ export function useInquiry() {
     email: userData?.email || "",
     phoneNumber: userData?.phoneNumber || "",
     whatsappNumber: userData?.whatsappNumber || "",
-    // fullAddress: userData?.address || "",
     prefferedBranch: "",
     prefferedConsultant: "",
     visitOption: 0,
@@ -192,8 +256,18 @@ export function useInquiry() {
     }
   };
 
+  const fetchCountries = async () => {
+    try {
+      const response = await getCountriesAction();
+      if (response?.data?.success) setCountries(response?.data?.data);
+    } catch (err) {
+      console.error("Country fetch error:", err);
+    }
+  };
+
   useEffect(() => {
     fetchCategories();
+    fetchCountries();
   }, []);
 
   const fetchPositions = async (categoryId: string) => {
@@ -212,6 +286,18 @@ export function useInquiry() {
     }
   };
 
+  // A selected value that matches a country id isn't a real pathway id —
+  // used below to skip the position lookup for country selections.
+  const isCountryValue = (id: string) =>
+    (countries || []).some((c: any) => String(c._id || c.code) === id);
+
+  // Flattened, render-ready options for the "Inquiry For" select — the
+  // country-wildcard swap happens once here instead of inline in JSX.
+  const categoryOptions = useMemo(
+    () => buildCategoryOptions(categories, countries),
+    [categories, countries],
+  );
+
   useEffect(() => {
     const fetchRealProgress = async () => {
       const existingLeadId = userData?.leadId || userData?.user?.leadId;
@@ -224,8 +310,6 @@ export function useInquiry() {
       try {
         const res = await getJourneyTimelineAction({ leadId: existingLeadId });
         if (res?.data?.success && res?.data) {
-          const stepIndex = Math.max(0, (res?.data?.data?.activeStep || 1) - 1);
-          setActiveStepperStep(stepIndex);
           setActiveStepperStep(res?.data?.data?.activeStep);
         } else {
           setActiveStepperStep(1);
@@ -249,8 +333,6 @@ export function useInquiry() {
 
       if (!inquiryId) {
         setInquiryId(existingLeadId);
-        // Only jump to step 2 if step 1 hasn't already produced a fresh
-        // generatedInqNo in this session (that path advances on its own).
         setFormStep((prev) => (prev === 0 ? 1 : prev));
       }
     }
@@ -294,9 +376,13 @@ export function useInquiry() {
     formik.setFieldValue("prefferedConsultant", "");
   }, [formik.values.prefferedBranch]);
 
+  // Skip the position lookup entirely when the current selection is a
+  // country (a leaf under a "...Country..." category) — countries aren't
+  // pathway ids, so calling fetchPositions with one would just 404.
   useEffect(() => {
+    if (isCountryValue(formik.values.inquiryCategory)) return;
     fetchPositions(formik.values.inquiryCategory);
-  }, [formik.values.inquiryCategory]);
+  }, [formik.values.inquiryCategory, countries]);
 
   const handleCategoryChange = (categoryId: string) => {
     formik.setFieldValue("inquiryCategory", categoryId);
@@ -410,7 +496,6 @@ export function useInquiry() {
         whatsappNumber: String(values.whatsappNumber),
         inquiryCategory: values.inquiryCategory,
         inquiryFor: values.inquiryFor,
-        // passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
       };
 
       const response = await createInquiryAction(payload);
@@ -427,7 +512,6 @@ export function useInquiry() {
         setFormStep(1);
       }
     } catch (err: any) {
-      // toast.error(err?.response?.data?.message || "Could not create inquiry. Please try again.");
       console.error("Inquiry create error:", err);
     } finally {
       setCreatingInquiry(false);
@@ -459,8 +543,6 @@ export function useInquiry() {
         referedBy: values.referedFrom === "reffer" ? values.referedBy : null,
         otherReferedBy:
           values.referedFrom === "reffer" && values.referedType === "other" ? values.otherReferedBy : null,
-        // prefferedConsultant: values.prefferedConsultant === "" ? null : values.prefferedConsultant,
-        // visitOption: Number(values.visitOption),
       };
 
       const response = await updateInquiryAction(inquiryId, payload);
@@ -475,7 +557,6 @@ export function useInquiry() {
         dispatch(
           updateUserData({
             leadId: inquiryId,
-            // visitOption: Number(values.visitOption),
             prefferedConsultant: response?.data?.data?.preferences?.consultantId,
           }),
         );
@@ -509,12 +590,11 @@ export function useInquiry() {
   const handleUpdateStep = () => formik.handleSubmit();
   const goBackToStep1 = () => setFormStep(0);
 
-  // With the two-step flow, an existing leadId now means "resume at step 2,"
-  // not "form is done" (see the resume effect above), so this can no longer
-  // be derived from hasExistingData the way it used to be. If you want the
-  // old "already submitted, go to pre-counselling" banner back for people
-  // who fully completed both steps, gate it on a real completed/status
-  // field from userData, e.g. `userData?.inquiryStatus === "completed"`.
+  // With the two-step flow, an existing leadId now means "resume at step 2",
+  // not "form is done" — see the resume effect above. If you need the old
+  // "already submitted, go to pre-counselling" banner back for people who
+  // fully completed both steps, gate it on a real completed/status field
+  // from userData, e.g. `userData?.inquiryStatus === "completed"`.
   const isFormDisabled = false;
 
   return {
@@ -545,8 +625,11 @@ export function useInquiry() {
     handleClosePopup,
     selectedBranchName,
     categories,
+    countries,
+    categoryOptions,
     handleCategoryChange,
     positionData,
+    handlePreferenceToggle,
     // two-step flow
     formStep,
     inquiryId,
@@ -555,6 +638,5 @@ export function useInquiry() {
     handleCreateStep,
     handleUpdateStep,
     goBackToStep1,
-    handlePreferenceToggle
   };
 }
