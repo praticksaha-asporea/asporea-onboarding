@@ -24,6 +24,8 @@ import {
   getPathwayPositionsAction,
   getPathwayTopLevelAction,
 } from "@/Services/APIs/Pathway/pathway.action";
+import { IPosition } from "@/lib/models/Position.model";
+import { positionDBData } from "@/Types/object.types";
 
 export const stepOneValidationSchema = Yup.object({
   fullName: Yup.string().trim().required("Full Name is required"),
@@ -110,24 +112,24 @@ export function buildCategoryOptions(categories: any[], countries: any[]): Categ
     activeCategories.filter((c: any) => c.underPathway === parentId);
 
   const renderNode = (parent: any, level = 0): CategoryOption[] => {
-    if (isCountryCategory(parent.title)) {
-      const header: CategoryOption = {
-        kind: "header",
-        key: `header-${parent._id}`,
-        label: parent.title,
-        level,
-      };
+    // if (isCountryCategory(parent.title)) {
+    //   const header: CategoryOption = {
+    //     kind: "header",
+    //     key: `header-${parent._id}`,
+    //     label: parent.title,
+    //     level,
+    //   };
 
-      const countryItems: CategoryOption[] = (countries || []).map((country: any) => ({
-        kind: "item",
-        key: String(country._id || country.code),
-        value: String(country._id || country.code),
-        label: country.name || country.title,
-        level: level + 1,
-      }));
+    //   const countryItems: CategoryOption[] = (countries || []).map((country: any) => ({
+    //     kind: "item",
+    //     key: String(country._id || country.code),
+    //     value: String(country._id || country.code),
+    //     label: country.name || country.title,
+    //     level: level + 1,
+    //   }));
 
-      return [header, ...countryItems];
-    }
+    //   return [header, ...countryItems];
+    // }
 
     const children = getChildren(parent._id);
 
@@ -205,7 +207,7 @@ export function useInquiry() {
   const [categories, setCategories] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
-  const [positionData, setPositionData] = useState<any>(null);
+  const [positionData, setPositionData] = useState<positionDBData[] | null>(null);
   const [loadingPositions, setLoadingPositions] = useState(false);
 
   // ── Two-step form state ───────────────────────────────────────────────────
@@ -228,14 +230,14 @@ export function useInquiry() {
     email: userData?.email || "",
     phoneNumber: userData?.phoneNumber || "",
     whatsappNumber: userData?.whatsappNumber || "",
-    prefferedBranch: "",
-    prefferedConsultant: "",
-    visitOption: 0,
+    // prefferedBranch: "",
+    // prefferedConsultant: "",
+    // visitOption: 0,
     referedFrom: "web-app",
     referedType: "",
     referedBy: "",
     otherReferedBy: "",
-    passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
+    // passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
     inquiryCategory: "",
     inquiryFor: "",
     nationality: userData?.nationality || "",
@@ -278,7 +280,9 @@ export function useInquiry() {
     setLoadingPositions(true);
     try {
       const response = await getPathwayPositionsAction({ pathwayId: categoryId });
-      if (response?.data?.success) setPositionData(response?.data?.data);
+      // console.log(response?.data?.data, 54542);
+
+      if (response?.data?.data) setPositionData(response?.data?.data);
     } catch (err) {
       console.error("Position fetch error:", err);
     } finally {
@@ -371,10 +375,10 @@ export function useInquiry() {
     },
   });
 
-  useEffect(() => {
-    fetchConsultants(formik.values.prefferedBranch);
-    formik.setFieldValue("prefferedConsultant", "");
-  }, [formik.values.prefferedBranch]);
+  // useEffect(() => {
+  //   fetchConsultants(formik.values.prefferedBranch);
+  //   formik.setFieldValue("prefferedConsultant", "");
+  // }, [formik.values.prefferedBranch]);
 
   // Skip the position lookup entirely when the current selection is a
   // country (a leaf under a "...Country..." category) — countries aren't
@@ -395,8 +399,8 @@ export function useInquiry() {
     fetchExternalSources(formik.values.referedType, formik.setFieldValue);
   }, [formik.values.referedType]);
 
-  const selectedBranchName =
-    (branches as any[]).find((b) => b._id === formik.values.prefferedBranch)?.title || "our branch";
+  // const selectedBranchName =
+  //   (branches as any[]).find((b) => b._id === formik.values.prefferedBranch)?.title || "our branch";
 
   const { err, helperText } = makeFieldHelpers(formik.errors as Record<string, any>, formik.submitCount);
 
@@ -623,7 +627,7 @@ export function useInquiry() {
     helperText,
     activeStepperStep,
     handleClosePopup,
-    selectedBranchName,
+    // selectedBranchName,
     categories,
     countries,
     categoryOptions,

@@ -1,4 +1,5 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+import { positionResponse } from "@/Types/ApiResponse/leadRes.types";
 import { countryResponse, pathwayResponse } from "@/Types/ApiResponse/pathway.types";
 import { AxiosResponse } from "axios";
 
@@ -175,11 +176,13 @@ export const getCountriesAction = async (): Promise<AxiosResponse<countryRespons
 };
 
 
-export const getPathwayPositionsAction = async ({ pathwayId }: { pathwayId: string }) => {
+export const getPathwayPositionsAction = async ({ pathwayId }: { pathwayId: string }): Promise<AxiosResponse<positionResponse>> => {
     // TODO: replace with real call once backend is ready:
-    // return axiosInstance.get(`/pathways/${pathwayId}/positions`);
+    // return axiosInstance.get(`/document/positions-by-pathway?id=${pathwayId}`);
 
-    await new Promise((r) => setTimeout(r, 300));
-    const data = MOCK_POSITIONS[pathwayId] || { grouped: false, positions: [] };
-    return { data: { success: true, data } };
+    // await new Promise((r) => setTimeout(r, 300));
+    // const data = MOCK_POSITIONS[pathwayId] || { grouped: false, positions: [] };
+    // return { data: { success: true, data } };
+    const res = await axiosClient.get(`/document/positions-by-pathway?id=${pathwayId}`);
+    return res?.data;
 };

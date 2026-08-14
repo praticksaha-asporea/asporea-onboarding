@@ -29,8 +29,8 @@ export const createPosition = async (body: any) => {
     requiredDocuments,
     mandatoryDocuments,
     positionBrochure,
-    type: type || programTypes || [],  
-   country: country || null,        
+    type: type || programTypes || [],
+    country: country || null,
   });
 };
 
@@ -87,7 +87,7 @@ export const viewPosition = async (positionId: string) => {
     .populate("requiredDocuments", "title section")
     .populate("mandatoryDocuments", "title section")
     .populate("type", "title underPathway")
-    .populate("countries", "name code")
+    .populate("country", "name code")
     .populate("positionBrochure", "url")
     .lean();
 
@@ -167,4 +167,56 @@ export const deletePosition = async (positionId: string) => {
   if (!deleted) throw new ApiError("Position not found", 404);
 
   return { message: "Position deleted successfully" };
+};
+
+
+export const positionListbyType = async ({
+  keyword,
+  pathWay,
+  page = 1,
+  limit = 10,
+}: {
+  keyword?: string;
+  pathWay?: string;
+  page?: number;
+  limit?: number;
+}) => {
+  const filter: Record<string, unknown> = {};
+
+  if (keyword && keyword.trim().length > 0) {
+    filter.title = new RegExp(keyword.trim(), "i");
+  }
+
+  if (pathWay && pathWay.trim().length > 0) {
+    filter.type = pathWay.trim();
+  }
+
+  const skip = (page - 1) * limit;
+
+  const [positions, total] = await Promise.all([
+    Position.find(filter)
+      .populate("requiredDocuments", "title section")
+      .populate("mandatoryDocuments", "title section")
+      .populate("type", "title underPathway")
+      .populate("country", "name code")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+    Position.countDocuments(filter),
+  ]);
+
+  const totalPages = Math.ceil(total / limit);
+
+  return {
+    data: positions,
+    pagination: {
+      total,
+      page,
+      limit,
+      totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+    },
+  };
 };

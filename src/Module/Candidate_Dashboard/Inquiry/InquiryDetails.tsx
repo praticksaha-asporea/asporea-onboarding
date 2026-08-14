@@ -32,6 +32,7 @@ import {
   useInquiry,
   inquirySteps,
 } from "./useInquiry";
+import { positionDBData } from "@/Types/object.types";
 
 // ─── Local constants ──────────────────────────────────────────────────────
 // Fields validated/submitted in each step. Adjust names to match your
@@ -78,7 +79,7 @@ const InquiryDetails = () => {
     helperText,
     activeStepperStep,
     handleClosePopup,
-    selectedBranchName,
+    // selectedBranchName,
     categories,
     handleCategoryChange,
     positionData,
@@ -217,7 +218,7 @@ const InquiryDetails = () => {
                                 name="fullName"
                                 label="Full name"
                                 value={formik.values.fullName}
-                                placeholder="Samson Wolf"
+                                // placeholder="Samson Wolf"
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
                                 error={err("fullName")}
@@ -265,30 +266,7 @@ const InquiryDetails = () => {
                                 helperText={helperText("whatsappNumber")}
                               />
                             </Grid>
-
-                            {/* <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl fullWidth error={err("inquiryCategory")}>
-                                <InputLabel id="inquiry-category-label">Inquiry for</InputLabel>
-                                <Select
-                                  labelId="inquiry-category-label"
-                                  name="inquiryCategory"
-                                  value={formik.values.inquiryCategory}
-                                  onChange={(e) => handleCategoryChange(e.target.value)}
-                                  onBlur={formik.handleBlur}
-                                  label="Inquiry for"
-                                >
-                                  {categories.map((c: any) => (
-                                    <MenuItem key={c._id} value={c._id}>
-                                      {c.title}
-                                    </MenuItem>
-                                  ))}
-                                </Select>
-                                {err("inquiryCategory") && (
-                                  <FormHelperText>{helperText("inquiryCategory")}</FormHelperText>
-                                )}
-                              </FormControl>
-                            </Grid> */}
-                            <Grid size={{ xs: 12, md: 12 }}>
+                            <Grid size={{ xs: 12, md: 6 }}>
                               <FormControl fullWidth error={err("inquiryCategory")}>
                                 <InputLabel id="inquiry-category-label">Inquiry For</InputLabel>
 
@@ -303,7 +281,7 @@ const InquiryDetails = () => {
                                   MenuProps={{
                                     PaperProps: {
                                       sx: {
-                                        maxHeight: 450,
+                                        maxHeight: "calc(100vh - 250px)",
                                         "& .MuiListSubheader-root": {
                                           backgroundColor: "#f5f8fc",
                                           color: "#0054a6",
@@ -361,14 +339,14 @@ const InquiryDetails = () => {
                                   MenuProps={{ PaperProps: { sx: { maxHeight: 400 } } }}
                                 >
                                   {positionData &&
-                                    !positionData.grouped &&
-                                    positionData.positions.map((p: any) => (
+                                    positionData?.map((p: positionDBData) => (
                                       <MenuItem key={p._id} value={p._id}>
-                                        {p.title}
+                                        {p?.title}
                                       </MenuItem>
-                                    ))}
+                                    )
+                                    )}
 
-                                  {positionData &&
+                                  {/* {positionData &&
                                     positionData.grouped &&
                                     positionData.groups.flatMap((g: any) => [
                                       <ListSubheader key={`h-${g.subgroup}`}>{g.subgroup}</ListSubheader>,
@@ -377,7 +355,7 @@ const InquiryDetails = () => {
                                           {p.title}
                                         </MenuItem>
                                       )),
-                                    ])}
+                                    ])} */}
                                 </Select>
                                 {err("inquiryFor") && (
                                   <FormHelperText>{helperText("inquiryFor")}</FormHelperText>
