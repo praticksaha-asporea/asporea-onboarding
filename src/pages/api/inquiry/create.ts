@@ -34,7 +34,7 @@ export default async function handler(
       "Inquiry registered successfully",
     );
   } catch (error: unknown) {
-    
+
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode);
     return ResponseHandler.sendError(res, "Unknown error occurred", 500);

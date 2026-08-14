@@ -15,7 +15,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     email,
     phoneNumber,
     whatsappNumber,
-    prefferedBranch,
+    // prefferedBranch,
     prefferedConsultant,
     visitOption,
     fullAddress,
@@ -23,7 +23,9 @@ export const createInquiry = async (body: any, createdById: string) => {
     referedType,
     referedBy,
     otherReferedBy,
-    passportNo
+    passportNo,
+    latitude,
+    longitude
   } = body;
   const typeMapping: any = {
     "web-app": "web_app",
@@ -55,25 +57,45 @@ export const createInquiry = async (body: any, createdById: string) => {
 
   const inqNo = await generateInquiryNo();
   const currentFYear = currentFy();
-
+  const radius = 50 * 1000;
   const isOnline = Number(visitOption) === 2;
+  let prefferedBranch = "";
 
   // ── Resolve which TAC (consultantId) to assign ──────────────────────────────
   let resolvedConsultantId: mongoose.Types.ObjectId | null = null;
 
+  const branch = await BranchModel.findOne({
+    coordinates: {
+      $near: {
+        $geometry: {
+          type: "Point",
+          coordinates: [longitude, latitude],
+        },
+        $maxDistance: radius,
+      },
+    },
+  }).lean();
+
+  if (!branch) {
+    throw new ApiError("No branch found within 10km radius", 404);
+  }
+  prefferedBranch = await branch?._id;
+  // console.log(branch, 2222);
   if (prefferedConsultant) {
     // Consultant explicitly chosen — always honour it regardless of visit type
     resolvedConsultantId = new mongoose.Types.ObjectId(prefferedConsultant);
   } else if (isOnline) {
     // Online visit with no preferred consultant → auto-assign a TAC
-    const [generalSettings, branch] = await Promise.all([
+    const [generalSettings] = await Promise.all([
       GeneralSettingModel.findOne().lean(),
-      BranchModel.findById(prefferedBranch).lean(),
+      // BranchModel.findById(prefferedBranch).lean(),
     ]);
 
-    if (!branch) {
-      throw new ApiError("Selected branch not found", 404);
-    }
+    // if (!branch) {
+    //   throw new ApiError("Selected branch not found", 404);
+    // }
+    // prefferedBranch get branch from lat long nearest
+
 
     // Fetch all EmployeeBranchShift records for this branch where the
     // linked user has role "tac", and collect their counterNo values.
@@ -137,6 +159,7 @@ export const createInquiry = async (body: any, createdById: string) => {
   }
   // Offline + no consultant → resolvedConsultantId stays null (reception handles assignment)
   // ────────────────────────────────────────────────────────────────────────────
+  console.log(prefferedBranch, 666);
 
   const leadData = {
     fullName,

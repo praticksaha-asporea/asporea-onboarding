@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
-import { Dialog, DialogContent, CircularProgress } from "@mui/material";
+import { CircularProgress, Dialog, DialogContent } from "@mui/material";
 import Grid from "@mui/material/Grid";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -83,12 +83,6 @@ const InquiryDetails = () => {
     categories,
     handleCategoryChange,
     positionData,
-
-    // ── New: two-step create/update wiring ───────────────────────────
-    // formStep: 0 = "basic details" (create), 1 = "additional details" (update)
-    // inquiryId: set after step 1's create call succeeds; used by step 2's update call
-    // creatingInquiry / updatingInquiry: separate loading flags per step
-    // handleCreateStep / handleUpdateStep: call these instead of formik.handleSubmit
     formStep,
     inquiryId,
     creatingInquiry,
@@ -96,7 +90,9 @@ const InquiryDetails = () => {
     handleCreateStep,
     handleUpdateStep,
     goBackToStep1,
-    categoryOptions
+    categoryOptions,
+    getLocation,
+    locationPermissionRequired
   } = useInquiry();
 
   const step1HasErrors = STEP1_FIELDS.some((f) => err(f));
@@ -345,17 +341,6 @@ const InquiryDetails = () => {
                                       </MenuItem>
                                     )
                                     )}
-
-                                  {/* {positionData &&
-                                    positionData.grouped &&
-                                    positionData.groups.flatMap((g: any) => [
-                                      <ListSubheader key={`h-${g.subgroup}`}>{g.subgroup}</ListSubheader>,
-                                      ...g.positions.map((p: any) => (
-                                        <MenuItem key={p._id} value={p._id}>
-                                          {p.title}
-                                        </MenuItem>
-                                      )),
-                                    ])} */}
                                 </Select>
                                 {err("inquiryFor") && (
                                   <FormHelperText>{helperText("inquiryFor")}</FormHelperText>
@@ -571,8 +556,8 @@ const InquiryDetails = () => {
                             type="submit"
                             disabled={
                               formStep === 0
-                                ? creatingInquiry || step1HasErrors
-                                : updatingInquiry || step2HasErrors
+                                ? creatingInquiry || step1HasErrors || locationPermissionRequired
+                                : updatingInquiry || step2HasErrors || locationPermissionRequired
                             }
                             className="rounded-xl normal-case text-sm shadow-md"
                           >
@@ -681,6 +666,24 @@ const InquiryDetails = () => {
         </Grid>
       </Grid>
 
+      <Dialog
+        open={locationPermissionRequired}>
+        <DialogContent className="text-center p-8">
+          <Typography variant="h4" className="mt-4">
+            Location permission required
+          </Typography>
+          <Typography variant="body1" className="mt-2 mb-8">
+            Please allow location permission to continue
+          </Typography>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={getLocation}
+          >
+            Allow location
+          </Button>
+        </DialogContent>
+      </Dialog>
       {/* ── Confirmation Dialog (unchanged) ────────────────────────────── 
       <Dialog
         open={showInquiryPopup}

@@ -9,6 +9,8 @@ export const createInquirySchema = Joi.object({
   whatsappNumber: Joi.string().trim().optional().allow("", null),
   inquiryCategory: Joi.string().trim().required(),
   inquiryFor: Joi.string().trim().required(),
+  latitude: Joi.string().optional(),
+  longitude: Joi.string().optional(),
   // prefferedBranch: objectIdSchema.required(),
   // prefferedConsultant: objectIdSchema.optional().allow(null, ""),
   // visitOption: Joi.number().valid(0, 1, 2).required(),

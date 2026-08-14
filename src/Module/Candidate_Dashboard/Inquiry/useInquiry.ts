@@ -176,6 +176,9 @@ export function useInquiry() {
 
   // ── Branches ────────────────────────────────────────────────────────────────
   const [branches, setBranches] = useState<any[]>([]);
+  const [corordinates, setCorordinates] = useState<string[]>([]);
+  const [locationPermissionRequired, setLocationPermissionRequired] = useState<boolean>(false);
+
 
   const fetchBranches = async (lat: number, lng: number) => {
     try {
@@ -186,20 +189,114 @@ export function useInquiry() {
     }
   };
 
+  const permissionStatusRef = useRef<PermissionStatus | null>(null);
+
+  const getLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Location is not supported by your browser.");
+      return;
+    }
+
+    try {
+      const permission = await navigator.permissions.query({
+        name: "geolocation",
+      });
+
+      if (permission.state === "denied") {
+        setLocationPermissionRequired(true);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          setCorordinates([
+            `${coords.latitude}`,
+            `${coords.longitude}`,
+          ]);
+
+          setLocationPermissionRequired(false);
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationPermissionRequired(true);
+            return;
+          }
+
+          if (error.code === error.TIMEOUT) {
+            toast.error("Location request timed out.");
+            return;
+          }
+
+          toast.error("Unable to get your location.");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Location error:", error);
+    }
+  };
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        fetchBranches(coords.latitude, coords.longitude);
-      },
-      (error) => {
-        console.error(error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
-    );
+    let cancelled = false;
+
+    const init = async () => {
+      if (!navigator.geolocation) {
+        toast.error("Location is not supported by your browser.");
+        return;
+      }
+
+      try {
+        const status = await navigator.permissions.query({ name: "geolocation" });
+        if (cancelled) return;
+
+        permissionStatusRef.current = status;
+
+        // This is the missing piece: the browser fires `onchange` on this
+        // same PermissionStatus object the moment the person grants access —
+        // whether that's via a native prompt or by flipping it on later in
+        // the site-settings/padlock UI. Without this listener, nothing in
+        // the app ever finds out it happened.
+        status.onchange = () => {
+          if (status.state === "granted") {
+            // A full reload is simpler and more reliable here than trying to
+            // re-fetch and re-sync state manually — this fires once, right
+            // after the person grants access, so a reload doesn't lose them
+            // any progress they haven't already made.
+            window.location.reload();
+          } else if (status.state === "denied") {
+            setLocationPermissionRequired(true);
+          }
+        };
+
+        if (status.state === "denied") {
+          // Browsers won't show their native prompt again once a site is
+          // explicitly denied, so calling getCurrentPosition here would just
+          // silently fail. Show the banner and wait for onchange instead.
+          setLocationPermissionRequired(true);
+          return;
+        }
+
+        getLocation();
+      } catch (error) {
+        // Safari and a few older browsers don't support permissions.query
+        // for geolocation — fall back to just asking directly, which still
+        // shows the native prompt on those browsers.
+        console.error("Permission query failed, falling back:", error);
+        getLocation();
+      }
+    };
+
+    init();
+
+    return () => {
+      cancelled = true;
+      if (permissionStatusRef.current) {
+        permissionStatusRef.current.onchange = null;
+      }
+    };
   }, []);
 
   const [hasExistingData, setHasExistingData] = useState(false);
@@ -500,6 +597,8 @@ export function useInquiry() {
         whatsappNumber: String(values.whatsappNumber),
         inquiryCategory: values.inquiryCategory,
         inquiryFor: values.inquiryFor,
+        latitude: corordinates?.[0],
+        longitude: corordinates?.[1],
       };
 
       const response = await createInquiryAction(payload);
@@ -642,5 +741,7 @@ export function useInquiry() {
     handleCreateStep,
     handleUpdateStep,
     goBackToStep1,
+    locationPermissionRequired,
+    getLocation
   };
 }
