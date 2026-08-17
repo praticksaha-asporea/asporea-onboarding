@@ -24,6 +24,8 @@ import {
   getPathwayPositionsAction,
   getPathwayTopLevelAction,
 } from "@/Services/APIs/Pathway/pathway.action";
+import { IPosition } from "@/lib/models/Position.model";
+import { positionDBData } from "@/Types/object.types";
 
 export const stepOneValidationSchema = Yup.object({
   fullName: Yup.string().trim().required("Full Name is required"),
@@ -110,24 +112,24 @@ export function buildCategoryOptions(categories: any[], countries: any[]): Categ
     activeCategories.filter((c: any) => c.underPathway === parentId);
 
   const renderNode = (parent: any, level = 0): CategoryOption[] => {
-    if (isCountryCategory(parent.title)) {
-      const header: CategoryOption = {
-        kind: "header",
-        key: `header-${parent._id}`,
-        label: parent.title,
-        level,
-      };
+    // if (isCountryCategory(parent.title)) {
+    //   const header: CategoryOption = {
+    //     kind: "header",
+    //     key: `header-${parent._id}`,
+    //     label: parent.title,
+    //     level,
+    //   };
 
-      const countryItems: CategoryOption[] = (countries || []).map((country: any) => ({
-        kind: "item",
-        key: String(country._id || country.code),
-        value: String(country._id || country.code),
-        label: country.name || country.title,
-        level: level + 1,
-      }));
+    //   const countryItems: CategoryOption[] = (countries || []).map((country: any) => ({
+    //     kind: "item",
+    //     key: String(country._id || country.code),
+    //     value: String(country._id || country.code),
+    //     label: country.name || country.title,
+    //     level: level + 1,
+    //   }));
 
-      return [header, ...countryItems];
-    }
+    //   return [header, ...countryItems];
+    // }
 
     const children = getChildren(parent._id);
 
@@ -174,6 +176,9 @@ export function useInquiry() {
 
   // ── Branches ────────────────────────────────────────────────────────────────
   const [branches, setBranches] = useState<any[]>([]);
+  const [corordinates, setCorordinates] = useState<string[]>([]);
+  const [locationPermissionRequired, setLocationPermissionRequired] = useState<boolean>(false);
+
 
   const fetchBranches = async (lat: number, lng: number) => {
     try {
@@ -184,20 +189,114 @@ export function useInquiry() {
     }
   };
 
+  const permissionStatusRef = useRef<PermissionStatus | null>(null);
+
+  const getLocation = async () => {
+    if (!navigator.geolocation) {
+      toast.error("Location is not supported by your browser.");
+      return;
+    }
+
+    try {
+      const permission = await navigator.permissions.query({
+        name: "geolocation",
+      });
+
+      if (permission.state === "denied") {
+        setLocationPermissionRequired(true);
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        ({ coords }) => {
+          setCorordinates([
+            `${coords.latitude}`,
+            `${coords.longitude}`,
+          ]);
+
+          setLocationPermissionRequired(false);
+        },
+        (error) => {
+          if (error.code === error.PERMISSION_DENIED) {
+            setLocationPermissionRequired(true);
+            return;
+          }
+
+          if (error.code === error.TIMEOUT) {
+            toast.error("Location request timed out.");
+            return;
+          }
+
+          toast.error("Unable to get your location.");
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 0,
+        }
+      );
+    } catch (error) {
+      console.error("Location error:", error);
+    }
+  };
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      ({ coords }) => {
-        fetchBranches(coords.latitude, coords.longitude);
-      },
-      (error) => {
-        console.error(error);
-      },
-      {
-        enableHighAccuracy: true,
-        timeout: 10000,
-        maximumAge: 0,
-      },
-    );
+    let cancelled = false;
+
+    const init = async () => {
+      if (!navigator.geolocation) {
+        toast.error("Location is not supported by your browser.");
+        return;
+      }
+
+      try {
+        const status = await navigator.permissions.query({ name: "geolocation" });
+        if (cancelled) return;
+
+        permissionStatusRef.current = status;
+
+        // This is the missing piece: the browser fires `onchange` on this
+        // same PermissionStatus object the moment the person grants access —
+        // whether that's via a native prompt or by flipping it on later in
+        // the site-settings/padlock UI. Without this listener, nothing in
+        // the app ever finds out it happened.
+        status.onchange = () => {
+          if (status.state === "granted") {
+            // A full reload is simpler and more reliable here than trying to
+            // re-fetch and re-sync state manually — this fires once, right
+            // after the person grants access, so a reload doesn't lose them
+            // any progress they haven't already made.
+            window.location.reload();
+          } else if (status.state === "denied") {
+            setLocationPermissionRequired(true);
+          }
+        };
+
+        if (status.state === "denied") {
+          // Browsers won't show their native prompt again once a site is
+          // explicitly denied, so calling getCurrentPosition here would just
+          // silently fail. Show the banner and wait for onchange instead.
+          setLocationPermissionRequired(true);
+          return;
+        }
+
+        getLocation();
+      } catch (error) {
+        // Safari and a few older browsers don't support permissions.query
+        // for geolocation — fall back to just asking directly, which still
+        // shows the native prompt on those browsers.
+        console.error("Permission query failed, falling back:", error);
+        getLocation();
+      }
+    };
+
+    init();
+
+    return () => {
+      cancelled = true;
+      if (permissionStatusRef.current) {
+        permissionStatusRef.current.onchange = null;
+      }
+    };
   }, []);
 
   const [hasExistingData, setHasExistingData] = useState(false);
@@ -205,7 +304,7 @@ export function useInquiry() {
   const [categories, setCategories] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
-  const [positionData, setPositionData] = useState<any>(null);
+  const [positionData, setPositionData] = useState<positionDBData[] | null>(null);
   const [loadingPositions, setLoadingPositions] = useState(false);
 
   // ── Two-step form state ───────────────────────────────────────────────────
@@ -228,14 +327,14 @@ export function useInquiry() {
     email: userData?.email || "",
     phoneNumber: userData?.phoneNumber || "",
     whatsappNumber: userData?.whatsappNumber || "",
-    prefferedBranch: "",
-    prefferedConsultant: "",
-    visitOption: 0,
+    // prefferedBranch: "",
+    // prefferedConsultant: "",
+    // visitOption: 0,
     referedFrom: "web-app",
     referedType: "",
     referedBy: "",
     otherReferedBy: "",
-    passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
+    // passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
     inquiryCategory: "",
     inquiryFor: "",
     nationality: userData?.nationality || "",
@@ -278,7 +377,9 @@ export function useInquiry() {
     setLoadingPositions(true);
     try {
       const response = await getPathwayPositionsAction({ pathwayId: categoryId });
-      if (response?.data?.success) setPositionData(response?.data?.data);
+      // console.log(response?.data?.data, 54542);
+
+      if (response?.data?.data) setPositionData(response?.data?.data);
     } catch (err) {
       console.error("Position fetch error:", err);
     } finally {
@@ -371,10 +472,10 @@ export function useInquiry() {
     },
   });
 
-  useEffect(() => {
-    fetchConsultants(formik.values.prefferedBranch);
-    formik.setFieldValue("prefferedConsultant", "");
-  }, [formik.values.prefferedBranch]);
+  // useEffect(() => {
+  //   fetchConsultants(formik.values.prefferedBranch);
+  //   formik.setFieldValue("prefferedConsultant", "");
+  // }, [formik.values.prefferedBranch]);
 
   // Skip the position lookup entirely when the current selection is a
   // country (a leaf under a "...Country..." category) — countries aren't
@@ -395,8 +496,8 @@ export function useInquiry() {
     fetchExternalSources(formik.values.referedType, formik.setFieldValue);
   }, [formik.values.referedType]);
 
-  const selectedBranchName =
-    (branches as any[]).find((b) => b._id === formik.values.prefferedBranch)?.title || "our branch";
+  // const selectedBranchName =
+  //   (branches as any[]).find((b) => b._id === formik.values.prefferedBranch)?.title || "our branch";
 
   const { err, helperText } = makeFieldHelpers(formik.errors as Record<string, any>, formik.submitCount);
 
@@ -496,6 +597,8 @@ export function useInquiry() {
         whatsappNumber: String(values.whatsappNumber),
         inquiryCategory: values.inquiryCategory,
         inquiryFor: values.inquiryFor,
+        latitude: corordinates?.[0],
+        longitude: corordinates?.[1],
       };
 
       const response = await createInquiryAction(payload);
@@ -623,7 +726,7 @@ export function useInquiry() {
     helperText,
     activeStepperStep,
     handleClosePopup,
-    selectedBranchName,
+    // selectedBranchName,
     categories,
     countries,
     categoryOptions,
@@ -638,5 +741,7 @@ export function useInquiry() {
     handleCreateStep,
     handleUpdateStep,
     goBackToStep1,
+    locationPermissionRequired,
+    getLocation
   };
 }

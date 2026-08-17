@@ -3,6 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IPathway extends Document {
     title: string;
     underPathway: string;
+    countryId: String;
     isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
@@ -18,6 +19,10 @@ const PathwaySchema = new Schema<IPathway>(
         underPathway: {
             type: String,
             default: "",
+        },
+        countryId: {
+            type: Schema.Types.ObjectId,
+            ref: "Country",
         },
         isActive: {
             type: Boolean,

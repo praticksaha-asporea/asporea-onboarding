@@ -21,8 +21,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (authUser.role !== "admin") throw new ApiError("Admin access required", 403);
 
         if (req.method === "POST") {
-            const { title, underPathway } = req.body;
-            const result = await createPathwayService(title, underPathway);
+            const { title, underPathway, country } = req.body;
+            const result = await createPathwayService(title, underPathway, country);
             return ResponseHandler.sendSuccess(res, result, "Pathway created successfully", 201);
         }
 

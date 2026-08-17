@@ -18,6 +18,8 @@ export interface InquiryFormValues {
   latestAcademic?: string;
   latestTechnical?: string;
   workExperience?: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export interface InquiryUpdatePayload {
