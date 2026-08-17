@@ -2,14 +2,9 @@ import { useTheme } from "@mui/material/styles";
 
 import PerfectScrollbar from "react-perfect-scrollbar";
 
-
 import type { VerticalMenuContextProps } from "../../../@menu/components/vertical-menu/Menu";
 
-
-import {
-  Menu,
-  MenuItem,
-} from "../../../@menu/vertical-menu";
+import { Menu, MenuItem } from "../../../@menu/vertical-menu";
 
 // Hook Imports
 import useVerticalNav from "../../../@menu/hooks/useVerticalNav";
@@ -55,13 +50,13 @@ const TacMenu = ({
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
-          className: "bs-full overflow-y-auto overflow-x-hidden",
-          onScroll: (container) => scrollMenu(container, false),
-        }
+            className: "bs-full overflow-y-auto overflow-x-hidden",
+            onScroll: (container) => scrollMenu(container, false),
+          }
         : {
-          options: { wheelPropagation: false, suppressScrollX: true },
-          onScrollY: (container) => scrollMenu(container, true),
-        })}
+            options: { wheelPropagation: false, suppressScrollX: true },
+            onScrollY: (container) => scrollMenu(container, true),
+          })}
     >
       {/* Vertical Menu */}
       <Menu
@@ -75,11 +70,14 @@ const TacMenu = ({
         renderExpandedMenuItemIcon={{ icon: <i className="ri-circle-line" /> }}
         menuSectionStyles={menuSectionStyles(theme)}
       >
-        <MenuItem
-          href="/dashboard"
-          icon={<i className="ri-dashboard-line" />}
-        >
+        <MenuItem href="/dashboard" icon={<i className="ri-dashboard-line" />}>
           Dashboard
+        </MenuItem>
+        <MenuItem
+          href="/dashboard/schedules"
+          icon={<i className="ri-calendar-schedule-line" />}
+        >
+          Schedules
         </MenuItem>
         {/* <MenuItem
           href="/inquiries"
