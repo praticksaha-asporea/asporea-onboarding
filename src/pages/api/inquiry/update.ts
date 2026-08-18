@@ -6,8 +6,8 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { createInquiry } from "@/lib/services/Inquiry/inquiry";
-import { createInquirySchema } from "@/lib/validation/inquiryValidation";
+import { updateInquiry } from "@/lib/services/Inquiry/inquiry";
+import { updateInquirySchema } from "@/lib/validation/inquiryValidation";
 
 export default async function handler(
   req: NextApiRequest,
@@ -23,18 +23,17 @@ export default async function handler(
 
     const authUser = await verifyToken(token);
 
-    const { error } = createInquirySchema.validate(req.body);
+    const { error } = updateInquirySchema.validate(req.body);
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const data = await createInquiry(req.body, authUser.id);
+    const data = await updateInquiry(req.body);
     return ResponseHandler.sendSuccess(
       res,
       data,
-      "Inquiry registered successfully",
+      "Inquiry updated successfully",
     );
   } catch (error: unknown) {
-    console.log(error);
 
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode);

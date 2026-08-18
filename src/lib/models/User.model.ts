@@ -35,6 +35,7 @@ export interface IUser extends Document {
     technicalQualification?: string;
     academic?: string;
     nationality?: string;
+    workExp?: string;
   };
 
   // Only applicable when role === "tac"
@@ -105,6 +106,7 @@ const UserSchema = new Schema<IUser>(
       technicalQualification: { type: String, trim: true },
       academic: { type: String, trim: true },
       nationality: { type: String, trim: true },
+      workExp: { type: String, trim: true },
     },
 
     tacProfile: {

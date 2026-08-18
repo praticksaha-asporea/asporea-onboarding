@@ -27,7 +27,7 @@ export interface ILead extends Document {
   status?: string;
   inqNo?: string;
   inqFy?: string;
-  inqForType?: string;
+  inqForType?: Types.ObjectId;
   inqForPosition?: Types.ObjectId;
   followUpRequired?: boolean;
   followUpAssignedTo?: Types.ObjectId;
@@ -115,9 +115,8 @@ const LeadSchema = new Schema<ILead>(
       sparse: true,
     },
     inqForType: {
-      type: String,
-      enum: ['skill', 'language', 'country', 'career'],
-      default: 'career'
+      type: Schema.Types.ObjectId,
+      ref: "Pathway"
     },
     inqForPosition: {
       type: Schema.Types.ObjectId,

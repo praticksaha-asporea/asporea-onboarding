@@ -330,6 +330,10 @@ export function useInquiry() {
     // prefferedBranch: "",
     // prefferedConsultant: "",
     // visitOption: 0,
+    nationality: userData?.nationality || "",
+    latestAcademic: userData?.latestAcademic || "",
+    latestTechnical: userData?.latestTechnical || "",
+    workExperience: userData?.workExperience || "",
     referedFrom: "web-app",
     referedType: "",
     referedBy: "",
@@ -337,10 +341,6 @@ export function useInquiry() {
     // passportNo: userData?.passportStatus === "having" ? userData?.passportNo : "",
     inquiryCategory: "",
     inquiryFor: "",
-    nationality: userData?.nationality || "",
-    latestAcademic: userData?.latestAcademic || "",
-    latestTechnical: userData?.latestTechnical || "",
-    workExperience: userData?.workExperience || "",
   });
 
   const fetchCategories = async () => {
@@ -652,29 +652,29 @@ export function useInquiry() {
 
       if (response?.data?.success) {
         toast.success(response?.data?.message);
-        setGeneratedInqNo(response?.data?.data?.inqNo || generatedInqNo);
-        setGeneratedLeadId(inquiryId);
+        // setGeneratedInqNo(response?.data?.data?.inqNo || generatedInqNo);
+        // setGeneratedLeadId(inquiryId);
         setShowInquiryPopup(true);
-        setAssignedTAC(response?.data?.data?.preferences?.consultantId ?? null);
+        // setAssignedTAC(response?.data?.data?.preferences?.consultantId ?? null);
 
-        dispatch(
-          updateUserData({
-            leadId: inquiryId,
-            prefferedConsultant: response?.data?.data?.preferences?.consultantId,
-          }),
-        );
+        // dispatch(
+        // updateUserData({
+        // leadId: inquiryId,
+        // prefferedConsultant: response?.data?.data?.preferences?.consultantId,
+        // }),
+        // );
 
-        const userId = userData?.id || userData?._id;
-        if (userId) {
-          try {
-            const res = await profileUpdateApi({ notificationPreference: preferences });
-            if (res.data?.success) {
-              dispatch(updateUserData({ notificationPreference: res.data.data.notificationPreference }));
-            }
-          } catch (err) {
-            console.error("Profile preference sync failed:", err);
-          }
-        }
+        // const userId = userData?.id || userData?._id;
+        // if (userId) {
+        //   try {
+        //     const res = await profileUpdateApi({ notificationPreference: preferences });
+        //     if (res.data?.success) {
+        //       dispatch(updateUserData({ notificationPreference: res.data.data.notificationPreference }));
+        //     }
+        //   } catch (err) {
+        //     console.error("Profile preference sync failed:", err);
+        //   }
+        // }
       }
     } catch (err: any) {
       toast.error(err?.response?.data?.message || "Could not update inquiry. Please try again.");

@@ -11,18 +11,30 @@ export const createInquirySchema = Joi.object({
   inquiryFor: Joi.string().trim().required(),
   latitude: Joi.string().optional(),
   longitude: Joi.string().optional(),
-  // prefferedBranch: objectIdSchema.required(),
-  // prefferedConsultant: objectIdSchema.optional().allow(null, ""),
-  // visitOption: Joi.number().valid(0, 1, 2).required(),
-  // fullAddress: Joi.string().trim().required(),
-  // referedFrom: Joi.string()
-  //   .valid("web-app", "call", "social", "reffer")
-  //   .required(),
-  // referedType: Joi.string()
-  //   .valid("pca", "pcra", "institution", "other")
-  //   .optional()
-  //   .allow("", null),
-  // referedBy: Joi.string().trim().optional().allow("", null),
-  // otherReferedBy: Joi.string().trim().optional().allow(null, ""),
-  // passportNo: Joi.string().trim().optional().allow("", null),
+}).options({ abortEarly: false, allowUnknown: false });
+
+
+export const updateInquirySchema = Joi.object({
+  // fullName: Joi.string().trim().required(),
+  // email: Joi.string().email().lowercase().trim().required(),
+  // phoneNumber: Joi.string().trim().required(),
+  // whatsappNumber: Joi.string().trim().optional().allow("", null),
+  // inquiryCategory: Joi.string().trim().required(),
+  // inquiryFor: Joi.string().trim().required(),
+  // latitude: Joi.string().optional(),
+  // longitude: Joi.string().optional(),
+  nationality: Joi.string().required(),
+  latestAcademic: Joi.string().required(),
+  latestTechnical: Joi.string().optional().allow(null, ""),
+  workExperience: Joi.string().optional().allow(null, ""),
+  referedFrom: Joi.string()
+    .valid("web-app", "call", "social", "reffer")
+    .required(),
+  referedType: Joi.string()
+    .valid("pca", "pcra", "institution", "other")
+    .optional()
+    .allow("", null),
+  referedBy: Joi.string().trim().optional().allow("", null),
+  otherReferedBy: Joi.string().trim().optional().allow(null, ""),
+  id: Joi.string().required(),
 }).options({ abortEarly: false, allowUnknown: false });

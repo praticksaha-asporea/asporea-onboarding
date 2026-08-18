@@ -24,7 +24,10 @@ export const createInquiryAction = async (formData: InquiryFormValues): Promise<
 
 
 export const updateInquiryAction = async (inquiryId: string, payload: any): Promise<AxiosResponse<any>> => {
-  const res = await axiosClient.put(`/inquiry/update/${inquiryId}`, payload);
+  if (inquiryId) {
+    payload.id = inquiryId;
+  }
+  const res = await axiosClient.post(`/inquiry/update`, payload);
   // return res.data;
   return res;
 };

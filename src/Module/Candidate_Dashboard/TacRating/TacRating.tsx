@@ -1,12 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
-import { 
-  Card, 
-  CardContent, 
-  Typography, 
-  TextField, 
-  Button, 
+import {
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
   Box,
   Avatar,
   Divider
@@ -17,45 +17,45 @@ import { useTacRating } from "./useTacRating";
 // --- Custom Premium SVG Emojis with Animation Classes ---
 const EmojiVeryBad = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-angry">
-    <circle cx="12" cy="12" r="10" fill="#FFCA28"/>
-    <path d="M7 15.5C8.5 14 11.5 14 13 15.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="8.5" cy="10.5" r="1.5" fill="#333333"/>
-    <circle cx="15.5" cy="10.5" r="1.5" fill="#333333"/>
-    <path d="M6 9L9.5 10.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round"/>
-    <path d="M18 9L14.5 10.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round"/>
+    <circle cx="12" cy="12" r="10" fill="#FFCA28" />
+    <path d="M7 15.5C8.5 14 11.5 14 13 15.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="8.5" cy="10.5" r="1.5" fill="#333333" />
+    <circle cx="15.5" cy="10.5" r="1.5" fill="#333333" />
+    <path d="M6 9L9.5 10.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M18 9L14.5 10.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" />
   </svg>
 );
 
 const EmojiBad = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-sad">
-    <circle cx="12" cy="12" r="10" fill="#FFCA28"/>
-    <path d="M8 15.5C9.5 14 12.5 14 14 15.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="8.5" cy="9.5" r="1.5" fill="#333333"/>
-    <circle cx="15.5" cy="9.5" r="1.5" fill="#333333"/>
+    <circle cx="12" cy="12" r="10" fill="#FFCA28" />
+    <path d="M8 15.5C9.5 14 12.5 14 14 15.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="8.5" cy="9.5" r="1.5" fill="#333333" />
+    <circle cx="15.5" cy="9.5" r="1.5" fill="#333333" />
   </svg>
 );
 
 const EmojiNeutral = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-neutral">
-    <circle cx="12" cy="12" r="10" fill="#FFCA28"/>
-    <path d="M8 15H16" stroke="#333333" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="8.5" cy="9.5" r="1.5" fill="#333333"/>
-    <circle cx="15.5" cy="9.5" r="1.5" fill="#333333"/>
+    <circle cx="12" cy="12" r="10" fill="#FFCA28" />
+    <path d="M8 15H16" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="8.5" cy="9.5" r="1.5" fill="#333333" />
+    <circle cx="15.5" cy="9.5" r="1.5" fill="#333333" />
   </svg>
 );
 
 const EmojiGood = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-happy">
-    <circle cx="12" cy="12" r="10" fill="#FFCA28"/>
-    <path d="M8 14C9.5 16 12.5 16 14 14" stroke="#333333" strokeWidth="1.5" strokeLinecap="round"/>
-    <circle cx="8.5" cy="9.5" r="1.5" fill="#333333"/>
-    <circle cx="15.5" cy="9.5" r="1.5" fill="#333333"/>
+    <circle cx="12" cy="12" r="10" fill="#FFCA28" />
+    <path d="M8 14C9.5 16 12.5 16 14 14" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" />
+    <circle cx="8.5" cy="9.5" r="1.5" fill="#333333" />
+    <circle cx="15.5" cy="9.5" r="1.5" fill="#333333" />
   </svg>
 );
 
 const EmojiExcellent = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-heart">
-    <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="#EF4444"/>
+    <path d="M12 21.35L10.55 20.03C5.4 15.36 2 12.28 2 8.5C2 5.42 4.42 3 7.5 3C9.24 3 10.91 3.81 12 5.09C13.09 3.81 14.76 3 16.5 3C19.58 3 22 5.42 22 8.5C22 12.28 18.6 15.36 13.45 20.04L12 21.35Z" fill="#EF4444" />
   </svg>
 );
 
@@ -81,14 +81,14 @@ const TacRating = ({ mode }: { mode: Mode }) => {
   const [recommendation, setRecommendation] = useState<number | null>(null);
 
   const phaseName = "Pre-Counselling";
-  const tacName = "Pratick Deshmukh";  
+  const tacName = "Pratick Deshmukh";
 
   const currentLabel = REACTIONS.find(r => r.value === (hover || rating))?.label || "";
 
   return (
     <Box className="flex flex-col justify-center items-center min-h-[100dvh] relative p-4 md:p-6 bg-[var(--mui-palette-primary)]">
       <Card className="flex flex-col w-full max-w-[600px]  bg-[var(--mui-palette-primary)] shadow-2xl   rounded-[24px]  ">
-        
+
         <Box className="px-8 pt-8 pb-5 flex justify-between ml-48 items-center ">
           <Typography variant="h3" fontWeight="500" className="text-[var(--mui-palette-text-primary)]">
             Feedback
@@ -96,12 +96,12 @@ const TacRating = ({ mode }: { mode: Mode }) => {
         </Box>
 
         <CardContent className="p-8 sm:!p-10 flex flex-col gap-8">
-          
+
           {/* TAC Info Card */}
           <Box className="flex items-center gap-4 p-4 bg-[var(--mui-palette-primary)] rounded-[16px]  ">
-            <Avatar 
-              src="/images/avatars/avatar.png"  
-              alt={tacName} 
+            <Avatar
+              src="/images/avatars/avatar.png"
+              alt={tacName}
               sx={{ bgcolor: 'var(--mui-palette-primary-main)', width: 56, height: 56, fontSize: '1.25rem', fontWeight: 'bold' }}
             >
               {tacName.charAt(0)}
@@ -118,7 +118,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
 
           {/* 🟢 FIXED: Directly passed handleSubmit */}
           <form noValidate autoComplete="off" onSubmit={handleSubmit} className="flex flex-col gap-10">
-            
+
             {/* 1. Emoji Rating Section */}
             <Box className="flex flex-col gap-5">
               <Box className="flex justify-between items-end">
@@ -153,7 +153,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                           opacity: isMuted ? 0.4 : 1,
                         }}
                       >
-                        <Box 
+                        <Box
                           className="absolute inset-0 rounded-full"
                           style={{
                             background: isActive ? 'var(--mui-palette-primary-main)' : 'transparent',
@@ -171,9 +171,9 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                 </Box>
 
                 <Box className="h-6 mt-2 flex items-center justify-center">
-                  <Typography 
-                    variant="caption" 
-                    fontWeight="700" 
+                  <Typography
+                    variant="caption"
+                    fontWeight="700"
                     className="uppercase tracking-widest text-[var(--mui-palette-text-secondary)] transition-opacity duration-200"
                     style={{ opacity: currentLabel ? 1 : 0 }}
                   >
@@ -183,7 +183,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
               </Box>
             </Box>
 
-          {/* 2. Review Textarea Section */}
+            {/* 2. Review Textarea Section */}
             <Box className="flex flex-col gap-4">
               <Box className="flex justify-between items-end">
                 <Typography variant="subtitle1" fontWeight="500" className="text-[var(--mui-palette-text-primary)]">
@@ -199,7 +199,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                 rows={4}
                 id="review"
                 name="review"
-                label="Share details of your experience..."  
+                label="Share details of your experience..."
                 variant="outlined"
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
@@ -212,7 +212,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                       backgroundColor: 'var(--mui-palette-background-paper)',
                     }
                   },
-                
+
                   '& .MuiInputLabel-root': {
                     color: 'var(--mui-palette-text-secondary)',
                   }
@@ -221,7 +221,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
             </Box>
 
             {/* 3. Recommendation Scale */}
-            <Box className="flex flex-col gap-5">
+            {/* <Box className="flex flex-col gap-5">
               <Box className="flex justify-between items-end">
                 <Typography variant="subtitle1" fontWeight="600" className="text-[var(--mui-palette-text-primary)]">
                   How likely would you recommend {tacName} to your friends and colleagues?
@@ -258,9 +258,9 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                   </Typography>
                 </Box>
               </Box>
-            </Box>
+            </Box> */}
 
-           
+
 
             {/* Submit Button */}
             <Box className="flex justify-end">

@@ -16,30 +16,19 @@ export const createInquiry = async (body: any, createdById: string) => {
     phoneNumber,
     whatsappNumber,
     // prefferedBranch,
-    prefferedConsultant,
-    visitOption,
-    fullAddress,
-    referedFrom,
-    referedType,
-    referedBy,
-    otherReferedBy,
-    passportNo,
+    // prefferedConsultant,
+    // visitOption,
+    // fullAddress,
+    // referedFrom,
+    // referedType,
+    // referedBy,
+    // otherReferedBy,
+    // passportNo,
+    inquiryCategory,
+    inquiryFor,
     latitude,
     longitude
   } = body;
-  const typeMapping: any = {
-    "web-app": "web_app",
-    call: "telecall",
-    social: "social",
-    reffer: "refer",
-  };
-
-  const refTypeMapping: any = {
-    institution: "institute",
-    pca: "pca",
-    pcra: "pcra",
-    other: "other",
-  };
 
   const existingInquiry = await Lead.findOne({
     $or: [
@@ -58,11 +47,11 @@ export const createInquiry = async (body: any, createdById: string) => {
   const inqNo = await generateInquiryNo();
   const currentFYear = currentFy();
   const radius = 50 * 1000;
-  const isOnline = Number(visitOption) === 2;
+  // const isOnline = Number(visitOption) === 2;
   let prefferedBranch = "";
 
   // ── Resolve which TAC (consultantId) to assign ──────────────────────────────
-  let resolvedConsultantId: mongoose.Types.ObjectId | null = null;
+  // let resolvedConsultantId: mongoose.Types.ObjectId | null = null;
 
   const branch = await BranchModel.findOne({
     coordinates: {
@@ -80,6 +69,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     throw new ApiError("No branch found within 10km radius", 404);
   }
   prefferedBranch = await branch?._id;
+  /*
   // console.log(branch, 2222);
   if (prefferedConsultant) {
     // Consultant explicitly chosen — always honour it regardless of visit type
@@ -156,10 +146,10 @@ export const createInquiry = async (body: any, createdById: string) => {
       }
     }
     // If no TAC entries found, resolvedConsultantId stays null — graceful degradation
-  }
+  } */
   // Offline + no consultant → resolvedConsultantId stays null (reception handles assignment)
   // ────────────────────────────────────────────────────────────────────────────
-  console.log(prefferedBranch, 666);
+  // console.log(prefferedBranch, 666);
 
   const leadData = {
     fullName,
@@ -168,12 +158,107 @@ export const createInquiry = async (body: any, createdById: string) => {
       whatsapp: whatsappNumber || phoneNumber,
       email: email,
     },
-    address: fullAddress,
+    // address: fullAddress,
     preferences: {
       branchId: new mongoose.Types.ObjectId(prefferedBranch),
-      consultantId: resolvedConsultantId,
-      visitType: isOnline ? "online" : "offline",
+      // consultantId: resolvedConsultantId,
+      // visitType: isOnline ? "online" : "offline",
     },
+    // source: {
+    //   type: typeMapping[referedFrom] || "none",
+
+    //   refType:
+    //     referedFrom === "reffer"
+    //       ? refTypeMapping[referedType] || "other"
+    //       : undefined,
+    //   refName:
+    //     referedFrom === "reffer"
+    //       ? referedBy === "other"
+    //         ? otherReferedBy
+    //         : referedBy
+    //       : undefined,
+    // },
+    status: 'inquiry_submitted',
+    documents: {
+      status: 'na'
+    },
+    inqNo,
+    inqFy: currentFYear,
+    createdBy: {
+      id: new mongoose.Types.ObjectId(createdById),
+      type: "self",
+    },
+    // passport: {
+    //   status: passportNo ? "having" : "no",
+    //   no: passportNo || ""
+    // },
+    inquiryStages: {
+      stage1: `done`,
+      stage2: 'pending',
+      stage3: 'pending'
+    },
+    inqForType: inquiryCategory,
+    inqForPosition: inquiryFor
+  };
+
+  const newInquiry = await Lead.create(leadData);
+  await UserModel.findByIdAndUpdate(createdById, {
+    enquired: "yes",
+    candidateProfile: {
+      leadId: new mongoose.Types.ObjectId(newInquiry?._id)
+    }
+  });
+  return newInquiry;
+};
+
+export const updateInquiry = async (body: any) => {
+
+  const {
+    // fullName,
+    // email,
+    // phoneNumber,
+    // whatsappNumber,
+    referedFrom,
+    referedType,
+    referedBy,
+    otherReferedBy,
+    // inquiryCategory,
+    // inquiryFor,
+    workExperience, latestTechnical, latestAcademic, nationality,
+    id
+  } = body;
+
+  const typeMapping: any = {
+    "web-app": "web_app",
+    call: "telecall",
+    social: "social",
+    reffer: "refer",
+  };
+
+  const refTypeMapping: any = {
+    institution: "institute",
+    pca: "pca",
+    pcra: "pcra",
+    other: "other",
+  };
+
+  const inquiry = await Lead.findById(id);
+  if (!inquiry) {
+    throw new ApiError(
+      `Inquiry not found, Please fill step 1 first`,
+      404,
+    );
+  }
+
+  const leadData = {
+    // fullName,
+    // contact: {
+    //   phone: phoneNumber,
+    //   whatsapp: whatsappNumber || phoneNumber,
+    //   email: email,
+    // },
+    // inqForType: inquiryCategory,
+    // inqForPosition: inquiryFor,
     source: {
       type: typeMapping[referedFrom] || "none",
 
@@ -188,31 +273,32 @@ export const createInquiry = async (body: any, createdById: string) => {
             : referedBy
           : undefined,
     },
-    status: 'inquiry_submitted',
-    documents: {
-      status: 'na'
-    },
-    inqNo,
-    inqFy: currentFYear,
-    createdBy: {
-      id: new mongoose.Types.ObjectId(createdById),
-      type: "self",
-    },
-    passport: {
-      status: passportNo ? "having" : "no",
-      no: passportNo || ""
-    },
     inquiryStages: {
       stage1: `done`,
-      stage2: 'pending',
+      stage2: 'done',
       stage3: 'pending'
     }
   };
 
-  const newInquiry = await Lead.create(leadData);
-  await UserModel.findByIdAndUpdate(createdById, { enquired: "yes" });
-  return newInquiry;
+  const updatedInquiry = await Lead.findByIdAndUpdate(id, leadData);
+
+  await UserModel.findOneAndUpdate(
+    {
+      "candidateProfile.leadId": new mongoose.Types.ObjectId(id),
+    },
+    {
+      $set: {
+        "candidateProfile.technicalQualification": latestTechnical,
+        "candidateProfile.academic": latestAcademic,
+        "candidateProfile.nationality": nationality,
+        "candidateProfile.workExp": workExperience
+      },
+    },
+    { new: true }
+  );
+  return updatedInquiry;
 };
+
 
 export const getTacListByBranch = async (branchId: string) => {
   if (!mongoose.Types.ObjectId.isValid(branchId)) {

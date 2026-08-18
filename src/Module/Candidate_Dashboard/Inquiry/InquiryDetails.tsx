@@ -459,7 +459,7 @@ const InquiryDetails = () => {
 
                             {formik.values.referedFrom === "reffer" && (
                               <>
-                                <Grid size={{ xs: 12, md: 6 }}>
+                                <Grid size={{ xs: 12, md: 12 }}>
                                   <FormControl fullWidth error={err("referedType")}>
                                     <FormLabel component="legend">Referred by</FormLabel>
                                     <RadioGroup
@@ -479,43 +479,45 @@ const InquiryDetails = () => {
                                   </FormControl>
                                 </Grid>
 
-                                <Grid size={{ xs: 12, md: 6 }}>
-                                  <FormControl
-                                    fullWidth
-                                    disabled={loadingSources || formik.values.referedType === "other"}
-                                    error={err("referedBy")}
-                                  >
-                                    <InputLabel>
-                                      {loadingSources ? "Loading..." : "Name of referrer"}
-                                    </InputLabel>
-                                    <Select
-                                      name="referedBy"
-                                      label="Name of referrer"
-                                      value={formik.values.referedBy}
-                                      onChange={(e) => {
-                                        formik.handleChange(e);
-                                        if (e.target.value === "other") {
-                                          formik.setFieldValue("referedType", "other");
-                                        }
-                                      }}
+                                {formik.values.referedType !== "other" && (
+                                  <Grid size={{ xs: 12, md: 12 }}>
+                                    <FormControl
+                                      fullWidth
+                                      disabled={loadingSources || formik.values.referedType === "other"}
+                                      error={err("referedBy")}
                                     >
-                                      <MenuItem value="">
-                                        <em>None</em>
-                                      </MenuItem>
-                                      {externalSources.map((src: any) => (
-                                        <MenuItem key={src._id} value={src._id}>
-                                          {src.name || `${src.firstName || ""} ${src.lastName || ""}`.trim()}
+                                      <InputLabel>
+                                        {loadingSources ? "Loading..." : "Name of referrer"}
+                                      </InputLabel>
+                                      <Select
+                                        name="referedBy"
+                                        label="Name of referrer"
+                                        value={formik.values.referedBy}
+                                        onChange={(e) => {
+                                          formik.handleChange(e);
+                                          if (e.target.value === "other") {
+                                            formik.setFieldValue("referedType", "other");
+                                          }
+                                        }}
+                                      >
+                                        <MenuItem value="">
+                                          <em>None</em>
                                         </MenuItem>
-                                      ))}
-                                    </Select>
-                                    {err("referedBy") && (
-                                      <FormHelperText>{helperText("referedBy")}</FormHelperText>
-                                    )}
-                                  </FormControl>
-                                </Grid>
+                                        {externalSources.map((src: any) => (
+                                          <MenuItem key={src._id} value={src._id}>
+                                            {src.name || `${src.firstName || ""} ${src.lastName || ""}`.trim()}
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                      {err("referedBy") && (
+                                        <FormHelperText>{helperText("referedBy")}</FormHelperText>
+                                      )}
+                                    </FormControl>
+                                  </Grid>
+                                )}
 
                                 {formik.values.referedType === "other" && (
-                                  <Grid size={{ xs: 12 }}>
+                                  <Grid size={{ xs: 12, md: 12 }}>
                                     <TextField
                                       fullWidth
                                       name="otherReferedBy"
@@ -684,7 +686,7 @@ const InquiryDetails = () => {
           </Button>
         </DialogContent>
       </Dialog>
-      {/* ── Confirmation Dialog (unchanged) ────────────────────────────── 
+      {/* ── Confirmation Dialog (unchanged) ──────────────────────────────  */}
       <Dialog
         open={showInquiryPopup}
         onClose={(_e, reason) => {
@@ -704,7 +706,7 @@ const InquiryDetails = () => {
           </Typography>
 
           <Box className="mb-8">
-            {formik.values.prefferedConsultant || assignedTAC != null ? (
+            {/* {formik.values.prefferedConsultant || assignedTAC != null ? (
               formik.values.visitOption === 0 ? (
                 <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
                   As you are now inside our <span className="underline">{selectedBranchName}</span> branch.
@@ -743,18 +745,18 @@ const InquiryDetails = () => {
               >
                 Schedule pre-counselling
               </Button>
-            ) : (
-              <Button
-                variant="contained"
-                className="normal-case rounded-[50px] py-[9.6px] px-10"
-                onClick={handleClosePopup}
-              >
-                Close
-              </Button>
-            )}
+            ) : ( */}
+            <Button
+              variant="contained"
+              className="normal-case rounded-[50px] py-[9.6px] px-10"
+              onClick={handleClosePopup}
+            >
+              Close
+            </Button>
+            {/* )} */}
           </Box>
         </DialogContent>
-      </Dialog>*/}
+      </Dialog>
     </>
   );
 };
