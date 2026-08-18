@@ -8,6 +8,7 @@ import { InquiryUpdatePayload } from "@/Types/Frontend_Payload/lead.types";
 import { GetTacCandidatesPayload, sendEmailTACReq, UpdateAssessmentPayload, UpdateAssignmentAssessPayload, UpdateAssignmentPayload } from "@/Types/Frontend_Payload/tac.types";
 import { AxiosResponse } from "axios";
 import { transferReqPayload } from "@/Types/Frontend_Payload/transfer.types";
+import { PendingLeadsApiResponse } from "@/Types/ApiResponse/pendingLeadsRes.types";
 
 export const getTacCandidatesAction = async (params: GetTacCandidatesPayload): Promise<AxiosResponse<CandidatesResponse>> => {
   const query = new URLSearchParams();
@@ -121,4 +122,19 @@ export const sendTacEmailAction = async (bodyData: sendEmailTACReq): Promise<Axi
   //     message: error.response?.data?.message || "Failed to send email",
   //   };
   // }
+};
+export const getPendingTrackingAction = async (params: {
+  page?: number;
+  limit?: number;
+  search?: string;
+}): Promise<AxiosResponse<PendingLeadsApiResponse>> => {
+  const query = new URLSearchParams();
+  if (params.page) query.set("page", String(params.page));
+  if (params.limit) query.set("limit", String(params.limit));
+  if (params.search) query.set("search", params.search);
+
+  const res = await axiosClient.get<PendingLeadsApiResponse>(
+    `/tac/pending-leads?${query.toString()}`
+  );
+  return res;
 };

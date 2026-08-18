@@ -212,7 +212,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                       backgroundColor: 'var(--mui-palette-background-paper)',
                     }
                   },
-                  // 🟢 Label ki styling thodi adjust ki hai taaki clean dikhe
+                
                   '& .MuiInputLabel-root': {
                     color: 'var(--mui-palette-text-secondary)',
                   }

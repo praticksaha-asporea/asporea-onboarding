@@ -1,7 +1,7 @@
 import { useTheme } from "@mui/material/styles";
 
 import PerfectScrollbar from "react-perfect-scrollbar";
-
+import { useSelector } from "react-redux";
 import type { VerticalMenuContextProps } from "../../../@menu/components/vertical-menu/Menu";
 
 import { Menu, MenuItem } from "../../../@menu/vertical-menu";
@@ -41,7 +41,10 @@ const TacMenu = ({
   // Hooks
   const theme = useTheme();
   const { isBreakpointReached, transitionDuration } = useVerticalNav();
-
+  const currentUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData
+  );
+  const isFoe = currentUser?.role === "foe" || currentUser?.user?.role === "foe";
   const ScrollWrapper = isBreakpointReached ? "div" : PerfectScrollbar;
 
   return (
@@ -73,12 +76,22 @@ const TacMenu = ({
         <MenuItem href="/dashboard" icon={<i className="ri-dashboard-line" />}>
           Dashboard
         </MenuItem>
-        <MenuItem
-          href="/dashboard/schedules"
-          icon={<i className="ri-calendar-schedule-line" />}
-        >
-          Schedules
-        </MenuItem>
+        {!isFoe && (
+          <MenuItem
+            href="/dashboard/schedules"
+            icon={<i className="ri-calendar-schedule-line" />}
+          >
+            Schedules
+          </MenuItem>
+        )}
+        {isFoe && (
+          <MenuItem
+            href="/dashboard/pending-tracking"
+            icon={<i className="ri-time-line" />}
+          >
+            Pending Tracking
+          </MenuItem>
+        )}
         {/* <MenuItem
           href="/inquiries"
           icon={<i className="ri-question-line" />}
