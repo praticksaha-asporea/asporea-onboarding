@@ -42,9 +42,10 @@ const TacMenu = ({
   const theme = useTheme();
   const { isBreakpointReached, transitionDuration } = useVerticalNav();
   const currentUser = useSelector(
-    (state: any) => state.userSlice?.userData || state.user?.userData
+    (state: any) => state.userSlice?.userData || state.user?.userData,
   );
-  const isFoe = currentUser?.role === "foe" || currentUser?.user?.role === "foe";
+  const isFoe =
+    currentUser?.role === "foe" || currentUser?.user?.role === "foe";
   const ScrollWrapper = isBreakpointReached ? "div" : PerfectScrollbar;
 
   return (
@@ -89,7 +90,7 @@ const TacMenu = ({
             href="/dashboard/pending-tracking"
             icon={<i className="ri-time-line" />}
           >
-            Pending Tracking
+            Follow Ups{" "}
           </MenuItem>
         )}
         {/* <MenuItem
