@@ -46,6 +46,7 @@ export interface IUser extends Document {
     industryExp?: string[];
     specialization?: string[];
     mode?: "online" | "offline" | "both";
+    rating?: number;
   };
 
   createdAt: Date;
@@ -120,6 +121,7 @@ const UserSchema = new Schema<IUser>(
         enum: ["online", "offline", "both"],
         default: "both",
       },
+      rating: { type: Number, default: 0 },
     },
 
   },
