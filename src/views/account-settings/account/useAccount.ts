@@ -9,7 +9,7 @@ import { updateUserData } from "@/Redux/Auth/user.slice";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
 
 export const useAccount = () => {
-  const dispatch = useDispatch(); 
+  const dispatch = useDispatch();
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -61,7 +61,6 @@ export const useAccount = () => {
 
     fetchAndSetData();
   }, [reduxUser, dispatch]);
-
   const formik = useFormik({
     initialValues: {
       firstName: reduxUser?.firstName || "",
@@ -77,16 +76,22 @@ export const useAccount = () => {
           : reduxUser?.phoneNumber) || "",
       whatsappNumber: reduxUser?.whatsappNumber || "",
       address: reduxUser?.address || "",
-      state: reduxUser?.state || "",
-      zipCode: reduxUser?.zipCode || "",
-      country: reduxUser?.country || "india",
-      language: reduxUser?.language || "english",
-      timezone: reduxUser?.timezone || "gmt-0530",
-      currency: reduxUser?.currency || "inr",
       passportStatus: reduxUser?.passportStatus || "not",
       passportNumber: reduxUser?.passportNo || reduxUser?.passportNumber || "",
       experienceInMonths: reduxUser?.experienceInMonths || "",
       bio: reduxUser?.bio || "",
+
+
+      designation: reduxUser?.tacProfile?.designation || "",
+      areasOfExp: reduxUser?.tacProfile?.areasOfExp?.join(", ") || "",
+      languagesKnown: reduxUser?.tacProfile?.languagesKnown || [],
+      industryExp: reduxUser?.tacProfile?.industryExp?.join(", ") || "",
+      specialization: reduxUser?.tacProfile?.specialization?.join(", ") || "",
+      mode: reduxUser?.tacProfile?.mode || "both",
+      technicalQualification: reduxUser?.candidateProfile?.technicalQualification || "",
+      academic: reduxUser?.candidateProfile?.academic || "",
+      nationality: reduxUser?.candidateProfile?.nationality || "",
+      workExp: reduxUser?.candidateProfile?.workExp || "",
     },
     enableReinitialize: true,
     validationSchema: profileValidationSchema,
@@ -99,8 +104,11 @@ export const useAccount = () => {
           toast.error("Session expired. Please login again.");
           return;
         }
-
-        const payload = {
+        const toArray = (strVal: string) =>
+          typeof strVal === "string"
+            ? strVal.split(",").map((item) => item.trim()).filter(Boolean)
+            : [];
+        const payload: any = {
           id: userId,
           firstName: values.firstName,
           lastName: values.lastName,
@@ -117,6 +125,25 @@ export const useAccount = () => {
           profilePicData: fileInput || "",
         };
 
+
+        if (reduxUser?.role === "tac") {
+          payload.tacProfile = {
+            designation: values.designation,
+            areasOfExp: toArray(values.areasOfExp),
+            languagesKnown: values.languagesKnown,
+            industryExp: toArray(values.industryExp),
+            specialization: toArray(values.specialization),
+            mode: values.mode,
+          };
+        }
+        if (reduxUser?.role === "user") {
+          payload.candidateProfile = {
+            technicalQualification: values.technicalQualification,
+            academic: values.academic,
+            nationality: values.nationality,
+            workExp: values.workExp,
+          };
+        }
         const res = await axiosClient.patch(`/user/profile-update`, payload);
 
         if (res.data?.success) {

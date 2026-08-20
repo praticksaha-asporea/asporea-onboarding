@@ -24,7 +24,10 @@ export const profileValidationSchema = yup.object({
    address: yup.string()
   .trim()  
   .required("Address is required"),
-
+  technicalQualification: yup.string().nullable(),
+  academic: yup.string().nullable(),
+  nationality: yup.string().nullable(),
+  workExp: yup.string().nullable(),
   passportStatus: yup.string(),
 
   passportNumber: yup.string().when("passportStatus", {
@@ -40,4 +43,10 @@ export const profileValidationSchema = yup.object({
   }),
   experienceInMonths: yup.string().nullable(),
   bio: yup.string().nullable(),
+  designation: yup.string().nullable(),
+  areasOfExp: yup.string().nullable(),
+  languagesKnown: yup.array().of(yup.string()).nullable(),
+  industryExp: yup.string().nullable(),
+  specialization: yup.string().nullable(),
+  mode: yup.string().oneOf(["online", "offline", "both"]).nullable(),
 });

@@ -8,6 +8,20 @@ export interface UserData {
   role?: string;
   firstName?: string;
   lastName?: string;
+  candidateProfile?: {
+    technicalQualification?: string;
+    academic?: string;
+    nationality?: string;
+    workExp?: string;
+  };
+  tacProfile?: {
+    designation?: string;
+    areasOfExp?: string[];
+    languagesKnown?: string[];
+    industryExp?: string[];
+    specialization?: string[];
+    mode?: "online" | "offline" | "both";
+  };
   profilePic?: {
     _id?: string;
     path?: string;

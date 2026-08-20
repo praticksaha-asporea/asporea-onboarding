@@ -15,6 +15,7 @@ import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import { Avatar, Dialog, Box, IconButton, Slider } from "@mui/material";
+import { Radio, RadioGroup, FormControlLabel, FormLabel } from "@mui/material";
 import toast from "react-hot-toast";
 import { useAccount } from "./useAccount";
 
@@ -305,8 +306,67 @@ const AccountDetails = () => {
                   />
                 </Grid>
               )}
+           <Grid size={{ xs: 12, sm: 6 }}>
+      <TextField
+        fullWidth
+        id="academic"
+        name="academic"
+        label="Academic Qualification"
+        placeholder="e.g. B.Tech Computer Science, Higher Secondary"
+        value={formik.values.academic}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+      />
+    </Grid>
 
-            <Grid size={{ xs: 12, sm: 12 }}>
+    <Grid size={{ xs: 12, sm: 6 }}>
+      <TextField
+        fullWidth
+        id="technicalQualification"
+        name="technicalQualification"
+        label="Technical Qualification"
+        placeholder="e.g. MERN Stack Certification, AWS Associate"
+        value={formik.values.technicalQualification}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+      />
+    </Grid>
+
+    {/* Row 2: Left 6 - Nationality | Right 6 - Work Experience Summary */}
+    <Grid size={{ xs: 12, sm: 6 }}>
+      <FormControl fullWidth>
+        <InputLabel id="nationality-label">Nationality</InputLabel>
+        <Select
+          labelId="nationality-label"
+          id="nationality"
+          name="nationality"
+          label="Nationality"
+          value={formik.values.nationality || ""}
+          onChange={(e) => formik.setFieldValue("nationality", e.target.value)}
+          onBlur={formik.handleBlur}
+        >
+          <MenuItem value="Indian">Indian</MenuItem>
+          <MenuItem value="NRI">NRI</MenuItem>
+          <MenuItem value="Other">Other</MenuItem>
+        </Select>
+      </FormControl>
+    </Grid>
+
+    <Grid size={{ xs: 12, sm: 6 }}>
+      <TextField
+        fullWidth
+        multiline
+        rows={3}
+        id="workExp"
+        name="workExp"
+        label="Work Experience Summary"
+        placeholder="Describe prior roles & responsibilities..."
+        value={formik.values.workExp}
+        onChange={formik.handleChange}
+        onBlur={formik.handleBlur}
+      />
+    </Grid>
+            <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
                 multiline
@@ -336,7 +396,113 @@ const AccountDetails = () => {
                   </Typography>
                   <Divider sx={{ mb: 2 }} />
                 </Grid>
+                {/* 1. Designation */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="designation"
+                    name="designation"
+                    label="Designation"
+                    value={formik.values.designation}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                </Grid>
+                {/* 2. Experience in Months */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    type="number"
+                    id="experienceInMonths"
+                    name="experienceInMonths"
+                    label="Experience (in months)"
+                    value={formik.values.experienceInMonths}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
+                {/* 3. Areas of Experience (Comma Separated) */}
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="areasOfExp"
+                    name="areasOfExp"
+                    label="Areas Of Experience (Comma separated)"
+                    placeholder="e.g. Frontend, Backend, UI/UX"
+                    value={formik.values.areasOfExp}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
 
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="industryExp"
+                    name="industryExp"
+                    label="Industry Experience (Comma separated)"
+                    placeholder="e.g. EdTech, IT Services, Finance"
+                    value={formik.values.industryExp}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="languagesKnown-label">
+                      Languages Known
+                    </InputLabel>
+                    <Select
+                      labelId="languagesKnown-label"
+                      id="languagesKnown"
+                      name="languagesKnown"
+                      multiple
+                      label="Languages Known"
+                      value={formik.values.languagesKnown || []}
+                      onChange={(e) =>
+                        formik.setFieldValue("languagesKnown", e.target.value)
+                      }
+                    >
+                      <MenuItem value="English">English</MenuItem>
+                      <MenuItem value="Hindi">Hindi</MenuItem>
+                      <MenuItem value="Spanish">Spanish</MenuItem>
+                      <MenuItem value="French">French</MenuItem>
+                      <MenuItem value="German">German</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="mode-label">Availability Method</InputLabel>
+                    <Select
+                      labelId="mode-label"
+                      id="mode"
+                      name="mode"
+                      label="Availability Method"
+                      value={formik.values.mode}
+                      onChange={(e) =>
+                        formik.setFieldValue("mode", e.target.value)
+                      }
+                    >
+                      <MenuItem value="online">Online</MenuItem>
+                      <MenuItem value="offline">Offline</MenuItem>
+                      <MenuItem value="both">Both</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid size={{ xs: 12 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    id="specialization"
+                    name="specialization"
+                    label="Specializations (Comma separated)"
+                    placeholder="e.g. React.js, Node.js, MERN Architecture"
+                    value={formik.values.specialization}
+                    onChange={formik.handleChange}
+                  />
+                </Grid>
                 <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
