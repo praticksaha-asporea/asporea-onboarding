@@ -20,8 +20,8 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import { usePendingTrackingView } from "./usePendingTrackingView";
-import DashboardCommunicationModal from "../TAC_Dashboard/components/DashboardView/DashboardCommunicationModal";
+import { useTacHeadPendingTrackingView } from "./useTacHeadPendingTrackingView";
+import DashboardCommunicationModal from "../../../TAC_Dashboard/components/DashboardView/DashboardCommunicationModal";
 
 dayjs.extend(relativeTime);
 
@@ -46,7 +46,7 @@ const resolveFileSrc = (path?: string) => {
   return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
 
-const PendingTrackingView: React.FC = () => {
+const TacHeadPendingTrackingView: React.FC = () => {
   const {
     data,
     loading,
@@ -65,16 +65,17 @@ const PendingTrackingView: React.FC = () => {
     setCommModalOpen,
     commMode,
     commCandidate,
-  } = usePendingTrackingView();
+  } = useTacHeadPendingTrackingView();
 
+  // 👉 TAC Head Grace Period (2 Hours)
   const getOverdueDuration = (lead: any) => {
     const baseTime =
       lead.inquiryStages?.stage1 === "pending"
         ? lead.createdAt
         : lead.updatedAt || lead.createdAt;
 
-    // Grace Period (1 Hour) ke BAAD ka actual overdue duration
-    const officialOverdueStartTime = dayjs(baseTime).add(1, "hour");
+    // Grace Period (2 Hours) ke BAAD ka actual overdue duration
+    const officialOverdueStartTime = dayjs(baseTime).add(2, "hours");
 
     return dayjs(officialOverdueStartTime).fromNow(true);
   };
@@ -90,11 +91,10 @@ const PendingTrackingView: React.FC = () => {
           <Box className="flex items-center justify-center w-10 h-10 rounded-lg text-[var(--mui-palette-primary-main)]">
             <i className="ri-time-line text-2xl" />
           </Box>
-          Follow Ups
+          TAC Head - Follow Ups
         </Typography>
 
         <Box className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          {/* Google Style Search Bar */}
           <TextField
             size="small"
             placeholder="Search leads..."
@@ -121,7 +121,6 @@ const PendingTrackingView: React.FC = () => {
             }}
           />
 
-          {/* Dynamic Stage Filter Dropdown */}
           <Select
             size="small"
             value={stageFilter}
@@ -164,11 +163,11 @@ const PendingTrackingView: React.FC = () => {
             const stageLabel = getPendingStageLabel(lead.inquiryStages);
             const displayName = lead.fullName || lead.name || "Unknown Lead";
             const avatarSrc = resolveFileSrc(lead.profilePic);
-            const overdueDuration = getOverdueDuration(lead); // Already returns human string (e.g. "15 minutes")
+            const overdueDuration = getOverdueDuration(lead);
 
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={lead._id}>
-                <Card className="h-full flex flex-col rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
+                <Card className="h-full flex flex-col rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-error-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
                   <CardContent className="p-5 flex flex-col flex-grow">
                     
                     {/* Top Section */}
@@ -220,7 +219,6 @@ const PendingTrackingView: React.FC = () => {
                           "No Phone"}
                       </Typography>
 
-                      {/* Overdue Text (Directly rendering formatted string) */}
                       <Typography className="text-[13px] text-[var(--mui-palette-error-main)] font-semibold flex items-center gap-2.5 mt-1">
                         <i className="ri-time-line text-[15px]" />
                         Overdue: {overdueDuration}
@@ -229,10 +227,11 @@ const PendingTrackingView: React.FC = () => {
 
                     {/* Bottom Actions */}
                     <Box className="flex items-center justify-between mt-auto">
+                      {/* 👉 RED BADGE FOR TAC HEAD */}
                       <Chip
                         label={stageLabel}
                         size="small"
-                        className="text-[12px] font-semibold h-[24px] bg-[var(--mui-palette-warning-main)] text-[var(--mui-palette-primary-contrastText)]"
+                        className="text-[12px] font-semibold h-[24px] bg-[var(--mui-palette-error-main)] text-white"
                       />
 
                       <Box className="flex items-center gap-0.5">
@@ -303,4 +302,4 @@ const PendingTrackingView: React.FC = () => {
   );
 };
 
-export default PendingTrackingView;
+export default TacHeadPendingTrackingView;

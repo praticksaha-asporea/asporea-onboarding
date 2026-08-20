@@ -18,8 +18,14 @@ type RenderExpandIconProps = {
   transitionDuration?: VerticalMenuContextProps["transitionDuration"];
 };
 
-const RenderExpandIcon = ({ open, transitionDuration }: RenderExpandIconProps) => (
-  <StyledVerticalNavExpandIcon open={open} transitionDuration={transitionDuration}>
+const RenderExpandIcon = ({
+  open,
+  transitionDuration,
+}: RenderExpandIconProps) => (
+  <StyledVerticalNavExpandIcon
+    open={open}
+    transitionDuration={transitionDuration}
+  >
     <i className="ri-arrow-right-s-line" />
   </StyledVerticalNavExpandIcon>
 );
@@ -38,23 +44,25 @@ const TacHeadMenu = ({
     <ScrollWrapper
       {...(isBreakpointReached
         ? {
-          className: "bs-full overflow-y-auto overflow-x-hidden",
-          onScroll: (container) => scrollMenu(container, false),
-        }
+            className: "bs-full overflow-y-auto overflow-x-hidden",
+            onScroll: (container) => scrollMenu(container, false),
+          }
         : {
-          options: { wheelPropagation: false, suppressScrollX: true },
-          onScrollY: (container) => scrollMenu(container, true),
-        })}
+            options: { wheelPropagation: false, suppressScrollX: true },
+            onScrollY: (container) => scrollMenu(container, true),
+          })}
     >
       <Menu
         menuItemStyles={menuItemStyles(theme)}
         renderExpandIcon={({ open }) => (
-          <RenderExpandIcon open={open} transitionDuration={transitionDuration} />
+          <RenderExpandIcon
+            open={open}
+            transitionDuration={transitionDuration}
+          />
         )}
         renderExpandedMenuItemIcon={{ icon: <i className="ri-circle-line" /> }}
         menuSectionStyles={menuSectionStyles(theme)}
       >
-
         <MenuItem
           href="/tac-head/dashboard"
           icon={<i className="ri-shield-check-line" />}
@@ -85,6 +93,12 @@ const TacHeadMenu = ({
           icon={<i className="ri-team-line" />}
         >
           Candidates
+        </MenuItem>
+        <MenuItem
+          href="/tac-head/pending-tracking"
+          icon={<i className="ri-time-line" />}
+        >
+          Follow Ups
         </MenuItem>
       </Menu>
     </ScrollWrapper>

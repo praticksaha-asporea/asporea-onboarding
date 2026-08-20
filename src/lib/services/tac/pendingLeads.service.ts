@@ -9,43 +9,48 @@ export const getDelayedPendingLeadsService = async (
 ) => {
     try {
         const skip = (page - 1) * limit;
-        const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
-        const matchConditions: any[] = [{ createdAt: { $lte: oneHourAgo } }];
+   
+        const delayHours = Number(process.env.FOLLOWUP_DELAY_HOURS || 1);
+        const delayInMs = delayHours * 60 * 60 * 1000;
+        const overdueThreshold = new Date(Date.now() - delayInMs);
+
+        const matchConditions: any[] = [];
+
         if (stageFilter === "stage1") {
             matchConditions.push({
                 "inquiryStages.stage1": "pending",
-                createdAt: { $lte: oneHourAgo },
+                createdAt: { $lte: overdueThreshold },
             });
         } else if (stageFilter === "stage2") {
             matchConditions.push({
                 "inquiryStages.stage1": { $ne: "pending" },
                 "inquiryStages.stage2": "pending",
-                updatedAt: { $lte: oneHourAgo },
+                updatedAt: { $lte: overdueThreshold },
             });
         } else if (stageFilter === "stage3") {
             matchConditions.push({
                 "inquiryStages.stage2": { $ne: "pending" },
                 "inquiryStages.stage3": "pending",
-                updatedAt: { $lte: oneHourAgo },
+                updatedAt: { $lte: overdueThreshold },
             });
         } else {
-
+           
             matchConditions.push({
                 $or: [
                     {
                         "inquiryStages.stage1": "pending",
-                        createdAt: { $lte: oneHourAgo },
+                        createdAt: { $lte: overdueThreshold },
                     },
                     {
                         "inquiryStages.stage1": { $ne: "pending" },
                         "inquiryStages.stage2": "pending",
-                        updatedAt: { $lte: oneHourAgo },
+                        updatedAt: { $lte: overdueThreshold },
                     },
                     {
                         "inquiryStages.stage2": { $ne: "pending" },
                         "inquiryStages.stage3": "pending",
-                        updatedAt: { $lte: oneHourAgo },
+                        updatedAt: { $lte: overdueThreshold },
                     },
                 ],
             });
