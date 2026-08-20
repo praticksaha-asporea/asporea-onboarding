@@ -24,8 +24,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
     const search = typeof req.query.search === "string" ? req.query.search : "";
-
-    const data = await getDelayedPendingLeadsService(page, limit, search);
+const stageFilter = typeof req.query.stageFilter === "string" ? req.query.stageFilter : "all";
+    const data = await getDelayedPendingLeadsService(page, limit, search, stageFilter);
 
     return ResponseHandler.sendSuccess(res, data, "Delayed pending leads fetched");
   } catch (error: unknown) {

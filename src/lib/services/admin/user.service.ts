@@ -225,7 +225,7 @@ export const updateUser = async (userId: string, body: any) => {
   const ALLOWED = [
     'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
     'address', 'role', 'passportStatus', 'passportNo', 'status',
-    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths'
+    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths','tacProfile','candidateProfile'
   ];
 
   const update: Record<string, unknown> = {};

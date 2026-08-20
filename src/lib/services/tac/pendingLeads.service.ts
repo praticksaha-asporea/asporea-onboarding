@@ -4,24 +4,52 @@ import { Lead } from "@/lib/models/Lead.model";
 export const getDelayedPendingLeadsService = async (
     page = 1,
     limit = 10,
-    search = ""
+    search = "",
+    stageFilter = "all"
 ) => {
     try {
         const skip = (page - 1) * limit;
         const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
 
+        const matchConditions: any[] = [{ createdAt: { $lte: oneHourAgo } }];
+        if (stageFilter === "stage1") {
+            matchConditions.push({
+                "inquiryStages.stage1": "pending",
+                createdAt: { $lte: oneHourAgo },
+            });
+        } else if (stageFilter === "stage2") {
+            matchConditions.push({
+                "inquiryStages.stage1": { $ne: "pending" },
+                "inquiryStages.stage2": "pending",
+                updatedAt: { $lte: oneHourAgo },
+            });
+        } else if (stageFilter === "stage3") {
+            matchConditions.push({
+                "inquiryStages.stage2": { $ne: "pending" },
+                "inquiryStages.stage3": "pending",
+                updatedAt: { $lte: oneHourAgo },
+            });
+        } else {
 
-        const matchConditions: any[] = [
-            {
+            matchConditions.push({
                 $or: [
-                    { "inquiryStages.stage1": "pending" },
-                    { "inquiryStages.stage2": "pending" },
-                    { "inquiryStages.stage3": "pending" },
+                    {
+                        "inquiryStages.stage1": "pending",
+                        createdAt: { $lte: oneHourAgo },
+                    },
+                    {
+                        "inquiryStages.stage1": { $ne: "pending" },
+                        "inquiryStages.stage2": "pending",
+                        updatedAt: { $lte: oneHourAgo },
+                    },
+                    {
+                        "inquiryStages.stage2": { $ne: "pending" },
+                        "inquiryStages.stage3": "pending",
+                        updatedAt: { $lte: oneHourAgo },
+                    },
                 ],
-            },
-            { createdAt: { $lte: oneHourAgo } },
-        ];
-
+            });
+        }
 
         if (search && search.trim() !== "") {
             const regex = new RegExp(search.trim(), "i");
@@ -46,7 +74,7 @@ export const getDelayedPendingLeadsService = async (
             .select(
                 "fullName name personalDetails contact inqNo profilePic inquiryStages createdAt updatedAt status"
             )
-            .sort({ createdAt: -1 })
+            .sort({ updatedAt: -1 })
             .skip(skip)
             .limit(limit)
             .lean();

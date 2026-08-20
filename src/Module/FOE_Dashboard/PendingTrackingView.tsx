@@ -12,14 +12,13 @@ import {
   Card,
   CardContent,
   Grid,
-  Divider,
   TextField,
   InputAdornment,
-  Button,
   Tooltip,
+  Select,
+  MenuItem,
 } from "@mui/material";
 import dayjs from "dayjs";
-
 import relativeTime from "dayjs/plugin/relativeTime";
 import { usePendingTrackingView } from "./usePendingTrackingView";
 import DashboardCommunicationModal from "../TAC_Dashboard/components/DashboardView/DashboardCommunicationModal";
@@ -32,9 +31,9 @@ const getInitials = (name?: string) => {
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.substring(0, 2).toUpperCase();
 };
+
 const resolveFileSrc = (path?: string) => {
   if (!path || path.trim() === "") return "/images/avatars/avatar.png";
-
   if (
     path.startsWith("http://") ||
     path.startsWith("https://") ||
@@ -46,6 +45,7 @@ const resolveFileSrc = (path?: string) => {
     process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000";
   return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
+
 const PendingTrackingView: React.FC = () => {
   const {
     data,
@@ -59,48 +59,53 @@ const PendingTrackingView: React.FC = () => {
     openCommModal,
     searchInput,
     setSearchInput,
+    stageFilter,
+    setStageFilter,
     commModalOpen,
     setCommModalOpen,
     commMode,
     commCandidate,
   } = usePendingTrackingView();
 
+  // 👉 Smart Overdue Calculation: Step 1 uses createdAt, Step 2 & 3 use updatedAt
+  const getOverdueTimestamp = (lead: any) => {
+    if (lead.inquiryStages?.stage1 === "pending") {
+      return lead.createdAt;
+    }
+    return lead.updatedAt || lead.createdAt;
+  };
+
   return (
     <Box className="w-full rounded-[20px] font-sans">
-      <Box className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6 bg-[var(--mui-palette-secondary)] p-4 md:p-6 rounded-[20px] shadow-2xl  ">
+      {/* ----------------- TOP TOOLBAR ----------------- */}
+      <Box className="flex flex-col lg:flex-row justify-between lg:items-center gap-4 mb-6 bg-[var(--mui-palette-secondary)] p-4 md:p-6 rounded-[20px] shadow-2xl">
         <Typography
           component="div"
           className="text-[20px] md:text-[24px] tracking-wide font-medium text-[var(--mui-palette-text-secondary)] flex items-center gap-3"
         >
-          <Box className="flex items-center justify-center w-10 h-10 rounded-lg  text-[var(--mui-palette-primary-main)]">
+          <Box className="flex items-center justify-center w-10 h-10 rounded-lg text-[var(--mui-palette-primary-main)]">
             <i className="ri-time-line text-2xl" />
           </Box>
           Follow Ups
         </Typography>
 
         <Box className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          {/* Google Style Search Bar */}
           <TextField
             size="small"
             placeholder="Search leads..."
             variant="outlined"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="w-full sm:w-[250px]  shadow-3xl"
+            className="w-full sm:w-[250px] shadow-3xl"
             sx={{
               "& .MuiOutlinedInput-root": {
                 borderRadius: "99px",
                 boxShadow: "0 1px 6px rgba(32,33,36,0.12)",
                 backgroundColor: "var(--mui-palette-background-paper)",
-
-                "& fieldset": {
-                  border: "none",
-                },
-                "&:hover fieldset": {
-                  border: "none",
-                },
-                "&.Mui-focused fieldset": {
-                  border: "none",
-                },
+                "& fieldset": { border: "none" },
+                "&:hover fieldset": { border: "none" },
+                "&.Mui-focused fieldset": { border: "none" },
               },
             }}
             InputProps={{
@@ -112,25 +117,26 @@ const PendingTrackingView: React.FC = () => {
             }}
           />
 
-          {/* Sort & Filter Buttons (UI Ready to connect) */}
-          {/* <Box className="flex items-center gap-2 w-full sm:w-auto">
-            <Button
-              variant="outlined"
-              color="inherit"
-              className="rounded-lg normal-case text-[var(--mui-palette-text-secondary)] border-[var(--mui-palette-divider)] flex-1 sm:flex-none"
-              startIcon={<i className="ri-arrow-up-down-line" />}
-            >
-              Sort
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              className="rounded-lg normal-case text-[var(--mui-palette-text-secondary)] border-[var(--mui-palette-divider)] flex-1 sm:flex-none"
-              startIcon={<i className="ri-filter-3-line" />}
-            >
-              Filter
-            </Button>
-          </Box> */}
+          {/* 👉 Dynamic Stage Filter Dropdown */}
+          <Select
+            size="small"
+            value={stageFilter}
+            onChange={(e) => setStageFilter(e.target.value)}
+            className="w-full sm:w-[180px] text-[13px] font-medium"
+            sx={{
+              borderRadius: "99px",
+              backgroundColor: "var(--mui-palette-background-paper)",
+              boxShadow: "0 1px 6px rgba(32,33,36,0.12)",
+              "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+              "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+              "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" },
+            }}
+          >
+            <MenuItem value="all">All Pending Steps</MenuItem>
+            <MenuItem value="stage1">Step 1 Pending</MenuItem>
+            <MenuItem value="stage2">Step 2 Pending</MenuItem>
+            <MenuItem value="stage3">Step 3 Pending</MenuItem>
+          </Select>
         </Box>
       </Box>
 
@@ -145,9 +151,8 @@ const PendingTrackingView: React.FC = () => {
           {error}
         </Box>
       ) : data.length === 0 ? (
-        <Box className="text-center py-20 bg-[var(--mui-palette-primary)] rounded-[20px] shadow-2xl   text-[var(--mui-palette-text-secondary)] font-medium">
-          
-          No delayed inquiries right now! 
+        <Box className="text-center py-20 bg-[var(--mui-palette-primary)] rounded-[20px] shadow-2xl text-[var(--mui-palette-text-secondary)] font-medium">
+          No delayed inquiries right now!
         </Box>
       ) : (
         <Grid container spacing={3}>
@@ -155,12 +160,14 @@ const PendingTrackingView: React.FC = () => {
             const stageLabel = getPendingStageLabel(lead.inquiryStages);
             const displayName = lead.fullName || lead.name || "Unknown Lead";
             const avatarSrc = resolveFileSrc(lead.profilePic);
+            const overdueTimestamp = getOverdueTimestamp(lead);
 
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={lead._id}>
-                <Card className="h-full flex flex-col rounded-2xl shadow-2xlshadow-sm hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]   bg-[var(--mui-palette-primary)]">
+                <Card className="h-full flex flex-col rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
                   <CardContent className="p-5 flex flex-col flex-grow">
-                    {/* --- Card Top: Avatar & Identity --- */}
+                    
+                    {/* Top Section */}
                     <Box className="flex items-start justify-between mb-4 gap-2">
                       <Box className="flex items-center gap-3 overflow-hidden">
                         <Avatar
@@ -190,13 +197,13 @@ const PendingTrackingView: React.FC = () => {
                       </Box>
                     </Box>
 
-                    {/* --- Card Middle: Contact Details --- */}
+                    {/* Middle Details */}
                     <Box className="flex flex-col gap-2.5 mb-5 mt-2 flex-grow">
                       <Typography
                         className="text-[13px] text-[var(--mui-palette-text-primary)] flex items-center gap-2.5 truncate"
                         title={lead.contact?.email}
                       >
-                        <i className="ri-mail-line text-[15px] text-[var(--mui-palette-text-primary]" />
+                        <i className="ri-mail-line text-[15px] text-[var(--mui-palette-text-primary)]" />
                         <span className="truncate">
                           {lead.contact?.email || "No Email"}
                         </span>
@@ -209,15 +216,14 @@ const PendingTrackingView: React.FC = () => {
                           "No Phone"}
                       </Typography>
 
+                      {/* Overdue Text (Dynamic Base Time) */}
                       <Typography className="text-[13px] text-[var(--mui-palette-error-main)] font-semibold flex items-center gap-2.5 mt-1">
                         <i className="ri-time-line text-[15px]" />
-                        Overdue: {dayjs(lead.createdAt).fromNow(true)}
+                        Overdue: {dayjs(overdueTimestamp).fromNow(true)}
                       </Typography>
                     </Box>
 
-                    {/* <Divider className="border-[var(--mui-palette-divider)]  mb-4" /> */}
-
-                    {/* --- Card Bottom: S tatus & Actions --- */}
+                    {/* Bottom Actions */}
                     <Box className="flex items-center justify-between mt-auto">
                       <Chip
                         label={stageLabel}
@@ -231,9 +237,7 @@ const PendingTrackingView: React.FC = () => {
                             size="small"
                             onClick={() => openCommModal(lead, "chat")}
                             className="hover:bg-[rgba(37,211,102,0.08)]"
-                            sx={{
-                              color: "#25D366 !important",
-                            }}
+                            sx={{ color: "#25D366 !important" }}
                           >
                             <i className="ri-whatsapp-line text-[22px]" />
                           </IconButton>
@@ -244,28 +248,18 @@ const PendingTrackingView: React.FC = () => {
                             size="small"
                             onClick={() => openCommModal(lead, "email")}
                             className="hover:bg-[rgba(234,67,53,0.08)] transition-all duration-200"
-                            sx={{
-                              color: "#ea4335 !important",
-                              padding: "7px",
-                            }}
+                            sx={{ color: "#ea4335 !important", padding: "7px" }}
                           >
                             <i className="ri-mail-line text-[20px]" />
                           </IconButton>
                         </Tooltip>
 
-                        <Tooltip
-                          title="View Candidate Details"
-                          placement="top"
-                          arrow
-                        >
+                        <Tooltip title="View Candidate Details" placement="top" arrow>
                           <IconButton
                             size="small"
                             onClick={() => onViewCandidate(lead._id)}
                             className="hover:bg-[rgba(147,51,234,0.08)] transition-all duration-200"
-                            sx={{
-                              color: "#1E90FF !important",
-                              padding: "6px",
-                            }}
+                            sx={{ color: "#1E90FF !important", padding: "6px" }}
                           >
                             <i className="mdi--user text-[20px]" />
                           </IconButton>
@@ -280,7 +274,7 @@ const PendingTrackingView: React.FC = () => {
         </Grid>
       )}
 
-      {/* ----------------- PAGINATION ----------------- */}
+      {/* Pagination */}
       {totalPages > 1 && (
         <Box className="flex justify-center mt-8">
           <Pagination
@@ -294,7 +288,7 @@ const PendingTrackingView: React.FC = () => {
         </Box>
       )}
 
-      {/* ----------------- MODALS ----------------- */}
+      {/* Communication Modal */}
       <DashboardCommunicationModal
         open={commModalOpen}
         onClose={() => setCommModalOpen(false)}
