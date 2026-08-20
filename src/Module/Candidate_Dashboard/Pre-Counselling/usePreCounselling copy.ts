@@ -8,8 +8,6 @@ import {
   getSlotsAction,
   bookSlotAction,
   checkBookingStatusAction,
-  getConsultantsAction, // NEW — add to preCounselling.action.ts (see preCounselling.action.additions.ts)
-  uploadCvAction, // NEW — add to preCounselling.action.ts (see preCounselling.action.additions.ts)
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import {
   ExistingBooking,
@@ -19,14 +17,13 @@ import {
 } from "@/Types/Frontend_Payload/precounselling.types";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
-import { TAC } from "@/Components/PreCounselling/TACSelector";
 
-export type CounsellingMode = "on" | "off";
 
 export const usePreCounselling = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
   const dispatch = useDispatch();
+
 
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
@@ -38,12 +35,11 @@ export const usePreCounselling = () => {
     "";
   const reduxVisitOption =
     reduxUser?.visitOption ?? reduxUser?.user?.visitOption;
-  const reduxMethod: CounsellingMode = reduxVisitOption === 2 ? "on" : "off";
-  const reduxBranch = reduxUser?.branch || reduxUser?.user?.branch || null;
+  const reduxMethod = reduxVisitOption === 2 ? "on" : "off";
 
   const leadId = searchParams?.get("leadId") || reduxLeadId;
-  const consultantIdParam = searchParams?.get("consultantId") || reduxConsultantId;
-  const methodParam = (searchParams?.get("method") as CounsellingMode) || reduxMethod;
+  const consultantId = searchParams?.get("consultantId") || reduxConsultantId;
+  const method = searchParams?.get("method") || reduxMethod;
 
   const serverNow = new Date();
   const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
@@ -75,22 +71,6 @@ export const usePreCounselling = () => {
     sms: reduxUser?.notificationPreference?.sms ?? false,
   });
 
-  // ---- Mode (online/offline) ----
-  const [mode, setMode] = useState<CounsellingMode>(methodParam);
-
-  // ---- TAC selection ----
-  const [tacs, setTacs] = useState<TAC[]>([]);
-  const [loadingTacs, setLoadingTacs] = useState(false);
-  const [selectedTacId, setSelectedTacId] = useState<string>(consultantIdParam);
-
-  // ---- CV upload ----
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [cvUploading, setCvUploading] = useState(false);
-  const [cvError, setCvError] = useState<string | null>(null);
-
-  // ---- Captcha ----
-  const [captchaVerified, setCaptchaVerified] = useState(false);
-
   useEffect(() => {
     const timer = setTimeout(() => setIsReduxReady(true), 800);
     return () => clearTimeout(timer);
@@ -110,31 +90,28 @@ export const usePreCounselling = () => {
       setCheckingStatus(true);
 
       try {
+
         try {
           const timelineRes = await getJourneyTimelineAction({ leadId });
+
 
           if (timelineRes?.data?.success && timelineRes?.data?.data) {
             setActiveStepperStep(timelineRes.data.data.activeStep ?? 1);
           }
 
-          if (
-            timelineRes?.data?.success === false &&
-            timelineRes?.data?.message?.toLowerCase().includes("not found")
-          ) {
+          if (timelineRes?.data?.success === false && timelineRes?.data?.message?.toLowerCase().includes("not found")) {
             setIsValidLead(false);
             setCheckingStatus(false);
             return;
           }
         } catch (timeErr: any) {
-          if (
-            timeErr?.response?.status === 404 ||
-            timeErr?.response?.data?.message?.toLowerCase().includes("not found")
-          ) {
+          if (timeErr?.response?.status === 404 || timeErr?.response?.data?.message?.toLowerCase().includes("not found")) {
             setIsValidLead(false);
             setCheckingStatus(false);
             return;
           }
         }
+
 
         const res = await checkBookingStatusAction({ leadId });
         if (res?.data?.success && res.data) {
@@ -151,10 +128,7 @@ export const usePreCounselling = () => {
           setIsValidLead(false);
         }
       } catch (err: any) {
-        if (
-          err?.response?.status === 404 ||
-          err?.response?.data?.message?.toLowerCase().includes("not found")
-        ) {
+        if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
           setIsValidLead(false);
         }
       } finally {
@@ -174,54 +148,30 @@ export const usePreCounselling = () => {
           sms: reduxUser.notificationPreference.sms ?? false,
         });
       }
-    };
-    updatePreferences();
+      // if (reduxUser?.branch?._id && !reduxUser?.branch?.title) {
+
+      //   const res = await checkBranchView(reduxUser?.branch?._id);
+
+      //   dispatch(
+      //     updateUserData({
+      //       branch: {
+      //         _id: reduxUser?.branch?._id,
+      //         title: res?.data?.title
+      //       },
+      //     }),
+      //   );
+
+      // }
+    }
+    updatePreferences()
+
   }, [reduxUser]);
 
-  // ---- Fetch TAC list whenever branch or mode changes ----
-  useEffect(() => {
-    const fetchConsultants = async () => {
-      if (!leadId || !reduxBranch?._id) {
-        setTacs([]);
-        return;
-      }
-      setLoadingTacs(true);
-      try {
-        const res = await getConsultantsAction({
-          leadId,
-          branchId: reduxBranch._id,
-          method: mode,
-        });
-        if (res?.data?.success) {
-          setTacs(res.data.data || []);
-          // keep previous selection only if still present in the new list
-          setSelectedTacId((prev) =>
-            (res.data.data || []).some((t: TAC) => t.id === prev) ? prev : "",
-          );
-        } else {
-          toast.error(res?.data?.message || "Failed to fetch consultants");
-          setTacs([]);
-        }
-      } catch (err) {
-        toast.error("Failed to fetch consultants");
-        setTacs([]);
-      } finally {
-        setLoadingTacs(false);
-      }
-    };
-
-    fetchConsultants();
-  }, [leadId, reduxBranch?._id, mode]);
-
-  // ---- Fetch slots for the currently selected TAC ----
   useEffect(() => {
     const fetchSlots = async () => {
-      if (!selectedTacId) {
-        setSlots([]);
-        return;
-      }
+      if (!consultantId) return;
       setLoadingSlots(true);
-      const res = await getSlotsAction({ consultantId: selectedTacId, date });
+      const res = await getSlotsAction({ consultantId, date });
       if (res?.data?.success) setSlots(res?.data?.data);
       else {
         toast.error(res?.data?.message || "Failed to fetch slots");
@@ -231,7 +181,7 @@ export const usePreCounselling = () => {
       setSelectedSlot(null);
     };
     fetchSlots();
-  }, [date, selectedTacId]);
+  }, [date, consultantId]);
 
   const handlePrefChange = (event: ChangeEvent<HTMLInputElement>) => {
     setPreferences({
@@ -264,47 +214,22 @@ export const usePreCounselling = () => {
     }
   };
 
-  const handleTacSelect = (tacId: string) => {
-    setSelectedTacId(tacId);
-  };
-
-  const handleCvChange = async (file: File | null) => {
-    setCvFile(file);
-    setCvError(null);
-    if (!file || !leadId) return;
-
-    setCvUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("leadId", leadId);
-      formData.append("cv", file);
-      const res = await uploadCvAction(formData);
-      if (!res?.data?.success) {
-        setCvError(res?.data?.message || "Failed to upload CV. Please try again.");
-      }
-    } catch (err) {
-      setCvError("Failed to upload CV. Please try again.");
-    } finally {
-      setCvUploading(false);
-    }
-  };
-
   const handleConfirm = async () => {
-    if (!leadId) return toast.error("Missing inquiry details. Please go back and try again.");
-    if (!selectedTacId) return toast.error("Please select a preferred TAC");
-    if (!selectedSlot) return toast.error("Please select an available time slot");
-    if (!cvFile) return toast.error("Please upload your CV before continuing");
-    if (cvUploading) return toast.error("Please wait for the CV upload to finish");
-    if (!captchaVerified) return toast.error("Please complete the captcha verification");
+    if (!leadId || !consultantId)
+      return toast.error(
+        "Missing inquiry details. Please go back and try again.",
+      );
+    if (!selectedSlot)
+      return toast.error("Please select an available time slot");
 
     setBookingLoading(true);
     const payload = {
       leadId,
-      consultantId: selectedTacId,
+      consultantId,
       date,
       from: selectedSlot.from,
       to: selectedSlot.to,
-      method: mode,
+      method: method,
     };
     const res = await bookSlotAction(payload as PreCounsellingPayload);
     if (res?.data?.success) {
@@ -317,19 +242,10 @@ export const usePreCounselling = () => {
   const isChecklistComplete =
     checklist.materials && checklist.environment && checklist.questions;
 
-  const canConfirm =
-    !!selectedSlot &&
-    !bookingLoading &&
-    isChecklistComplete &&
-    !!selectedTacId &&
-    !!cvFile &&
-    !cvUploading &&
-    captchaVerified;
-
   return {
     leadId,
-    consultantId: selectedTacId, // kept for backward-compat with existing consumers
-    method: mode, // kept for backward-compat with existing consumers
+    consultantId,
+    method,
     date,
     setDate,
     todayStr,
@@ -357,30 +273,5 @@ export const usePreCounselling = () => {
     isCompleted,
     activeStepperStep,
 
-    // ---- New: mode ----
-    mode,
-    setMode,
-
-    // ---- New: branch (read-only, assigned by backend) ----
-    branch: reduxBranch,
-
-    // ---- New: TAC selection ----
-    tacs,
-    loadingTacs,
-    selectedTacId,
-    handleTacSelect,
-
-    // ---- New: CV upload ----
-    cvFile,
-    cvUploading,
-    cvError,
-    handleCvChange,
-
-    // ---- New: captcha ----
-    captchaVerified,
-    setCaptchaVerified,
-
-    // ---- New: submit gate ----
-    canConfirm,
   };
 };
