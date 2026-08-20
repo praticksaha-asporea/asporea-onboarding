@@ -15,6 +15,6 @@ export const getTacHeadPendingTrackingAction = async (
     if (params.stageFilter) query.set("stageFilter", params.stageFilter);
 
     return await axiosClient.get<TacHeadPendingLeadsApiResponse>(
-        `/tac-head/pending-leads?${query.toString()}`,
+        `tac/tachead/pending-leads?${query.toString()}`,
     );
 };
