@@ -19,15 +19,20 @@ export const getSlotsAction = async (bodyData: getSlotsPayload): Promise<AxiosRe
   // }
 };
 
-export const bookSlotAction = async (payload: PreCounsellingPayload): Promise<AxiosResponse<bookPreCounsellingRes>> => {
-
-  // try {
-  const response = await axiosClient.post("/pre-counselling/book-slot", payload);
-  return response
-  //   .data;
-  // } catch (error: any) {
-  //   return { success: false, message: error.response?.data?.message || "Booking failed" };
-  // }
+export const bookSlotAction = async (
+  payload: FormData
+): Promise<AxiosResponse<bookPreCounsellingRes>> => {
+  return axiosClient.post(
+    "/pre-counselling/book-slot",
+    payload,
+    payload instanceof FormData
+      ? {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+      : undefined
+  );
 };
 
 
@@ -43,11 +48,5 @@ export const getConsultantsAction = async ({
 }: GetConsultantsParams) => {
   return axiosClient.get("/precounselling/consultants", {
     params: { leadId, branchId, method },
-  });
-};
-
-export const uploadCvAction = async (formData: FormData) => {
-  return axiosClient.post("/precounselling/upload-cv", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
   });
 };

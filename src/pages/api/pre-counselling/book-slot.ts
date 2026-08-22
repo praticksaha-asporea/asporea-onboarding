@@ -7,6 +7,11 @@ import {
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
 import { savePreCounsellingBooking } from "@/lib/services/PreCounselling/preCounselling.service";
+import { normalizeFormFields, parseForm } from "@/lib/utils/parseForm";
+import { UploadResult } from "@/Types/Frontend_Payload/document.types";
+import { uploadFileService } from "@/lib/services/upload.service";
+
+export const config = { api: { bodyParser: false } };
 
 export default async function handler(
   req: NextApiRequest,
@@ -21,9 +26,23 @@ export default async function handler(
   try {
     const token = getTokenFromHeader(req);
     if (!token) throw new ApiError("Unauthenticated user", 401);
-    await verifyToken(token);
+    const authUser = await verifyToken(token);
+    // console.log(req.body, 58444);
+    const { fields, files } = await parseForm(req);
+    let result: UploadResult | null = null;
+    if (files?.resumeFile) {
 
-    const data = await savePreCounsellingBooking(req.body);
+      result = await uploadFileService({
+        file: files?.resumeFile,
+        userId: authUser.id,
+      });
+    }
+    const body = normalizeFormFields(
+      fields as any
+    );
+    body.initialCV = result?.uploadId;
+
+    const data = await savePreCounsellingBooking(body);
 
     return ResponseHandler.sendSuccess(
       res,

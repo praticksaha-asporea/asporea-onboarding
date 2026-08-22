@@ -11,6 +11,7 @@ import { addTechnicalResultSchema } from "@/lib/validation/technicalValidation";
 import { uploadFileService } from "@/lib/services/upload.service";
 import { addTechnicalResult } from "@/lib/services/Assessments/technical.service";
 import { TechnicalDetailModel } from "@/lib/models/TechnicalDetail.model";
+import { UploadResult } from "@/Types/Frontend_Payload/document.types";
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(
@@ -38,10 +39,6 @@ export default async function handler(
     }
 
     const { fields, files } = await parseForm(req);
-    type UploadResult = {
-      uploadId: string;
-      path: string;
-    };
     let result: UploadResult | null = null;
     const existingResult = await TechnicalDetailModel.findOne({
       leadId: fields.leadId
@@ -64,7 +61,7 @@ export default async function handler(
     const body = normalizeFormFields(
       fields as any
     );
-   const { error } = addTechnicalResultSchema.validate({
+    const { error } = addTechnicalResultSchema.validate({
       leadId: body.leadId,
       type: body.type,
       totalScore: body.totalScore,
@@ -73,7 +70,7 @@ export default async function handler(
       questions: body.questions,
       answered: body.answered,
       feedback: body.feedback
-    }, { allowUnknown: true });  
+    }, { allowUnknown: true });
     if (error) {
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
     }

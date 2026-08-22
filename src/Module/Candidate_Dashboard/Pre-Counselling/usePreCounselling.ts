@@ -74,10 +74,10 @@ export const usePreCounselling = () => {
   const [mode, setMode] = useState<CounsellingMode>("offline");
 
   // ---- 3. cv ----
-  const [cvFile, setCvFile] = useState<File | null>(null);
-  const [cvUploading, setCvUploading] = useState(false);
-  const [cvError, setCvError] = useState<string | null>(null);
-  const [cvUrl, setCvUrl] = useState<string | null>(null);
+  // const [cvFile, setCvFile] = useState<File | null>(null);
+  // const [cvUploading, setCvUploading] = useState(false);
+  // const [cvError, setCvError] = useState<string | null>(null);
+  // const [cvUrl, setCvUrl] = useState<string | null>(null);
 
   // ---- 4. tac ----
   const [tacs, setTacs] = useState<IUser[]>([]);
@@ -98,6 +98,13 @@ export const usePreCounselling = () => {
   // ---- 7. submit ----
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+  const [profileTac, setProfileTac] = useState<IUser | null>(null);
+
+
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const initialCV = { path: "" };
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReduxReady(true), 500);
@@ -220,28 +227,28 @@ export const usePreCounselling = () => {
   }, [selectedTacId, date]);
 
   // ---- cv upload ----
-  const handleCvChange = async (file: File | null) => {
-    setCvFile(file);
-    setCvError(null);
-    setCvUrl(null);
-    if (!file || !leadId) return;
+  // const handleCvChange = async (file: File | null) => {
+  //   setCvFile(file);
+  //   setCvError(null);
+  //   // setCvUrl(null);
+  //   if (!file || !leadId) return;
 
-    setCvUploading(true);
-    try {
-      const formData = new FormData();
-      formData.append("leadId", leadId);
-      formData.append("cv", file);
-      const res = await axiosClient.post("/pre-counselling/upload-cv", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (res?.data?.success) setCvUrl(res.data.data?.url || null);
-      else setCvError(res?.data?.message || "Failed to upload CV");
-    } catch (err) {
-      setCvError("Failed to upload CV. Please try again.");
-    } finally {
-      setCvUploading(false);
-    }
-  };
+  //   setCvUploading(true);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append("leadId", leadId);
+  //     formData.append("cv", file);
+  //     const res = await axiosClient.post("/pre-counselling/upload-cv", formData, {
+  //       headers: { "Content-Type": "multipart/form-data" },
+  //     });
+  //     if (res?.data?.success) setCvUrl(res.data.data?.url || null);
+  //     else setCvError(res?.data?.message || "Failed to upload CV");
+  //   } catch (err) {
+  //     setCvError("Failed to upload CV. Please try again.");
+  //   } finally {
+  //     setCvUploading(false);
+  //   }
+  // };
 
   // ---- captcha ----
   useEffect(() => {
@@ -268,34 +275,48 @@ export const usePreCounselling = () => {
   const canConfirm =
     !!selectedBranchId &&
     !!mode &&
-    !!cvFile &&
-    !cvUploading &&
+    !!resumeFile &&
+    // !cvUploading &&
     !!selectedTacId &&
     !!selectedSlot &&
-    captchaVerified &&
-    !bookingLoading;
+    !!captchaVerified
+    // && !bookingLoading
+    ;
+
 
   const handleConfirm = async () => {
     if (!leadId) return toast.error("Missing inquiry details. Please go back and try again.");
     if (!selectedBranchId) return toast.error("Please select a branch");
-    if (!cvFile) return toast.error("Please upload your CV");
+    if (!resumeFile) return toast.error("Please upload your CV");
     if (!selectedTacId) return toast.error("Please select a preferred TAC");
     if (!selectedSlot) return toast.error("Please select an available time slot");
     if (!captchaVerified) return toast.error("Please complete the captcha verification");
 
     setBookingLoading(true);
     try {
-      const payload = {
-        leadId,
-        branchId: selectedBranchId,
-        consultantId: selectedTacId,
-        date,
-        from: selectedSlot.from,
-        to: selectedSlot.to,
-        method: mode === "online" ? "on" : "off",
-        cvUrl,
-      };
-      const res = await bookSlotAction(payload as PreCounsellingPayload);
+      // const payload = {
+      //   leadId,
+      //   branchId: selectedBranchId,
+      //   consultantId: selectedTacId,
+      //   date,
+      //   from: selectedSlot.from,
+      //   to: selectedSlot.to,
+      //   method: mode === "online" ? "on" : "off",
+      //   resumeFile
+      // };
+
+      const payload = new FormData();
+      payload.append("leadId", leadId);
+      payload.append("branchId", selectedBranchId);
+      payload.append("consultantId", selectedTacId);
+      payload.append("date", date);
+      payload.append("from", selectedSlot.from as string);
+      payload.append("to", selectedSlot.to as string);
+      payload.append("method", mode === "online" ? "on" : "off");
+
+      if (resumeFile) payload.append("resumeFile", resumeFile);
+
+      const res = await bookSlotAction(payload);
       if (res?.data?.success) {
         toast.success("Pre-Counselling scheduled successfully!");
         setShowConfirmPopup(true);
@@ -305,11 +326,6 @@ export const usePreCounselling = () => {
     }
   };
 
-
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const initialCV = { path: "" };
 
 
   const existingResume =
@@ -383,11 +399,11 @@ export const usePreCounselling = () => {
     mode,
     setMode,
 
-    cvFile,
-    cvUploading,
-    cvError,
-    cvUrl,
-    handleCvChange,
+    // cvFile,
+    // cvUploading,
+    // cvError,
+    // cvUrl,
+    // handleCvChange,
 
     handleDragOver, handleDragLeave, handleDrop,
     onFileInputChange,
@@ -418,5 +434,6 @@ export const usePreCounselling = () => {
     setShowConfirmPopup,
     canConfirm,
     handleConfirm,
+    profileTac, setProfileTac
   };
 };

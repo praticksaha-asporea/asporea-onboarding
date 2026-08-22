@@ -26,6 +26,8 @@ export interface PreCounsellingPayload {
   from: string;
   to: string;
   method: string;
+  resumeFile?: File;
+  branchId?: string;
 }
 
 

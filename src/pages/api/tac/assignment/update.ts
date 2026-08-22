@@ -11,6 +11,7 @@ import { normalizeFormFields, parseForm } from "@/lib/utils/parseForm";
 import { uploadFileService } from "@/lib/services/upload.service";
 import { Lead } from "@/lib/models/Lead.model";
 import { BranchTokenModel } from "@/lib/models/BranchToken.model";
+import { UploadResult } from "@/Types/Frontend_Payload/document.types";
 
 
 const updateAssignmentSchema = Joi.object({
@@ -87,10 +88,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
     if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404);
     // need to work on file upload
-    type UploadResult = {
-      uploadId: string;
-      path: string;
-    };
 
     let result: UploadResult | null = null;
     const today = new Date();

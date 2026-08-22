@@ -9,18 +9,20 @@ import Button from "@mui/material/Button";
 import Avatar from "@mui/material/Avatar";
 import TextField from "@mui/material/TextField";
 import IconButton from "@mui/material/IconButton";
-import LinearProgress from "@mui/material/LinearProgress";
 import InputAdornment from "@mui/material/InputAdornment";
 import Skeleton from "@mui/material/Skeleton";
 import { CircularProgress, Chip, Dialog, DialogContent } from "@mui/material";
 import { LoadCanvasTemplate } from "react-simple-captcha";
 
-import { usePreCounselling, Branch, TAC } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
+import { usePreCounselling, Branch } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 import { ProgressSidebar } from "@/Components/PreCounselling/ProgressSidebar";
 import { NotificationChannels } from "@/Components/PreCounselling/NotificationChannels";
 import { SuccessDialog } from "@/Components/PreCounselling/SuccessDialog";
 import { IUser } from "@/lib/models/User.model";
 import { CamelCase } from "@/Utils/common";
+
+import { DialogTitle, Divider } from "@mui/material";
+import TacProfileDialog from "@/Components/modals/TacProfileDialog";
 
 // ---- shared visual bits, kept local since this is meant to be one file ----
 
@@ -67,7 +69,6 @@ const todayStr = new Date().toISOString().split("T")[0];
 const PreCounsellingContent = () => {
   const {
     leadId,
-    isReduxReady,
     isValidLead,
     isCompleted,
     existingBooking,
@@ -81,10 +82,10 @@ const PreCounsellingContent = () => {
     mode,
     setMode,
 
-    cvFile,
-    cvUploading,
-    cvError,
-    handleCvChange,
+    // cvFile,
+    // cvUploading,
+    // cvError,
+    // handleCvChange,
     handleDragOver, handleDragLeave, handleDrop,
     onFileInputChange, resumeFile, isDragging, fileInputRef,
     previewUrl, isPreviewOpen, setIsPreviewOpen, isPdf,
@@ -114,22 +115,23 @@ const PreCounsellingContent = () => {
     setShowConfirmPopup,
     canConfirm,
     handleConfirm,
+    profileTac, setProfileTac
   } = usePreCounselling();
 
-  const cvUploadInputRef = React.useRef<HTMLInputElement>(null);
-  const [isDraggingCv, setIsDraggingCv] = React.useState(false);
+  // const cvUploadInputRef = React.useRef<HTMLInputElement>(null);
+  // const [isDraggingCv, setIsDraggingCv] = React.useState(false);
 
-  const validateAndSetCv = (candidate: File | undefined) => {
-    if (!candidate) return;
-    if (candidate.size > 5 * 1024 * 1024) {
-      // eslint-disable-next-line no-alert
-      alert("File must be smaller than 5MB");
-      return;
-    }
-    handleCvChange(candidate);
-  };
+  // const validateAndSetCv = (candidate: File | undefined) => {
+  //   if (!candidate) return;
+  //   if (candidate.size > 5 * 1024 * 1024) {
+  //     // eslint-disable-next-line no-alert
+  //     alert("File must be smaller than 5MB");
+  //     return;
+  //   }
+  //   handleCvChange(candidate);
+  // };
 
-  const isCvSuccess = !!cvFile && !cvUploading && !cvError;
+  // const isCvSuccess = !!cvFile && !cvUploading && !cvError;
 
   if (!isValidLead) {
     return (
@@ -208,10 +210,8 @@ const PreCounsellingContent = () => {
       <Card className={sectionCardClass}>
         <Box className="flex items-start justify-between gap-3">
           <Box>
-            <Typography variant="h4" className="font-bold leading-tight">
-              Confirm Your Pre-Counselling Readiness
-            </Typography>
-            <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] mt-1.5 max-w-xl">
+            <Typography variant="h4">Confirm Pre-Counselling Readiness</Typography>
+            <Typography variant="subtitle1" className="pb-5">
               Review the details below and confirm your availability for the upcoming session.
             </Typography>
           </Box>
@@ -422,7 +422,7 @@ const PreCounsellingContent = () => {
           </Box>
         ) : (
           <>
-            <TextField
+            {/* <TextField
               size="small"
               placeholder="Search TAC by name"
               value={tacSearch}
@@ -436,7 +436,7 @@ const PreCounsellingContent = () => {
                   </InputAdornment>
                 ),
               }}
-            />
+            /> */}
 
             {loadingTacs ? (
               <Box className="flex flex-col gap-3">
@@ -455,45 +455,113 @@ const PreCounsellingContent = () => {
                 No TAC available for this branch and mode yet.
               </Typography>
             ) : (
-              <Box className="flex flex-col gap-3">
+              <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 {tacs?.map((tac: IUser) => {
-                  const isSelected = selectedTacId === tac._id.toString();
+                  const tacId = tac._id.toString();
+                  const isSelected = selectedTacId === tacId;
+                  const rating = tac?.tacProfile?.rating;
 
                   return (
                     <Box
-                      key={tac._id.toString()}
-                      onClick={() => setSelectedTacId(tac._id.toString())}
-                      className={`flex items-center gap-4 p-4 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
-                        ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_6%,transparent)]"
-                        : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
+                      key={tacId}
+                      onClick={() => setSelectedTacId(tacId)}
+                      className={`relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
+                        ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_6%,transparent)] shadow-md"
+                        : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
                         }`}
                     >
-                      <Avatar src={tac.profilePic as unknown as string} sx={{ width: 52, height: 52 }}>
+                      {/* Selected indicator */}
+                      {isSelected && (
+                        <i className="ri-checkbox-circle-fill absolute top-3 right-3 text-xl text-[var(--mui-palette-primary-main)]" />
+                      )}
+
+                      {/* Profile Image */}
+                      <Avatar
+                        src={tac.profilePic as unknown as string}
+                        sx={{
+                          width: 72,
+                          height: 72,
+                          mb: 2,
+                        }}
+                      >
                         {tac.firstName?.charAt(0)}
                       </Avatar>
 
-                      <Box className="flex-1 min-w-0">
-                        <Box className="flex items-center gap-2 flex-wrap">
-                          <Typography variant="subtitle1" className="font-bold leading-tight">
-                            {tac.firstName + " " + tac.lastName}
+                      {/* Name */}
+                      <Typography
+                        variant="subtitle1"
+                        className="font-bold leading-tight"
+                      >
+                        {tac.firstName} {tac.lastName}
+                      </Typography>
+
+                      {/* Rating */}
+                      {typeof rating === "number" && (
+                        <Box className="flex items-center justify-center gap-0.5 text-amber-500 mt-1.5">
+                          {Array.from({ length: 5 }, (_, index) => {
+                            const starValue = index + 1;
+
+                            let icon = "ri-star-line";
+
+                            if (rating >= starValue) {
+                              icon = "ri-star-fill";
+                            } else if (rating >= starValue - 0.5) {
+                              icon = "ri-star-half-fill";
+                            }
+
+                            return (
+                              <i
+                                key={index}
+                                className={icon}
+                                style={{ fontSize: 14 }}
+                              />
+                            );
+                          })}
+
+                          <Typography
+                            variant="caption"
+                            className="font-semibold ml-1"
+                          >
+                            {rating.toFixed(1)}
                           </Typography>
-                          {typeof tac?.tacProfile?.rating === "number" && (
-                            <Box className="flex items-center gap-0.5 text-amber-500">
-                              <i className="ri-star-fill" style={{ fontSize: 13 }} />
-                              <Typography variant="caption" className="font-semibold">
-                                {tac?.tacProfile?.rating.toFixed(1)}
-                              </Typography>
-                            </Box>
-                          )}
                         </Box>
-                        <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
-                          {CamelCase(tac?.tacProfile?.designation as string)}
-                          {tac?.experienceInMonths
-                            ? ` • ${Number((tac.experienceInMonths / 12).toFixed(2))} yrs exp`
-                            : ""}
+                      )}
+
+                      {/* Designation */}
+                      <Typography
+                        variant="body2"
+                        className="text-[var(--mui-palette-text-secondary)] mt-2"
+                      >
+                        {CamelCase(tac?.tacProfile?.designation as string)}
+                      </Typography>
+
+                      {/* Experience */}
+                      {tac?.experienceInMonths ? (
+                        <Typography
+                          variant="caption"
+                          className="text-[var(--mui-palette-text-secondary)] mt-1"
+                        >
+                          {Number((tac.experienceInMonths / 12).toFixed(2))} yrs experience
                         </Typography>
-                      </Box>
-                      {isSelected && <i className="ri-checkbox-circle-fill text-xl text-[var(--mui-palette-primary-main)]" />}
+                      ) : null}
+
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        fullWidth
+                        startIcon={<i className="ri-user-line" />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setProfileTac(tac);
+                        }}
+                        sx={{
+                          mt: 3,
+                          borderRadius: 2,
+                          textTransform: "none",
+                        }}
+                      >
+                        View Profile
+                      </Button>
                     </Box>
                   );
                 })}
@@ -663,6 +731,188 @@ const PreCounsellingContent = () => {
           )}
         </DialogContent>
       </Dialog>
+
+      <TacProfileDialog
+        open={Boolean(profileTac)}
+        tac={profileTac}
+        onClose={() => setProfileTac(null)}
+      />
+      {/* <Dialog
+        open={Boolean(profileTac)}
+        onClose={() => setProfileTac(null)}
+        fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            borderRadius: 4,
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box className="flex items-center justify-between">
+            <Typography variant="h6" className="font-bold">
+              TAC Profile
+            </Typography>
+
+            <IconButton onClick={() => setProfileTac(null)}>
+              <i className="ri-close-line text-xl" />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+
+        <DialogContent dividers>
+          {profileTac && (
+            <Box className="flex flex-col gap-5">
+              <Box className="flex items-center gap-4">
+                <Avatar
+                  src={profileTac.profilePic as unknown as string}
+                  sx={{ width: 80, height: 80 }}
+                >
+                  {profileTac.firstName?.charAt(0)}
+                </Avatar>
+
+                <Box>
+                  <Typography variant="h6" className="font-bold">
+                    {profileTac.firstName} {profileTac.lastName}
+                  </Typography>
+
+                  <Typography
+                    variant="body2"
+                    className="text-[var(--mui-palette-text-secondary)]"
+                  >
+                    {CamelCase(profileTac.tacProfile?.designation as string)}
+                  </Typography>
+
+                  {typeof profileTac.tacProfile?.rating === "number" && (
+                    <Box className="flex items-center gap-1 text-amber-500 mt-1">
+                      <i className="ri-star-fill" />
+
+                      <Typography variant="body2" className="font-semibold">
+                        {profileTac.tacProfile.rating.toFixed(1)} / 5
+                      </Typography>
+                    </Box>
+                  )}
+
+                </Box>
+              </Box>
+              <Box>
+                <Typography variant="h6" className="font-bold">
+                  Available on:
+                </Typography>
+                <Typography variant="body2" >
+                  {profileTac.tacProfile?.mode === "both" ? "🌐 Online & 🏢 In-Person" : profileTac.tacProfile?.mode === "online" ? "🌐 Online" : "🏢 In-Person"}
+                </Typography>
+              </Box>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" className="font-bold mb-1">
+                  Experience
+                </Typography>
+
+                <Typography variant="body2">
+                  {profileTac.experienceInMonths
+                    ? `${Number(
+                      (profileTac.experienceInMonths / 12).toFixed(2)
+                    )} Years`
+                    : "Not specified"}
+                </Typography>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" className="font-bold mb-2">
+                  Areas of Expertise
+                </Typography>
+
+                <Box className="flex flex-wrap gap-2">
+                  {profileTac.tacProfile?.areasOfExp?.length ? (
+                    profileTac.tacProfile.areasOfExp.map((item, index) => (
+                      <Chip
+                        key={index}
+                        label={CamelCase(item)}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Not specified
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+              <Box>
+                <Typography variant="subtitle2" className="font-bold mb-2">
+                  Industry Expertise
+                </Typography>
+
+                <Box className="flex flex-wrap gap-2">
+                  {profileTac.tacProfile?.industryExp?.length ? (
+                    profileTac.tacProfile.industryExp.map((item, index) => (
+                      <Chip
+                        key={index}
+                        label={CamelCase(item)}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Not specified
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" className="font-bold mb-2">
+                  Specialization
+                </Typography>
+
+                <Box className="flex flex-wrap gap-2">
+                  {profileTac.tacProfile?.specialization?.length ? (
+                    profileTac.tacProfile.specialization.map((item, index) => (
+                      <Chip
+                        key={index}
+                        label={CamelCase(item)}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Not specified
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" className="font-bold mb-2">
+                  Languages Known
+                </Typography>
+
+                <Box className="flex flex-wrap gap-2">
+                  {profileTac.tacProfile?.languagesKnown?.length ? (
+                    profileTac.tacProfile.languagesKnown.map((language, index) => (
+                      <Chip
+                        key={index}
+                        label={language}
+                        size="small"
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      Not specified
+                    </Typography>
+                  )}
+                </Box>
+              </Box>
+            </Box>
+          )}
+        </DialogContent>
+      </Dialog> */}
     </>
   );
 };

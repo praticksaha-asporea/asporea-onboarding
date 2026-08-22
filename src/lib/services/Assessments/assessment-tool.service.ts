@@ -7,6 +7,7 @@ import { AssessmentModel } from "@/lib/models/Assessment.model";
 import User from "@/lib/models/User.model";
 import { ApiError } from "@/lib/error/api.error";
 import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
+import { UploadResult } from "@/Types/Frontend_Payload/document.types";
 
 export const AssessmentUpdate = async (value: any, authUser: any, files: any) => {
     const { id, passportNo, totalMarks, note1, note2, note3, note4 } = value;
@@ -21,10 +22,6 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
     if (!assignment) throw new ApiError("Assignment not found or not assigned to you", 404);
     if (!assignment?.token?.number && assignment?.schedule?.method == "off") throw new ApiError("Token not generated yet", 404);
     // need to work on file upload
-    type UploadResult = {
-        uploadId: string;
-        path: string;
-    };
 
     let resultcandidateSign: UploadResult | null = null;
     let resultassessorSign: UploadResult | null = null;
@@ -43,8 +40,8 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
             userId: authUser?.id,
         });
     }
-    const generalSettings= await GeneralSettingModel.findOne().lean();
-    
+    const generalSettings = await GeneralSettingModel.findOne().lean();
+
     const today = new Date();
     // today.setHours(0, 0, 0, 0);
     // need to work here for update fields
@@ -118,7 +115,7 @@ export const AssessmentUpdate = async (value: any, authUser: any, files: any) =>
             }
             if (updatableStatus?.[status] === "assess_completed") {
                 // only work when offline - later
-                if(updated?.token?.number!==null)
+                if (updated?.token?.number !== null)
                     await BranchTokenModel.findOneAndUpdate(
                         { tokenNo: updated?.token?.number },
                         { $set: { status: 'finished' } },

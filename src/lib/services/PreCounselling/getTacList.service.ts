@@ -143,6 +143,7 @@ export const getTacListService = async ({
                     industryExp: tac.tacProfile?.industryExp || [],
                     specialization: tac.tacProfile?.specialization || [],
                     mode: tac.tacProfile?.mode || "both",
+                    rating: tac.tacProfile?.rating || 0
                 },
                 branches,
                 currentShift: activeShiftInfo,
