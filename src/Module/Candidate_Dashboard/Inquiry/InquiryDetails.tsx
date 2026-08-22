@@ -65,14 +65,11 @@ const InquiryDetails = () => {
     externalSources,
     preferences,
     isPreferenceError,
-    submitting,
     showInquiryPopup,
     generatedInqNo,
-    generatedLeadId,
     loadingSources,
     userData,
     handlePreferenceToggle,
-    assignedTAC,
     formik,
     isFormDisabled,
     err,
@@ -80,11 +77,9 @@ const InquiryDetails = () => {
     activeStepperStep,
     handleClosePopup,
     // selectedBranchName,
-    categories,
     handleCategoryChange,
     positionData,
     formStep,
-    inquiryId,
     creatingInquiry,
     updatingInquiry,
     handleCreateStep,
@@ -706,52 +701,15 @@ const InquiryDetails = () => {
           </Typography>
 
           <Box className="mb-8">
-            {/* {formik.values.prefferedConsultant || assignedTAC != null ? (
-              formik.values.visitOption === 0 ? (
-                <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
-                  As you are now inside our <span className="underline">{selectedBranchName}</span> branch.
-                  <br />
-                  Be ready for pre-counselling.
-                </Typography>
-              ) : formik.values.visitOption === 1 ? (
-                <Typography variant="body1" className="mb-4 text-red-500 leading-loose font-normal">
-                  As you are visiting our{" "}
-                  <span className="underline font-bold">{selectedBranchName}</span> branch.
-                  <br />
-                  For pre-counselling, please reach the FOE (front office executive).
-                </Typography>
-              ) : (
-                <Typography variant="body1" className="mb-4">
-                  You are assigned to a talent acquisition consultant (TAC).
-                  <br />
-                  Be ready for pre-counselling.
-                </Typography>
-              )
-            ) : (
-              <Typography variant="body1" className="mb-4 leading-loose text-red-500 font-normal">
-                As you&apos;re in <span className="font-bold">{selectedBranchName}</span> branch.
-                <br />
-                For pre-counselling, please reach the FOE (front office executive).
-                <br />
-                The FOE will generate a token on your behalf.
-              </Typography>
-            )}
-
-            {formik.values.prefferedConsultant ? (
-              <Button
-                variant="contained"
-                className="normal-case rounded-[50px] py-[9.6px] px-10"
-                href={`/pre-counselling?leadId=${generatedLeadId}&consultantId=${formik.values.prefferedConsultant}&method=${formik.values.visitOption === 2 ? "on" : "off"}`}
-              >
-                Schedule pre-counselling
-              </Button>
-            ) : ( */}
+            <Typography variant="body1" className="mt-2 mb-8" color="primary">
+              Please choose your preferred schedule so we can assist you more effectively
+            </Typography>
             <Button
               variant="contained"
               className="normal-case rounded-[50px] py-[9.6px] px-10"
               onClick={handleClosePopup}
             >
-              Close
+              Schedule / Re-Schedule
             </Button>
             {/* )} */}
           </Box>

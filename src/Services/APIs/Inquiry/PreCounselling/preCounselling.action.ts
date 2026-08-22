@@ -4,6 +4,12 @@ import { getSlotsPayload, PreCounsellingPayload } from "@/Types/Frontend_Payload
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
 
+interface GetConsultantsParams {
+  leadId: string;
+  branchId: string;
+  method: "on" | "off";
+}
+
 export const getSlotsAction = async (bodyData: getSlotsPayload): Promise<AxiosResponse<slotsResponse>> => {
   // try {
   const response = await axiosClient.get(`/pre-counselling/slots?consultantId=${bodyData?.consultantId}&date=${bodyData?.date}`);
@@ -28,4 +34,20 @@ export const bookSlotAction = async (payload: PreCounsellingPayload): Promise<Ax
 export const checkBookingStatusAction = async (bodyData: trackingById): Promise<AxiosResponse<preCounsellingStatus>> => {
   const response = await axiosClient.get(`/pre-counselling/status?leadId=${bodyData.leadId}`);
   return response;
+};
+
+export const getConsultantsAction = async ({
+  leadId,
+  branchId,
+  method,
+}: GetConsultantsParams) => {
+  return axiosClient.get("/precounselling/consultants", {
+    params: { leadId, branchId, method },
+  });
+};
+
+export const uploadCvAction = async (formData: FormData) => {
+  return axiosClient.post("/precounselling/upload-cv", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
 };

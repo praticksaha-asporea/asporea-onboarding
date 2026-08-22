@@ -1,78 +1,106 @@
-import { useState, useEffect, ChangeEvent } from "react";
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useSelector, useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import { updateUserData } from "@/Redux/Auth/user.slice";
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
+// TODO: point this at wherever branchListingApi actually lives in your codebase.
 import {
-  getSlotsAction,
   bookSlotAction,
   checkBookingStatusAction,
+  getSlotsAction,
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
-import {
-  ExistingBooking,
-  ChecklistState,
-  NotificationPreferences,
-  PreCounsellingPayload,
-} from "@/Types/Frontend_Payload/precounselling.types";
-import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
+import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+import { ExistingBooking, PreCounsellingPayload } from "@/Types/Frontend_Payload/precounselling.types";
+import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
+import { IUser } from "@/lib/models/User.model";
 
+export type CounsellingMode = "online" | "offline";
+
+export interface Branch {
+  _id: string;
+  title: string;
+  city?: string;
+  address?: string;
+  distanceKm?: number;
+}
+
+export interface TAC {
+  _id: string;
+  name: string;
+  photoUrl?: string;
+  designation?: string;
+  experienceYears?: number;
+  rating?: number;
+  languages?: string[];
+  specialization?: string[];
+  bio?: string;
+}
+
+// Fallback coordinates if geolocation is denied/unavailable — set to your HQ / default city.
+const DEFAULT_LAT = 26.7271;
+const DEFAULT_LNG = 88.3953;
 
 export const usePreCounselling = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const dispatch = useDispatch();
 
-
-  const reduxUser = useSelector(
-    (state: any) => state.userSlice?.userData || state.user?.userData,
-  );
+  const reduxUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
   const reduxLeadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
-  const reduxConsultantId =
-    reduxUser?.prefferedConsultant ||
-    reduxUser?.user?.prefferedConsultant ||
-    "";
-  const reduxVisitOption =
-    reduxUser?.visitOption ?? reduxUser?.user?.visitOption;
-  const reduxMethod = reduxVisitOption === 2 ? "on" : "off";
-
   const leadId = searchParams?.get("leadId") || reduxLeadId;
-  const consultantId = searchParams?.get("consultantId") || reduxConsultantId;
-  const method = searchParams?.get("method") || reduxMethod;
 
   const serverNow = new Date();
   const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
   const istTime = new Date(utcTime + 330 * 60000);
   const todayStr = istTime.toISOString().split("T")[0];
 
-  const [date, setDate] = useState(todayStr);
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-  const [existingBooking, setExistingBooking] =
-    useState<ExistingBooking | null>(null);
-  const [checkingStatus, setCheckingStatus] = useState(true);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [bookingLoading, setBookingLoading] = useState(false);
+  // ---- lead / existing-booking guard ----
   const [isReduxReady, setIsReduxReady] = useState(false);
-  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [isValidLead, setIsValidLead] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
-const [activeStepperStep, setActiveStepperStep] = useState<number>(1);  
-  const [checklist, setChecklist] = useState<ChecklistState>({
-    materials: true,
-    environment: true,
-    questions: true,
-  });
-  const [isEditingChannels, setIsEditingChannels] = useState(false);
-  const [preferences, setPreferences] = useState<NotificationPreferences>({
-    email: reduxUser?.notificationPreference?.email ?? true,
-    whatsapp: reduxUser?.notificationPreference?.whatsapp ?? false,
-    sms: reduxUser?.notificationPreference?.sms ?? false,
-  });
+  const [existingBooking, setExistingBooking] = useState<ExistingBooking | null>(null);
+  const [activeStepperStep, setActiveStepperStep] = useState(1);
+
+  // ---- 1. branch (geolocation driven) ----
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [branches, setBranches] = useState<Branch[]>([]);
+  const [loadingBranches, setLoadingBranches] = useState(false);
+  const [locationDenied, setLocationDenied] = useState(false);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+
+  // ---- 2. mode ----
+  const [mode, setMode] = useState<CounsellingMode>("offline");
+
+  // ---- 3. cv ----
+  const [cvFile, setCvFile] = useState<File | null>(null);
+  const [cvUploading, setCvUploading] = useState(false);
+  const [cvError, setCvError] = useState<string | null>(null);
+  const [cvUrl, setCvUrl] = useState<string | null>(null);
+
+  // ---- 4. tac ----
+  const [tacs, setTacs] = useState<IUser[]>([]);
+  const [loadingTacs, setLoadingTacs] = useState(false);
+  const [tacSearch, setTacSearch] = useState("");
+  const [selectedTacId, setSelectedTacId] = useState<string>("");
+
+  // ---- 5. date -> slots ----
+  const [date, setDate] = useState(todayStr);
+  const [slots, setSlots] = useState<Slot[]>([]);
+  const [loadingSlots, setLoadingSlots] = useState(false);
+  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+
+  // ---- 6. captcha ----
+  const [captchaValue, setCaptchaValue] = useState("");
+  const [captchaVerified, setCaptchaVerified] = useState(false);
+
+  // ---- 7. submit ----
+  const [bookingLoading, setBookingLoading] = useState(false);
+  const [showConfirmPopup, setShowConfirmPopup] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsReduxReady(true), 800);
+    const timer = setTimeout(() => setIsReduxReady(true), 500);
     return () => clearTimeout(timer);
   }, []);
 
@@ -87,191 +115,308 @@ const [activeStepperStep, setActiveStepperStep] = useState<number>(1);
   useEffect(() => {
     const checkStatus = async () => {
       if (!leadId) return;
-      setCheckingStatus(true);
-
       try {
-
-        try {
-        const timelineRes = await getJourneyTimelineAction({ leadId });
-          
-         
-          if (timelineRes?.data?.success && timelineRes?.data?.data) {
-             setActiveStepperStep(timelineRes.data.data.activeStep ?? 1);
-          }
-
-          if (timelineRes?.data?.success === false && timelineRes?.data?.message?.toLowerCase().includes("not found")) {
-            setIsValidLead(false);
-            setCheckingStatus(false);
-            return;
-          }
-        } catch (timeErr: any) {
-          if (timeErr?.response?.status === 404 || timeErr?.response?.data?.message?.toLowerCase().includes("not found")) {
-            setIsValidLead(false);
-            setCheckingStatus(false);
-            return;
-          }
-        }
-
-
         const res = await checkBookingStatusAction({ leadId });
         if (res?.data?.success && res.data) {
           setExistingBooking(res?.data?.data);
-
-          if (res?.data.data.status?.toLowerCase() === "completed") {
-            setIsCompleted(true);
-          }
-
-          if (res?.data?.data?.schedule?.date) {
-            setDate(new Date(res?.data.data.schedule.date).toISOString().split("T")[0]);
-          }
+          if (res?.data.data.status?.toLowerCase() === "completed") setIsCompleted(true);
         } else if (res?.data?.message?.toLowerCase().includes("not found")) {
           setIsValidLead(false);
         }
       } catch (err: any) {
-        if (err?.response?.status === 404 || err?.response?.data?.message?.toLowerCase().includes("not found")) {
-          setIsValidLead(false);
-        }
-      } finally {
-        setCheckingStatus(false);
+        if (err?.response?.status === 404) setIsValidLead(false);
       }
     };
-
     checkStatus();
   }, [leadId]);
 
-  useEffect(() => {
-    const updatePreferences = async () => {
-      if (reduxUser?.notificationPreference) {
-        setPreferences({
-          email: reduxUser.notificationPreference.email ?? true,
-          whatsapp: reduxUser.notificationPreference.whatsapp ?? false,
-          sms: reduxUser.notificationPreference.sms ?? false,
-        });
-      }
-      // if (reduxUser?.branch?._id && !reduxUser?.branch?.title) {
-
-      //   const res = await checkBranchView(reduxUser?.branch?._id);
-
-      //   dispatch(
-      //     updateUserData({
-      //       branch: {
-      //         _id: reduxUser?.branch?._id,
-      //         title: res?.data?.title
-      //       },
-      //     }),
-      //   );
-
-      // }
+  // ---- geolocation -> branches ----
+  const fetchBranches = useCallback(async (lat: number, lng: number) => {
+    setLoadingBranches(true);
+    try {
+      const response = await branchListingApi({ lat, lng });
+      const list = response?.data?.data?.data || [];
+      setBranches(list);
+      // if (list.length === 1) setSelectedBranchId(list[0]._id);
+    } catch (error) {
+      console.error("Branch fetch error:", error);
+      toast.error("Failed to fetch nearby branches");
+    } finally {
+      setLoadingBranches(false);
     }
-    updatePreferences()
+  }, []);
 
-  }, [reduxUser]);
+  useEffect(() => {
+    if (typeof window === "undefined" || !navigator.geolocation) {
+      setLocationDenied(true);
+      fetchBranches(DEFAULT_LAT, DEFAULT_LNG);
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setCoords({ lat: latitude, lng: longitude });
+        fetchBranches(latitude, longitude);
+      },
+      () => {
+        // setLocationDenied(true);
+        // toast.error("Couldn't access your location — showing default branches");
+        // fetchBranches(DEFAULT_LAT, DEFAULT_LNG);
+      },
+      { timeout: 8000 },
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // ---- branch + mode -> tac list ----
+  useEffect(() => {
+    const fetchTacs = async () => {
+      if (!selectedBranchId) {
+        setTacs([]);
+        return;
+      }
+      setLoadingTacs(true);
+      try {
+        const res = await axiosClient.get("/pre-counselling/tac-list", {
+          params: { page: 1, limit: 10, search: tacSearch, mode, branchId: selectedBranchId },
+        });
+        const list = res?.data?.data?.tacList || [];
+        // console.log(list);
+
+        setTacs(list);
+        // setSelectedTacId((prev) => (list.some((t: TAC) => t._id === prev) ? prev : ""));
+      } catch (err) {
+        console.error("TAC fetch error:", err);
+        toast.error("Failed to fetch TAC list");
+        setTacs([]);
+      } finally {
+        setLoadingTacs(false);
+      }
+    };
+    fetchTacs();
+  }, [selectedBranchId, mode, tacSearch]);
+
+  // ---- tac + date -> slots ----
   useEffect(() => {
     const fetchSlots = async () => {
-      if (!consultantId) return;
-      setLoadingSlots(true);
-      const res = await getSlotsAction({ consultantId, date });
-      if (res?.data?.success) setSlots(res?.data?.data);
-      else {
-        toast.error(res?.data?.message || "Failed to fetch slots");
+      if (!selectedTacId) {
         setSlots([]);
+        return;
       }
-      setLoadingSlots(false);
-      setSelectedSlot(null);
+      setLoadingSlots(true);
+      try {
+        const res = await getSlotsAction({ consultantId: selectedTacId, date });
+        if (res?.data?.success) setSlots(res?.data?.data);
+        else {
+          toast.error(res?.data?.message || "Failed to fetch slots");
+          setSlots([]);
+        }
+      } finally {
+        setLoadingSlots(false);
+        setSelectedSlot(null);
+      }
     };
     fetchSlots();
-  }, [date, consultantId]);
+  }, [selectedTacId, date]);
 
-  const handlePrefChange = (event: ChangeEvent<HTMLInputElement>) => {
-    setPreferences({
-      ...preferences,
-      [event.target.name]: event.target.checked,
-    });
-  };
+  // ---- cv upload ----
+  const handleCvChange = async (file: File | null) => {
+    setCvFile(file);
+    setCvError(null);
+    setCvUrl(null);
+    if (!file || !leadId) return;
 
-  const handleSavePreferences = async () => {
-    if (!preferences.email && !preferences.whatsapp && !preferences.sms) {
-      return toast.error("Please select at least one notification channel", {
-        id: "pref-toast",
-      });
-    }
-    setIsEditingChannels(false);
+    setCvUploading(true);
     try {
-      const res = await axiosClient.patch("/user/profile-update", {
-        notificationPreference: preferences,
+      const formData = new FormData();
+      formData.append("leadId", leadId);
+      formData.append("cv", file);
+      const res = await axiosClient.post("/pre-counselling/upload-cv", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      if (res.data?.success) {
-        dispatch(
-          updateUserData({
-            notificationPreference: res.data.data.notificationPreference,
-          }),
-        );
-        toast.success("Preferences updated successfully", { id: "pref-toast" });
-      }
+      if (res?.data?.success) setCvUrl(res.data.data?.url || null);
+      else setCvError(res?.data?.message || "Failed to upload CV");
     } catch (err) {
-      toast.error("Failed to update preferences", { id: "pref-toast" });
+      setCvError("Failed to upload CV. Please try again.");
+    } finally {
+      setCvUploading(false);
     }
   };
+
+  // ---- captcha ----
+  useEffect(() => {
+    loadCaptchaEnginge(5);
+  }, []);
+
+  const handleCaptchaChange = (value: string) => {
+    setCaptchaValue(value);
+    setCaptchaVerified(false);
+  };
+
+  const handleCaptchaVerify = () => {
+    if (!captchaValue.trim()) return;
+    setCaptchaVerified(validateCaptcha(captchaValue));
+  };
+
+  const handleCaptchaRefresh = () => {
+    loadCaptchaEnginge(5);
+    setCaptchaValue("");
+    setCaptchaVerified(false);
+  };
+
+  // ---- submit ----
+  const canConfirm =
+    !!selectedBranchId &&
+    !!mode &&
+    !!cvFile &&
+    !cvUploading &&
+    !!selectedTacId &&
+    !!selectedSlot &&
+    captchaVerified &&
+    !bookingLoading;
 
   const handleConfirm = async () => {
-    if (!leadId || !consultantId)
-      return toast.error(
-        "Missing inquiry details. Please go back and try again.",
-      );
-    if (!selectedSlot)
-      return toast.error("Please select an available time slot");
+    if (!leadId) return toast.error("Missing inquiry details. Please go back and try again.");
+    if (!selectedBranchId) return toast.error("Please select a branch");
+    if (!cvFile) return toast.error("Please upload your CV");
+    if (!selectedTacId) return toast.error("Please select a preferred TAC");
+    if (!selectedSlot) return toast.error("Please select an available time slot");
+    if (!captchaVerified) return toast.error("Please complete the captcha verification");
 
     setBookingLoading(true);
-    const payload = {
-      leadId,
-      consultantId,
-      date,
-      from: selectedSlot.from,
-      to: selectedSlot.to,
-      method: method,
-    };
-    const res = await bookSlotAction(payload as PreCounsellingPayload);
-    if (res?.data?.success) {
-      toast.success("Pre-Counselling scheduled successfully!");
-      setShowConfirmPopup(true);
+    try {
+      const payload = {
+        leadId,
+        branchId: selectedBranchId,
+        consultantId: selectedTacId,
+        date,
+        from: selectedSlot.from,
+        to: selectedSlot.to,
+        method: mode === "online" ? "on" : "off",
+        cvUrl,
+      };
+      const res = await bookSlotAction(payload as PreCounsellingPayload);
+      if (res?.data?.success) {
+        toast.success("Pre-Counselling scheduled successfully!");
+        setShowConfirmPopup(true);
+      }
+    } finally {
+      setBookingLoading(false);
     }
-    setBookingLoading(false);
   };
 
-  const isChecklistComplete =
-    checklist.materials && checklist.environment && checklist.questions;
+
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const initialCV = { path: "" };
+
+
+  const existingResume =
+    initialCV &&
+      typeof initialCV === "object" &&
+      "path" in initialCV
+      ? initialCV.path
+      : undefined;
+
+  const isPdf = resumeFile
+    ? resumeFile.type === "application/pdf"
+    : existingResume?.toLowerCase().includes(".pdf") ?? false;
+
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+  // Drag and drop handlers
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
+  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+
+  const handleFileChange = (file: File | null) => {
+    if (file) {
+      setResumeFile(file);
+      // preForm.setFieldValue("resumeFile", file);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files?.length) handleFileChange(e.dataTransfer.files[0]);
+  };
+
+  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files?.length) handleFileChange(e.target.files[0]);
+  };
+
+
+  useEffect(() => {
+    let objectUrl: string | null = null;
+    if (resumeFile) {
+      objectUrl = URL.createObjectURL(resumeFile);
+      setPreviewUrl(objectUrl);
+    } else {
+      setPreviewUrl(existingResume ?? null);
+    }
+
+    return () => {
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
+    };
+  }, [resumeFile, existingResume]);
 
   return {
     leadId,
-    consultantId,
-    method,
-    date,
-    setDate,
     todayStr,
-    slots,
-    selectedSlot,
-    setSelectedSlot,
-    existingBooking,
-    checkingStatus,
-    loadingSlots,
-    bookingLoading,
     isReduxReady,
-    showConfirmPopup,
-    setShowConfirmPopup,
-    checklist,
-    setChecklist,
-    isEditingChannels,
-    setIsEditingChannels,
-    preferences,
-    handlePrefChange,
-    handleSavePreferences,
-    handleConfirm,
-    isChecklistComplete,
-    reduxUser,
     isValidLead,
     isCompleted,
-    activeStepperStep, 
+    existingBooking,
+    activeStepperStep,
 
+    coords,
+    locationDenied,
+    branches,
+    loadingBranches,
+    selectedBranchId,
+    setSelectedBranchId,
+
+    mode,
+    setMode,
+
+    cvFile,
+    cvUploading,
+    cvError,
+    cvUrl,
+    handleCvChange,
+
+    handleDragOver, handleDragLeave, handleDrop,
+    onFileInputChange,
+    resumeFile, isDragging, fileInputRef, previewUrl, isPreviewOpen, setIsPreviewOpen, isPdf,
+
+    tacs,
+    loadingTacs,
+    tacSearch,
+    setTacSearch,
+    selectedTacId,
+    setSelectedTacId,
+
+    date,
+    setDate,
+    slots,
+    loadingSlots,
+    selectedSlot,
+    setSelectedSlot,
+
+    captchaValue,
+    captchaVerified,
+    handleCaptchaChange,
+    handleCaptchaVerify,
+    handleCaptchaRefresh,
+
+    bookingLoading,
+    showConfirmPopup,
+    setShowConfirmPopup,
+    canConfirm,
+    handleConfirm,
   };
 };

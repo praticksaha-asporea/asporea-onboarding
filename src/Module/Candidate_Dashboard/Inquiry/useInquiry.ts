@@ -18,14 +18,13 @@ import { InquiryFormValues } from "@/Types/Frontend_Payload/lead.types";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 import { getJourneyTimelineAction } from "@/Services/APIs/Assessment/assessment.actions";
 import { NotificationPreferences } from "@/Types/Frontend_Payload/precounselling.types";
-import { profileUpdateApi } from "@/Services/APIs/auth/auth.actions";
 import {
   getCountriesAction,
   getPathwayPositionsAction,
   getPathwayTopLevelAction,
 } from "@/Services/APIs/Pathway/pathway.action";
-import { IPosition } from "@/lib/models/Position.model";
 import { positionDBData } from "@/Types/object.types";
+import { useRouter } from "next/navigation";
 
 export const stepOneValidationSchema = Yup.object({
   fullName: Yup.string().trim().required("Full Name is required"),
@@ -153,6 +152,7 @@ export function useInquiry() {
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => (state as any).user);
 
+  const router = useRouter();
   useEffect(() => {
     const fetchFreshProfile = async () => {
       const userId = userData?.id || userData?._id;
@@ -180,14 +180,14 @@ export function useInquiry() {
   const [locationPermissionRequired, setLocationPermissionRequired] = useState<boolean>(false);
 
 
-  const fetchBranches = async (lat: number, lng: number) => {
-    try {
-      const response = await branchListingApi({ lat, lng });
-      setBranches(response?.data?.data?.data || []);
-    } catch (error) {
-      console.error("Branch fetch error:", error);
-    }
-  };
+  // const fetchBranches = async (lat: number, lng: number) => {
+  //   try {
+  //     const response = await branchListingApi({ lat, lng });
+  //     setBranches(response?.data?.data?.data || []);
+  //   } catch (error) {
+  //     console.error("Branch fetch error:", error);
+  //   }
+  // };
 
   const permissionStatusRef = useRef<PermissionStatus | null>(null);
 
@@ -299,13 +299,13 @@ export function useInquiry() {
     };
   }, []);
 
-  const [hasExistingData, setHasExistingData] = useState(false);
+  // const [hasExistingData, setHasExistingData] = useState(false);
   const [activeStepperStep, setActiveStepperStep] = useState<number>(0);
   const [categories, setCategories] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
-  const [loadingCategories, setLoadingCategories] = useState(false);
+  // const [loadingCategories, setLoadingCategories] = useState(false);
   const [positionData, setPositionData] = useState<positionDBData[] | null>(null);
-  const [loadingPositions, setLoadingPositions] = useState(false);
+  // const [loadingPositions, setLoadingPositions] = useState(false);
 
   // ── Two-step form state ───────────────────────────────────────────────────
   // formStep 0 = basic details (create call), 1 = additional details (update call)
@@ -344,14 +344,14 @@ export function useInquiry() {
   });
 
   const fetchCategories = async () => {
-    setLoadingCategories(true);
+    // setLoadingCategories(true);
     try {
       const response = await getPathwayTopLevelAction();
       if (response?.data?.success) setCategories(response?.data?.data);
     } catch (err) {
       console.error("Category fetch error:", err);
     } finally {
-      setLoadingCategories(false);
+      // setLoadingCategories(false);
     }
   };
 
@@ -374,7 +374,7 @@ export function useInquiry() {
       setPositionData(null);
       return;
     }
-    setLoadingPositions(true);
+    // setLoadingPositions(true);
     try {
       const response = await getPathwayPositionsAction({ pathwayId: categoryId });
       // console.log(response?.data?.data, 54542);
@@ -383,7 +383,7 @@ export function useInquiry() {
     } catch (err) {
       console.error("Position fetch error:", err);
     } finally {
-      setLoadingPositions(false);
+      // setLoadingPositions(false);
     }
   };
 
@@ -430,7 +430,7 @@ export function useInquiry() {
     const existingLeadId = userData?.leadId || userData?.user?.leadId;
 
     if (existingLeadId) {
-      setHasExistingData(true);
+      // setHasExistingData(true);
 
       if (!inquiryId) {
         setInquiryId(existingLeadId);
@@ -442,6 +442,7 @@ export function useInquiry() {
   const handleClosePopup = () => {
     setShowInquiryPopup(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
+    router.push('/pre-counselling');
   };
 
   const formik = useFormik({
@@ -652,7 +653,7 @@ export function useInquiry() {
 
       if (response?.data?.success) {
         toast.success(response?.data?.message);
-        // setGeneratedInqNo(response?.data?.data?.inqNo || generatedInqNo);
+        setGeneratedInqNo(response?.data?.data?.inqNo || generatedInqNo);
         // setGeneratedLeadId(inquiryId);
         setShowInquiryPopup(true);
         // setAssignedTAC(response?.data?.data?.preferences?.consultantId ?? null);
@@ -702,8 +703,8 @@ export function useInquiry() {
 
   return {
     // data
-    branches,
-    consultants,
+    // branches,
+    // consultants,
     externalSources,
     preferences,
     isPreferenceError,
@@ -711,15 +712,15 @@ export function useInquiry() {
     showInquiryPopup,
     setShowInquiryPopup,
     generatedInqNo,
-    generatedLeadId,
-    loadingConsultants,
+    // generatedLeadId,
+    // loadingConsultants,
     loadingSources,
     userData,
     // actions
-    fetchConsultants,
-    fetchExternalSources,
-    getInitialValues,
-    assignedTAC,
+    // fetchConsultants,
+    // fetchExternalSources,
+    // getInitialValues,
+    // assignedTAC,
     formik,
     isFormDisabled,
     err,
@@ -727,8 +728,8 @@ export function useInquiry() {
     activeStepperStep,
     handleClosePopup,
     // selectedBranchName,
-    categories,
-    countries,
+    // categories,
+    // countries,
     categoryOptions,
     handleCategoryChange,
     positionData,
@@ -742,6 +743,6 @@ export function useInquiry() {
     handleUpdateStep,
     goBackToStep1,
     locationPermissionRequired,
-    getLocation
+    getLocation,
   };
 }
