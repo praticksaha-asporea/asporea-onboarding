@@ -220,30 +220,44 @@ export const updateUser = async (userId: string, body: any) => {
   }
 
 
-  // delete body.password;
+ 
 
   const ALLOWED = [
     'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
     'address', 'role', 'passportStatus', 'passportNo', 'status',
-    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths','tacProfile','candidateProfile'
+    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths','tacProfile', 
   ];
-
-  const update: Record<string, unknown> = {};
+const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
   }
-  if(body.password)
-  {
-    
-  const hashedPassword = await hashPassword(body.password);
+
+  
+  if (body.candidateProfile !== undefined) {
+    const existingProfile = user.candidateProfile
+      ? typeof (user.candidateProfile as any).toObject === 'function'
+        ? (user.candidateProfile as any).toObject()
+        : user.candidateProfile
+      : {};
+
+    update['candidateProfile'] = {
+      ...existingProfile,
+      ...body.candidateProfile,
+      // Ensure leadId is NEVER wiped out
+      leadId: body.candidateProfile?.leadId || existingProfile?.leadId,
+    };
+  }
+
+  if (body.password) {
+    const hashedPassword = await hashPassword(body.password);
     update['password'] = hashedPassword;
   }
-  update.experienceInMonths =
-    update.experienceInMonths
-      ? Number(update.experienceInMonths)
-      : null;
 
-if (body.profilePicData) {
+  update.experienceInMonths = update.experienceInMonths
+    ? Number(update.experienceInMonths)
+    : null;
+
+  if (body.profilePicData) {
     if (body.profilePicData === "REMOVE") {
       update['profilePic'] = null;
     } else {
@@ -251,7 +265,8 @@ if (body.profilePicData) {
       if (newPicId) update['profilePic'] = newPicId;
     }
   }
-const updated = await UserModel.findByIdAndUpdate(
+
+  const updated = await UserModel.findByIdAndUpdate(
     userId,
     { $set: update },
     { returnDocument: 'after', runValidators: true }  

@@ -28,15 +28,9 @@ import {
   Chip,
 } from "@mui/material";
 import ListSubheader from "@mui/material/ListSubheader";
-import {
-  useInquiry,
-  inquirySteps,
-} from "./useInquiry";
+import { useInquiry, inquirySteps } from "./useInquiry";
 import { positionDBData } from "@/Types/object.types";
 
-// ─── Local constants ──────────────────────────────────────────────────────
-// Fields validated/submitted in each step. Adjust names to match your
-// formik/inquiryValidationSchema field names exactly.
 const STEP1_FIELDS = [
   "fullName",
   "email",
@@ -87,7 +81,7 @@ const InquiryDetails = () => {
     goBackToStep1,
     categoryOptions,
     getLocation,
-    locationPermissionRequired
+    locationPermissionRequired,
   } = useInquiry();
 
   const step1HasErrors = STEP1_FIELDS.some((f) => err(f));
@@ -120,7 +114,10 @@ const InquiryDetails = () => {
                       <i className="ri-information-line text-xl" />
                     </Box>
                     <Box>
-                      <Typography variant="h6" className="font-bold leading-tight">
+                      <Typography
+                        variant="h6"
+                        className="font-bold leading-tight"
+                      >
                         Inquiry already submitted
                       </Typography>
                       <Typography variant="body2" className="mt-2 font-medium">
@@ -132,11 +129,10 @@ const InquiryDetails = () => {
                   <Button
                     variant="contained"
                     onClick={() => {
-                      const existingLeadId = userData?.leadId || userData?.user?.leadId;
-                      const existingVisitOption =
-                        userData?.visitOption ?? userData?.user?.visitOption;
-                      const existingConsultant =
-                        userData?.prefferedConsultant || userData?.user?.prefferedConsultant;
+                      const existingLeadId =
+                        userData?.leadId || userData?.candidateProfile?.leadId;
+                      const existingVisitOption = userData?.visitOption;
+                      const existingConsultant = userData?.prefferedConsultant;
                       const method = existingVisitOption === 2 ? "on" : "off";
                       router.push(
                         `/pre-counselling?leadId=${existingLeadId}&consultantId=${existingConsultant || ""}&method=${method}`,
@@ -198,7 +194,7 @@ const InquiryDetails = () => {
                       }
                     }}
                   >
-                    {/* ── Step 1: basic details (create) ─────────────────── */}
+                    
                     {formStep === 0 && (
                       <Card variant="outlined">
                         <CardContent className="mbe-5">
@@ -258,15 +254,22 @@ const InquiryDetails = () => {
                               />
                             </Grid>
                             <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl fullWidth error={err("inquiryCategory")}>
-                                <InputLabel id="inquiry-category-label">Inquiry For</InputLabel>
+                              <FormControl
+                                fullWidth
+                                error={err("inquiryCategory")}
+                              >
+                                <InputLabel id="inquiry-category-label">
+                                  Inquiry For
+                                </InputLabel>
 
                                 <Select
                                   labelId="inquiry-category-label"
                                   id="inquiry-category"
                                   name="inquiryCategory"
                                   value={formik.values.inquiryCategory || ""}
-                                  onChange={(e) => handleCategoryChange(e.target.value)}
+                                  onChange={(e) =>
+                                    handleCategoryChange(e.target.value)
+                                  }
                                   label="Inquiry For"
                                   disabled={isFormDisabled}
                                   MenuProps={{
@@ -280,22 +283,37 @@ const InquiryDetails = () => {
                                           fontSize: "14px",
                                           lineHeight: "36px",
                                         },
-                                        "& .inquiry-child": { paddingLeft: "32px", fontSize: "14px" },
-                                        "& .inquiry-grandchild": { paddingLeft: "52px", fontSize: "14px" },
+                                        "& .inquiry-child": {
+                                          paddingLeft: "32px",
+                                          fontSize: "14px",
+                                        },
+                                        "& .inquiry-grandchild": {
+                                          paddingLeft: "52px",
+                                          fontSize: "14px",
+                                        },
                                       },
                                     },
                                   }}
                                 >
                                   {categoryOptions.map((option) =>
                                     option.kind === "header" ? (
-                                      <ListSubheader key={option.key} sx={{ pl: option.level === 0 ? 2 : 4 }}>
+                                      <ListSubheader
+                                        key={option.key}
+                                        sx={{ pl: option.level === 0 ? 2 : 4 }}
+                                      >
                                         {option.label}
                                       </ListSubheader>
                                     ) : (
                                       <MenuItem
                                         key={option.key}
                                         value={option.value}
-                                        className={option.level === 1 ? "inquiry-child" : option.level >= 2 ? "inquiry-grandchild" : ""}
+                                        className={
+                                          option.level === 1
+                                            ? "inquiry-child"
+                                            : option.level >= 2
+                                              ? "inquiry-grandchild"
+                                              : ""
+                                        }
                                       >
                                         {option.label}
                                       </MenuItem>
@@ -303,7 +321,11 @@ const InquiryDetails = () => {
                                   )}
                                 </Select>
 
-                                {err("inquiryCategory") && <FormHelperText>{helperText("inquiryCategory")}</FormHelperText>}
+                                {err("inquiryCategory") && (
+                                  <FormHelperText>
+                                    {helperText("inquiryCategory")}
+                                  </FormHelperText>
+                                )}
                               </FormControl>
                             </Grid>
 
@@ -314,7 +336,9 @@ const InquiryDetails = () => {
                                 disabled={!formik.values.inquiryCategory}
                               >
                                 <InputLabel id="inquiry-position-label">
-                                  {formik.values.inquiryCategory ? "Select position" : "Select a category first"}
+                                  {formik.values.inquiryCategory
+                                    ? "Select position"
+                                    : "Select a category first"}
                                 </InputLabel>
                                 <Select
                                   labelId="inquiry-position-label"
@@ -327,18 +351,21 @@ const InquiryDetails = () => {
                                   value={formik.values.inquiryFor}
                                   onChange={formik.handleChange}
                                   onBlur={formik.handleBlur}
-                                  MenuProps={{ PaperProps: { sx: { maxHeight: 400 } } }}
+                                  MenuProps={{
+                                    PaperProps: { sx: { maxHeight: 400 } },
+                                  }}
                                 >
-                                  {positionData &&
-                                    positionData?.map((p: positionDBData) => (
+                                  {Array.isArray(positionData) &&
+                                    positionData.map((p: positionDBData) => (
                                       <MenuItem key={p._id} value={p._id}>
                                         {p?.title}
                                       </MenuItem>
-                                    )
-                                    )}
+                                    ))}
                                 </Select>
                                 {err("inquiryFor") && (
-                                  <FormHelperText>{helperText("inquiryFor")}</FormHelperText>
+                                  <FormHelperText>
+                                    {helperText("inquiryFor")}
+                                  </FormHelperText>
                                 )}
                               </FormControl>
                             </Grid>
@@ -354,7 +381,9 @@ const InquiryDetails = () => {
                           <Grid container spacing={5}>
                             <Grid size={{ xs: 12, md: 6 }}>
                               <FormControl fullWidth error={err("nationality")}>
-                                <InputLabel id="inquiry-nationality-label">Nationality</InputLabel>
+                                <InputLabel id="inquiry-nationality-label">
+                                  Nationality
+                                </InputLabel>
                                 <Select
                                   labelId="inquiry-nationality-label"
                                   label="Nationality"
@@ -365,18 +394,27 @@ const InquiryDetails = () => {
                                 >
                                   <MenuItem value="indian">Indian</MenuItem>
                                   <MenuItem value="nepalese">Nepalese</MenuItem>
-                                  <MenuItem value="bhutanese">Bhutanese</MenuItem>
+                                  <MenuItem value="bhutanese">
+                                    Bhutanese
+                                  </MenuItem>
                                   <MenuItem value="tibetan">Tibetan</MenuItem>
-                                  <MenuItem value="bangladeshi">Bangladeshi</MenuItem>
+                                  <MenuItem value="bangladeshi">
+                                    Bangladeshi
+                                  </MenuItem>
                                 </Select>
                                 {err("nationality") && (
-                                  <FormHelperText>{helperText("nationality")}</FormHelperText>
+                                  <FormHelperText>
+                                    {helperText("nationality")}
+                                  </FormHelperText>
                                 )}
                               </FormControl>
                             </Grid>
 
                             <Grid size={{ xs: 12, md: 6 }}>
-                              <FormControl fullWidth error={err("latestAcademic")}>
+                              <FormControl
+                                fullWidth
+                                error={err("latestAcademic")}
+                              >
                                 <InputLabel id="inquiry-latestAcademic-label">
                                   Latest academic qualification
                                 </InputLabel>
@@ -388,13 +426,21 @@ const InquiryDetails = () => {
                                   onChange={formik.handleChange}
                                   onBlur={formik.handleBlur}
                                 >
-                                  <MenuItem value="secondary">Secondary</MenuItem>
-                                  <MenuItem value="higher_secondary">Higher secondary</MenuItem>
+                                  <MenuItem value="secondary">
+                                    Secondary
+                                  </MenuItem>
+                                  <MenuItem value="higher_secondary">
+                                    Higher secondary
+                                  </MenuItem>
                                   <MenuItem value="graduate">Graduate</MenuItem>
-                                  <MenuItem value="post_graduate">Post graduate</MenuItem>
+                                  <MenuItem value="post_graduate">
+                                    Post graduate
+                                  </MenuItem>
                                 </Select>
                                 {err("latestAcademic") && (
-                                  <FormHelperText>{helperText("latestAcademic")}</FormHelperText>
+                                  <FormHelperText>
+                                    {helperText("latestAcademic")}
+                                  </FormHelperText>
                                 )}
                               </FormControl>
                             </Grid>
@@ -417,6 +463,7 @@ const InquiryDetails = () => {
                                 fullWidth
                                 name="workExperience"
                                 label="Work experience"
+                                multiline
                                 value={formik.values.workExperience || ""}
                                 onChange={formik.handleChange}
                                 onBlur={formik.handleBlur}
@@ -427,7 +474,9 @@ const InquiryDetails = () => {
 
                             <Grid size={{ xs: 12 }}>
                               <FormControl fullWidth error={err("referedFrom")}>
-                                <FormLabel component="legend">How did you hear about us?</FormLabel>
+                                <FormLabel component="legend">
+                                  How did you hear about us?
+                                </FormLabel>
                                 <RadioGroup
                                   row
                                   name="referedFrom"
@@ -437,17 +486,38 @@ const InquiryDetails = () => {
                                     if (e.target.value !== "reffer") {
                                       formik.setFieldValue("referedType", "");
                                       formik.setFieldValue("referedBy", "");
-                                      formik.setFieldValue("otherReferedBy", "");
+                                      formik.setFieldValue(
+                                        "otherReferedBy",
+                                        "",
+                                      );
                                     }
                                   }}
                                 >
-                                  <FormControlLabel value="web-app" control={<Radio />} label="Asporea website/app" />
-                                  <FormControlLabel value="call" control={<Radio />} label="Tele caller" />
-                                  <FormControlLabel value="social" control={<Radio />} label="Social media" />
-                                  <FormControlLabel value="reffer" control={<Radio />} label="Referral" />
+                                  <FormControlLabel
+                                    value="web-app"
+                                    control={<Radio />}
+                                    label="Asporea website/app"
+                                  />
+                                  <FormControlLabel
+                                    value="call"
+                                    control={<Radio />}
+                                    label="Tele caller"
+                                  />
+                                  <FormControlLabel
+                                    value="social"
+                                    control={<Radio />}
+                                    label="Social media"
+                                  />
+                                  <FormControlLabel
+                                    value="reffer"
+                                    control={<Radio />}
+                                    label="Referral"
+                                  />
                                 </RadioGroup>
                                 {err("referedFrom") && (
-                                  <FormHelperText>{helperText("referedFrom")}</FormHelperText>
+                                  <FormHelperText>
+                                    {helperText("referedFrom")}
+                                  </FormHelperText>
                                 )}
                               </FormControl>
                             </Grid>
@@ -455,21 +525,47 @@ const InquiryDetails = () => {
                             {formik.values.referedFrom === "reffer" && (
                               <>
                                 <Grid size={{ xs: 12, md: 12 }}>
-                                  <FormControl fullWidth error={err("referedType")}>
-                                    <FormLabel component="legend">Referred by</FormLabel>
+                                  <FormControl
+                                    fullWidth
+                                    error={err("referedType")}
+                                  >
+                                    <FormLabel component="legend">
+                                      Referred by
+                                    </FormLabel>
                                     <RadioGroup
                                       row
                                       name="referedType"
                                       value={formik.values.referedType || ""}
-                                      onChange={formik.handleChange}
+                                      onChange={(e) => {
+                                        formik.handleChange(e);
+                                        formik.setFieldValue("referedBy", "");
+                                      }}
                                     >
-                                      <FormControlLabel value="pca" control={<Radio />} label="PCA" />
-                                      <FormControlLabel value="pcra" control={<Radio />} label="PCRA" />
-                                      <FormControlLabel value="institution" control={<Radio />} label="Institution" />
-                                      <FormControlLabel value="other" control={<Radio />} label="Other" />
+                                      <FormControlLabel
+                                        value="pca"
+                                        control={<Radio />}
+                                        label="PCA"
+                                      />
+                                      <FormControlLabel
+                                        value="pcra"
+                                        control={<Radio />}
+                                        label="PCRA"
+                                      />
+                                      <FormControlLabel
+                                        value="institution"
+                                        control={<Radio />}
+                                        label="Institution"
+                                      />
+                                      <FormControlLabel
+                                        value="other"
+                                        control={<Radio />}
+                                        label="Other"
+                                      />
                                     </RadioGroup>
                                     {err("referedType") && (
-                                      <FormHelperText>{helperText("referedType")}</FormHelperText>
+                                      <FormHelperText>
+                                        {helperText("referedType")}
+                                      </FormHelperText>
                                     )}
                                   </FormControl>
                                 </Grid>
@@ -478,11 +574,16 @@ const InquiryDetails = () => {
                                   <Grid size={{ xs: 12, md: 12 }}>
                                     <FormControl
                                       fullWidth
-                                      disabled={loadingSources || formik.values.referedType === "other"}
+                                      disabled={
+                                        loadingSources ||
+                                        formik.values.referedType === "other"
+                                      }
                                       error={err("referedBy")}
                                     >
                                       <InputLabel>
-                                        {loadingSources ? "Loading..." : "Name of referrer"}
+                                        {loadingSources
+                                          ? "Loading..."
+                                          : "Name of referrer"}
                                       </InputLabel>
                                       <Select
                                         name="referedBy"
@@ -491,7 +592,10 @@ const InquiryDetails = () => {
                                         onChange={(e) => {
                                           formik.handleChange(e);
                                           if (e.target.value === "other") {
-                                            formik.setFieldValue("referedType", "other");
+                                            formik.setFieldValue(
+                                              "referedType",
+                                              "other",
+                                            );
                                           }
                                         }}
                                       >
@@ -499,13 +603,19 @@ const InquiryDetails = () => {
                                           <em>None</em>
                                         </MenuItem>
                                         {externalSources.map((src: any) => (
-                                          <MenuItem key={src._id} value={src._id}>
-                                            {src.name || `${src.firstName || ""} ${src.lastName || ""}`.trim()}
+                                          <MenuItem
+                                            key={src._id}
+                                            value={src._id}
+                                          >
+                                            {src.name ||
+                                              `${src.firstName || ""} ${src.lastName || ""}`.trim()}
                                           </MenuItem>
                                         ))}
                                       </Select>
                                       {err("referedBy") && (
-                                        <FormHelperText>{helperText("referedBy")}</FormHelperText>
+                                        <FormHelperText>
+                                          {helperText("referedBy")}
+                                        </FormHelperText>
                                       )}
                                     </FormControl>
                                   </Grid>
@@ -534,7 +644,10 @@ const InquiryDetails = () => {
 
                     <CardContent className="mbe-5 mt-4">
                       <Grid container spacing={5}>
-                        <Grid size={{ xs: 12 }} className="flex gap-4 flex-wrap justify-between">
+                        <Grid
+                          size={{ xs: 12 }}
+                          className="flex gap-4 flex-wrap justify-between"
+                        >
                           {formStep === 1 ? (
                             <Button
                               variant="outlined"
@@ -553,8 +666,12 @@ const InquiryDetails = () => {
                             type="submit"
                             disabled={
                               formStep === 0
-                                ? creatingInquiry || step1HasErrors || locationPermissionRequired
-                                : updatingInquiry || step2HasErrors || locationPermissionRequired
+                                ? creatingInquiry ||
+                                  step1HasErrors ||
+                                  locationPermissionRequired
+                                : updatingInquiry ||
+                                  step2HasErrors ||
+                                  locationPermissionRequired
                             }
                             className="rounded-xl normal-case text-sm shadow-md"
                           >
@@ -585,7 +702,10 @@ const InquiryDetails = () => {
                   <Typography variant="h4" className="mb-5">
                     Application progress
                   </Typography>
-                  <Stepper activeStep={activeStepperStep} orientation="vertical">
+                  <Stepper
+                    activeStep={activeStepperStep}
+                    orientation="vertical"
+                  >
                     {inquirySteps.map((step, index) => (
                       <Step key={step.label}>
                         <StepLabel
@@ -605,7 +725,10 @@ const InquiryDetails = () => {
                                 Active
                               </Typography>
                             ) : (
-                              <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] text-[12px]">
+                              <Typography
+                                variant="caption"
+                                className="text-[var(--mui-palette-text-secondary)] text-[12px]"
+                              >
                                 Pending
                               </Typography>
                             )
@@ -626,7 +749,10 @@ const InquiryDetails = () => {
             <Grid size={{ xs: 12 }}>
               <Card>
                 <CardContent>
-                  <FormControl className="mbs-4 mie-4" error={formik.submitCount > 0 && isPreferenceError}>
+                  <FormControl
+                    className="mbs-4 mie-4"
+                    error={formik.submitCount > 0 && isPreferenceError}
+                  >
                     <Typography variant="h5" className="pb-5">
                       Contact preferences
                     </Typography>
@@ -634,23 +760,35 @@ const InquiryDetails = () => {
                       <FormControlLabel
                         label="Receive updates via email"
                         control={
-                          <Checkbox checked={preferences.email} onChange={() => handlePreferenceToggle("email")} />
+                          <Checkbox
+                            checked={preferences.email}
+                            onChange={() => handlePreferenceToggle("email")}
+                          />
                         }
                       />
                       <FormControlLabel
                         label="Receive updates via WhatsApp"
                         control={
-                          <Checkbox checked={preferences.whatsapp} onChange={() => handlePreferenceToggle("whatsapp")} />
+                          <Checkbox
+                            checked={preferences.whatsapp}
+                            onChange={() => handlePreferenceToggle("whatsapp")}
+                          />
                         }
                       />
                       <FormControlLabel
                         label="Receive updates via SMS"
                         control={
-                          <Checkbox checked={preferences.sms} onChange={() => handlePreferenceToggle("sms")} />
+                          <Checkbox
+                            checked={preferences.sms}
+                            onChange={() => handlePreferenceToggle("sms")}
+                          />
                         }
                       />
                     </FormGroup>
-                    <FormHelperText className="pt-3" error={formik.submitCount > 0 && isPreferenceError}>
+                    <FormHelperText
+                      className="pt-3"
+                      error={formik.submitCount > 0 && isPreferenceError}
+                    >
                       {formik.submitCount > 0 && isPreferenceError
                         ? "Choose at least one preference to proceed"
                         : null}
@@ -663,8 +801,7 @@ const InquiryDetails = () => {
         </Grid>
       </Grid>
 
-      <Dialog
-        open={locationPermissionRequired}>
+      <Dialog open={locationPermissionRequired}>
         <DialogContent className="text-center p-8">
           <Typography variant="h4" className="mt-4">
             Location permission required
@@ -672,11 +809,7 @@ const InquiryDetails = () => {
           <Typography variant="body1" className="mt-2 mb-8">
             Please allow location permission to continue
           </Typography>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={getLocation}
-          >
+          <Button variant="contained" color="primary" onClick={getLocation}>
             Allow location
           </Button>
         </DialogContent>
@@ -702,7 +835,8 @@ const InquiryDetails = () => {
 
           <Box className="mb-8">
             <Typography variant="body1" className="mt-2 mb-8" color="primary">
-              Please choose your preferred schedule so we can assist you more effectively
+              Please choose your preferred schedule so we can assist you more
+              effectively
             </Typography>
             <Button
               variant="contained"

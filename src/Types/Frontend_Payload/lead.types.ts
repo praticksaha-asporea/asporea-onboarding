@@ -32,3 +32,15 @@ export interface InquiryUpdatePayload {
   passportStatus?: string;
   passportNo?: string;
 }
+
+export interface Step2InquiryUpdatePayload {
+  id?: string;
+  nationality?: string | null;
+  latestAcademic?: string | null;
+  latestTechnical?: string | null;
+  workExperience?: string | null;
+  referedFrom?: string | null;
+  referedType?: string | null;
+  referedBy?: string | null;
+  otherReferedBy?: string | null;
+}

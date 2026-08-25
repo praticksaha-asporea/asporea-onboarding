@@ -63,7 +63,7 @@ const SectionHeader = ({
 );
 
 const sectionCardClass =
-  "p-5 sm:p-7 rounded-3xl border border-[var(--mui-palette-divider)] shadow-[0px_8px_24px_-12px_rgba(15,23,42,0.12)] mb-6";
+  "p-5 sm:p-7 rounded-3xl  shadow-2xl bg-[var(--mui-palette-primary)] mb-6";
 
 const todayStr = new Date().toISOString().split("T")[0];
 const PreCounsellingContent = () => {
@@ -253,8 +253,8 @@ const PreCounsellingContent = () => {
                 <Box
                   key={branch._id}
                   onClick={() => setSelectedBranchId(branch._id)}
-                  className={`flex flex-col gap-1 p-4 rounded-2xl border-2 cursor-pointer shrink-0 transition-all duration-200 ${isSelected
-                    ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_6%,transparent)]"
+                  className={`flex flex-col gap-1 p-4 rounded-2xl shadow-2xl  cursor-pointer shrink-0 transition-all duration-200 ${isSelected
+                    ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_27%,transparent)]"
                     : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
                     }`}
                   style={{ minWidth: 200 }}
@@ -375,7 +375,7 @@ const PreCounsellingContent = () => {
         <Grid container spacing={6}>
           <Grid size={{ xs: 12, md: 6 }} id="resumeFile">
             <Typography className="text-[12px] font-semibold mb-1.5">Upload CV</Typography>
-            <Box onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-[--mui-palette-secondary-lightOpacity]"}`}>
+            <Box onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={` shadow-2xl rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-100" : "border-gray-300 hover:bg-[--mui-palette-secondary-lightOpacity]"}`}>
               <input ref={fileInputRef} hidden type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={onFileInputChange} />
               <i className="ri-upload-cloud-2-line text-4xl text-blue-500 mb-3" />
               <Typography className="font-semibold text-sm">Drag & Drop CV</Typography>
@@ -465,8 +465,8 @@ const PreCounsellingContent = () => {
                     <Box
                       key={tacId}
                       onClick={() => setSelectedTacId(tacId)}
-                      className={`relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
-                        ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_6%,transparent)] shadow-md"
+                      className={`relative flex flex-col items-center text-center p-5 rounded-2xl  shadow-2xl cursor-pointer transition-all duration-200 ${isSelected
+                        ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_26%,transparent)] shadow-md"
                         : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
                         }`}
                     >
@@ -549,6 +549,7 @@ const PreCounsellingContent = () => {
                         variant="outlined"
                         size="small"
                         fullWidth
+                        
                         startIcon={<i className="ri-user-line" />}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -557,6 +558,7 @@ const PreCounsellingContent = () => {
                         sx={{
                           mt: 3,
                           borderRadius: 2,
+                           
                           textTransform: "none",
                         }}
                       >

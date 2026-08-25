@@ -201,13 +201,16 @@ export const createInquiry = async (body: any, createdById: string) => {
     inqForPosition: inquiryFor
   };
 
-  const newInquiry = await Lead.create(leadData);
+const newInquiry = await Lead.create(leadData);
+  
   await UserModel.findByIdAndUpdate(createdById, {
     enquired: "yes",
-    candidateProfile: {
-      leadId: new mongoose.Types.ObjectId(newInquiry?._id)
+    
+    $set: { 
+      "candidateProfile.leadId": new mongoose.Types.ObjectId(newInquiry?._id)
     }
   });
+  
   return newInquiry;
 };
 
@@ -280,22 +283,30 @@ export const updateInquiry = async (body: any) => {
     }
   };
 
-  const updatedInquiry = await Lead.findByIdAndUpdate(id, leadData);
+  const updatedInquiry = await Lead.findByIdAndUpdate(id, leadData,{ new: true });
+const userUpdateFields: Record<string, any> = {};
 
-  await UserModel.findOneAndUpdate(
-    {
-      "candidateProfile.leadId": new mongoose.Types.ObjectId(id),
-    },
-    {
-      $set: {
-        "candidateProfile.technicalQualification": latestTechnical,
-        "candidateProfile.academic": latestAcademic,
-        "candidateProfile.nationality": nationality,
-        "candidateProfile.workExp": workExperience
-      },
-    },
+  if (latestTechnical !== undefined && latestTechnical !== "") {
+    userUpdateFields["candidateProfile.technicalQualification"] = latestTechnical;
+  }
+  if (latestAcademic !== undefined && latestAcademic !== "") {
+    userUpdateFields["candidateProfile.academic"] = latestAcademic;
+  }
+  if (nationality !== undefined && nationality !== "") {
+    userUpdateFields["candidateProfile.nationality"] = nationality;
+  }
+  if (workExperience !== undefined && workExperience !== "") {
+    userUpdateFields["candidateProfile.workExp"] = workExperience;
+  }
+
+   if (Object.keys(userUpdateFields).length > 0 && inquiry.createdBy?.id) {
+  await UserModel.findByIdAndUpdate(
+    inquiry.createdBy.id,
+    { $set: userUpdateFields },
     { new: true }
   );
+}
+
   return updatedInquiry;
 };
 
@@ -343,4 +354,15 @@ export const getExternalSourcesByType = async (type: string) => {
     .lean();
 
   return sources;
+};
+
+export const getInquiryByIdService = async (id: string) => {
+  if (!mongoose.Types.ObjectId.isValid(id)) {
+    throw new ApiError("Invalid Inquiry ID", 400);
+  }
+  const inquiry = await Lead.findById(id).lean();
+  if (!inquiry) {
+    throw new ApiError("Inquiry not found", 404);
+  }
+  return inquiry;
 };

@@ -108,6 +108,7 @@ export const updateUserSchema = Joi.object({
     mode: Joi.string().valid("online", "offline", "both").optional(),
   }).optional(),
   candidateProfile: Joi.object({
+    leadId: Joi.any().optional(),
     technicalQualification: Joi.string().trim().allow("", null).optional(),
     academic: Joi.string().trim().allow("", null).optional(),
     nationality: Joi.string().trim().allow("", null).optional(),
