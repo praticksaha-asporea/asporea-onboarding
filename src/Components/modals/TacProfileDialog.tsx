@@ -14,10 +14,11 @@ import {
 
 import { CamelCase } from "@/Utils/common";
 import { IUser } from "@/lib/models/User.model";
+import { preTACData } from "@/Types/object.types";
 
 interface TacProfileDialogProps {
     open: boolean;
-    tac: IUser | null;
+    tac: preTACData | null;
     onClose: () => void;
 }
 

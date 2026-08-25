@@ -1,5 +1,6 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { bookPreCounsellingRes, preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
+import { bookPreCounsellingRes, pre_TacListRes, preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
+import { LeadListPayload } from "@/Types/Frontend_Payload/lead.types";
 import { getSlotsPayload, PreCounsellingPayload } from "@/Types/Frontend_Payload/precounselling.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
@@ -50,3 +51,18 @@ export const getConsultantsAction = async ({
     params: { leadId, branchId, method },
   });
 };
+
+export const getTacsListAction = async (bodyData: LeadListPayload): Promise<AxiosResponse<pre_TacListRes>> => {
+  return axiosClient.get("/pre-counselling/tac-list", {
+    params: bodyData,
+  });
+};
+
+export const cancelBookingAction = async (bodyData: any): Promise<AxiosResponse<any>> => {
+  // try {
+  const response = await axiosClient.post("/pre-counselling/cancel-booking", bodyData);
+  return response;
+  // } catch (error: any) {
+  //   return error;
+  // }
+}

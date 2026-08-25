@@ -1,7 +1,7 @@
 import { IAssignment } from "@/lib/models/Assignment.model"
 import { Slot } from "../Frontend_Payload/assessment.types"
 import { JourneyData } from "../Frontend_Payload/tracking.types"
-import { externalSourceObj, positionDBData, tacData, techDBData } from "../object.types"
+import { externalSourceObj, positionDBData, preTACData, tacData, techDBData } from "../object.types"
 
 export interface inquiryResponse {
 
@@ -272,5 +272,19 @@ export interface updateAssessmentRes {
     success: boolean,
     message: string,
     data: IAssignment,
+    error: null
+}
+
+export interface pre_TacListRes {
+    success: true,
+    message: string,
+    data: {
+        tacList: preTACData[],
+        meta: {
+            totalRecords: number,
+            currentPage: number,
+            totalPages: number
+        }
+    },
     error: null
 }

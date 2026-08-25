@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { ChangeEvent, useState } from "react";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -12,18 +12,62 @@ import FormGroup from "@mui/material/FormGroup";
 import Checkbox from "@mui/material/Checkbox";
 import Button from "@mui/material/Button";
 import { NotificationPreferences } from "@/Types/Frontend_Payload/precounselling.types";
+import toast from "react-hot-toast";
+import { updateUserData } from "@/Redux/Auth/user.slice";
+import { useDispatch } from "react-redux";
+import { profileUpdateApi } from "@/Services/APIs/auth/auth.actions";
 
 interface NotificationChannelsProps {
-  isEditingChannels: boolean;
-  setIsEditingChannels: (val: boolean) => void;
-  preferences: NotificationPreferences;
-  handlePrefChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  handleSavePreferences: () => void;
+  // isEditingChannels: boolean;
+  // setIsEditingChannels: (val: boolean) => void;
+  // preferences: NotificationPreferences;
+  // handlePrefChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  // handleSavePreferences: () => void;
+  reduxUser: any;
 }
 
 export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
-  isEditingChannels, setIsEditingChannels, preferences, handlePrefChange, handleSavePreferences
+  // isEditingChannels, setIsEditingChannels, preferences, handlePrefChange, handleSavePreferences
+  reduxUser
 }) => {
+
+  const [isEditingChannels, setIsEditingChannels] = useState(false);
+  const [preferences, setPreferences] = useState<NotificationPreferences>({
+    email: reduxUser?.notificationPreference?.email ?? true,
+    whatsapp: reduxUser?.notificationPreference?.whatsapp ?? false,
+    sms: reduxUser?.notificationPreference?.sms ?? false,
+  });
+  const dispatch = useDispatch();
+  const handlePrefChange = (event: ChangeEvent<HTMLInputElement>) => {
+    setPreferences({
+      ...preferences,
+      [event.target.name]: event.target.checked,
+    });
+  };
+
+  const handleSavePreferences = async () => {
+    if (!preferences.email && !preferences.whatsapp && !preferences.sms) {
+      return toast.error("Please select at least one notification channel", {
+        id: "pref-toast",
+      });
+    }
+    setIsEditingChannels(false);
+    try {
+      const res = await profileUpdateApi({
+        notificationPreference: preferences,
+      });
+      if (res?.data?.success) {
+        dispatch(
+          updateUserData({
+            notificationPreference: res.data.data.notificationPreference,
+          }),
+        );
+        toast.success("Preferences updated successfully", { id: "pref-toast" });
+      }
+    } catch (err) {
+      toast.error("Failed to update preferences", { id: "pref-toast" });
+    }
+  };
   return (
     <Card className="rounded-[15px] shadow-none">
       <CardContent className="p-6">
