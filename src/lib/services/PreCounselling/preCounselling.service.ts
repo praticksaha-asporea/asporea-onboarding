@@ -4,6 +4,11 @@ import "../../models/Lead.model";
 import "../../models/ShiftSchedule.model";
 import { Assignment } from "../../models/Assignment.model";
 import { ApiError } from "../../error/api.error";
+import { ILead, Lead } from "../../models/Lead.model";
+import User from "@/lib/models/User.model";
+import { BranchTokenModel } from "@/lib/models/BranchToken.model";
+import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
+import { BranchModel } from "@/lib/models/Branch.model";
 
 const timeToMinutes = (timeStr: string) => {
   if (!timeStr) return 0;
@@ -27,6 +32,36 @@ const formatTime12Hr = (minutes: number) => {
   const formattedHour = h % 12 === 0 ? 12 : h % 12;
   const formattedMin = m.toString().padStart(2, "0");
   return `${formattedHour.toString().padStart(2, "0")}:${formattedMin} ${ampm}`;
+};
+
+type BookingMethod = "on" | "off";
+
+interface SavePreCounsellingBookingBody {
+  leadId?: string;
+  branchId?: string;
+  consultantId?: string;
+  date?: string;
+  from?: string;
+  to?: string;
+  method?: BookingMethod;
+  initialCV?: string;
+}
+
+const PRE_CLEAR_STATUSES = [
+  "pre_not_responded",
+  "pre_scheduled",
+  "pre_contacted",
+  "pre_queued",
+];
+
+type PopulatedEmployee = {
+  _id: mongoose.Types.ObjectId;
+  role: string;
+};
+
+type TacShift = {
+  employeeId: PopulatedEmployee | null;
+  counterNo?: number | null;
 };
 
 export const getConsultantSlots = async (
@@ -168,117 +203,395 @@ export const getConsultantSlots = async (
   return slots;
 };
 
-export const savePreCounsellingBooking = async (body: any) => {
-  const { leadId, branchId, consultantId, date, from, to, method, initialCV } = body;
+export const savePreCounsellingBooking = async (
+  body: SavePreCounsellingBookingBody,
+) => {
+  const {
+    leadId,
+    branchId,
+    consultantId,
+    date,
+    from,
+    to,
+    method = "off",
+    initialCV,
+  } = body;
 
-  if (!leadId || !branchId || !consultantId || !date || !from || !to) {
-    throw new ApiError("Missing required fields for booking", 400);
-  }
+  const hasConsultant = Boolean(consultantId);
 
-  const targetDate = new Date(date);
-  const serverNow = new Date();
-  const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
-  const istTime = new Date(utcTime + 330 * 60000); // Current IST Time
+  // ------------------------------------------------------------
+  // 1. Validate booking mode
+  // ------------------------------------------------------------
 
-  const targetDateStr = targetDate.toISOString().split("T")[0];
-  const todayStr = istTime.toISOString().split("T")[0];
-
-  if (targetDateStr < todayStr) {
-    throw new ApiError(
-      "Please Choose Another Slot , This Slot unavailable Now.",
-      400,
-    );
-  }
-
-  if (targetDateStr === todayStr) {
-    const requestedMins = timeToMinutes(from);
-    const currentMins = istTime.getHours() * 60 + istTime.getMinutes();
-
-    if (requestedMins <= currentMins) {
+  if (hasConsultant) {
+    if (!date || !from || !to) {
       throw new ApiError(
-        "Cannot book a slot in the past. Please select a future time.",
+        "Date and time slot are required when selecting a consultant.",
+        400,
+      );
+    }
+  } else {
+    if (!leadId || !branchId) {
+      throw new ApiError(
+        "Lead and branch details are required for booking.",
         400,
       );
     }
   }
 
-  const startOfDay = new Date(date);
-  startOfDay.setHours(0, 0, 0, 0);
-  const endOfDay = new Date(date);
-  endOfDay.setHours(23, 59, 59, 999);
+  // ------------------------------------------------------------
+  // 2. Validate ObjectIds
+  // ------------------------------------------------------------
 
-  const slotConflict = await Assignment.findOne({
-    assignedTo: new mongoose.Types.ObjectId(consultantId),
-    "schedule.date": { $gte: startOfDay, $lte: endOfDay },
-    "schedule.from": from,
-    status: { $ne: "rejected" },
-  });
-
-  if (slotConflict) {
-    throw new ApiError(
-      "This slot has already been booked. Please choose another slot.",
-      409,
-    );
+  if (!leadId || !mongoose.Types.ObjectId.isValid(leadId)) {
+    throw new ApiError("Invalid lead ID.", 400);
   }
 
-  const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
-  const currentLead = await LeadModel.findById(leadId).lean();
+  if (!branchId || !mongoose.Types.ObjectId.isValid(branchId)) {
+    throw new ApiError("Invalid branch ID.", 400);
+  }
 
-  // Clear any existing pre-counselling assignments and branch tokens if the lead is in certain statuses
-  const preClearStatuses = ["pre_not_responded", "pre_scheduled", "pre_contacted", "pre_queued"];
-  if (currentLead && preClearStatuses.includes(currentLead.status)) {
-    await Assignment.deleteMany({
-      leadId: new mongoose.Types.ObjectId(leadId),
-      phase: "pre"
+  if (
+    consultantId &&
+    !mongoose.Types.ObjectId.isValid(consultantId)
+  ) {
+    throw new ApiError("Invalid consultant ID.", 400);
+  }
+
+  const leadObjectId = new mongoose.Types.ObjectId(leadId);
+  const branchObjectId = new mongoose.Types.ObjectId(branchId);
+
+  const consultantObjectId = consultantId
+    ? new mongoose.Types.ObjectId(consultantId)
+    : null;
+
+  const isOnline = method === "on";
+
+  // ------------------------------------------------------------
+  // 3. Get current lead
+  // ------------------------------------------------------------
+
+  const currentLead = await Lead.findById(leadObjectId).lean();
+
+  if (!currentLead) {
+    throw new ApiError("Lead not found.", 404);
+  }
+
+  // ------------------------------------------------------------
+  // 4. Validate selected slot
+  // ------------------------------------------------------------
+
+  if (hasConsultant && date && from && to) {
+    const targetDate = new Date(date);
+
+    if (Number.isNaN(targetDate.getTime())) {
+      throw new ApiError("Invalid booking date.", 400);
+    }
+
+    // Current IST time
+    const now = new Date();
+
+    const istNow = new Date(
+      now.toLocaleString("en-US", {
+        timeZone: "Asia/Kolkata",
+      }),
+    );
+
+    const targetDateStr = targetDate.toISOString().split("T")[0];
+
+    const todayStr = [
+      istNow.getFullYear(),
+      String(istNow.getMonth() + 1).padStart(2, "0"),
+      String(istNow.getDate()).padStart(2, "0"),
+    ].join("-");
+
+    // Past date
+    if (targetDateStr < todayStr) {
+      throw new ApiError(
+        "Please choose another slot. This slot is no longer available.",
+        400,
+      );
+    }
+
+    // Same-day past time
+    if (targetDateStr === todayStr) {
+      const requestedMinutes = timeToMinutes(from);
+
+      if (requestedMinutes === null) {
+        throw new ApiError("Invalid booking time.", 400);
+      }
+
+      const currentMinutes =
+        istNow.getHours() * 60 + istNow.getMinutes();
+
+      if (requestedMinutes <= currentMinutes) {
+        throw new ApiError(
+          "Cannot book a slot in the past. Please select a future time.",
+          400,
+        );
+      }
+    }
+
+    // ----------------------------------------------------------
+    // Check TAC slot conflict
+    // ----------------------------------------------------------
+
+    const startOfDay = new Date(targetDate);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(targetDate);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const slotConflict = await Assignment.exists({
+      assignedTo: consultantObjectId,
+      "schedule.date": {
+        $gte: startOfDay,
+        $lte: endOfDay,
+      },
+      "schedule.from": from,
+      status: {
+        $ne: "rejected",
+      },
     });
 
+    if (slotConflict) {
+      throw new ApiError(
+        "This slot has already been booked. Please choose another slot.",
+        409,
+      );
+    }
+  }
 
-    const BranchTokenModel = mongoose.models.BranchToken || mongoose.model("BranchToken");
-    const creatorId = currentLead.createdBy?.id || currentLead.createdBy?._id || currentLead.createdBy;
-    if (creatorId && currentLead.preferences?.branchId) {
+  // ------------------------------------------------------------
+  // 5. Clear previous pre-counselling assignment
+  // ------------------------------------------------------------
+
+  if (PRE_CLEAR_STATUSES.includes(currentLead.status)) {
+    await Assignment.deleteMany({
+      leadId: leadObjectId,
+      phase: "pre",
+    });
+
+    const creatorId =
+      currentLead.createdBy?.id ||
+      currentLead.createdBy?._id ||
+      currentLead.createdBy;
+
+    if (
+      creatorId &&
+      currentLead.preferences?.branchId
+    ) {
       await BranchTokenModel.deleteMany({
         userId: creatorId,
         branchId: currentLead.preferences.branchId,
-        status: { $in: ["generated", "queued"] }
+        status: {
+          $in: ["generated", "queued"],
+        },
       });
     }
   }
 
+  // ------------------------------------------------------------
+  // 6. Resolve consultant
+  // ------------------------------------------------------------
 
+  let resolvedConsultantId: mongoose.Types.ObjectId | null =
+    consultantObjectId;
 
-  const updatedAssignment = await Assignment.findOneAndUpdate(
-    { leadId: new mongoose.Types.ObjectId(leadId), phase: "pre" },
-    {
-      $set: {
-        assignedTo: new mongoose.Types.ObjectId(consultantId),
-        schedule: {
-          date: new Date(date),
-          from,
-          to,
-          method: method || "off",
-        },
-        status: "assigned",
-        attended: false,
-        token: {
-          generated: false,
-          number: null
-        },
-        ...(initialCV && { initialCV }),
-      },
-    },
-    { new: true, upsert: true },
-  );
-
-  if (updatedAssignment) {
-    await LeadModel.findByIdAndUpdate(leadId, {
-      status: "pre_scheduled",
-      "preferences.consultantId": new mongoose.Types.ObjectId(consultantId),
-      "preferences.branchId": new mongoose.Types.ObjectId(branchId),
-      "inquiryStages.stage3": "done"
-    });
+  // Explicit consultant + slot
+  if (consultantObjectId && date && from && to) {
+    resolvedConsultantId = consultantObjectId;
   }
 
-  return updatedAssignment;
+  // ------------------------------------------------------------
+  // 7. Auto assign TAC for online booking
+  // ------------------------------------------------------------
+
+  if (isOnline && !resolvedConsultantId) {
+    const [generalSettings, branch] = await Promise.all([
+      GeneralSettingModel.findOne().lean(),
+      BranchModel.findById(branchObjectId).lean(),
+    ]);
+
+    if (!branch) {
+      throw new ApiError("Selected branch not found.", 404);
+    }
+
+    // const tacShifts = await EmployeeBranchShiftModel.find({
+    //   branchId: branchObjectId,
+    // })
+    //   .populate<{
+    //     employeeId: {
+    //       _id: mongoose.Types.ObjectId;
+    //       role: string;
+    //     };
+    //   }>("employeeId", "role")
+    //   .lean();
+    const tacShifts = await EmployeeBranchShiftModel.find({
+      branchId: branchObjectId,
+    })
+      .populate("employeeId", "_id role")
+      .lean() as unknown as TacShift[];
+
+    // ----------------------------------------------------------
+    // Extract TACs
+    // ----------------------------------------------------------
+
+    const validTacShifts = tacShifts.filter(
+      (shift): shift is TacShift & {
+        employeeId: PopulatedEmployee;
+        counterNo: number;
+      } =>
+        shift.employeeId !== null &&
+        shift.employeeId.role === "tac" &&
+        shift.counterNo != null,
+    );
+
+    const tacEntries = Array.from(
+      new Map(
+        validTacShifts.map((shift) => [
+          shift.employeeId._id.toString(),
+          {
+            employeeId: shift.employeeId._id,
+            counterNo: shift.counterNo,
+          },
+        ]),
+      ).values(),
+    );
+
+    if (tacEntries.length > 0) {
+      const assignmentType =
+        generalSettings?.tacAssignmentType ?? "random";
+
+      const lastUsedCounter = branch.lastUsedCounter ?? 0;
+
+      // --------------------------------------------------------
+      // Prevent immediate same TAC when possible
+      // --------------------------------------------------------
+
+      const eligibleEntries =
+        tacEntries.length > 1
+          ? tacEntries.filter(
+            (entry) => entry.counterNo !== lastUsedCounter,
+          )
+          : tacEntries;
+
+      const availableEntries =
+        eligibleEntries.length > 0
+          ? eligibleEntries
+          : tacEntries;
+
+      let selectedTac: (typeof tacEntries)[number] | undefined;
+      if (assignmentType === "random") {
+        selectedTac =
+          availableEntries[
+          Math.floor(Math.random() * availableEntries.length)
+          ];
+      } else {
+        // Counterwise / round-robin
+        const sortedEntries = [...tacEntries].sort(
+          (a, b) => a.counterNo - b.counterNo,
+        );
+
+        const lastIndex = sortedEntries.findIndex(
+          (entry) =>
+            entry.counterNo === lastUsedCounter,
+        );
+
+        const nextIndex =
+          lastIndex === -1
+            ? 0
+            : (lastIndex + 1) %
+            sortedEntries.length;
+
+        selectedTac = sortedEntries[nextIndex];
+      }
+
+      if (selectedTac) {
+        resolvedConsultantId = selectedTac.employeeId;
+
+        await BranchModel.findByIdAndUpdate(
+          branchObjectId,
+          {
+            lastUsedCounter: selectedTac.counterNo,
+          },
+        );
+      }
+    }
+  }
+
+  // ------------------------------------------------------------
+  // 8. Create / update assignment
+  // ------------------------------------------------------------
+
+  if (
+    resolvedConsultantId &&
+    date &&
+    from &&
+    to
+  ) {
+    await Assignment.findOneAndUpdate(
+      {
+        leadId: leadObjectId,
+        phase: "pre",
+      },
+      {
+        $set: {
+          assignedTo: resolvedConsultantId,
+
+          schedule: {
+            date: new Date(date),
+            from,
+            to,
+            method,
+          },
+
+          status: "assigned",
+          attended: false,
+
+          token: {
+            generated: false,
+            number: null,
+          },
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
+  }
+
+  // ------------------------------------------------------------
+  // 9. Update lead
+  // ------------------------------------------------------------
+
+  const leadUpdate: Record<string, any> = {
+    status: "pre_scheduled",
+    "preferences.branchId": branchObjectId,
+    "inquiryStages.stage3": "done",
+  };
+
+  if (resolvedConsultantId) {
+    leadUpdate["preferences.consultantId"] =
+      resolvedConsultantId;
+  }
+
+  if (initialCV) {
+    leadUpdate.candidateResume = initialCV;
+  }
+
+  const updatedLead = await Lead.findByIdAndUpdate(
+    leadObjectId,
+    {
+      $set: leadUpdate,
+    },
+    {
+      new: true,
+    },
+  );
+
+  return updatedLead;
 };
 
 export const saveAssessmentBooking = async (body: any) => {
@@ -416,3 +729,34 @@ export const getPreCounsellingBooking = async (leadId: string) => {
 
   return existingBooking;
 };
+
+
+export const cancelPreBooking = async (bodyData: any) => {
+  const { leadId, actionBy, cancelReason } = bodyData;
+
+  const lead = await Lead.findById(leadId);
+  const userExists = await User.findById(actionBy);
+
+  if (!lead || !userExists) {
+    throw new ApiError("Lead or User not found", 400);
+  }
+
+  //Later log will use
+
+
+  await Assignment.deleteOne({
+    leadId: new mongoose.Types.ObjectId(leadId),
+    phase: "pre"
+  });
+
+  await BranchTokenModel.deleteMany({
+    userId: new mongoose.Types.ObjectId(actionBy),
+  });
+
+  const updatedLead = await Lead.findByIdAndUpdate(leadId, {
+    status: "inquiry_submitted",
+    "inquiryStages.stage3": "pending",
+    "source.type": actionBy
+  });
+  return updatedLead;
+}

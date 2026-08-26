@@ -2,17 +2,21 @@
 
 import React from "react";
 import { Dialog, DialogContent, Typography, Box, Button } from "@mui/material";
+import { ILead } from "@/lib/models/Lead.model";
+import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 
 interface SuccessDialogProps {
   showConfirmPopup: boolean;
   setShowConfirmPopup: (val: boolean) => void;
-  leadId: string;
+  leadData: ILead | null;
+  mode: CounsellingMode
 }
 
 export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   showConfirmPopup,
   setShowConfirmPopup,
-  leadId,
+  leadData,
+  mode
 }) => {
   return (
     <Dialog
@@ -37,15 +41,18 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
           variant="body1"
           className="text-[--mui-palette-error-light] mt-5 text-center"
         >
-          Please be available on the selected date and time. A Talent Acquisition Consultant (TAC) will contact you through your preferred communication channel.
+          Please be available on the selected date and time. {!leadData?.preferences
+            ?.consultantId && mode === "offline" ?
+            `Please reach to the counselling center on time.`
+            : mode === "online"
+              ? `TAC will be available on Video/Audio Call`
+              : `A Talent Acquisition Consultant (TAC) will contact you through your preferred communication channel.`}
         </Typography>
         <Box className="flex gap-4 justify-center w-full mt-5">
           <Button
             variant="contained"
             disableRipple
             disableElevation
-            // href={`/document-upload?leadId=${leadId}`}
-            // href={`/profile`}
             href={`/profile?tab=notifications`}
             className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-[var(--mui-palette-primary-contrastText)] hover:text-white shadow-md"
           >

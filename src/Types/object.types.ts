@@ -136,3 +136,42 @@ export interface AssessmentFormValues {
     candidateSign: File | string | null;
     assessorSign: File | string | null;
 }
+
+export interface preTACData {
+    _id: string,
+    firstName: string,
+    lastName: string,
+    fullName: string,
+    email: string,
+    phoneNumber: number,
+    whatsappNumber: number,
+    address: string,
+    bio: string,
+    experienceInMonths: number,
+    profilePic: string,
+    tacProfile: {
+        designation: string,
+        areasOfExp: string[],
+        languagesKnown: string[],
+        industryExp: string[],
+        specialization: string[],
+        mode: string,
+        rating: number
+    },
+    branches: [
+        {
+            _id: string,
+            title: string,
+            location: string,
+            timeZone: string,
+            status: boolean
+        }
+    ],
+    currentShift: {
+        shift: {
+            _id: string
+        },
+        minuteOfSlots: number,
+        effectiveFrom: string
+    }
+}

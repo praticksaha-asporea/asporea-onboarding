@@ -1,4 +1,6 @@
 export interface ExistingBooking {
+  _id?: string;
+  leadId?: string;
   schedule?: {
     date: string;
     from: string;

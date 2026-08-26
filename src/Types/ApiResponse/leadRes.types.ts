@@ -2,369 +2,385 @@ import { IAssignment } from "@/lib/models/Assignment.model";
 import { Slot } from "../Frontend_Payload/assessment.types";
 import { JourneyData } from "../Frontend_Payload/tracking.types";
 import {
-  externalSourceObj,
-  positionDBData,
-  tacData,
-  techDBData,
+    externalSourceObj,
+    positionDBData,
+    preTACData,
+    tacData,
+    techDBData,
 } from "../object.types";
+import { ILead } from "@/lib/models/Lead.model";
 
 export interface inquiryResponse {
-  success: boolean;
-  message: string;
-  data: {
-    fullName: string;
-    contact: {
-      phone: string;
-      whatsapp: string;
-      email: string;
+    success: boolean;
+    message: string;
+    data: {
+        fullName: string;
+        contact: {
+            phone: string;
+            whatsapp: string;
+            email: string;
+        };
+        address: string;
+        preferences: {
+            branchId: string;
+            consultantId: string;
+            visitType: string;
+        };
+        source: {
+            type: string;
+        };
+        status: string;
+        inqNo: string;
+        inqFy: string;
+        documents: {
+            status: string;
+        };
+        createdBy: {
+            id: string;
+            type: string;
+        };
+        _id: string;
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
     };
-    address: string;
-    preferences: {
-      branchId: string;
-      consultantId: string;
-      visitType: string;
-    };
-    source: {
-      type: string;
-    };
-    status: string;
-    inqNo: string;
-    inqFy: string;
-    documents: {
-      status: string;
-    };
-    createdBy: {
-      id: string;
-      type: string;
-    };
-    _id: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  };
-  error: string | null;
+    error: string | null;
 }
 
 export interface leadDocumentUpdateResponse {
-  success: boolean;
-  message: string;
-  data: {
-    contact: {
-      phone: number;
-      whatsapp: number;
-      email: string;
+    success: boolean;
+    message: string;
+    data: {
+        contact: {
+            phone: number;
+            whatsapp: number;
+            email: string;
+        };
+        preferences: {
+            branchId: string;
+            consultantId: string;
+            visitType: "online" | "offline";
+        };
+        source: {
+            type: string;
+        };
+        experience: {
+            submittedOn: string;
+            type: string;
+            status: "verified" | "selected" | "request_technical";
+        };
+        documents: {
+            position: string;
+            status: string;
+            submittedOn: string;
+        };
+        createdBy: {
+            id: string;
+            type: string;
+        };
+        _id: string;
+        fullName: string;
+        address: string;
+        status: string;
+        inqNo: string;
+        inqFy: string;
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
     };
-    preferences: {
-      branchId: string;
-      consultantId: string;
-      visitType: "online" | "offline";
-    };
-    source: {
-      type: string;
-    };
-    experience: {
-      submittedOn: string;
-      type: string;
-      status: "verified" | "selected" | "request_technical";
-    };
-    documents: {
-      position: string;
-      status: string;
-      submittedOn: string;
-    };
-    createdBy: {
-      id: string;
-      type: string;
-    };
-    _id: string;
-    fullName: string;
-    address: string;
-    status: string;
-    inqNo: string;
-    inqFy: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  };
-  error: string | null;
+    error: string | null;
 }
 
 export interface assessmentResultResponse {
-  success: boolean;
-  message: string;
-  data: resultData;
-  error: string | null;
+    success: boolean;
+    message: string;
+    data: resultData;
+    error: string | null;
 }
 
 interface Note {
-  _id: string;
-  text: string;
-  createdAt: string;
+    _id: string;
+    text: string;
+    createdAt: string;
 }
 
 export interface resultData {
-  scores: {
-    total: number;
-    achieved: number;
-  };
-  _id: string;
-  leadId: string;
-  __v: number;
-  assessedBy: string;
-  createdAt: string;
-  date: string;
-  notes: Note[];
-  passportNo: string;
-  updatedAt: string;
+    scores: {
+        total: number;
+        achieved: number;
+    };
+    _id: string;
+    leadId: string;
+    __v: number;
+    assessedBy: string;
+    createdAt: string;
+    date: string;
+    notes: Note[];
+    passportNo: string;
+    updatedAt: string;
 }
 
 export interface journeyTrackingRes {
-  success: boolean;
-  message: string;
-  data: JourneyData;
-  error: null;
+    success: boolean;
+    message: string;
+    data: JourneyData;
+    error: null;
 }
 
 export interface preCounsellingStatus {
-  success: true;
-  message: string;
-  data: {
-    _id: string;
-    leadId: string;
-    phase: string;
-    assignedTo: string | { _id: string };
-    attended: boolean;
-    createdAt: string;
-    transfer: {
-      requested: boolean;
+    success: true;
+    message: string;
+    data: {
+        _id: string;
+        leadId: string;
+        phase: string;
+        assignedTo: string | { _id: string };
+        attended: boolean;
+        createdAt: string;
+        transfer: {
+            requested: boolean;
+        };
+        schedule: {
+            date: string;
+            from: string;
+            to: string;
+            method: string;
+        };
+        status: string;
+        token: {
+            generated: boolean;
+            number: string;
+        };
+        updatedAt: string;
+        pre: {
+            additionalDetails: string;
+            specificNotes: string;
+            advice: string;
+        };
     };
-    schedule: {
-      date: string;
-      from: string;
-      to: string;
-      method: string;
-    };
-    status: string;
-    token: {
-      generated: boolean;
-      number: string;
-    };
-    updatedAt: string;
-    pre: {
-      additionalDetails: string;
-      specificNotes: string;
-      advice: string;
-    };
-  };
-  error: null;
+    error: null;
 }
 
 export interface slotsResponse {
-  success: boolean;
-  message: string;
-  data: Slot[];
-  error: null;
+    success: boolean;
+    message: string;
+    data: Slot[];
+    error: null;
 }
 
 export interface technicalResultResponse {
-  success: boolean;
-  message: string;
-  data: techDBData;
-  error: null;
+    success: boolean;
+    message: string;
+    data: techDBData;
+    error: null;
 }
 
 export interface assessmentScheduleResponse {
-  success: boolean;
-  message: string;
-  data: {
-    schedule: {
-      date: string;
-      from: string;
-      to: string;
-      method: string;
+    success: boolean;
+    message: string;
+    data: {
+        schedule: {
+            date: string;
+            from: string;
+            to: string;
+            method: string;
+        };
+        token: {
+            generated: boolean;
+            number: string | null;
+        };
+        transfer: {
+            requested: boolean;
+        };
+        _id: string;
+        leadId: string;
+        phase: string;
+        assignedTo: string | { _id: string };
+        attended: boolean;
+        createdAt: string;
+        status: string;
+        updatedAt: string;
     };
-    token: {
-      generated: boolean;
-      number: string | null;
-    };
-    transfer: {
-      requested: boolean;
-    };
-    _id: string;
-    leadId: string;
-    phase: string;
-    assignedTo: string | { _id: string };
-    attended: boolean;
-    createdAt: string;
-    status: string;
-    updatedAt: string;
-  };
-  error: null;
+    error: null;
 }
 
 export interface documentUploadResponse {
-  success: boolean;
-  message: string;
-  data: {
-    status: string;
-    documentStatus: string;
-    realDocsCount: number;
-    experienceType: string;
-  };
-  error: null;
+    success: boolean;
+    message: string;
+    data: {
+        status: string;
+        documentStatus: string;
+        realDocsCount: number;
+        experienceType: string;
+    };
+    error: null;
 }
 
 export interface positionResponse {
-  success: boolean;
-  message: string;
-  data: positionDBData[];
-  error: null;
+    success: boolean;
+    message: string;
+    data: positionDBData[];
+    error: null;
 }
 
 export interface positionDetailResponse {
-  success: boolean;
-  message: string;
-  data: positionDBData;
-  error: null;
+    success: boolean;
+    message: string;
+    data: positionDBData;
+    error: null;
 }
 
 export interface tacListResponse {
-  success: boolean;
-  message: string;
-  data: tacData[];
-  error: null;
+    success: boolean;
+    message: string;
+    data: tacData[];
+    error: null;
 }
 
 export interface externalSourceResponse {
-  success: boolean;
-  message: string;
-  data: externalSourceObj[];
-  error: null;
+    success: boolean;
+    message: string;
+    data: externalSourceObj[];
+    error: null;
 }
 
 export interface bookPreCounsellingRes {
-  success: boolean;
-  message: string;
-  data: {
-    schedule: {
-      date: string;
-      from: string;
-      to: string;
-      method: string;
-    };
-    token: {
-      generated: boolean;
-      number: string | null;
-    };
-    transfer: {
-      requested: boolean;
-    };
-    _id: string;
-    leadId: string;
-    phase: string;
-    assignedTo: string;
-    attended: boolean;
-    createdAt: string;
-    status: string;
-    updatedAt: string;
-  };
-  error: null;
+    success: boolean;
+    message: string;
+    data: ILead
+    // {
+    //     schedule: {
+    //         date: string;
+    //         from: string;
+    //         to: string;
+    //         method: string;
+    //     };
+    //     token: {
+    //         generated: boolean;
+    //         number: string | null;
+    //     };
+    //     transfer: {
+    //         requested: boolean;
+    //     };
+    //     _id: string;
+    //     leadId: string;
+    //     phase: string;
+    //     assignedTo: string;
+    //     attended: boolean;
+    //     createdAt: string;
+    //     status: string;
+    //     updatedAt: string;
+    // };
+    error: null;
 }
 
 export interface updateAssessmentRes {
-  success: boolean;
-  message: string;
-  data: IAssignment;
-  error: null;
+    success: boolean,
+    message: string,
+    data: IAssignment,
+    error: null
+}
+
+export interface pre_TacListRes {
+    success: true,
+    message: string,
+    data: {
+        tacList: preTACData[],
+        meta: {
+            totalRecords: number,
+            currentPage: number,
+            totalPages: number
+        }
+    },
 }
 
 export interface updateInquiryResponse {
-  success: boolean;
-  message: string;
-  data: {
+    success: boolean;
+    message: string;
+    data: {
+        _id: string;
+        fullName: string;
+        contact: {
+            phone: string;
+            whatsapp: string;
+            email: string;
+        };
+        preferences?: {
+            branchId?: string;
+        };
+        source?: {
+            type?: string;
+        };
+        inquiryStages?: {
+            stage1: string;
+            stage2: string;
+            stage3: string;
+        };
+        documents?: {
+            status: string;
+        };
+        createdBy?: {
+            id: string;
+            type: string;
+        };
+        status: string;
+        inqNo: string;
+        inqForType?: string;
+        inqForPosition?: string;
+        followUpRequired?: boolean;
+        inqFy: string;
+        createdAt: string;
+        updatedAt: string;
+        __v: number;
+    };
+    error: string | null;
+}
+
+
+export interface InquiryDetailData {
     _id: string;
     fullName: string;
     contact: {
-      phone: string;
-      whatsapp: string;
-      email: string;
+        phone: string;
+        whatsapp: string;
+        email: string;
     };
     preferences?: {
-      branchId?: string;
-    };
-    source?: {
-      type?: string;
-    };
-    inquiryStages?: {
-      stage1: string;
-      stage2: string;
-      stage3: string;
-    };
-    documents?: {
-      status: string;
-    };
-    createdBy?: {
-      id: string;
-      type: string;
+        branchId?: string;
+        consultantId?: string;
+        visitType?: string;
     };
     status: string;
     inqNo: string;
     inqForType?: string;
     inqForPosition?: string;
+    inquiryStages?: {
+        stage1: string;
+        stage2: string;
+        stage3: string;
+    };
     followUpRequired?: boolean;
-    inqFy: string;
-    createdAt: string;
-    updatedAt: string;
-    __v: number;
-  };
-  error: string | null;
-}
-
-
-export interface InquiryDetailData {
-  _id: string;
-  fullName: string;
-  contact: {
-    phone: string;
-    whatsapp: string;
-    email: string;
-  };
-  preferences?: {
-    branchId?: string;
-    consultantId?: string;
-    visitType?: string;
-  };
-  status: string;
-  inqNo: string;
-  inqForType?: string;
-  inqForPosition?: string;
-  inquiryStages?: {
-    stage1: string;
-    stage2: string;
-    stage3: string;
-  };
-  followUpRequired?: boolean;
-  inqFy?: string;
-  documents?: {
-    status: string;
-  };
-  createdBy?: {
-    id: string;
-    type: string;
-  };
-  source?: {
-    type?: string;
-    refType?: string;
-    refName?: string;
-  };
-  createdAt?: string;
-  updatedAt?: string;
-  __v?: number;
+    inqFy?: string;
+    documents?: {
+        status: string;
+    };
+    createdBy?: {
+        id: string;
+        type: string;
+    };
+    source?: {
+        type?: string;
+        refType?: string;
+        refName?: string;
+    };
+    createdAt?: string;
+    updatedAt?: string;
+    __v?: number;
 }
 
 export interface getInquiryDetailResponse {
-  success: boolean;
-  message: string;
-  data: InquiryDetailData | null;
-  error: string | null;
+    success: boolean;
+    message: string;
+    data: InquiryDetailData | null;
+    error: string | null;
 }

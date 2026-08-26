@@ -1,3 +1,5 @@
+import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
+
 export interface InquiryFormValues {
   fullName: string;
   email: string;
@@ -31,6 +33,15 @@ export interface InquiryUpdatePayload {
   address?: string;
   passportStatus?: string;
   passportNo?: string;
+}
+
+export interface LeadListPayload {
+  page: number;
+  limit: number;
+  mode: CounsellingMode;
+  search: string;
+  branchId: string;
+  status?: string;
 }
 
 export interface Step2InquiryUpdatePayload {

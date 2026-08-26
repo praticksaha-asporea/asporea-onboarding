@@ -1,5 +1,6 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
 import { IUser } from "./User.model";
+import { IUpload } from "./Upload.model";
 
 export interface ILead extends Document {
   fullName?: string;
@@ -31,6 +32,7 @@ export interface ILead extends Document {
   inqForPosition?: Types.ObjectId;
   followUpRequired?: boolean;
   followUpAssignedTo?: Types.ObjectId;
+  candidateResume?: Types.ObjectId | IUpload;
 
   experience?: {
     type?: "fresher" | "domestic" | "abroad" | "free";
@@ -134,6 +136,10 @@ const LeadSchema = new Schema<ILead>(
     followUpAssignedTo: {
       type: Schema.Types.ObjectId,
       ref: "User"
+    },
+    candidateResume: {
+      type: Schema.Types.ObjectId,
+      ref: "Upload",
     },
     inqFy: {
       type: String,

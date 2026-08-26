@@ -4,18 +4,21 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
 import toast from "react-hot-toast";
-import axiosClient from "@/Services/AxiosConfig/axiosClient";
-// TODO: point this at wherever branchListingApi actually lives in your codebase.
+
 import {
   bookSlotAction,
+  cancelBookingAction,
   checkBookingStatusAction,
   getSlotsAction,
+  getTacsListAction,
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
-import { ExistingBooking, PreCounsellingPayload } from "@/Types/Frontend_Payload/precounselling.types";
+import { ExistingBooking } from "@/Types/Frontend_Payload/precounselling.types";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
-import { IUser } from "@/lib/models/User.model";
+import { preTACData } from "@/Types/object.types";
+import { confirmToast } from "@/Utils/confirmToast";
+import { ILead } from "@/lib/models/Lead.model";
 
 export type CounsellingMode = "online" | "offline";
 
@@ -58,10 +61,12 @@ export const usePreCounselling = () => {
 
   // ---- lead / existing-booking guard ----
   const [isReduxReady, setIsReduxReady] = useState(false);
+  const [showScheduling, setShowScheduling] = useState(true);
   const [isValidLead, setIsValidLead] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [existingBooking, setExistingBooking] = useState<ExistingBooking | null>(null);
   const [activeStepperStep, setActiveStepperStep] = useState(1);
+  const [canReschedule, setCanReschedule] = useState<boolean>(false);
 
   // ---- 1. branch (geolocation driven) ----
   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
@@ -74,13 +79,13 @@ export const usePreCounselling = () => {
   const [mode, setMode] = useState<CounsellingMode>("offline");
 
   // ---- 3. cv ----
-  // const [cvFile, setCvFile] = useState<File | null>(null);
-  // const [cvUploading, setCvUploading] = useState(false);
-  // const [cvError, setCvError] = useState<string | null>(null);
-  // const [cvUrl, setCvUrl] = useState<string | null>(null);
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const initialCV = { path: "" };
 
   // ---- 4. tac ----
-  const [tacs, setTacs] = useState<IUser[]>([]);
+  const [tacs, setTacs] = useState<preTACData[]>([]);
   const [loadingTacs, setLoadingTacs] = useState(false);
   const [tacSearch, setTacSearch] = useState("");
   const [selectedTacId, setSelectedTacId] = useState<string>("");
@@ -98,13 +103,13 @@ export const usePreCounselling = () => {
   // ---- 7. submit ----
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
-  const [profileTac, setProfileTac] = useState<IUser | null>(null);
+  const [profileTac, setProfileTac] = useState<preTACData | null>(null);
 
+  const [showCancel, setShowCancel] = useState(false);
+  const [cancelReason, setCancelReason] = useState<string>("");
 
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const initialCV = { path: "" };
+  const [leadData, setLeadData] = useState<ILead | null>(null);
+
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReduxReady(true), 500);
@@ -126,6 +131,22 @@ export const usePreCounselling = () => {
         const res = await checkBookingStatusAction({ leadId });
         if (res?.data?.success && res.data) {
           setExistingBooking(res?.data?.data);
+          setShowScheduling(res?.data?.data ? false : true);
+          const scheduleDate = res?.data?.data?.schedule?.date;
+          const scheduleFrom = res?.data?.data?.schedule?.from;
+
+          const datePart = new Date(scheduleDate)
+            .toISOString()
+            .split("T")[0];
+
+          const scheduleDateTime = new Date(
+            `${datePart} ${scheduleFrom}`
+          );
+
+          const thirtyMinutesBeforeNow = new Date(Date.now() - 30 * 60 * 1000);
+          // console.log(scheduleDateTime, thirtyMinutesFromNow);
+
+          setCanReschedule(scheduleDateTime > thirtyMinutesBeforeNow);
           if (res?.data.data.status?.toLowerCase() === "completed") setIsCompleted(true);
         } else if (res?.data?.message?.toLowerCase().includes("not found")) {
           setIsValidLead(false);
@@ -184,9 +205,8 @@ export const usePreCounselling = () => {
       }
       setLoadingTacs(true);
       try {
-        const res = await axiosClient.get("/pre-counselling/tac-list", {
-          params: { page: 1, limit: 10, search: tacSearch, mode, branchId: selectedBranchId },
-        });
+        const payload = { page: 1, limit: 10, search: tacSearch, mode, branchId: selectedBranchId };
+        const res = await getTacsListAction(payload);
         const list = res?.data?.data?.tacList || [];
         // console.log(list);
 
@@ -194,7 +214,7 @@ export const usePreCounselling = () => {
         // setSelectedTacId((prev) => (list.some((t: TAC) => t._id === prev) ? prev : ""));
       } catch (err) {
         console.error("TAC fetch error:", err);
-        toast.error("Failed to fetch TAC list");
+        // toast.error("Failed to fetch TAC list");
         setTacs([]);
       } finally {
         setLoadingTacs(false);
@@ -226,30 +246,6 @@ export const usePreCounselling = () => {
     fetchSlots();
   }, [selectedTacId, date]);
 
-  // ---- cv upload ----
-  // const handleCvChange = async (file: File | null) => {
-  //   setCvFile(file);
-  //   setCvError(null);
-  //   // setCvUrl(null);
-  //   if (!file || !leadId) return;
-
-  //   setCvUploading(true);
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append("leadId", leadId);
-  //     formData.append("cv", file);
-  //     const res = await axiosClient.post("/pre-counselling/upload-cv", formData, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //     });
-  //     if (res?.data?.success) setCvUrl(res.data.data?.url || null);
-  //     else setCvError(res?.data?.message || "Failed to upload CV");
-  //   } catch (err) {
-  //     setCvError("Failed to upload CV. Please try again.");
-  //   } finally {
-  //     setCvUploading(false);
-  //   }
-  // };
-
   // ---- captcha ----
   useEffect(() => {
     loadCaptchaEnginge(5);
@@ -276,21 +272,40 @@ export const usePreCounselling = () => {
     !!selectedBranchId &&
     !!mode &&
     !!resumeFile &&
-    // !cvUploading &&
-    !!selectedTacId &&
-    !!selectedSlot &&
-    !!captchaVerified
-    // && !bookingLoading
-    ;
+    !!captchaVerified &&
+    (!!selectedTacId === !!selectedSlot);
 
 
   const handleConfirm = async () => {
-    if (!leadId) return toast.error("Missing inquiry details. Please go back and try again.");
-    if (!selectedBranchId) return toast.error("Please select a branch");
-    if (!resumeFile) return toast.error("Please upload your CV");
-    if (!selectedTacId) return toast.error("Please select a preferred TAC");
-    if (!selectedSlot) return toast.error("Please select an available time slot");
-    if (!captchaVerified) return toast.error("Please complete the captcha verification");
+    if (!leadId) {
+      return toast.error(
+        "Missing inquiry details. Please go back and try again."
+      );
+    }
+
+    if (!selectedBranchId) {
+      return toast.error("Please select a branch.");
+    }
+
+    if (!mode) {
+      return toast.error("Please select a consultation mode.");
+    }
+
+    if (!resumeFile) {
+      return toast.error("Please upload your CV.");
+    }
+
+    if (!!selectedTacId !== !!selectedSlot) {
+      return toast.error(
+        selectedTacId
+          ? "Please select an available time slot."
+          : "Please select a preferred TAC."
+      );
+    }
+
+    if (!captchaVerified) {
+      return toast.error("Please complete the CAPTCHA verification.");
+    }
 
     setBookingLoading(true);
     try {
@@ -308,16 +323,20 @@ export const usePreCounselling = () => {
       const payload = new FormData();
       payload.append("leadId", leadId);
       payload.append("branchId", selectedBranchId);
-      payload.append("consultantId", selectedTacId);
-      payload.append("date", date);
-      payload.append("from", selectedSlot.from as string);
-      payload.append("to", selectedSlot.to as string);
+
+      if (selectedTacId) {
+        payload.append("consultantId", selectedTacId);
+        payload.append("date", date);
+        payload.append("from", selectedSlot?.from as string);
+        payload.append("to", selectedSlot?.to as string);
+      }
       payload.append("method", mode === "online" ? "on" : "off");
 
       if (resumeFile) payload.append("resumeFile", resumeFile);
 
       const res = await bookSlotAction(payload);
       if (res?.data?.success) {
+        setLeadData(res?.data?.data);
         toast.success("Pre-Counselling scheduled successfully!");
         setShowConfirmPopup(true);
       }
@@ -380,6 +399,32 @@ export const usePreCounselling = () => {
     };
   }, [resumeFile, existingResume]);
 
+  const cancellationRequest = async () => {
+    const confirmed = await confirmToast(`Are you sure to cancel this appointment !`);
+    if (!confirmed) return;
+
+    try {
+      const res = await cancelBookingAction({ leadId: existingBooking?.leadId, actionBy: reduxUser?._id, cancelReason: cancelReason });
+      if (res?.data?.success) {
+        setExistingBooking(null);
+        toast.success("Cancellation request sent successfully!");
+      }
+    } catch (err: any) {
+      console.error(err?.response?.data?.message ?? "Failed to send cancellation request");
+    }
+  }
+
+  const handleCancelReason = () => {
+    setShowCancel((prev) => !prev);
+    setShowScheduling(false);
+    setShowScheduling(true);
+  }
+
+  const handleReschedule = () => {
+    setShowScheduling((prev) => !prev);
+    setShowCancel(false);
+  }
+
   return {
     leadId,
     todayStr,
@@ -395,15 +440,10 @@ export const usePreCounselling = () => {
     loadingBranches,
     selectedBranchId,
     setSelectedBranchId,
+    showScheduling, handleReschedule,
 
     mode,
     setMode,
-
-    // cvFile,
-    // cvUploading,
-    // cvError,
-    // cvUrl,
-    // handleCvChange,
 
     handleDragOver, handleDragLeave, handleDrop,
     onFileInputChange,
@@ -434,6 +474,14 @@ export const usePreCounselling = () => {
     setShowConfirmPopup,
     canConfirm,
     handleConfirm,
-    profileTac, setProfileTac
+    profileTac, setProfileTac,
+    cancellationRequest,
+    showCancel,
+    handleCancelReason,
+    reduxUser,
+    cancelReason,
+    setCancelReason,
+    canReschedule,
+    leadData
   };
 };
