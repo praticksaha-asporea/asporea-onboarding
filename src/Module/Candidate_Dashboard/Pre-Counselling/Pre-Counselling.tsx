@@ -492,9 +492,9 @@ const PreCounsellingContent = () => {
             /> */}
 
                 {loadingTacs ? (
-                  <Box className="flex flex-col gap-3">
+                  <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2].map((i) => (
-                      <Box key={i} className="flex items-center gap-4 p-4 rounded-2xl border border-[var(--mui-palette-divider)]">
+                      <Box key={i} className="relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200">
                         <Skeleton variant="circular" width={52} height={52} />
                         <Box className="flex-1">
                           <Skeleton variant="text" width="40%" />
@@ -678,7 +678,15 @@ const PreCounsellingContent = () => {
                           variant={
                             selectedSlot?.time === slot.time ? "contained" : "outlined"
                           }
-                          onClick={() => slot.available && setSelectedSlot(slot)}
+                          onClick={() => {
+                            if (!slot.available) return;
+
+                            setSelectedSlot((prev) =>
+                              prev?.from === slot.from && prev?.to === slot.to
+                                ? null
+                                : slot
+                            );
+                          }}
                           className={`normal-case rounded-[20px] px-6 ${selectedSlot?.time === slot.time ? "bg-primary border-primary text-white" : slot.available ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit" : "bg-[#f5f5f5] border-[#e0e0e0]"} disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]`}
                         >
                           {slot.time || `${slot.from} - ${slot.to}`}
