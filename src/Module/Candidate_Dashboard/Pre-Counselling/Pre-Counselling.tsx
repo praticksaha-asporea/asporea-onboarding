@@ -123,7 +123,8 @@ const PreCounsellingContent = () => {
     showCancel,
     handleCancelReason,
     cancelReason,
-    setCancelReason
+    setCancelReason,
+    leadData
   } = usePreCounselling();
 
   // const cvUploadInputRef = React.useRef<HTMLInputElement>(null);
@@ -762,7 +763,7 @@ const PreCounsellingContent = () => {
             </Button>
           </Box>
 
-          <SuccessDialog showConfirmPopup={showConfirmPopup} setShowConfirmPopup={setShowConfirmPopup} leadId={leadId} />
+          <SuccessDialog showConfirmPopup={showConfirmPopup} setShowConfirmPopup={setShowConfirmPopup} leadData={leadData} mode={mode} />
           <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="md" fullWidth PaperProps={{ className: "rounded-[20px] relative overflow-hidden" }}>
             <Box className="flex items-center justify-between px-5 py-3 border-b border-[var(--mui-palette-divider)]">
               <Typography variant="subtitle1" className="font-bold">Resume Preview</Typography>

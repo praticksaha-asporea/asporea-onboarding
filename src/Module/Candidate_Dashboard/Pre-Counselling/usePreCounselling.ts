@@ -18,6 +18,7 @@ import { ExistingBooking } from "@/Types/Frontend_Payload/precounselling.types";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 import { preTACData } from "@/Types/object.types";
 import { confirmToast } from "@/Utils/confirmToast";
+import { ILead } from "@/lib/models/Lead.model";
 
 export type CounsellingMode = "online" | "offline";
 
@@ -106,6 +107,8 @@ export const usePreCounselling = () => {
 
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>("");
+
+  const [leadData, setLeadData] = useState<ILead | null>(null);
 
 
   useEffect(() => {
@@ -333,6 +336,7 @@ export const usePreCounselling = () => {
 
       const res = await bookSlotAction(payload);
       if (res?.data?.success) {
+        setLeadData(res?.data?.data);
         toast.success("Pre-Counselling scheduled successfully!");
         setShowConfirmPopup(true);
       }
@@ -477,6 +481,7 @@ export const usePreCounselling = () => {
     reduxUser,
     cancelReason,
     setCancelReason,
-    canReschedule
+    canReschedule,
+    leadData
   };
 };

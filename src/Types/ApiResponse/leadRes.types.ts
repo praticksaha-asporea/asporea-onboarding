@@ -8,6 +8,7 @@ import {
     tacData,
     techDBData,
 } from "../object.types";
+import { ILead } from "@/lib/models/Lead.model";
 
 export interface inquiryResponse {
     success: boolean;
@@ -246,29 +247,30 @@ export interface externalSourceResponse {
 export interface bookPreCounsellingRes {
     success: boolean;
     message: string;
-    data: {
-        schedule: {
-            date: string;
-            from: string;
-            to: string;
-            method: string;
-        };
-        token: {
-            generated: boolean;
-            number: string | null;
-        };
-        transfer: {
-            requested: boolean;
-        };
-        _id: string;
-        leadId: string;
-        phase: string;
-        assignedTo: string;
-        attended: boolean;
-        createdAt: string;
-        status: string;
-        updatedAt: string;
-    };
+    data: ILead
+    // {
+    //     schedule: {
+    //         date: string;
+    //         from: string;
+    //         to: string;
+    //         method: string;
+    //     };
+    //     token: {
+    //         generated: boolean;
+    //         number: string | null;
+    //     };
+    //     transfer: {
+    //         requested: boolean;
+    //     };
+    //     _id: string;
+    //     leadId: string;
+    //     phase: string;
+    //     assignedTo: string;
+    //     attended: boolean;
+    //     createdAt: string;
+    //     status: string;
+    //     updatedAt: string;
+    // };
     error: null;
 }
 
