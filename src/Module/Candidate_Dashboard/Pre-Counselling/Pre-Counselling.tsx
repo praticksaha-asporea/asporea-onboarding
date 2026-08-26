@@ -62,7 +62,7 @@ const SectionHeader = ({
 );
 
 const sectionCardClass =
-  "p-5 sm:p-7 rounded-3xl border border-[var(--mui-palette-divider)] shadow-[0px_8px_24px_-12px_rgba(15,23,42,0.12)] mb-6";
+  "p-5 sm:p-7 rounded-3xl  shadow-2xl bg-[var(--mui-palette-primary)] mb-6";
 
 const todayStr = new Date().toISOString().split("T")[0];
 const PreCounsellingContent = () => {

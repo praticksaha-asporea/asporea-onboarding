@@ -9,6 +9,7 @@ export interface UserData {
   firstName?: string;
   lastName?: string;
   candidateProfile?: {
+    leadId?: string;
     technicalQualification?: string;
     academic?: string;
     nationality?: string;
