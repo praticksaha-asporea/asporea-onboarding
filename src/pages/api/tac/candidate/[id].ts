@@ -20,6 +20,8 @@ import "@/lib/models/DocumentType.model";
 import "@/lib/models/Position.model";
 import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
 import { AssessmentModel } from "@/lib/models/Assessment.model";
+import User, { IUser } from "@/lib/models/User.model";
+import { ExternalSourceModel } from "@/lib/models/ExternalSource.model";
 
 export default async function handler(
   req: NextApiRequest,
@@ -39,6 +41,7 @@ export default async function handler(
     const userRole = String(authUser.role).toLowerCase();
     let generalSettings: any = {};
     let assessResult: any = {};
+    let user: IUser | null = null;
     if (userRole !== "tac" && userRole !== "foe" && userRole !== "tac_head" && userRole !== "admin")
       throw new ApiError("Unauthorized access. Insufficient permissions.", 403);
 
@@ -168,14 +171,28 @@ export default async function handler(
     if (assignmentByPhase?.["assess"]?.status === "completed") {
       assessResult = await AssessmentModel.findOne({ leadId: lead?._id })
     }
+    if (lead?._id) {
+      user = await User.findOne({
+        "candidateProfile.leadId": lead._id,
+      });
+    }
+    if (["pca", "pcra", "institute"].includes(lead?.source?.refType) &&
+      lead?.source?.refName) {
+
+      const refUser = await ExternalSourceModel.findById(lead.source.refName)
+        .select("name")
+        .lean();
+
+      if (refUser) {
+        lead.source.refName = refUser.name;
+      }
+    }
     return ResponseHandler.sendSuccess(
       res,
-      { lead, branchToken, assignments, assignmentByPhase, generalSettings, assessResult },
+      { lead, branchToken, assignments, assignmentByPhase, generalSettings, assessResult, user },
       "Candidate fetched",
     );
   } catch (error: unknown) {
-    console.log(error, 13516);
-
     if (error instanceof ApiError)
       return ResponseHandler.sendError(
         res,

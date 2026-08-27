@@ -142,6 +142,7 @@ export const getTacCandidates = async ({
       experience: lead.experience?.type ?? null,
       token: creatorId ? (tokenMap.get(String(creatorId)) ?? null) : null,
       profilePic: creatorId ? (userPicMap.get(String(creatorId)) ?? null) : null,
+      createdAt: lead.createdAt,
       lastActivity: lead.updatedAt,
       branchId: lead.preferences?.branchId ?? null,
       visitType: resolvedVisitType,

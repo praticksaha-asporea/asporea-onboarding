@@ -576,6 +576,10 @@ export const savePreCounsellingBooking = async (
     leadUpdate["preferences.consultantId"] =
       resolvedConsultantId;
   }
+  if (method) {
+    leadUpdate["preferences.visitType"] =
+      method;
+  }
 
   if (initialCV) {
     leadUpdate.candidateResume = initialCV;

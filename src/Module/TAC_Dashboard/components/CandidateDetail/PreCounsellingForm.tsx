@@ -79,7 +79,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             {source?.refName && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Referred By (Name)" disabled value={source.refName} /></Grid>}
             {preferences?.visitType === "offline" && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Token No" value={inqAssign?.token?.number ?? "—"} disabled /></Grid>}
 
-            <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Inquiry Created" disabled value={c?.lastActivity ? dayjs(c.lastActivity).format("DD/MM/YYYY hh:mm A") : "—"} /></Grid>
+            <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Inquiry Created" disabled value={c?.createdAt ? dayjs(c.createdAt).format("DD/MM/YYYY hh:mm A") : "—"} /></Grid>
             <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Scheduled Date" disabled value={inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("DD/MM/YYYY") : "—"} /></Grid>
             <Grid size={{ xs: 12, md: 6 }}>
               <TextField fullWidth label="Scheduled Time" disabled value={inqAssign?.schedule?.from ? inqAssign.schedule.from + (inqAssign.schedule.to ? " – " + inqAssign.schedule.to : "") : "—"} />

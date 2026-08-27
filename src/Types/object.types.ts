@@ -117,6 +117,7 @@ export interface CandidateRow {
     experience: string | null;
     visitType: string | null;
     token: string | null;
+    createdAt: string | null;
     lastActivity: string;
     branchId?: string | null
     contact: { phone?: string; email?: string; whatsapp?: string };

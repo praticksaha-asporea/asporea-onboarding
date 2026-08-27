@@ -17,13 +17,13 @@ import { UserData } from "@/Redux/Auth/user.slice";
 import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
 import LeadLogsCard from "./LeadLogsCard";
 
-interface CandidateDetailProps {}
+interface CandidateDetailProps { }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
-  
+
   // 👉 Tab Control State
-  const [tabValue, setTabValue] = useState(0); 
+  const [tabValue, setTabValue] = useState(0);
 
   const params = useParams<{ id: string }>();
   const id = params?.id;
@@ -76,9 +76,14 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           passport: response?.data?.data.lead.passport,
           token: response?.data?.data.branchToken?.tokenNo ?? null,
           lastActivity: response?.data?.data.lead.updatedAt,
+          createdAt: response?.data?.data.lead.createdAt,
           assignmentByPhase: response?.data?.data.assignmentByPhase ?? {},
           notificationPreference:
             response?.data?.data.lead?.notificationPreference ?? {},
+          inquiryStages: response?.data?.data.lead.inquiryStages ?? {},
+          inqForType: response?.data?.data.lead.inqForType ?? "",
+          inqForPosition: response?.data?.data.lead.inqForPosition ?? "",
+          user: response?.data?.data?.user ?? ""
         });
       })
       .catch((err) =>
@@ -103,7 +108,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
     );
   }
 
-  
+
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -119,7 +124,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           onChange={handleTabChange}
           variant="scrollable"
           scrollButtons="auto"
-         className="min-h-[54px] [&_.MuiTab-root]:min-h-[54px] [&_.MuiTab-root]:normal-case [&_.MuiTab-root]:font-medium [&_.MuiTab-root]:text-[16px] [&_.MuiTab-root]:text-[var(--mui-palette-text-secondary)] [&_.MuiTab-root]:gap-2 [&_.Mui-selected]:!text-[var(--mui-palette-primary-main)]"
+          className="min-h-[54px] [&_.MuiTab-root]:min-h-[54px] [&_.MuiTab-root]:normal-case [&_.MuiTab-root]:font-medium [&_.MuiTab-root]:text-[16px] [&_.MuiTab-root]:text-[var(--mui-palette-text-secondary)] [&_.MuiTab-root]:gap-2 [&_.Mui-selected]:!text-[var(--mui-palette-primary-main)]"
         >
           <Tab label="Inquiry Details" icon={<i className="ri-file-list-3-line text-[18px]" />} iconPosition="start" />
           <Tab label="Notes" icon={<i className="ri-sticky-note-line text-[18px]" />} iconPosition="start" />
@@ -128,10 +133,10 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
       </Box>
 
       <Grid container spacing={3}>
-        
-       
+
+
         <Grid size={{ xs: 12, lg: 9 }}>
-          
+
           {/* TAB 0: Forms */}
           {tabValue === 0 && (
             <Stack spacing={3}>
@@ -194,7 +199,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
             />
           </Box>
         </Grid>
-        
+
       </Grid>
     </Box>
   );

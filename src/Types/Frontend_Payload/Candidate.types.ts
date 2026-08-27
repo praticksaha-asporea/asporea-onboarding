@@ -1,3 +1,4 @@
+import { IUser } from "@/lib/models/User.model";
 import { ExpType } from "@/Types/object.types";
 
 export interface BranchType {
@@ -57,12 +58,18 @@ export interface CandidateLead extends DocumentBaseCandidate {
     whatsapp?: string;
     email?: string;
   };
-
+  inqForType: string;
+  inqForPosition: string;
   address?: string;
   preferences?: {
     branchId?: BranchType | string;
     consultantId?: ConsultantType | string;
     visitType?: string;
+  };
+  inquiryStages?: {
+    stage1?: string;
+    stage2?: string;
+    stage3?: string;
   };
   source?: { type?: string; refType?: string; refName?: string };
   experience?: { type?: ExpType; status?: string };
@@ -75,9 +82,11 @@ export interface CandidateLead extends DocumentBaseCandidate {
   technical?: { status?: string; classify?: string };
   passport?: { status?: string; no?: string };
   lastActivity?: string | Date;
+  createdAt?: string | Date;
   updatedAt?: string | Date;
   notificationPreference?: { email?: boolean; sms?: boolean; whatsapp?: boolean } | any;
   assignmentByPhase?: Record<string, any>;
   stage?: string;
   token?: string | null;
+  user?: IUser;
 }
