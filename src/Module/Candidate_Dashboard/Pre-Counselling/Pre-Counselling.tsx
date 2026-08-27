@@ -14,7 +14,10 @@ import Skeleton from "@mui/material/Skeleton";
 import { CircularProgress, Chip, Dialog, DialogContent } from "@mui/material";
 import { LoadCanvasTemplate } from "react-simple-captcha";
 
-import { usePreCounselling, Branch } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
+import {
+  usePreCounselling,
+  Branch,
+} from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 import { ProgressSidebar } from "@/Components/PreCounselling/ProgressSidebar";
 import { NotificationChannels } from "@/Components/PreCounselling/NotificationChannels";
 import { SuccessDialog } from "@/Components/PreCounselling/SuccessDialog";
@@ -41,19 +44,30 @@ const SectionHeader = ({
   <Box className="flex items-start gap-4 mb-5">
     <Box
       className="flex items-center justify-center rounded-2xl shrink-0"
-      style={{ width: 44, height: 44, background: `color-mix(in srgb, ${accent} 12%, transparent)` }}
+      style={{
+        width: 44,
+        height: 44,
+        background: `color-mix(in srgb, ${accent} 12%, transparent)`,
+      }}
     >
       <i className={icon} style={{ fontSize: 22, color: accent }} />
     </Box>
     <Box className="min-w-0">
-      <Typography variant="caption" className="font-bold tracking-widest uppercase" style={{ color: accent, letterSpacing: "0.08em" }}>
+      <Typography
+        variant="caption"
+        className="font-bold tracking-widest uppercase"
+        style={{ color: accent, letterSpacing: "0.08em" }}
+      >
         {step}
       </Typography>
       <Typography variant="h6" className="font-bold leading-snug -mt-0.5">
         {title}
       </Typography>
       {description && (
-        <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] mt-0.5">
+        <Typography
+          variant="body2"
+          className="text-[var(--mui-palette-text-secondary)] mt-0.5"
+        >
           {description}
         </Typography>
       )}
@@ -88,9 +102,17 @@ const PreCounsellingContent = () => {
     // cvUploading,
     // cvError,
     // handleCvChange,
-    handleDragOver, handleDragLeave, handleDrop,
-    onFileInputChange, resumeFile, isDragging, fileInputRef,
-    previewUrl, isPreviewOpen, setIsPreviewOpen, isPdf,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
+    onFileInputChange,
+    resumeFile,
+    isDragging,
+    fileInputRef,
+    previewUrl,
+    isPreviewOpen,
+    setIsPreviewOpen,
+    isPdf,
 
     tacs,
     loadingTacs,
@@ -117,42 +139,50 @@ const PreCounsellingContent = () => {
     setShowConfirmPopup,
     canConfirm,
     handleConfirm,
-    profileTac, setProfileTac,
-
+    profileTac,
+    setProfileTac,
+    handleBranchSelect,
     cancellationRequest,
     showCancel,
     handleCancelReason,
     cancelReason,
     setCancelReason,
-    leadData
+    leadData,
+    reduxUser
   } = usePreCounselling();
 
-  // const cvUploadInputRef = React.useRef<HTMLInputElement>(null);
-  // const [isDraggingCv, setIsDraggingCv] = React.useState(false);
-
-  // const validateAndSetCv = (candidate: File | undefined) => {
-  //   if (!candidate) return;
-  //   if (candidate.size > 5 * 1024 * 1024) {
-  //     // eslint-disable-next-line no-alert
-  //     alert("File must be smaller than 5MB");
-  //     return;
-  //   }
-  //   handleCvChange(candidate);
-  // };
-
-  // const isCvSuccess = !!cvFile && !cvUploading && !cvError;
+  const displayInqNo =
+  leadData?.inqNo ||
+  (typeof existingBooking?.leadId === "object"
+    ? (existingBooking?.leadId as any)?.inqNo
+    : null) ||
+  reduxUser?.inqNo ||
+  reduxUser?.leadId?.inqNo ||
+  reduxUser?.user?.leadId?.inqNo ||
+  "N/A";
 
   if (!isValidLead) {
     return (
       <Card className="p-12 rounded-3xl border border-[var(--mui-palette-divider)] shadow-[0px_8px_24px_-12px_rgba(15,23,42,0.12)] text-center flex flex-col items-center justify-center min-h-[420px]">
-        <Box className="flex items-center justify-center rounded-full mb-5" style={{ width: 72, height: 72, background: "color-mix(in srgb, #ef4444 12%, transparent)" }}>
+        <Box
+          className="flex items-center justify-center rounded-full mb-5"
+          style={{
+            width: 72,
+            height: 72,
+            background: "color-mix(in srgb, #ef4444 12%, transparent)",
+          }}
+        >
           <i className="ri-error-warning-fill text-4xl text-red-500" />
         </Box>
         <Typography variant="h5" className="font-bold mb-2">
           Application Not Found
         </Typography>
-        <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)] max-w-md">
-          The application or lead you are trying to access has been deleted or does not exist.
+        <Typography
+          variant="body2"
+          className="text-[var(--mui-palette-text-secondary)] max-w-md"
+        >
+          The application or lead you are trying to access has been deleted or
+          does not exist.
         </Typography>
       </Card>
     );
@@ -161,16 +191,30 @@ const PreCounsellingContent = () => {
   if (isCompleted) {
     return (
       <Card className="p-12 rounded-3xl text-center flex flex-col items-center justify-center min-h-[420px] border border-[var(--mui-palette-divider)] shadow-[0px_12px_32px_-16px_rgba(15,23,42,0.18)]">
-        <Box className="w-20 h-20 rounded-full flex items-center justify-center mb-6" style={{ background: "color-mix(in srgb, var(--mui-palette-success-main) 14%, transparent)" }}>
+        <Box
+          className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+          style={{
+            background:
+              "color-mix(in srgb, var(--mui-palette-success-main) 14%, transparent)",
+          }}
+        >
           <i className="ri-checkbox-circle-fill text-5xl text-[var(--mui-palette-success-main)]" />
         </Box>
         <Typography variant="h4" className="font-bold mb-2">
           Pre-Counselling Completed
         </Typography>
-        <Typography variant="subtitle1" className="text-[var(--mui-palette-text-secondary)] max-w-md mx-auto">
-          Your pre-counselling session has been successfully completed. You can now proceed to upload your documents.
+        <Typography
+          variant="subtitle1"
+          className="text-[var(--mui-palette-text-secondary)] max-w-md mx-auto"
+        >
+          Your pre-counselling session has been successfully completed. You can
+          now proceed to upload your documents.
         </Typography>
-        <Button variant="contained" href="/document-upload" className="mt-6 rounded-xl normal-case shadow-none px-8 py-2.5 font-semibold">
+        <Button
+          variant="contained"
+          href="/document-upload"
+          className="mt-6 rounded-xl normal-case shadow-none px-8 py-2.5 font-semibold"
+        >
           Proceed to Documents
           <i className="ri-arrow-right-line ml-1.5" />
         </Button>
@@ -178,170 +222,180 @@ const PreCounsellingContent = () => {
     );
   }
 
-  // if (!isReduxReady) {
-  //   return (
-  //     <Card className="p-12 rounded-3xl border border-[var(--mui-palette-divider)] shadow-[0px_8px_24px_-12px_rgba(15,23,42,0.12)] text-center flex flex-col items-center justify-center min-h-[420px]">
-  //       <CircularProgress size={36} thickness={4} />
-  //       <Typography className="mt-4 text-[var(--mui-palette-text-secondary)] font-medium">Fetching your details...</Typography>
-  //     </Card>
-  //   );
-  // }
-
-  // if (existingBooking) {
-  //   return (
-  //     <Card className={sectionCardClass}>
-  //       <Box className="p-5 rounded-2xl bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_5%,transparent)] border border-[color-mix(in_srgb,var(--mui-palette-primary-main)_20%,transparent)] flex items-center gap-4">
-  //         <Box className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, var(--mui-palette-primary-main) 14%, transparent)" }}>
-  //           <i className="ri-calendar-check-fill text-2xl text-[var(--mui-palette-primary-main)]" />
-  //         </Box>
-  //         <Box>
-  //           <Typography variant="h6" className="font-bold mb-1">
-  //             Session Already Scheduled
-  //           </Typography>
-  //           <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
-  //             Booked for <strong>{existingBooking.schedule?.date}</strong> at{" "}
-  //             <strong>{existingBooking.schedule?.from} - {existingBooking.schedule?.to}</strong>.
-  //           </Typography>
-  //         </Box>
-  //       </Box>
-  //       <Box className="flex justify-end mt-6">
-  //         <Button variant="contained" size="large" href="/document-upload" className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold">
-  //           Go to Documents
-  //           <i className="ri-arrow-right-line ml-1.5" />
-  //         </Button>
-  //       </Box>
-  //     </Card>
-  //   );
-  // }
+  
 
   return (
     <>
       <Card className={sectionCardClass}>
         <Box className="flex items-start justify-between gap-3">
-          <Box>
-            <Typography variant="h4">Confirm Pre-Counselling Readiness</Typography>
-            <Typography variant="subtitle1" className="pb-5">
-              Review the details below and confirm your availability for the upcoming session.
+          <Box className="flex items-center gap-2.5 mb-1 flex-wrap">
+            <Typography variant="h4">
+              Confirm Pre-Counselling Readiness
             </Typography>
+<Chip label={`Inquiry #${displayInqNo}`} size="small" className=" shadow-2xl text-[var(--mui-palette-primary-main)]
+" />
           </Box>
           <Chip
             label={mode === "online" ? "🌐 Online" : "🏢 In-Person"}
             className="font-bold text-white text-[13px] shrink-0"
-            sx={{ bgcolor: mode === "online" ? "var(--mui-palette-primary-main)" : "var(--mui-palette-secondary-main)" }}
+            sx={{
+              bgcolor:
+                mode === "online"
+                  ? "var(--mui-palette-primary-main)"
+                  : "var(--mui-palette-secondary-main)",
+            }}
           />
         </Box>
       </Card>
 
-      {existingBooking &&
-        (
-          <Card className={sectionCardClass}>
-            <Box className="p-5 rounded-2xl bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_5%,transparent)] border border-[color-mix(in_srgb,var(--mui-palette-primary-main)_20%,transparent)] flex items-center gap-4">
-              <Box className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0" style={{ background: "color-mix(in srgb, var(--mui-palette-primary-main) 14%, transparent)" }}>
-                <i className="ri-calendar-check-fill text-2xl text-[var(--mui-palette-primary-main)]" />
-              </Box>
-              <Box>
-                <Typography variant="h6" className="font-bold mb-1">
-                  Session Scheduled
-                </Typography>
-                <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
-                  Booked for <strong>{formatToDDMMYY(existingBooking?.schedule?.date as string)}</strong> at{" "}
-                  <strong>{existingBooking?.schedule?.from} - {existingBooking?.schedule?.to}</strong>.
-                </Typography>
-              </Box>
+      {existingBooking && (
+        <Card className={sectionCardClass}>
+          <Box className="p-5 rounded-2xl  ,transparent)] shadow-2xl  ,transparent)] flex items-center gap-4">
+            <Box
+              className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
+              style={{
+                background:
+                  "color-mix(in srgb, var(--mui-palette-primary-main) 14%, transparent)",
+              }}
+            >
+              <i className="ri-calendar-check-fill text-2xl text-[var(--mui-palette-primary-main)]" />
             </Box>
-            <Box className="flex justify-end gap-2 mt-6">
-              <Button variant="outlined" size="small" onClick={handleReschedule} disabled={canReschedule} className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold gap-1">
-                {!showScheduling ? "Reschedule" : "Leave as it is"}
-                <i className="ri-calendar-check-fill" />
-              </Button>
-
-              <Button variant="contained" size="small" className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold gap-1 bg-[var(--mui-palette-error-main)]" onClick={handleCancelReason}>
-                Cancel
-                <i className="ri-delete-bin-fill" />
-              </Button>
-
-              <Button variant="contained" size="small" href="/document-upload" className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold">
-                Go to Documents
-                <i className="ri-arrow-right-line" />
-              </Button>
+            <Box>
+              <Typography variant="h6" className="font-bold mb-1">
+                Session Scheduled
+              </Typography>
+              <Typography
+                variant="body2"
+                className="text-[var(--mui-palette-text-secondary)]"
+              >
+                Booked for{" "}
+                <strong>
+                  {formatToDDMMYY(existingBooking?.schedule?.date as string)}
+                </strong>{" "}
+                at{" "}
+                <strong>
+                  {existingBooking?.schedule?.from} -{" "}
+                  {existingBooking?.schedule?.to}
+                </strong>
+                .
+              </Typography>
             </Box>
-            {showCancel && (
-              <Box
-                className="
+          </Box>
+          <Box className="flex justify-end gap-2 mt-6">
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleReschedule}
+              disabled={canReschedule}
+              className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold gap-1"
+            >
+              {!showScheduling ? "Reschedule" : "Leave as it is"}
+              <i className="ri-calendar-check-fill" />
+            </Button>
+
+            <Button
+              variant="contained"
+              size="small"
+              className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold gap-1 bg-[var(--mui-palette-error-main)]"
+              onClick={handleCancelReason}
+            >
+              Cancel
+              <i className="ri-delete-bin-fill" />
+            </Button>
+
+            <Button
+              variant="contained"
+              size="small"
+              href="/document-upload"
+              className="rounded-xl normal-case text-sm shadow-md px-8 font-semibold"
+            >
+              Go to Documents
+              <i className="ri-arrow-right-line" />
+            </Button>
+          </Box>
+          {showCancel && (
+            <Box
+              className="
               mt-6
               p-5
               rounded-2xl
-              border
-              border-[color-mix(in_srgb,#ef4444_25%,var(--mui-palette-divider))]
-              bg-[color-mix(in_srgb,#ef4444_4%,transparent)]
+              shadow-2xl
+              
+              bg-[var(--mui-palette-primary)]
             "
-              >
-                <Box className="flex items-center gap-2 mb-4">
-                  <Box
-                    className="
+            >
+              <Box className="flex items-center gap-2 mb-4">
+                <Box
+                  className="
                   flex items-center justify-center
                   w-9 h-9
                   rounded-xl
-                  bg-red-500/10
-                  text-red-500
+                 
+          text-[var(--mui-palette-error-main)]
                 "
-                  >
-                    <i className="ri-close-circle-line text-lg" />
-                  </Box>
-
-                  <Box>
-                    <Typography
-                      variant="subtitle1"
-                      className="font-bold"
-                    >
-                      Cancellation Request
-                    </Typography>
-
-                    <Typography
-                      variant="caption"
-                      className="text-[var(--mui-palette-text-secondary)]"
-                    >
-                      Please provide a reason for cancelling this session.
-                    </Typography>
-                  </Box>
+                >
+                  <i className="ri-close-circle-line text-xl" />
                 </Box>
 
-                <TextField
-                  label="Reason"
-                  variant="outlined"
-                  fullWidth
-                  multiline
-                  minRows={4}
-                  placeholder="Enter your cancellation reason..."
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
-                />
+                <Box>
+                  <Typography
+                    variant="subtitle1"
+                    className="font-medium text-[var(--mui-palette-error-main)] "
+                  >
+                    Cancellation Request
+                  </Typography>
 
-                <Box className="flex justify-end mt-4">
-                  <Button
-                    variant="contained"
-                    color="error"
-                    onClick={cancellationRequest}
-                    className="
+                  <Typography
+                    variant="caption"
+                    className="text-[var(--mui-palette-error-main)]"
+                  >
+                    Please provide a reason for cancelling this session.
+                  </Typography>
+                </Box>
+              </Box>
+
+              <TextField
+                label="Reason"
+                variant="outlined"
+                fullWidth
+                multiline
+                minRows={4}
+                placeholder="Enter your cancellation reason..."
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+              />
+
+              <Box className="flex justify-end mt-4">
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={cancellationRequest}
+                  className="
                   rounded-xl
                   normal-case
                   px-7
                   font-semibold
                   gap-2
                 "
-                    startIcon={<i className="ri-send-plane-fill" />}
-                  >
-                    Send Request
-                  </Button>
-                </Box>
+                  startIcon={<i className="ri-send-plane-fill" />}
+                >
+                  Send Request
+                </Button>
               </Box>
-            )}
-          </Card>
-        )}
+            </Box>
+          )}
+        </Card>
+      )}
       {showScheduling && (
         <>
           <Card className={sectionCardClass}>
-            <SectionHeader icon="ri-map-pin-2-line" step="Step 1" title="Choose Your Branch" description="Branches near you, based on your current location." accent="var(--mui-palette-secondary-main)" />
+            <SectionHeader
+              icon="ri-map-pin-2-line"
+              step="Step 1"
+              title="Choose Your Branch"
+              description="Branches near you, based on your current location."
+              accent="var(--mui-palette-secondary-main)"
+            />
 
             {locationDenied && (
               <Box className="flex items-center gap-2 mb-4 p-3 rounded-xl bg-[color-mix(in_srgb,#f59e0b_10%,transparent)]">
@@ -355,11 +409,20 @@ const PreCounsellingContent = () => {
             {loadingBranches ? (
               <Box className="flex gap-3 overflow-x-auto pb-1">
                 {[1, 2, 3].map((i) => (
-                  <Skeleton key={i} variant="rounded" width={200} height={84} className="rounded-2xl shrink-0" />
+                  <Skeleton
+                    key={i}
+                    variant="rounded"
+                    width={200}
+                    height={84}
+                    className="rounded-2xl shrink-0"
+                  />
                 ))}
               </Box>
             ) : branches.length === 0 ? (
-              <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
+              <Typography
+                variant="body2"
+                className="text-[var(--mui-palette-text-secondary)]"
+              >
                 No branches found near your location.
               </Typography>
             ) : (
@@ -369,26 +432,43 @@ const PreCounsellingContent = () => {
                   return (
                     <Box
                       key={branch._id}
-                      onClick={() => setSelectedBranchId(branch._id)}
-                      className={`flex flex-col gap-1 p-4 rounded-2xl border-2 cursor-pointer shrink-0 transition-all duration-200 ${isSelected
-                        ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_6%,transparent)]"
-                        : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
-                        }`}
+                      onClick={() => handleBranchSelect(branch._id)}
+                      className={`flex flex-col gap-1 p-4 rounded-2xl   cursor-pointer shrink-0 transition-all duration-200 ${
+                        isSelected
+                          ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_19%,transparent)]"
+                          : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
+                      }`}
                       style={{ minWidth: 200 }}
                     >
                       <Box className="flex items-center gap-2">
-                        <i className={isSelected ? "ri-checkbox-circle-fill text-[var(--mui-palette-primary-main)]" : "ri-building-4-line text-[var(--mui-palette-text-secondary)]"} />
-                        <Typography variant="subtitle2" className="font-bold">
+                        <i
+                          className={
+                            isSelected
+                              ? "ri-checkbox-circle-fill text-[var(--mui-palette-primary-main)]"
+                              : "ri-building-4-line text-[var(--mui-palette-text-secondary)]"
+                          }
+                        />
+                        <Typography
+                          variant="subtitle2"
+                          className="font-medium tracking-wide text-[var(--mui-palette-primary)]
+"
+                        >
                           {branch.title}
                         </Typography>
                       </Box>
                       {branch.city && (
-                        <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)]">
+                        <Typography
+                          variant="caption"
+                          className="text-[var(--mui-palette-text-secondary)]"
+                        >
                           {branch.city}
                         </Typography>
                       )}
                       {typeof branch.distanceKm === "number" && (
-                        <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)]">
+                        <Typography
+                          variant="caption"
+                          className="mt-1 text-[var(--mui-palette-info-main)]"
+                        >
                           {branch.distanceKm.toFixed(1)} km away
                         </Typography>
                       )}
@@ -400,7 +480,13 @@ const PreCounsellingContent = () => {
           </Card>
 
           <Card className={sectionCardClass}>
-            <SectionHeader icon="ri-route-line" step="Step 2" title="Session Mode" description="How you'd like to connect with your TAC." accent="var(--mui-palette-secondary-main)" />
+            <SectionHeader
+              icon="ri-route-line"
+              step="Step 2"
+              title="Session Mode"
+              description="How you'd like to connect with your TAC."
+              accent="var(--mui-palette-secondary-main)"
+            />
             <Box className="flex gap-2 p-1 rounded-2xl bg-[var(--mui-overlays-1,_rgba(0,0,0,0.03))] w-fit">
               {(["online", "offline"] as const).map((opt) => {
                 const isActive = mode === opt;
@@ -409,12 +495,20 @@ const PreCounsellingContent = () => {
                     key={opt}
                     type="button"
                     onClick={() => setMode(opt)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 cursor-pointer ${isActive
-                      ? "bg-white shadow-[0px_4px_14px_-4px_rgba(15,23,42,0.25)] text-[var(--mui-palette-primary-main)]"
-                      : "text-[var(--mui-palette-text-secondary)] hover:text-[var(--mui-palette-text-primary)]"
-                      }`}
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl tracking-wide text-sm font-medium transition-all duration-200 cursor-pointer ${
+                      isActive
+                        ? "bg-[var(--mui-palette-primary-main)] shadow-[0px_4px_14px_-4px_rgba(15,23,42,0.25)] text-white"
+                        : "text-[var(--mui-palette-text-primary)] hover:text-[var(--mui-palette-text-primary)]"
+                    }`}
                   >
-                    <i className={opt === "online" ? "ri-vidicon-line" : "ri-building-4-line"} style={{ fontSize: 17 }} />
+                    <i
+                      className={
+                        opt === "online"
+                          ? "ri-vidicon-line"
+                          : "ri-building-4-line"
+                      }
+                      style={{ fontSize: 17 }}
+                    />
                     {opt === "online" ? "Online" : "In-Person"}
                   </button>
                 );
@@ -423,24 +517,57 @@ const PreCounsellingContent = () => {
           </Card>
 
           <Card className={sectionCardClass}>
-            <SectionHeader icon="ri-file-upload-line" step="Step 3" title="Upload Your CV" description="Your TAC will review this ahead of the session." accent="var(--mui-palette-warning-main)" />
+            <SectionHeader
+              icon="ri-file-upload-line"
+              step="Step 3"
+              title="Upload Your CV"
+              description="Your TAC will review this ahead of the session."
+              accent="var(--mui-palette-warning-main)"
+            />
 
             <Grid container spacing={6}>
               <Grid size={{ xs: 12, md: 6 }} id="resumeFile">
-                <Typography className="text-[12px] font-semibold mb-1.5">Upload CV</Typography>
-                <Box onDragOver={handleDragOver} onDragLeave={handleDragLeave} onDrop={handleDrop} onClick={() => fileInputRef.current?.click()} className={`border-2 border-dashed rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-[--mui-palette-secondary-lightOpacity]"}`}>
-                  <input ref={fileInputRef} hidden type="file" accept=".pdf,.jpg,.jpeg,.png" onChange={onFileInputChange} />
+                <Typography className="text-[12px] font-semibold mb-1.5">
+                  Upload CV
+                </Typography>
+                <Box
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={` shadow-2xl rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-[--mui-palette-secondary-lightOpacity]"}`}
+                >
+                  <input
+                    ref={fileInputRef}
+                    hidden
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png"
+                    onChange={onFileInputChange}
+                  />
                   <i className="ri-upload-cloud-2-line text-4xl text-blue-500 mb-3" />
-                  <Typography className="font-semibold text-sm">Drag & Drop CV</Typography>
-                  <Typography className="text-xs text-gray-500 mt-1">PDF, JPG, JPEG, PNG</Typography>
+                  <Typography className="font-semibold text-sm">
+                    Drag & Drop CV
+                  </Typography>
+                  <Typography className="text-xs text-gray-500 mt-1">
+                    PDF, JPG, JPEG, PNG
+                  </Typography>
                 </Box>
-              </Grid>{previewUrl && (
+              </Grid>
+              {previewUrl && (
                 <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography className="text-[12px] font-semibold mb-1.5">CV Preview</Typography>
-                  <Box onClick={() => setIsPreviewOpen(true)} className="border rounded-xl h-[220px] bg-gray-50 overflow-hidden relative cursor-pointer group hover:border-blue-500 transition-all">
+                  <Typography className="text-[12px] font-semibold mb-1.5">
+                    CV Preview
+                  </Typography>
+                  <Box
+                    onClick={() => setIsPreviewOpen(true)}
+                    className="border rounded-xl h-[220px] bg-gray-50 overflow-hidden relative cursor-pointer group hover:border-blue-500 transition-all"
+                  >
                     {isPdf ? (
                       <Box className="w-full h-full pointer-events-none relative">
-                        <iframe src={previewUrl} className="w-full h-full border-0" />
+                        <iframe
+                          src={previewUrl}
+                          className="w-full h-full border-0"
+                        />
                         <Box className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors flex items-center justify-center">
                           <Box className="bg-white/90 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                             Click to view document
@@ -449,7 +576,11 @@ const PreCounsellingContent = () => {
                       </Box>
                     ) : (
                       <Box className="w-full h-full flex items-center justify-center bg-white relative">
-                        <img src={previewUrl} alt="Resume Preview" className="w-full h-full object-contain" />
+                        <img
+                          src={previewUrl}
+                          alt="Resume Preview"
+                          className="w-full h-full object-contain"
+                        />
                         <Box className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors flex items-center justify-center">
                           <Box className="bg-white/90 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
                             Click to view image
@@ -464,12 +595,20 @@ const PreCounsellingContent = () => {
           </Card>
 
           <Card className={sectionCardClass}>
-            <SectionHeader icon="ri-user-star-line" step="Step 4" title="Choose Your Preferred TAC" description="Your dedicated point of contact for this session." />
+            <SectionHeader
+              icon="ri-user-star-line"
+              step="Step 4"
+              title="Choose Your Preferred TAC"
+              description="Your dedicated point of contact for this session."
+            />
 
             {!selectedBranchId ? (
               <Box className="flex flex-col items-center text-center gap-2 py-8">
                 <i className="ri-map-pin-line text-3xl text-[var(--mui-palette-text-secondary)]" />
-                <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
+                <Typography
+                  variant="body2"
+                  className="text-[var(--mui-palette-text-secondary)]"
+                >
                   Select a branch above to see available TACs.
                 </Typography>
               </Box>
@@ -494,7 +633,10 @@ const PreCounsellingContent = () => {
                 {loadingTacs ? (
                   <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {[1, 2].map((i) => (
-                      <Box key={i} className="relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200">
+                      <Box
+                        key={i}
+                        className="relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
+                      >
                         <Skeleton variant="circular" width={52} height={52} />
                         <Box className="flex-1">
                           <Skeleton variant="text" width="40%" />
@@ -504,7 +646,10 @@ const PreCounsellingContent = () => {
                     ))}
                   </Box>
                 ) : tacs.length === 0 ? (
-                  <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
+                  <Typography
+                    variant="body2"
+                    className="text-[var(--mui-palette-text-secondary)]"
+                  >
                     No TAC available for this branch and mode yet.
                   </Typography>
                 ) : (
@@ -517,11 +662,16 @@ const PreCounsellingContent = () => {
                       return (
                         <Box
                           key={tacId}
-                          onClick={() => setSelectedTacId((prev) => (prev === tacId ? "" : tacId))}
-                          className={`relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200 ${isSelected
-                            ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_6%,transparent)] shadow-md"
-                            : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
-                            }`}
+                          onClick={() =>
+                            setSelectedTacId((prev) =>
+                              prev === tacId ? "" : tacId,
+                            )
+                          }
+                          className={`relative flex flex-col items-center text-center shadow-2xl p-5 rounded-2xl   cursor-pointer transition-all duration-200 ${
+                            isSelected
+                              ? "  bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_16%,transparent)] shadow-2xl"
+                              : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
+                          }`}
                         >
                           {/* Selected indicator */}
                           {isSelected && (
@@ -594,12 +744,13 @@ const PreCounsellingContent = () => {
                               variant="caption"
                               className="text-[var(--mui-palette-text-secondary)] mt-1"
                             >
-                              {Number((tac.experienceInMonths / 12).toFixed(2))} yrs experience
+                              {Number((tac.experienceInMonths / 12).toFixed(2))}{" "}
+                              yrs experience
                             </Typography>
                           ) : null}
 
                           <Button
-                            variant="outlined"
+                            variant="contained"
                             size="small"
                             fullWidth
                             startIcon={<i className="ri-user-line" />}
@@ -625,12 +776,20 @@ const PreCounsellingContent = () => {
           </Card>
 
           <Card className={sectionCardClass}>
-            <SectionHeader icon="ri-calendar-schedule-line" step="Step 5" title="Pick a Date & Time Slot" accent="var(--mui-palette-secondary-main)" />
+            <SectionHeader
+              icon="ri-calendar-schedule-line"
+              step="Step 5"
+              title="Pick a Date & Time Slot"
+              accent="var(--mui-palette-secondary-main)"
+            />
 
             {!selectedTacId ? (
               <Box className="flex flex-col items-center text-center gap-2 py-8">
                 <i className="ri-user-search-line text-3xl text-[var(--mui-palette-text-secondary)]" />
-                <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
+                <Typography
+                  variant="body2"
+                  className="text-[var(--mui-palette-text-secondary)]"
+                >
                   Select a TAC above to see their available slots.
                 </Typography>
               </Box>
@@ -647,47 +806,107 @@ const PreCounsellingContent = () => {
                 />
 
                 {loadingSlots ? (
-                  <Box className="flex gap-2 flex-wrap">
-                    {[1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} variant="rounded" width={90} height={40} className="rounded-xl" />
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "repeat(2, 1fr)",
+                        sm: "repeat(auto-fill, minmax(165px, 1fr))",
+                      },
+                      gap: 1.5,
+                    }}
+                  >
+                    {[1, 2, 3, 4, 5, 6].map((i) => (
+                      <Skeleton
+                        key={i}
+                        variant="rectangular"
+                        height={36.5}
+                        sx={{ borderRadius: "20px", width: "100%" }}
+                      />
                     ))}
                   </Box>
                 ) : slots.length === 0 ? (
-                  <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
+                  <Typography
+                    variant="body2"
+                    className="text-[var(--mui-palette-text-secondary)]"
+                  >
                     No slots available for this date.
                   </Typography>
                 ) : (
-                  <Box className="flex gap-2 flex-wrap">
+                  <Box
+                    sx={{
+                      display: "grid",
+                      gridTemplateColumns: {
+                        xs: "repeat(2, 1fr)",
+                        sm: "repeat(auto-fill, minmax(165px, 1fr))",
+                      },
+                      gap: 1.5,
+                    }}
+                  >
                     {slots.map((slot, idx) => {
-                      const isSelected = selectedSlot?.from === slot.from && selectedSlot?.to === slot.to;
+                      const isSelected = selectedSlot?.time === slot.time;
                       return (
-                        // <button
-                        //   key={idx}
-                        //   type="button"
-                        //   onClick={() => setSelectedSlot(slot)}
-                        //   className={`px-4 py-2 rounded-xl text-sm font-semibold border-2 transition-all duration-200 ${isSelected
-                        //     ? "border-[var(--mui-palette-primary-main)] bg-[var(--mui-palette-primary-main)] text-white"
-                        //     : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/50"
-                        //     }`}
-                        // >
-                        //   {slot.from} - {slot.to}
-                        // </button>
                         <Button
                           key={idx}
                           disabled={!slot.available}
-                          variant={
-                            selectedSlot?.time === slot.time ? "contained" : "outlined"
-                          }
                           onClick={() => {
                             if (!slot.available) return;
 
                             setSelectedSlot((prev) =>
                               prev?.from === slot.from && prev?.to === slot.to
                                 ? null
-                                : slot
+                                : slot,
                             );
                           }}
-                          className={`normal-case rounded-[20px] px-6 ${selectedSlot?.time === slot.time ? "bg-primary border-primary text-white" : slot.available ? "bg-transparent border-[#e0e0e0] hover:border-primary text-inherit" : "bg-[#f5f5f5] border-[#e0e0e0]"} disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]`}
+                          sx={{
+                            width: "100%",
+                            minWidth: 0,
+                            height: "36.5px",
+                            borderRadius: "20px",
+                            fontSize: { xs: "11px", sm: "13px" },
+                            px: { xs: 0.5, sm: 2 },
+                            textTransform: "none",
+                            fontWeight: 500,
+
+                            transition:
+                              "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background-color 0.2s ease, border-color 0.2s ease",
+                            willChange: "transform",
+
+                            bgcolor: isSelected
+                              ? "var(--mui-palette-primary-main)"
+                              : "var(--mui-palette-background-paper)",
+
+                            color: isSelected
+                              ? "#ffffff"
+                              : slot.available
+                                ? "var(--mui-palette-text-primary)"
+                                : "var(--mui-palette-text-disabled)",
+
+                            boxShadow: isSelected
+                              ? "0px 4px 14px rgba(18, 93, 163, 0.4)"
+                              : "0px 4px 10px rgba(0, 0, 0, 0.2), inset 0px 1px 0px rgba(255, 255, 255, 0.08)",
+
+                            "&:hover": {
+                              zIndex: 2,
+                              transform: slot.available
+                                ? "translateY(-7px) scale(1.04)"
+                                : "none",
+                              boxShadow: isSelected
+                                ? "0px 14px 28px rgba(18, 93, 163, 0.5)"
+                                : slot.available
+                                  ? "0px 14px 25px rgba(0, 0, 0, 0.35), 0px 6px 10px rgba(0, 0, 0, 0.2)"
+                                  : "none",
+                              borderColor: isSelected
+                                ? "transparent"
+                                : "var(--mui-palette-primary-main)",
+                            },
+
+                            "&:active": {
+                              transform: slot.available
+                                ? "translateY(-2px) scale(0.98)"
+                                : "none",
+                            },
+                          }}
                         >
                           {slot.time || `${slot.from} - ${slot.to}`}
                         </Button>
@@ -700,16 +919,38 @@ const PreCounsellingContent = () => {
           </Card>
 
           <Card className={sectionCardClass}>
-            <SectionHeader icon="ri-shield-check-line" step="Step 6" title="Quick Verification" description="Confirm you're not a robot to finish up." accent="var(--mui-palette-success-main)" />
+            <SectionHeader
+              icon="ri-shield-check-line"
+              step="Step 6"
+              title="Quick Verification"
+              description="Confirm you're not a robot to finish up."
+              accent="var(--mui-palette-success-main)"
+            />
             <Box className="flex items-start gap-3 flex-wrap">
-              <Box className="rounded-xl overflow-hidden shadow-[0px_2px_8px_rgba(15,23,42,0.08)]">
+              <Box
+                className="rounded-xl overflow-hidden shadow-[0px_2px_8px_rgba(15,23,42,0.08)] flex items-center justify-center shrink-0"
+                sx={{
+                  width: 100,
+                  height: 40,
+                  minWidth: 100,
+                  minHeight: 40,
+                  "& canvas": {
+                    width: "100px !important",
+                    height: "40px !important",
+                    display: "block",
+                  },
+                }}
+              >
                 <LoadCanvasTemplate reloadText=" " reloadColor="#125da3" />
               </Box>
               <IconButton
                 onClick={handleCaptchaRefresh}
                 aria-label="Refresh captcha"
                 className="rounded-xl"
-                sx={{ bgcolor: "color-mix(in srgb, var(--mui-palette-primary-main) 8%, transparent)" }}
+                sx={{
+                  bgcolor:
+                    "color-mix(in srgb, var(--mui-palette-primary-main) 8%, transparent)",
+                }}
               >
                 <i className="ri-refresh-line text-lg" />
               </IconButton>
@@ -725,7 +966,13 @@ const PreCounsellingContent = () => {
                   }
                 }}
                 error={captchaValue.length > 0 && !captchaVerified}
-                helperText={captchaValue.length > 0 && !captchaVerified ? "Click Verify once you've typed the code" : captchaVerified ? "Verified" : " "}
+                helperText={
+                  captchaValue.length > 0 && !captchaVerified
+                    ? "Click Verify once you've typed the code"
+                    : captchaVerified
+                      ? "Verified"
+                      : " "
+                }
                 className="max-w-xs"
                 autoComplete="off"
                 InputProps={{
@@ -733,7 +980,10 @@ const PreCounsellingContent = () => {
                   endAdornment:
                     captchaValue && captchaVerified ? (
                       <InputAdornment position="end">
-                        <i className="ri-checkbox-circle-fill text-[var(--mui-palette-success-main)]" style={{ fontSize: 18 }} />
+                        <i
+                          className="ri-checkbox-circle-fill text-[var(--mui-palette-success-main)]"
+                          style={{ fontSize: 18 }}
+                        />
                       </InputAdornment>
                     ) : undefined,
                 }}
@@ -750,7 +1000,10 @@ const PreCounsellingContent = () => {
 
           <Box
             className="flex justify-end gap-4 mt-2 py-4 sticky bottom-0 backdrop-blur-sm"
-            style={{ background: "color-mix(in srgb, var(--mui-palette-background-default, white) 85%, transparent)" }}
+            style={{
+              background:
+                "color-mix(in srgb, var(--mui-palette-background-default, white) 85%, transparent)",
+            }}
           >
             <Button
               variant="contained"
@@ -758,7 +1011,11 @@ const PreCounsellingContent = () => {
               disabled={!canConfirm}
               onClick={handleConfirm}
               className="rounded-xl normal-case text-sm px-8 font-semibold"
-              sx={{ boxShadow: canConfirm ? "0px 8px 20px -6px var(--mui-palette-primary-main)" : "none" }}
+              sx={{
+                boxShadow: canConfirm
+                  ? "0px 8px 20px -6px var(--mui-palette-primary-main)"
+                  : "none",
+              }}
             >
               {bookingLoading ? (
                 <CircularProgress size={22} color="inherit" />
@@ -771,24 +1028,65 @@ const PreCounsellingContent = () => {
             </Button>
           </Box>
 
-          <SuccessDialog showConfirmPopup={showConfirmPopup} setShowConfirmPopup={setShowConfirmPopup} leadData={leadData} mode={mode} />
-          <Dialog open={isPreviewOpen} onClose={() => setIsPreviewOpen(false)} maxWidth="md" fullWidth PaperProps={{ className: "rounded-[20px] relative overflow-hidden" }}>
+          <SuccessDialog
+            showConfirmPopup={showConfirmPopup}
+            setShowConfirmPopup={setShowConfirmPopup}
+            leadData={leadData}
+            mode={mode}
+          />
+          <Dialog
+            open={isPreviewOpen}
+            onClose={() => setIsPreviewOpen(false)}
+            maxWidth="md"
+            fullWidth
+            PaperProps={{
+              className: "rounded-[20px] relative overflow-hidden",
+            }}
+          >
             <Box className="flex items-center justify-between px-5 py-3 border-b border-[var(--mui-palette-divider)]">
-              <Typography variant="subtitle1" className="font-bold">Resume Preview</Typography>
+              <Typography variant="subtitle1" className="font-bold">
+                Resume Preview
+              </Typography>
               <Box className="flex items-center gap-2">
                 {previewUrl && (
-                  <a href={previewUrl} download="Resume" target="_blank" rel="noreferrer">
-                    <Button size="small" variant="text" startIcon={<i className="ri-download-2-line" />}>Download</Button>
+                  <a
+                    href={previewUrl}
+                    download="Resume"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <Button
+                      size="small"
+                      variant="text"
+                      startIcon={<i className="ri-download-2-line" />}
+                    >
+                      Download
+                    </Button>
                   </a>
                 )}
-                <IconButton size="small" onClick={() => setIsPreviewOpen(false)}><i className="ri-close-line text-xl" /></IconButton>
+                <IconButton
+                  size="small"
+                  onClick={() => setIsPreviewOpen(false)}
+                >
+                  <i className="ri-close-line text-xl" />
+                </IconButton>
               </Box>
             </Box>
             <DialogContent className="p-0 bg-gray-50 flex items-center justify-center min-h-[60vh]">
               {previewUrl && isPdf ? (
-                <iframe src={previewUrl} title="Resume PDF Preview" className="w-full min-h-[75vh] border-0" />
+                <iframe
+                  src={previewUrl}
+                  title="Resume PDF Preview"
+                  className="w-full min-h-[75vh] border-0"
+                />
               ) : (
-                previewUrl && <img src={previewUrl} alt="Resume Image Preview" className="max-w-full max-h-[75vh] object-contain p-4" />
+                previewUrl && (
+                  <img
+                    src={previewUrl}
+                    alt="Resume Image Preview"
+                    className="max-w-full max-h-[75vh] object-contain p-4"
+                  />
+                )
               )}
             </DialogContent>
           </Dialog>
@@ -981,9 +1279,7 @@ const PreCounsellingContent = () => {
 };
 
 const PreCounselling = () => {
-  const {
-    reduxUser
-  } = usePreCounselling();
+  const { reduxUser } = usePreCounselling();
   return (
     <Grid container spacing={6}>
       <Grid size={{ xs: 12, md: 8 }}>
@@ -993,9 +1289,7 @@ const PreCounselling = () => {
       </Grid>
       <Grid size={{ xs: 12, md: 4 }}>
         <ProgressSidebar activeStep={1} />
-        <NotificationChannels
-          reduxUser={reduxUser}
-        />
+        <NotificationChannels reduxUser={reduxUser} />
       </Grid>
     </Grid>
   );

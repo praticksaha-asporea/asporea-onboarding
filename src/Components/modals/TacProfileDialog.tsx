@@ -356,14 +356,13 @@ export const TacProfileDialog: React.FC<TacProfileDialogProps> = ({
                                         ml-[42px]
                                         px-4 py-3.5
                                         rounded-xl
-                                        border
-                                        border-[var(--mui-palette-divider)]
+                                        shadow-2xl
                                     "
                                 >
                                     <Typography
                                         variant="body2"
                                         className="
-                                        text-[var(--mui-palette-text-secondary)]
+                                        text-[var(--mui-palette-text-primary)]
                                         leading-relaxed
                                         "
                                     >
@@ -382,8 +381,7 @@ export const TacProfileDialog: React.FC<TacProfileDialogProps> = ({
                             className="
             rounded-2xl
             px-4 py-3.5
-            border
-            border-[var(--mui-palette-divider)]
+            shadow-2xl
             bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_5%,transparent)]
           "
                         >
@@ -395,13 +393,13 @@ export const TacProfileDialog: React.FC<TacProfileDialogProps> = ({
 
                                 <Typography
                                     variant="caption"
-                                    className="text-[var(--mui-palette-text-secondary)] font-medium"
+                                    className="text-[var(--mui-palette-text-primary)] font-medium"
                                 >
                                     Experience
                                 </Typography>
                             </Box>
 
-                            <Typography variant="subtitle1" className="font-bold">
+                            <Typography variant="subtitle1" className="font-bold text-[var(--mui-palette-text-primary)]">
                                 {experienceYears
                                     ? `${experienceYears} ${experienceYears === 1 ? "Year" : "Years"
                                     }`
@@ -413,9 +411,8 @@ export const TacProfileDialog: React.FC<TacProfileDialogProps> = ({
                             className="
             rounded-2xl
             px-4 py-3.5
-            border
-            border-[var(--mui-palette-divider)]
-            bg-[color-mix(in_srgb,var(--mui-palette-success-main)_5%,transparent)]
+            shadow-2xl
+            bg-[color-mix(in_srgb,var(--mui-palette-warning-main)_13%,transparent)]
           "
                         >
                             <Box className="flex items-center gap-2 mb-1">
@@ -426,13 +423,13 @@ export const TacProfileDialog: React.FC<TacProfileDialogProps> = ({
 
                                 <Typography
                                     variant="caption"
-                                    className="text-[var(--mui-palette-text-secondary)] font-medium"
+                                    className="text-[var(--mui-palette-text-primary)] font-medium"
                                 >
                                     Rating
                                 </Typography>
                             </Box>
 
-                            <Typography variant="subtitle1" className="font-bold">
+                            <Typography variant="subtitle1" className="font-bold text-[var(--mui-palette-text-primary)]">
                                 {typeof tac.tacProfile?.rating === "number"
                                     ? `${rating.toFixed(1)} / 5`
                                     : "Not rated"}

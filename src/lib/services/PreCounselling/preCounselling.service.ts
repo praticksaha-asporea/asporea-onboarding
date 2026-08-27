@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 import { EmployeeBranchShiftModel } from "../../models/EmployeeBranchShift.model";
 import "../../models/Lead.model";
 import "../../models/ShiftSchedule.model";
+import "../../models/Upload.model";  
 import { Assignment } from "../../models/Assignment.model";
+
 import { ApiError } from "../../error/api.error";
 import { ILead, Lead } from "../../models/Lead.model";
 import User from "@/lib/models/User.model";
@@ -83,7 +85,6 @@ export const getConsultantSlots = async (
     throw new ApiError("Invalid Date Format. Use YYYY-MM-DD", 400);
   }
 
-
   const allAssignments = await EmployeeBranchShiftModel.find({
     employeeId: new mongoose.Types.ObjectId(consultantId),
   }).lean();
@@ -92,10 +93,8 @@ export const getConsultantSlots = async (
     return [];
   }
 
-
   const validAssignments = allAssignments
     .filter((a: any) => {
-
       if (!a.effectiveFrom) return true;
 
       const effectiveDate = new Date(a.effectiveFrom);
@@ -109,10 +108,8 @@ export const getConsultantSlots = async (
     .sort((a: any, b: any) => {
       const dateA = a.effectiveFrom ? new Date(a.effectiveFrom).getTime() : 0;
       const dateB = b.effectiveFrom ? new Date(b.effectiveFrom).getTime() : 0;
-      //  console.log(dateA-dateB,787777)
       return dateB - dateA;
     });
-
 
   const activeAssignment = validAssignments[0];
 
@@ -126,7 +123,6 @@ export const getConsultantSlots = async (
   const ShiftScheduleModel =
     mongoose.models.ShiftSchedule || mongoose.model("ShiftSchedule");
 
-
   const schedule = await ShiftScheduleModel.findOne({
     shiftId: activeAssignment.shiftId,
     days: targetDay,
@@ -135,7 +131,6 @@ export const getConsultantSlots = async (
   if (!schedule) {
     return [];
   }
-
 
   const startOfDay = new Date(targetDate);
   startOfDay.setHours(0, 0, 0, 0);
@@ -178,15 +173,12 @@ export const getConsultantSlots = async (
     let isAvailable = true;
 
     if (isPastDate) {
-
       isAvailable = false;
     } else if (isToday && currentMins <= currentMinutes) {
-
       isAvailable = false;
     }
 
     if (bookedFromTimes.includes(fromStr)) {
-
       isAvailable = false;
     }
 
@@ -219,10 +211,6 @@ export const savePreCounsellingBooking = async (
 
   const hasConsultant = Boolean(consultantId);
 
-  // ------------------------------------------------------------
-  // 1. Validate booking mode
-  // ------------------------------------------------------------
-
   if (hasConsultant) {
     if (!date || !from || !to) {
       throw new ApiError(
@@ -238,10 +226,6 @@ export const savePreCounsellingBooking = async (
       );
     }
   }
-
-  // ------------------------------------------------------------
-  // 2. Validate ObjectIds
-  // ------------------------------------------------------------
 
   if (!leadId || !mongoose.Types.ObjectId.isValid(leadId)) {
     throw new ApiError("Invalid lead ID.", 400);
@@ -267,19 +251,11 @@ export const savePreCounsellingBooking = async (
 
   const isOnline = method === "on";
 
-  // ------------------------------------------------------------
-  // 3. Get current lead
-  // ------------------------------------------------------------
-
   const currentLead = await Lead.findById(leadObjectId).lean();
 
   if (!currentLead) {
     throw new ApiError("Lead not found.", 404);
   }
-
-  // ------------------------------------------------------------
-  // 4. Validate selected slot
-  // ------------------------------------------------------------
 
   if (hasConsultant && date && from && to) {
     const targetDate = new Date(date);
@@ -288,9 +264,7 @@ export const savePreCounsellingBooking = async (
       throw new ApiError("Invalid booking date.", 400);
     }
 
-    // Current IST time
     const now = new Date();
-
     const istNow = new Date(
       now.toLocaleString("en-US", {
         timeZone: "Asia/Kolkata",
@@ -298,14 +272,12 @@ export const savePreCounsellingBooking = async (
     );
 
     const targetDateStr = targetDate.toISOString().split("T")[0];
-
     const todayStr = [
       istNow.getFullYear(),
       String(istNow.getMonth() + 1).padStart(2, "0"),
       String(istNow.getDate()).padStart(2, "0"),
     ].join("-");
 
-    // Past date
     if (targetDateStr < todayStr) {
       throw new ApiError(
         "Please choose another slot. This slot is no longer available.",
@@ -313,7 +285,6 @@ export const savePreCounsellingBooking = async (
       );
     }
 
-    // Same-day past time
     if (targetDateStr === todayStr) {
       const requestedMinutes = timeToMinutes(from);
 
@@ -331,10 +302,6 @@ export const savePreCounsellingBooking = async (
         );
       }
     }
-
-    // ----------------------------------------------------------
-    // Check TAC slot conflict
-    // ----------------------------------------------------------
 
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
@@ -362,10 +329,6 @@ export const savePreCounsellingBooking = async (
     }
   }
 
-  // ------------------------------------------------------------
-  // 5. Clear previous pre-counselling assignment
-  // ------------------------------------------------------------
-
   if (PRE_CLEAR_STATUSES.includes(currentLead.status)) {
     await Assignment.deleteMany({
       leadId: leadObjectId,
@@ -391,21 +354,12 @@ export const savePreCounsellingBooking = async (
     }
   }
 
-  // ------------------------------------------------------------
-  // 6. Resolve consultant
-  // ------------------------------------------------------------
-
   let resolvedConsultantId: mongoose.Types.ObjectId | null =
     consultantObjectId;
 
-  // Explicit consultant + slot
   if (consultantObjectId && date && from && to) {
     resolvedConsultantId = consultantObjectId;
   }
-
-  // ------------------------------------------------------------
-  // 7. Auto assign TAC for online booking
-  // ------------------------------------------------------------
 
   if (isOnline && !resolvedConsultantId) {
     const [generalSettings, branch] = await Promise.all([
@@ -417,25 +371,11 @@ export const savePreCounsellingBooking = async (
       throw new ApiError("Selected branch not found.", 404);
     }
 
-    // const tacShifts = await EmployeeBranchShiftModel.find({
-    //   branchId: branchObjectId,
-    // })
-    //   .populate<{
-    //     employeeId: {
-    //       _id: mongoose.Types.ObjectId;
-    //       role: string;
-    //     };
-    //   }>("employeeId", "role")
-    //   .lean();
-    const tacShifts = await EmployeeBranchShiftModel.find({
+    const tacShifts = (await EmployeeBranchShiftModel.find({
       branchId: branchObjectId,
     })
       .populate("employeeId", "_id role")
-      .lean() as unknown as TacShift[];
-
-    // ----------------------------------------------------------
-    // Extract TACs
-    // ----------------------------------------------------------
+      .lean()) as unknown as TacShift[];
 
     const validTacShifts = tacShifts.filter(
       (shift): shift is TacShift & {
@@ -462,18 +402,13 @@ export const savePreCounsellingBooking = async (
     if (tacEntries.length > 0) {
       const assignmentType =
         generalSettings?.tacAssignmentType ?? "random";
-
       const lastUsedCounter = branch.lastUsedCounter ?? 0;
-
-      // --------------------------------------------------------
-      // Prevent immediate same TAC when possible
-      // --------------------------------------------------------
 
       const eligibleEntries =
         tacEntries.length > 1
           ? tacEntries.filter(
-            (entry) => entry.counterNo !== lastUsedCounter,
-          )
+              (entry) => entry.counterNo !== lastUsedCounter,
+            )
           : tacEntries;
 
       const availableEntries =
@@ -485,10 +420,9 @@ export const savePreCounsellingBooking = async (
       if (assignmentType === "random") {
         selectedTac =
           availableEntries[
-          Math.floor(Math.random() * availableEntries.length)
+            Math.floor(Math.random() * availableEntries.length)
           ];
       } else {
-        // Counterwise / round-robin
         const sortedEntries = [...tacEntries].sort(
           (a, b) => a.counterNo - b.counterNo,
         );
@@ -502,7 +436,7 @@ export const savePreCounsellingBooking = async (
           lastIndex === -1
             ? 0
             : (lastIndex + 1) %
-            sortedEntries.length;
+              sortedEntries.length;
 
         selectedTac = sortedEntries[nextIndex];
       }
@@ -519,10 +453,6 @@ export const savePreCounsellingBooking = async (
       }
     }
   }
-
-  // ------------------------------------------------------------
-  // 8. Create / update assignment
-  // ------------------------------------------------------------
 
   if (
     resolvedConsultantId &&
@@ -561,10 +491,6 @@ export const savePreCounsellingBooking = async (
       },
     );
   }
-
-  // ------------------------------------------------------------
-  // 9. Update lead
-  // ------------------------------------------------------------
 
   const leadUpdate: Record<string, any> = {
     status: "pre_scheduled",
@@ -605,7 +531,6 @@ export const saveAssessmentBooking = async (body: any) => {
     throw new ApiError("Missing required fields for Assessment booking", 400);
   }
 
-  // 1. TIME VALIDATION
   const targetDate = new Date(date);
   const serverNow = new Date();
   const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
@@ -666,27 +591,33 @@ export const saveAssessmentBooking = async (body: any) => {
 
   const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
   const currentLead = await LeadModel.findById(leadId).lean();
-  const assessClearStatuses = ["assess_not_responded", "assess_scheduled", "assess_contacted", "assess_queued"];
-
-  // Clear any existing assessment assignments and branch tokens if the lead is in certain statuses:-
+  const assessClearStatuses = [
+    "assess_not_responded",
+    "assess_scheduled",
+    "assess_contacted",
+    "assess_queued",
+  ];
 
   if (currentLead && assessClearStatuses.includes(currentLead.status)) {
     await Assignment.deleteMany({
       leadId: new mongoose.Types.ObjectId(leadId),
-      phase: "assess"
+      phase: "assess",
     });
 
-    const BranchTokenModel = mongoose.models.BranchToken || mongoose.model("BranchToken");
-    const creatorId = currentLead.createdBy?.id || currentLead.createdBy?._id || currentLead.createdBy;
+    const BranchTokenModel =
+      mongoose.models.BranchToken || mongoose.model("BranchToken");
+    const creatorId =
+      currentLead.createdBy?.id ||
+      currentLead.createdBy?._id ||
+      currentLead.createdBy;
     if (creatorId && currentLead.preferences?.branchId) {
       await BranchTokenModel.deleteMany({
         userId: creatorId,
         branchId: currentLead.preferences.branchId,
-        status: { $in: ["generated", "queued"] }
+        status: { $in: ["generated", "queued"] },
       });
     }
   }
-
 
   const newAssessmentAssignment = await Assignment.findOneAndUpdate(
     { leadId: new mongoose.Types.ObjectId(leadId), phase: "assess" },
@@ -701,17 +632,16 @@ export const saveAssessmentBooking = async (body: any) => {
           method: method || "off",
         },
         attended: false,
-        token: { generated: false, number: null }
-      }
+        token: { generated: false, number: null },
+      },
     },
-    { new: true, upsert: true }
+    { new: true, upsert: true },
   );
-
 
   if (newAssessmentAssignment) {
     await LeadModel.findByIdAndUpdate(leadId, {
       status: "assess_scheduled",
-      "preferences.consultantId": new mongoose.Types.ObjectId(consultantId)
+      "preferences.consultantId": new mongoose.Types.ObjectId(consultantId),
     });
   }
   return newAssessmentAssignment;
@@ -721,7 +651,14 @@ export const getPreCounsellingBooking = async (leadId: string) => {
   if (!mongoose.Types.ObjectId.isValid(leadId)) {
     throw new ApiError("Invalid Lead ID", 400);
   }
+const leadData = await Lead.findById(leadId)
+    .select("inqNo preferences candidateResume status")
+    .populate("candidateResume", "path")
+    .lean();
 
+  if (!leadData) {
+    throw new ApiError("Lead not found", 404);
+  }
   const AssignmentModel =
     mongoose.models.Assignment || mongoose.model("Assignment");
 
@@ -729,38 +666,62 @@ export const getPreCounsellingBooking = async (leadId: string) => {
     leadId: new mongoose.Types.ObjectId(leadId),
     phase: "pre",
     status: { $ne: "rejected" },
-  }).lean();
+  })
+    .populate({
+      path: "leadId",
+      select: "inqNo preferences candidateResume",
+      populate: {
+        path: "candidateResume",
+        select: "path",
+      },
+    })
+    .lean();
 
-  return existingBooking;
+ return {
+    existingBooking: existingBooking || null,
+    lead: leadData,
+  };
 };
 
-
 export const cancelPreBooking = async (bodyData: any) => {
-  const { leadId, actionBy, cancelReason } = bodyData;
-
-  const lead = await Lead.findById(leadId);
-  const userExists = await User.findById(actionBy);
-
-  if (!lead || !userExists) {
-    throw new ApiError("Lead or User not found", 400);
+  const { actionBy, cancelReason } = bodyData;
+const leadId = typeof bodyData.leadId === "object" ? bodyData.leadId?._id : bodyData.leadId;
+  if (!leadId || !mongoose.Types.ObjectId.isValid(leadId)) {
+    throw new ApiError("Invalid Lead ID", 400);
   }
 
-  //Later log will use
+  const lead = await Lead.findById(leadId);
+  if (!lead) {
+    throw new ApiError("Lead not found", 404);
+  }
 
+  let userObjectId: mongoose.Types.ObjectId | null = null;
+  if (actionBy && mongoose.Types.ObjectId.isValid(actionBy)) {
+    userObjectId = new mongoose.Types.ObjectId(actionBy);
+    const userExists = await User.findById(userObjectId);
+    if (!userExists) {
+      throw new ApiError("User not found", 404);
+    }
+  }
 
   await Assignment.deleteOne({
     leadId: new mongoose.Types.ObjectId(leadId),
-    phase: "pre"
+    phase: "pre",
   });
 
-  await BranchTokenModel.deleteMany({
-    userId: new mongoose.Types.ObjectId(actionBy),
-  });
+  if (userObjectId) {
+    await BranchTokenModel.deleteMany({
+      userId: userObjectId,
+    });
+  }
 
+ 
   const updatedLead = await Lead.findByIdAndUpdate(leadId, {
-    status: "inquiry_submitted",
-    "inquiryStages.stage3": "pending",
-    "source.type": actionBy
-  });
+    $set: {
+      status: "inquiry_submitted",
+      "inquiryStages.stage3": "pending",
+    },
+  }, { new: true });
+
   return updatedLead;
-}
+};
