@@ -23,6 +23,7 @@ export default async function handler(
             "Cancelled successfully",
         );
     } catch (error: unknown) {
+        console.log(error)
         if (error instanceof ApiError) {
             return ResponseHandler.sendError(res, error.message, error.statusCode);
         }

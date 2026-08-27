@@ -131,6 +131,8 @@ export interface preCounsellingStatus {
     success: true;
     message: string;
     data: {
+        existingBooking: undefined;
+        lead: any;
         _id: string;
         leadId: string;
         phase: string;

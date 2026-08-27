@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
+
 import toast from "react-hot-toast";
 
 import {
@@ -42,7 +43,6 @@ export interface TAC {
   bio?: string;
 }
 
-// Fallback coordinates if geolocation is denied/unavailable — set to your HQ / default city.
 const DEFAULT_LAT = 26.7271;
 const DEFAULT_LNG = 88.3953;
 
@@ -50,7 +50,9 @@ export const usePreCounselling = () => {
   const searchParams = useSearchParams();
   const router = useRouter();
 
-  const reduxUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );
   const reduxLeadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
   const leadId = searchParams?.get("leadId") || reduxLeadId;
 
@@ -64,12 +66,15 @@ export const usePreCounselling = () => {
   const [showScheduling, setShowScheduling] = useState(true);
   const [isValidLead, setIsValidLead] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
-  const [existingBooking, setExistingBooking] = useState<ExistingBooking | null>(null);
+  const [existingBooking, setExistingBooking] =
+    useState<ExistingBooking | null>(null);
   const [activeStepperStep, setActiveStepperStep] = useState(1);
   const [canReschedule, setCanReschedule] = useState<boolean>(false);
 
   // ---- 1. branch (geolocation driven) ----
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+    null,
+  );
   const [branches, setBranches] = useState<Branch[]>([]);
   const [loadingBranches, setLoadingBranches] = useState(false);
   const [locationDenied, setLocationDenied] = useState(false);
@@ -104,12 +109,13 @@ export const usePreCounselling = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [profileTac, setProfileTac] = useState<preTACData | null>(null);
-
+  const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(
+    null,
+  );
   const [showCancel, setShowCancel] = useState(false);
   const [cancelReason, setCancelReason] = useState<string>("");
 
   const [leadData, setLeadData] = useState<ILead | null>(null);
-
 
   useEffect(() => {
     const timer = setTimeout(() => setIsReduxReady(true), 500);
@@ -125,29 +131,103 @@ export const usePreCounselling = () => {
   }, [isReduxReady, leadId, router]);
 
   useEffect(() => {
+    if (reduxUser && !leadData) {
+      const leadObj =
+        (typeof reduxUser?.leadId === "object" ? reduxUser?.leadId : null) ||
+        (typeof reduxUser?.user?.leadId === "object"
+          ? reduxUser?.user?.leadId
+          : null) ||
+        reduxUser?.lead ||
+        reduxUser?.user ||
+        reduxUser;
+
+      if (leadObj?.inqNo) {
+        setLeadData(leadObj as ILead);
+      }
+    }
+  }, [reduxUser, leadData]);
+  useEffect(() => {
     const checkStatus = async () => {
       if (!leadId) return;
       try {
         const res = await checkBookingStatusAction({ leadId });
-        if (res?.data?.success && res.data) {
-          setExistingBooking(res?.data?.data);
-          setShowScheduling(res?.data?.data ? false : true);
-          const scheduleDate = res?.data?.data?.schedule?.date;
-          const scheduleFrom = res?.data?.data?.schedule?.from;
+        if (res?.data?.success && res.data?.data) {
+          const rawData = res.data.data;
 
-          const datePart = new Date(scheduleDate)
-            .toISOString()
-            .split("T")[0];
+          const bookingData =
+            rawData.existingBooking !== undefined
+              ? rawData.existingBooking
+              : rawData;
+          const populatedLead =
+            rawData.lead ||
+            (typeof bookingData?.leadId === "object"
+              ? bookingData?.leadId
+              : null);
 
-          const scheduleDateTime = new Date(
-            `${datePart} ${scheduleFrom}`
-          );
+          if (populatedLead) {
+            setLeadData(populatedLead);
 
-          const thirtyMinutesBeforeNow = new Date(Date.now() - 30 * 60 * 1000);
-          // console.log(scheduleDateTime, thirtyMinutesFromNow);
+            if (populatedLead?.preferences?.branchId) {
+              setSelectedBranchId(
+                populatedLead.preferences.branchId.toString(),
+              );
+            }
 
-          setCanReschedule(scheduleDateTime > thirtyMinutesBeforeNow);
-          if (res?.data.data.status?.toLowerCase() === "completed") setIsCompleted(true);
+            if (populatedLead?.candidateResume?.path) {
+              const resumePath = populatedLead.candidateResume.path;
+              setExistingResumeUrl(resumePath);
+              setPreviewUrl(resumePath);
+            }
+          }
+
+          if (bookingData && (bookingData._id || bookingData.schedule)) {
+            setExistingBooking(bookingData);
+            setShowScheduling(false);
+
+            const scheduleDate = bookingData.schedule?.date;
+            const scheduleFrom = bookingData.schedule?.from || "00:00";
+
+            if (scheduleDate) {
+              const datePart = new Date(scheduleDate)
+                .toISOString()
+                .split("T")[0];
+              const scheduleDateTime = new Date(`${datePart} ${scheduleFrom}`);
+              const thirtyMinutesBeforeSchedule = new Date(
+                scheduleDateTime.getTime() - 30 * 60 * 1000,
+              );
+
+              setCanReschedule(
+                Date.now() > thirtyMinutesBeforeSchedule.getTime(),
+              );
+              setDate(datePart);
+            }
+
+            if (bookingData.status?.toLowerCase() === "completed") {
+              setIsCompleted(true);
+            }
+
+            if (bookingData.schedule?.method) {
+              setMode(
+                bookingData.schedule.method === "on" ? "online" : "offline",
+              );
+            }
+            if (bookingData.assignedTo) {
+              const tacId =
+                typeof bookingData.assignedTo === "object"
+                  ? bookingData.assignedTo._id
+                  : bookingData.assignedTo;
+
+              setSelectedTacId(tacId.toString());
+            }
+            if (bookingData.schedule?.from && bookingData.schedule?.to) {
+              setSelectedSlot({
+                from: bookingData.schedule.from,
+                to: bookingData.schedule.to,
+                time: `${bookingData.schedule.from} - ${bookingData.schedule.to}`,
+                available: true,
+              });
+            }
+          }
         } else if (res?.data?.message?.toLowerCase().includes("not found")) {
           setIsValidLead(false);
         }
@@ -158,22 +238,44 @@ export const usePreCounselling = () => {
     checkStatus();
   }, [leadId]);
 
-  // ---- geolocation -> branches ----
-  const fetchBranches = useCallback(async (lat: number, lng: number) => {
-    setLoadingBranches(true);
-    try {
-      const response = await branchListingApi({ lat, lng });
-      const list = response?.data?.data?.data || [];
-      setBranches(list);
-      // if (list.length === 1) setSelectedBranchId(list[0]._id);
-    } catch (error) {
-      console.error("Branch fetch error:", error);
-      toast.error("Failed to fetch nearby branches");
-    } finally {
-      setLoadingBranches(false);
+  useEffect(() => {
+    const userBranch = reduxUser?.preferences?.branchId || reduxUser?.branchId;
+    if (userBranch && !selectedBranchId) {
+      setSelectedBranchId(userBranch.toString());
     }
-  }, []);
+  }, [reduxUser, selectedBranchId]);
+  // ---- geolocation -> branches ----
 
+  const fetchBranches = useCallback(
+    async (lat: number, lng: number) => {
+      setLoadingBranches(true);
+      try {
+        const response = await branchListingApi({ lat, lng });
+        const list = response?.data?.data?.data || [];
+        setBranches(list);
+
+        if (list.length > 0) {
+          setSelectedBranchId((prev) => {
+            if (prev) return prev;
+
+            const userPrefBranch =
+              reduxUser?.preferences?.branchId || reduxUser?.branchId;
+            const matched = list.find(
+              (b: Branch) => b._id.toString() === userPrefBranch?.toString(),
+            );
+
+            return matched ? matched._id : list[0]._id;
+          });
+        }
+      } catch (error) {
+        console.error("Branch fetch error:", error);
+        toast.error("Failed to fetch nearby branches");
+      } finally {
+        setLoadingBranches(false);
+      }
+    },
+    [reduxUser],
+  );
   useEffect(() => {
     if (typeof window === "undefined" || !navigator.geolocation) {
       setLocationDenied(true);
@@ -205,7 +307,13 @@ export const usePreCounselling = () => {
       }
       setLoadingTacs(true);
       try {
-        const payload = { page: 1, limit: 10, search: tacSearch, mode, branchId: selectedBranchId };
+        const payload = {
+          page: 1,
+          limit: 10,
+          search: tacSearch,
+          mode,
+          branchId: selectedBranchId,
+        };
         const res = await getTacsListAction(payload);
         const list = res?.data?.data?.tacList || [];
         // console.log(list);
@@ -223,7 +331,6 @@ export const usePreCounselling = () => {
     fetchTacs();
   }, [selectedBranchId, mode, tacSearch]);
 
-  // ---- tac + date -> slots ----
   useEffect(() => {
     const fetchSlots = async () => {
       if (!selectedTacId) {
@@ -240,7 +347,6 @@ export const usePreCounselling = () => {
         }
       } finally {
         setLoadingSlots(false);
-        setSelectedSlot(null);
       }
     };
     fetchSlots();
@@ -271,15 +377,14 @@ export const usePreCounselling = () => {
   const canConfirm =
     !!selectedBranchId &&
     !!mode &&
-    !!resumeFile &&
+    (!!resumeFile || !!existingResumeUrl) &&
     !!captchaVerified &&
-    (!!selectedTacId === !!selectedSlot);
-
+    !!selectedTacId === !!selectedSlot;
 
   const handleConfirm = async () => {
     if (!leadId) {
       return toast.error(
-        "Missing inquiry details. Please go back and try again."
+        "Missing inquiry details. Please go back and try again.",
       );
     }
 
@@ -299,7 +404,7 @@ export const usePreCounselling = () => {
       return toast.error(
         selectedTacId
           ? "Please select an available time slot."
-          : "Please select a preferred TAC."
+          : "Please select a preferred TAC.",
       );
     }
 
@@ -345,25 +450,29 @@ export const usePreCounselling = () => {
     }
   };
 
-
-
   const existingResume =
-    initialCV &&
-      typeof initialCV === "object" &&
-      "path" in initialCV
+    initialCV && typeof initialCV === "object" && "path" in initialCV
       ? initialCV.path
       : undefined;
 
   const isPdf = resumeFile
     ? resumeFile.type === "application/pdf"
-    : existingResume?.toLowerCase().includes(".pdf") ?? false;
+    : (existingResumeUrl?.toLowerCase().includes(".pdf") ?? false);
 
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   // Drag and drop handlers
-  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(true); };
-  const handleDragLeave = (e: React.DragEvent) => { e.preventDefault(); e.stopPropagation(); setIsDragging(false); };
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+  };
 
   const handleFileChange = (file: File | null) => {
     if (file) {
@@ -382,7 +491,6 @@ export const usePreCounselling = () => {
     if (e.target.files?.length) handleFileChange(e.target.files[0]);
   };
 
-
   useEffect(() => {
     let objectUrl: string | null = null;
     if (resumeFile) {
@@ -400,31 +508,57 @@ export const usePreCounselling = () => {
   }, [resumeFile, existingResume]);
 
   const cancellationRequest = async () => {
-    const confirmed = await confirmToast(`Are you sure to cancel this appointment !`);
+    const confirmed = await confirmToast(
+      `Are you sure to cancel this appointment !`,
+    );
     if (!confirmed) return;
 
+    const targetLeadId =
+      typeof existingBooking?.leadId === "object"
+        ? existingBooking.leadId._id
+        : existingBooking?.leadId || leadId;
+
     try {
-      const res = await cancelBookingAction({ leadId: existingBooking?.leadId, actionBy: reduxUser?._id, cancelReason: cancelReason });
+      const res = await cancelBookingAction({
+        leadId: targetLeadId,
+        actionBy: reduxUser?._id,
+        cancelReason: cancelReason,
+      });
       if (res?.data?.success) {
         setExistingBooking(null);
         toast.success("Cancellation request sent successfully!");
       }
     } catch (err: any) {
-      console.error(err?.response?.data?.message ?? "Failed to send cancellation request");
+      console.error(
+        err?.response?.data?.message ?? "Failed to send cancellation request",
+      );
     }
-  }
+  };
 
   const handleCancelReason = () => {
     setShowCancel((prev) => !prev);
     setShowScheduling(false);
     setShowScheduling(true);
-  }
+  };
 
   const handleReschedule = () => {
     setShowScheduling((prev) => !prev);
     setShowCancel(false);
-  }
+  };
+  const handleBranchSelect = async (newBranchId: string) => {
+    if (selectedBranchId && selectedBranchId !== newBranchId) {
+      const confirmed = await confirmToast(
+        "Are you sure you want to change the branch?",
+      );
 
+      if (!confirmed) return;
+
+      setSelectedTacId("");
+      setSelectedSlot(null);
+    }
+
+    setSelectedBranchId(newBranchId);
+  };
   return {
     leadId,
     todayStr,
@@ -440,14 +574,23 @@ export const usePreCounselling = () => {
     loadingBranches,
     selectedBranchId,
     setSelectedBranchId,
-    showScheduling, handleReschedule,
-
+    showScheduling,
+    handleReschedule,
+    handleBranchSelect,
     mode,
     setMode,
 
-    handleDragOver, handleDragLeave, handleDrop,
+    handleDragOver,
+    handleDragLeave,
+    handleDrop,
     onFileInputChange,
-    resumeFile, isDragging, fileInputRef, previewUrl, isPreviewOpen, setIsPreviewOpen, isPdf,
+    resumeFile,
+    isDragging,
+    fileInputRef,
+    previewUrl,
+    isPreviewOpen,
+    setIsPreviewOpen,
+    isPdf,
 
     tacs,
     loadingTacs,
@@ -474,7 +617,8 @@ export const usePreCounselling = () => {
     setShowConfirmPopup,
     canConfirm,
     handleConfirm,
-    profileTac, setProfileTac,
+    profileTac,
+    setProfileTac,
     cancellationRequest,
     showCancel,
     handleCancelReason,
@@ -482,6 +626,6 @@ export const usePreCounselling = () => {
     cancelReason,
     setCancelReason,
     canReschedule,
-    leadData
+    leadData,
   };
 };

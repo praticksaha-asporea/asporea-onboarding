@@ -1,12 +1,28 @@
+export interface IPopulatedLead {
+  _id: string;
+  inqNo?: string;
+  preferences?: {
+    branchId?: string;
+  };
+  candidateResume?: {
+    _id?: string;
+    path?: string;
+  };
+}
+
 export interface ExistingBooking {
   _id?: string;
-  leadId?: string;
+  leadId?: string | IPopulatedLead; 
+assignedTo?: string | { _id: string; [key: string]: any }; 
+  phase?: string;
   schedule?: {
     date: string;
     from: string;
     to: string;
     method: string;
   };
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface ChecklistState {
@@ -32,8 +48,7 @@ export interface PreCounsellingPayload {
   branchId?: string;
 }
 
-
 export interface getSlotsPayload {
-  consultantId: string,
-  date: string
+  consultantId: string;
+  date: string;
 }
