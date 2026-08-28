@@ -26,7 +26,7 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
   setIsEditingChannels,
   channels,
   handleChannelChange,
-  handleSavePreferences, // 🌟 Destructure kiya
+  handleSavePreferences,  
 }) => {
   return (
     <Card className="rounded-[15px] border border-[#e0e0e0] shadow-none">
@@ -49,7 +49,7 @@ export const NotificationChannels: React.FC<NotificationChannelsProps> = ({
         </Box>
         {!isEditingChannels ? (
           <Box>
-            {/* Conditional icons or text mapping based on real state */}
+           
             <Box className="flex gap-4 items-start mb-8">
               <i className={`ri-whatsapp-line text-[20px] ${channels.whatsapp ? "text-[#25D366]" : "text-gray-400"} mt-[2px]`}></i>
               <Typography variant="body2">

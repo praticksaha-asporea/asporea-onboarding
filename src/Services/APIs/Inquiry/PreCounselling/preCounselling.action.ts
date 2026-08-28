@@ -1,7 +1,7 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { bookPreCounsellingRes, pre_TacListRes, preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
+import { bookPreCounsellingRes, pre_TacListRes, CancelBookingResponse,preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
 import { LeadListPayload } from "@/Types/Frontend_Payload/lead.types";
-import { getSlotsPayload, PreCounsellingPayload } from "@/Types/Frontend_Payload/precounselling.types";
+import { getSlotsPayload, PreCounsellingPayload,CancelBookingPayload } from "@/Types/Frontend_Payload/precounselling.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
 
@@ -58,7 +58,7 @@ export const getTacsListAction = async (bodyData: LeadListPayload): Promise<Axio
   });
 };
 
-export const cancelBookingAction = async (bodyData: any): Promise<AxiosResponse<any>> => {
+export const cancelBookingAction = async (bodyData: CancelBookingPayload): Promise<AxiosResponse<CancelBookingResponse>> => {
   // try {
   const response = await axiosClient.post("/pre-counselling/cancel-booking", bodyData);
   return response;

@@ -1,9 +1,7 @@
-import InquiryDetails from './InquiryDetails'
+import InquiryDetails from "./InquiryDetails";
 
 const Inquiry = () => {
-  return (
-    <InquiryDetails />
-  )
-}
+  return <InquiryDetails />;
+};
 
-export default Inquiry
+export default Inquiry;
