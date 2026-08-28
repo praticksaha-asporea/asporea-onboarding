@@ -5,9 +5,10 @@ import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 import { applyCors } from "@/lib/cors";
 import { Lead } from "@/lib/models/Lead.model";
-import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";  
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 import mongoose from "mongoose";
 import Joi from "joi";
+import User from "@/lib/models/User.model";
 
 const updateLeadSchema = Joi.object({
   id: Joi.string().hex().length(24).required(),
@@ -26,6 +27,12 @@ const updateLeadSchema = Joi.object({
     then: Joi.required().messages({ "any.required": "Passport number is required when status is Having" }),
     otherwise: Joi.optional().allow("", null),
   }),
+  inqForType: Joi.string().trim().required(),
+  inqForPosition: Joi.string().trim().required(),
+  nationality: Joi.string().trim().required(),
+  latestAcademic: Joi.string().trim().required(),
+  latestTechnical: Joi.string().trim().required(),
+  workExperience: Joi.string().trim().required(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -43,10 +50,12 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (authUser.role !== "tac" && authUser.role !== "foe") throw new ApiError("TAC or FOE   access required", 403);
 
     const { error, value } = updateLeadSchema.validate(req.body);
+
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const { id, fullName, email, phone, whatsapp, address, passportStatus, passportNo } = value;
+    const { id, fullName, email, phone, whatsapp, address, passportStatus, passportNo,
+      inqForType, inqForPosition, nationality, latestAcademic, latestTechnical, workExperience } = value;
 
     if (!mongoose.Types.ObjectId.isValid(id))
       throw new ApiError("Invalid lead ID", 400);
@@ -66,13 +75,33 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!lead) throw new ApiError("Lead not found or not accessible to you", 404);
 
     const update: Record<string, unknown> = {};
-    if (fullName !== undefined)      update.fullName = fullName;
-    if (address !== undefined)       update.address = address;
-    if (email !== undefined)         update["contact.email"] = email;
-    if (phone !== undefined)         update["contact.phone"] = phone;
-    if (whatsapp !== undefined)      update["contact.whatsapp"] = whatsapp;
+    if (fullName !== undefined) update.fullName = fullName;
+    if (address !== undefined) update.address = address;
+    if (email !== undefined) update["contact.email"] = email;
+    if (phone !== undefined) update["contact.phone"] = phone;
+    if (whatsapp !== undefined) update["contact.whatsapp"] = whatsapp;
     if (passportStatus !== undefined) update["passport.status"] = passportStatus;
-    if (passportNo !== undefined)    update["passport.no"] = passportNo;
+    if (passportNo !== undefined) update["passport.no"] = passportNo;
+    if (inqForType !== undefined) update.inqForType = inqForType;
+    if (inqForPosition !== undefined) update.inqForPosition = inqForPosition;
+
+    const updateUser: Record<string, unknown> = {};
+
+    if (nationality !== undefined) {
+      updateUser["candidateProfile.nationality"] = nationality;
+    }
+
+    if (latestAcademic !== undefined) {
+      updateUser["candidateProfile.academic"] = latestAcademic;
+    }
+
+    if (latestTechnical !== undefined) {
+      updateUser["candidateProfile.technicalQualification"] = latestTechnical;
+    }
+
+    if (workExperience !== undefined) {
+      updateUser["candidateProfile.workExp"] = workExperience;
+    }
 
     const updated = await Lead.findByIdAndUpdate(
       id,
@@ -80,7 +109,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       { new: true, runValidators: true },
     ).lean();
 
-    return ResponseHandler.sendSuccess(res, updated, "Lead updated successfully");
+    const user = await User.findOneAndUpdate({
+      "candidateProfile.leadId": id
+    },
+      { $set: updateUser },
+      { new: true, runValidators: true },
+    ).lean();
+
+    return ResponseHandler.sendSuccess(res, { lead: updated, user }, "Lead updated successfully");
   } catch (error: unknown) {
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);

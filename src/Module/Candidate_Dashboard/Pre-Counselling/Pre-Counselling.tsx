@@ -152,14 +152,14 @@ const PreCounsellingContent = () => {
   } = usePreCounselling();
 
   const displayInqNo =
-  leadData?.inqNo ||
-  (typeof existingBooking?.leadId === "object"
-    ? (existingBooking?.leadId as any)?.inqNo
-    : null) ||
-  reduxUser?.inqNo ||
-  reduxUser?.leadId?.inqNo ||
-  reduxUser?.user?.leadId?.inqNo ||
-  "N/A";
+    leadData?.inqNo ||
+    (typeof existingBooking?.leadId === "object"
+      ? (existingBooking?.leadId as any)?.inqNo
+      : null) ||
+    reduxUser?.inqNo ||
+    reduxUser?.leadId?.inqNo ||
+    reduxUser?.user?.leadId?.inqNo ||
+    "N/A";
 
   if (!isValidLead) {
     return (
@@ -222,7 +222,7 @@ const PreCounsellingContent = () => {
     );
   }
 
-  
+
 
   return (
     <>
@@ -232,7 +232,7 @@ const PreCounsellingContent = () => {
             <Typography variant="h4">
               Confirm Pre-Counselling Readiness
             </Typography>
-<Chip label={`Inquiry #${displayInqNo}`} size="small" className=" shadow-2xl text-[var(--mui-palette-primary-main)]
+            <Chip label={`Inquiry #${displayInqNo}`} size="small" className=" shadow-2xl text-[var(--mui-palette-primary-main)]
 " />
           </Box>
           <Chip
@@ -433,11 +433,10 @@ const PreCounsellingContent = () => {
                     <Box
                       key={branch._id}
                       onClick={() => handleBranchSelect(branch._id)}
-                      className={`flex flex-col gap-1 p-4 rounded-2xl   cursor-pointer shrink-0 transition-all duration-200 ${
-                        isSelected
+                      className={`flex flex-col gap-1 p-4 rounded-2xl   cursor-pointer shrink-0 transition-all duration-200 ${isSelected
                           ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_19%,transparent)]"
                           : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
-                      }`}
+                        }`}
                       style={{ minWidth: 200 }}
                     >
                       <Box className="flex items-center gap-2">
@@ -495,11 +494,10 @@ const PreCounsellingContent = () => {
                     key={opt}
                     type="button"
                     onClick={() => setMode(opt)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl tracking-wide text-sm font-medium transition-all duration-200 cursor-pointer ${
-                      isActive
+                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl tracking-wide text-sm font-medium transition-all duration-200 cursor-pointer ${isActive
                         ? "bg-[var(--mui-palette-primary-main)] shadow-[0px_4px_14px_-4px_rgba(15,23,42,0.25)] text-white"
                         : "text-[var(--mui-palette-text-primary)] hover:text-[var(--mui-palette-text-primary)]"
-                    }`}
+                      }`}
                   >
                     <i
                       className={
@@ -667,11 +665,10 @@ const PreCounsellingContent = () => {
                               prev === tacId ? "" : tacId,
                             )
                           }
-                          className={`relative flex flex-col items-center text-center shadow-2xl p-5 rounded-2xl   cursor-pointer transition-all duration-200 ${
-                            isSelected
+                          className={`relative flex flex-col items-center text-center shadow-2xl p-5 rounded-2xl   cursor-pointer transition-all duration-200 ${isSelected
                               ? "  bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_16%,transparent)] shadow-2xl"
                               : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
-                          }`}
+                            }`}
                         >
                           {/* Selected indicator */}
                           {isSelected && (

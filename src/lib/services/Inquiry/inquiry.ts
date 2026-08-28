@@ -20,7 +20,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     longitude,
   } = body;
 
- 
+
   const radius = 50 * 1000;
   const branch = await BranchModel.findOne({
     coordinates: {
@@ -38,7 +38,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     throw new ApiError("No branch found within 10km radius", 404);
   }
   const prefferedBranch = branch?._id;
- 
+
   const existingInquiry = await Lead.findOne({
     $or: [
       { "contact.email": email.toLowerCase().trim() },
@@ -46,7 +46,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     ],
   });
 
- 
+
   if (existingInquiry) {
     const updatedInquiry = await Lead.findByIdAndUpdate(
       existingInquiry._id,
@@ -64,7 +64,7 @@ export const createInquiry = async (body: any, createdById: string) => {
       { new: true }
     );
 
-     
+
     await UserModel.findByIdAndUpdate(createdById, {
       enquired: "yes",
       $set: {
@@ -75,7 +75,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     return updatedInquiry;
   }
 
-  
+
   const inqNo = await generateInquiryNo();
   const currentFYear = currentFy();
 
@@ -175,8 +175,8 @@ export const updateInquiry = async (body: any) => {
     }
   };
 
-  const updatedInquiry = await Lead.findByIdAndUpdate(id, leadData,{ new: true });
-const userUpdateFields: Record<string, any> = {};
+  const updatedInquiry = await Lead.findByIdAndUpdate(id, leadData, { new: true });
+  const userUpdateFields: Record<string, any> = {};
 
   if (latestTechnical !== undefined && latestTechnical !== "") {
     userUpdateFields["candidateProfile.technicalQualification"] = latestTechnical;
@@ -191,13 +191,13 @@ const userUpdateFields: Record<string, any> = {};
     userUpdateFields["candidateProfile.workExp"] = workExperience;
   }
 
-   if (Object.keys(userUpdateFields).length > 0 && inquiry.createdBy?.id) {
-  await UserModel.findByIdAndUpdate(
-    inquiry.createdBy.id,
-    { $set: userUpdateFields },
-    { new: true }
-  );
-}
+  if (Object.keys(userUpdateFields).length > 0 && inquiry.createdBy?.id) {
+    await UserModel.findByIdAndUpdate(
+      inquiry.createdBy.id,
+      { $set: userUpdateFields },
+      { new: true }
+    );
+  }
 
   return updatedInquiry;
 };

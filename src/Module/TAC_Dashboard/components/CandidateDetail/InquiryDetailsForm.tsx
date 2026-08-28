@@ -1,11 +1,12 @@
 import React from "react";
-import { Box, Button, Card, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, Chip, ListSubheader, FormHelperText } from "@mui/material";
+import { Box, Button, Card, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, Chip, ListSubheader, FormHelperText, Divider } from "@mui/material";
 import { CamelCase } from "@/Utils/common";
 import { useInquiryDetails } from "./useInquiryDetails";
 import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 import { InquiryStageProgress } from "./Inquirystageprogress";
 import { positionDBData } from "@/Types/object.types";
 import dayjs from "dayjs";
+import { SectionHeader } from "@/Components/InquiryStaff/SectionHeader";
 
 interface InquiryDetailsFormProps { candidate: CandidateLead; }
 
@@ -18,6 +19,16 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
       </Typography>
       <form onSubmit={inquiryForm.handleSubmit}>
         <Grid container spacing={5}>
+          {/* step 1*/}
+          <SectionHeader
+            icon="ri-file-list-3-line"
+            eyebrow="Inquiry Details"
+            title="Inquiry Details - Step 1"
+            description="Basic information provided during inquiry creation."
+            accentColor="primary"
+          />
+
+          {/* Step 1 fields */}
           <Grid size={{ xs: 12, md: 6 }}>
             <TextField
               fullWidth
@@ -31,17 +42,16 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             />
           </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth name="email" label="Email Address" value={inquiryForm.values.email} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("email")} helperText={fh("email")} /></Grid>
-          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth name="phone" label="Phone Number" value={inquiryForm.values.phone} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("phone")} helperText={fh("phone")} /></Grid>
-          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth name="whatsapp" label="WhatsApp Number" value={inquiryForm.values.whatsapp} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("whatsapp")} helperText={fh("whatsapp")} /></Grid>
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField fullWidth name="email" label="Email Address" value={inquiryForm.values.email} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("email")} helperText={fh("email")} />
+          </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
-            <FormControl fullWidth error={fe("passportStatus")}>
-              <InputLabel>Passport Status</InputLabel>
-              <Select name="passportStatus" label="Passport Status" value={inquiryForm.values.passportStatus} onChange={(e) => { inquiryForm.handleChange(e); if (e.target.value !== "having") inquiryForm.setFieldValue("passportNo", ""); }} onBlur={inquiryForm.handleBlur}>
-                <MenuItem value="having">Having</MenuItem><MenuItem value="applied">Applied</MenuItem><MenuItem value="no">Not Having</MenuItem>
-              </Select>
-            </FormControl>
+            <TextField fullWidth name="phone" label="Phone Number" value={inquiryForm.values.phone} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("phone")} helperText={fh("phone")} />
+          </Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <TextField fullWidth name="whatsapp" label="WhatsApp Number" value={inquiryForm.values.whatsapp} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("whatsapp")} helperText={fh("whatsapp")} />
           </Grid>
 
           <Grid size={{ xs: 12, md: 6 }}>
@@ -56,7 +66,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
                 labelId="inquiry-category-label"
                 id="inquiry-category"
                 name="inqForType"
-                value={candidate.inqForType || ""}
+                value={inquiryForm?.values.inqForType}
                 onChange={(e) => inquiryForm.setFieldValue("inqForType", e.target.value)}
                 label="Inquiry For"
                 // disabled
@@ -151,6 +161,18 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
               )} */}
             </FormControl>
           </Grid>
+          {/* step 2*/}
+          <Divider className="my-6" />
+
+          <SectionHeader
+            icon="ri-calendar-check-line"
+            eyebrow="Inquiry Details"
+            title="Inquiry Details - Step 2"
+            description="Basic information provided during inquiry creation."
+            accentColor="success"
+          />
+
+          {/* Step 2 fields */}
           <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth
             // error={err("nationality")}
@@ -245,17 +267,46 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             // helperText={helperText("workExperience")}
             />
           </Grid>
-          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Source" disabled value={CamelCase(candidate?.source?.type ?? "")} /></Grid>
 
-          {candidate?.source?.refType && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Referred By (Type)" disabled value={CamelCase(candidate?.source?.refType ?? "")} /></Grid>}
-          {candidate?.source?.refName && <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Referred By (Name)" disabled value={candidate?.source.refName} /></Grid>}
+          <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Source" disabled value={CamelCase(candidate?.source?.type ?? "")} />
+          </Grid>
+
+          {candidate?.source?.refType &&
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField fullWidth label="Referred By (Type)" disabled value={CamelCase(candidate?.source?.refType ?? "")} />
+            </Grid>
+          }
+          {candidate?.source?.refName &&
+            <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Referred By (Name)" disabled value={candidate?.source.refName} />
+            </Grid>
+          }
+
+
+          <SectionHeader
+            icon="ri-information-line"
+            eyebrow="Additional Information"
+            title="Inquiry Information"
+            description="System-generated and workflow information."
+            accentColor="info"
+          />
+
+          {/* Additional information */}
 
           <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Inquiry Created" disabled value={candidate?.createdAt ? dayjs(candidate.createdAt).format("DD/MM/YYYY hh:mm A") : "—"} /></Grid>
+
+          <Grid size={{ xs: 12, md: 6 }}>
+            <FormControl fullWidth error={fe("passportStatus")}>
+              <InputLabel>Passport Status</InputLabel>
+              <Select name="passportStatus" label="Passport Status" value={inquiryForm.values.passportStatus} onChange={(e) => { inquiryForm.handleChange(e); if (e.target.value !== "having") inquiryForm.setFieldValue("passportNo", ""); }} onBlur={inquiryForm.handleBlur}>
+                <MenuItem value="having">Having</MenuItem><MenuItem value="applied">Applied</MenuItem><MenuItem value="no">Not Having</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
           {inquiryForm.values.passportStatus === "having" && (
             <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth name="passportNo" label="Passport No" value={inquiryForm.values.passportNo} onChange={(e) => inquiryForm.setFieldValue("passportNo", e.target.value.toUpperCase())} onBlur={inquiryForm.handleBlur} error={fe("passportNo")} helperText={fh("passportNo")} /></Grid>
           )}
 
-          {/* <Grid size={{ xs: 12 }}><TextField fullWidth multiline rows={3} name="address" label="Full Address" value={inquiryForm.values.address} onChange={inquiryForm.handleChange} onBlur={inquiryForm.handleBlur} error={fe("address")} helperText={fh("address")} /></Grid> */}
 
           <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Status" disabled value={CamelCase(candidate.status ?? "")} /></Grid>
 
