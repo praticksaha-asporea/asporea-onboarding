@@ -1,4 +1,4 @@
- 
+
 
 // import React, { Suspense } from "react";
 // import Grid from "@mui/material/Grid";
@@ -222,7 +222,7 @@
 //     );
 //   }
 
-  
+
 
 //   return (
 //     <>
@@ -320,7 +320,7 @@
 //               p-5
 //               rounded-2xl
 //               shadow-2xl
-              
+
 //               bg-[var(--mui-palette-primary)]
 //             "
 //             >
@@ -330,7 +330,7 @@
 //                   flex items-center justify-center
 //                   w-9 h-9
 //                   rounded-xl
-                 
+
 //           text-[var(--mui-palette-error-main)]
 //                 "
 //                 >
@@ -1098,7 +1098,7 @@
 //           />
 //         </>
 //       )}
-    
+
 //     </>
 //   );
 // };
@@ -1281,37 +1281,9 @@ const PreCounsellingContent = () => {
     );
   }
 
-<<<<<<< HEAD
-
-
-  return (
-    <>
-      <Card className={sectionCardClass}>
-        <Box className="flex items-start justify-between gap-3">
-          <Box className="flex items-center gap-2.5 mb-1 flex-wrap">
-            <Typography variant="h4">
-              Confirm Pre-Counselling Readiness
-            </Typography>
-            <Chip label={`Inquiry #${displayInqNo}`} size="small" className=" shadow-2xl text-[var(--mui-palette-primary-main)]
-" />
-          </Box>
-          <Chip
-            label={mode === "online" ? "🌐 Online" : "🏢 In-Person"}
-            className="font-bold text-white text-[13px] shrink-0"
-            sx={{
-              bgcolor:
-                mode === "online"
-                  ? "var(--mui-palette-primary-main)"
-                  : "var(--mui-palette-secondary-main)",
-            }}
-          />
-        </Box>
-      </Card>
-=======
   return (
     <>
       <HeaderCard displayInqNo={displayInqNo} mode={mode} />
->>>>>>> 1846dec204c16585790bec4429306d01ead7b6bf
 
       {existingBooking && (
         <ExistingBookingCard
@@ -1339,115 +1311,6 @@ const PreCounsellingContent = () => {
 
           <Step2SessionMode mode={mode} setMode={setMode} />
 
-<<<<<<< HEAD
-            {loadingBranches ? (
-              <Box className="flex gap-3 overflow-x-auto pb-1">
-                {[1, 2, 3].map((i) => (
-                  <Skeleton
-                    key={i}
-                    variant="rounded"
-                    width={200}
-                    height={84}
-                    className="rounded-2xl shrink-0"
-                  />
-                ))}
-              </Box>
-            ) : branches.length === 0 ? (
-              <Typography
-                variant="body2"
-                className="text-[var(--mui-palette-text-secondary)]"
-              >
-                No branches found near your location.
-              </Typography>
-            ) : (
-              <Box className="flex gap-3 overflow-x-auto pb-1">
-                {branches.map((branch: Branch) => {
-                  const isSelected = selectedBranchId === branch._id;
-                  return (
-                    <Box
-                      key={branch._id}
-                      onClick={() => handleBranchSelect(branch._id)}
-                      className={`flex flex-col gap-1 p-4 rounded-2xl   cursor-pointer shrink-0 transition-all duration-200 ${isSelected
-                          ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_19%,transparent)]"
-                          : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
-                        }`}
-                      style={{ minWidth: 200 }}
-                    >
-                      <Box className="flex items-center gap-2">
-                        <i
-                          className={
-                            isSelected
-                              ? "ri-checkbox-circle-fill text-[var(--mui-palette-primary-main)]"
-                              : "ri-building-4-line text-[var(--mui-palette-text-secondary)]"
-                          }
-                        />
-                        <Typography
-                          variant="subtitle2"
-                          className="font-medium tracking-wide text-[var(--mui-palette-primary)]
-"
-                        >
-                          {branch.title}
-                        </Typography>
-                      </Box>
-                      {branch.city && (
-                        <Typography
-                          variant="caption"
-                          className="text-[var(--mui-palette-text-secondary)]"
-                        >
-                          {branch.city}
-                        </Typography>
-                      )}
-                      {typeof branch.distanceKm === "number" && (
-                        <Typography
-                          variant="caption"
-                          className="mt-1 text-[var(--mui-palette-info-main)]"
-                        >
-                          {branch.distanceKm.toFixed(1)} km away
-                        </Typography>
-                      )}
-                    </Box>
-                  );
-                })}
-              </Box>
-            )}
-          </Card>
-
-          <Card className={sectionCardClass}>
-            <SectionHeader
-              icon="ri-route-line"
-              step="Step 2"
-              title="Session Mode"
-              description="How you'd like to connect with your TAC."
-              accent="var(--mui-palette-secondary-main)"
-            />
-            <Box className="flex gap-2 p-1 rounded-2xl bg-[var(--mui-overlays-1,_rgba(0,0,0,0.03))] w-fit">
-              {(["online", "offline"] as const).map((opt) => {
-                const isActive = mode === opt;
-                return (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => setMode(opt)}
-                    className={`flex items-center gap-2 px-4 py-2.5 rounded-xl tracking-wide text-sm font-medium transition-all duration-200 cursor-pointer ${isActive
-                        ? "bg-[var(--mui-palette-primary-main)] shadow-[0px_4px_14px_-4px_rgba(15,23,42,0.25)] text-white"
-                        : "text-[var(--mui-palette-text-primary)] hover:text-[var(--mui-palette-text-primary)]"
-                      }`}
-                  >
-                    <i
-                      className={
-                        opt === "online"
-                          ? "ri-vidicon-line"
-                          : "ri-building-4-line"
-                      }
-                      style={{ fontSize: 17 }}
-                    />
-                    {opt === "online" ? "Online" : "In-Person"}
-                  </button>
-                );
-              })}
-            </Box>
-          </Card>
-=======
           <Step3CvUpload
             handleDragOver={handleDragOver}
             handleDragLeave={handleDragLeave}
@@ -1468,7 +1331,6 @@ const PreCounsellingContent = () => {
             setSelectedTacId={setSelectedTacId}
             setProfileTac={setProfileTac}
           />
->>>>>>> 1846dec204c16585790bec4429306d01ead7b6bf
 
           <Step5SlotSelection
             selectedTacId={selectedTacId}
@@ -1481,509 +1343,6 @@ const PreCounsellingContent = () => {
             setSelectedSlot={setSelectedSlot}
           />
 
-<<<<<<< HEAD
-            <Grid container spacing={6}>
-              <Grid size={{ xs: 12, md: 6 }} id="resumeFile">
-                <Typography className="text-[12px] font-semibold mb-1.5">
-                  Upload CV
-                </Typography>
-                <Box
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => fileInputRef.current?.click()}
-                  className={` shadow-2xl rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer transition-all h-[220px] ${isDragging ? "border-blue-500 bg-blue-50" : "border-gray-300 hover:bg-[--mui-palette-secondary-lightOpacity]"}`}
-                >
-                  <input
-                    ref={fileInputRef}
-                    hidden
-                    type="file"
-                    accept=".pdf,.jpg,.jpeg,.png"
-                    onChange={onFileInputChange}
-                  />
-                  <i className="ri-upload-cloud-2-line text-4xl text-blue-500 mb-3" />
-                  <Typography className="font-semibold text-sm">
-                    Drag & Drop CV
-                  </Typography>
-                  <Typography className="text-xs text-gray-500 mt-1">
-                    PDF, JPG, JPEG, PNG
-                  </Typography>
-                </Box>
-              </Grid>
-              {previewUrl && (
-                <Grid size={{ xs: 12, md: 6 }}>
-                  <Typography className="text-[12px] font-semibold mb-1.5">
-                    CV Preview
-                  </Typography>
-                  <Box
-                    onClick={() => setIsPreviewOpen(true)}
-                    className="border rounded-xl h-[220px] bg-gray-50 overflow-hidden relative cursor-pointer group hover:border-blue-500 transition-all"
-                  >
-                    {isPdf ? (
-                      <Box className="w-full h-full pointer-events-none relative">
-                        <iframe
-                          src={previewUrl}
-                          className="w-full h-full border-0"
-                        />
-                        <Box className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                          <Box className="bg-white/90 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                            Click to view document
-                          </Box>
-                        </Box>
-                      </Box>
-                    ) : (
-                      <Box className="w-full h-full flex items-center justify-center bg-white relative">
-                        <img
-                          src={previewUrl}
-                          alt="Resume Preview"
-                          className="w-full h-full object-contain"
-                        />
-                        <Box className="absolute inset-0 bg-transparent group-hover:bg-black/10 transition-colors flex items-center justify-center">
-                          <Box className="bg-white/90 text-blue-600 px-3 py-1.5 rounded-lg shadow-sm font-semibold text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                            Click to view image
-                          </Box>
-                        </Box>
-                      </Box>
-                    )}
-                  </Box>
-                </Grid>
-              )}
-            </Grid>
-          </Card>
-
-          <Card className={sectionCardClass}>
-            <SectionHeader
-              icon="ri-user-star-line"
-              step="Step 4"
-              title="Choose Your Preferred TAC"
-              description="Your dedicated point of contact for this session."
-            />
-
-            {!selectedBranchId ? (
-              <Box className="flex flex-col items-center text-center gap-2 py-8">
-                <i className="ri-map-pin-line text-3xl text-[var(--mui-palette-text-secondary)]" />
-                <Typography
-                  variant="body2"
-                  className="text-[var(--mui-palette-text-secondary)]"
-                >
-                  Select a branch above to see available TACs.
-                </Typography>
-              </Box>
-            ) : (
-              <>
-                {/* <TextField
-              size="small"
-              placeholder="Search TAC by name"
-              value={tacSearch}
-              onChange={(e) => setTacSearch(e.target.value)}
-              className="mb-4 max-w-xs"
-              InputProps={{
-                className: "rounded-xl",
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <i className="ri-search-line" style={{ fontSize: 16 }} />
-                  </InputAdornment>
-                ),
-              }}
-            /> */}
-
-                {loadingTacs ? (
-                  <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {[1, 2].map((i) => (
-                      <Box
-                        key={i}
-                        className="relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
-                      >
-                        <Skeleton variant="circular" width={52} height={52} />
-                        <Box className="flex-1">
-                          <Skeleton variant="text" width="40%" />
-                          <Skeleton variant="text" width="60%" />
-                        </Box>
-                      </Box>
-                    ))}
-                  </Box>
-                ) : tacs.length === 0 ? (
-                  <Typography
-                    variant="body2"
-                    className="text-[var(--mui-palette-text-secondary)]"
-                  >
-                    No TAC available for this branch and mode yet.
-                  </Typography>
-                ) : (
-                  <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {tacs?.map((tac: preTACData) => {
-                      const tacId = tac._id.toString();
-                      const isSelected = selectedTacId === tacId;
-                      const rating = tac?.tacProfile?.rating;
-
-                      return (
-                        <Box
-                          key={tacId}
-                          onClick={() =>
-                            setSelectedTacId((prev) =>
-                              prev === tacId ? "" : tacId,
-                            )
-                          }
-                          className={`relative flex flex-col items-center text-center shadow-2xl p-5 rounded-2xl   cursor-pointer transition-all duration-200 ${isSelected
-                              ? "  bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_16%,transparent)] shadow-2xl"
-                              : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
-                            }`}
-                        >
-                          {/* Selected indicator */}
-                          {isSelected && (
-                            <i className="ri-checkbox-circle-fill absolute top-3 right-3 text-xl text-[var(--mui-palette-primary-main)]" />
-                          )}
-
-                          {/* Profile Image */}
-                          <Avatar
-                            src={tac.profilePic as unknown as string}
-                            sx={{
-                              width: 72,
-                              height: 72,
-                              mb: 2,
-                            }}
-                          >
-                            {tac.firstName?.charAt(0)}
-                          </Avatar>
-
-                          {/* Name */}
-                          <Typography
-                            variant="subtitle1"
-                            className="font-bold leading-tight"
-                          >
-                            {tac.firstName} {tac.lastName}
-                          </Typography>
-
-                          {/* Rating */}
-                          {typeof rating === "number" && (
-                            <Box className="flex items-center justify-center gap-0.5 text-amber-500 mt-1.5">
-                              {Array.from({ length: 5 }, (_, index) => {
-                                const starValue = index + 1;
-
-                                let icon = "ri-star-line";
-
-                                if (rating >= starValue) {
-                                  icon = "ri-star-fill";
-                                } else if (rating >= starValue - 0.5) {
-                                  icon = "ri-star-half-fill";
-                                }
-
-                                return (
-                                  <i
-                                    key={index}
-                                    className={icon}
-                                    style={{ fontSize: 14 }}
-                                  />
-                                );
-                              })}
-
-                              <Typography
-                                variant="caption"
-                                className="font-semibold ml-1"
-                              >
-                                {rating.toFixed(1)}
-                              </Typography>
-                            </Box>
-                          )}
-
-                          {/* Designation */}
-                          <Typography
-                            variant="body2"
-                            className="text-[var(--mui-palette-text-secondary)] mt-2"
-                          >
-                            {CamelCase(tac?.tacProfile?.designation as string)}
-                          </Typography>
-
-                          {/* Experience */}
-                          {tac?.experienceInMonths ? (
-                            <Typography
-                              variant="caption"
-                              className="text-[var(--mui-palette-text-secondary)] mt-1"
-                            >
-                              {Number((tac.experienceInMonths / 12).toFixed(2))}{" "}
-                              yrs experience
-                            </Typography>
-                          ) : null}
-
-                          <Button
-                            variant="contained"
-                            size="small"
-                            fullWidth
-                            startIcon={<i className="ri-user-line" />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setProfileTac(tac);
-                            }}
-                            sx={{
-                              mt: 3,
-                              borderRadius: 2,
-                              textTransform: "none",
-                            }}
-                          >
-                            View Profile
-                          </Button>
-                        </Box>
-                      );
-                    })}
-                  </Box>
-                )}
-              </>
-            )}
-          </Card>
-
-          <Card className={sectionCardClass}>
-            <SectionHeader
-              icon="ri-calendar-schedule-line"
-              step="Step 5"
-              title="Pick a Date & Time Slot"
-              accent="var(--mui-palette-secondary-main)"
-            />
-
-            {!selectedTacId ? (
-              <Box className="flex flex-col items-center text-center gap-2 py-8">
-                <i className="ri-user-search-line text-3xl text-[var(--mui-palette-text-secondary)]" />
-                <Typography
-                  variant="body2"
-                  className="text-[var(--mui-palette-text-secondary)]"
-                >
-                  Select a TAC above to see their available slots.
-                </Typography>
-              </Box>
-            ) : (
-              <>
-                <TextField
-                  type="date"
-                  size="small"
-                  value={date}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="mb-5 max-w-[200px]"
-                  InputProps={{ className: "rounded-xl" }}
-                  inputProps={{ min: todayStr }}
-                />
-
-                {loadingSlots ? (
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "repeat(2, 1fr)",
-                        sm: "repeat(auto-fill, minmax(165px, 1fr))",
-                      },
-                      gap: 1.5,
-                    }}
-                  >
-                    {[1, 2, 3, 4, 5, 6].map((i) => (
-                      <Skeleton
-                        key={i}
-                        variant="rectangular"
-                        height={36.5}
-                        sx={{ borderRadius: "20px", width: "100%" }}
-                      />
-                    ))}
-                  </Box>
-                ) : slots.length === 0 ? (
-                  <Typography
-                    variant="body2"
-                    className="text-[var(--mui-palette-text-secondary)]"
-                  >
-                    No slots available for this date.
-                  </Typography>
-                ) : (
-                  <Box
-                    sx={{
-                      display: "grid",
-                      gridTemplateColumns: {
-                        xs: "repeat(2, 1fr)",
-                        sm: "repeat(auto-fill, minmax(165px, 1fr))",
-                      },
-                      gap: 1.5,
-                    }}
-                  >
-                    {slots.map((slot, idx) => {
-                      const isSelected = selectedSlot?.time === slot.time;
-                      return (
-                        <Button
-                          key={idx}
-                          disabled={!slot.available}
-                          onClick={() => {
-                            if (!slot.available) return;
-
-                            setSelectedSlot((prev) =>
-                              prev?.from === slot.from && prev?.to === slot.to
-                                ? null
-                                : slot,
-                            );
-                          }}
-                          sx={{
-                            width: "100%",
-                            minWidth: 0,
-                            height: "36.5px",
-                            borderRadius: "20px",
-                            fontSize: { xs: "11px", sm: "13px" },
-                            px: { xs: 0.5, sm: 2 },
-                            textTransform: "none",
-                            fontWeight: 500,
-
-                            transition:
-                              "transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease, background-color 0.2s ease, border-color 0.2s ease",
-                            willChange: "transform",
-
-                            bgcolor: isSelected
-                              ? "var(--mui-palette-primary-main)"
-                              : "var(--mui-palette-background-paper)",
-
-                            color: isSelected
-                              ? "#ffffff"
-                              : slot.available
-                                ? "var(--mui-palette-text-primary)"
-                                : "var(--mui-palette-text-disabled)",
-
-                            boxShadow: isSelected
-                              ? "0px 4px 14px rgba(18, 93, 163, 0.4)"
-                              : "0px 4px 10px rgba(0, 0, 0, 0.2), inset 0px 1px 0px rgba(255, 255, 255, 0.08)",
-
-                            "&:hover": {
-                              zIndex: 2,
-                              transform: slot.available
-                                ? "translateY(-7px) scale(1.04)"
-                                : "none",
-                              boxShadow: isSelected
-                                ? "0px 14px 28px rgba(18, 93, 163, 0.5)"
-                                : slot.available
-                                  ? "0px 14px 25px rgba(0, 0, 0, 0.35), 0px 6px 10px rgba(0, 0, 0, 0.2)"
-                                  : "none",
-                              borderColor: isSelected
-                                ? "transparent"
-                                : "var(--mui-palette-primary-main)",
-                            },
-
-                            "&:active": {
-                              transform: slot.available
-                                ? "translateY(-2px) scale(0.98)"
-                                : "none",
-                            },
-                          }}
-                        >
-                          {slot.time || `${slot.from} - ${slot.to}`}
-                        </Button>
-                      );
-                    })}
-                  </Box>
-                )}
-              </>
-            )}
-          </Card>
-
-          <Card className={sectionCardClass}>
-            <SectionHeader
-              icon="ri-shield-check-line"
-              step="Step 6"
-              title="Quick Verification"
-              description="Confirm you're not a robot to finish up."
-              accent="var(--mui-palette-success-main)"
-            />
-            <Box className="flex items-start gap-3 flex-wrap">
-              <Box
-                className="rounded-xl overflow-hidden shadow-[0px_2px_8px_rgba(15,23,42,0.08)] flex items-center justify-center shrink-0"
-                sx={{
-                  width: 100,
-                  height: 40,
-                  minWidth: 100,
-                  minHeight: 40,
-                  "& canvas": {
-                    width: "100px !important",
-                    height: "40px !important",
-                    display: "block",
-                  },
-                }}
-              >
-                <LoadCanvasTemplate reloadText=" " reloadColor="#125da3" />
-              </Box>
-              <IconButton
-                onClick={handleCaptchaRefresh}
-                aria-label="Refresh captcha"
-                className="rounded-xl"
-                sx={{
-                  bgcolor:
-                    "color-mix(in srgb, var(--mui-palette-primary-main) 8%, transparent)",
-                }}
-              >
-                <i className="ri-refresh-line text-lg" />
-              </IconButton>
-              <TextField
-                size="small"
-                placeholder="Enter the code above"
-                value={captchaValue}
-                onChange={(e) => handleCaptchaChange(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    handleCaptchaVerify();
-                  }
-                }}
-                error={captchaValue.length > 0 && !captchaVerified}
-                helperText={
-                  captchaValue.length > 0 && !captchaVerified
-                    ? "Click Verify once you've typed the code"
-                    : captchaVerified
-                      ? "Verified"
-                      : " "
-                }
-                className="max-w-xs"
-                autoComplete="off"
-                InputProps={{
-                  className: "rounded-xl",
-                  endAdornment:
-                    captchaValue && captchaVerified ? (
-                      <InputAdornment position="end">
-                        <i
-                          className="ri-checkbox-circle-fill text-[var(--mui-palette-success-main)]"
-                          style={{ fontSize: 18 }}
-                        />
-                      </InputAdornment>
-                    ) : undefined,
-                }}
-              />
-              <button
-                type="button"
-                onClick={handleCaptchaVerify}
-                className="px-4 py-2 rounded-xl bg-[#125da3] text-white text-sm font-medium hover:bg-[#0d4c88] transition-colors"
-              >
-                Verify
-              </button>
-            </Box>
-          </Card>
-
-          <Box
-            className="flex justify-end gap-4 mt-2 py-4 sticky bottom-0 backdrop-blur-sm"
-            style={{
-              background:
-                "color-mix(in srgb, var(--mui-palette-background-default, white) 85%, transparent)",
-            }}
-          >
-            <Button
-              variant="contained"
-              size="large"
-              disabled={!canConfirm}
-              onClick={handleConfirm}
-              className="rounded-xl normal-case text-sm px-8 font-semibold"
-              sx={{
-                boxShadow: canConfirm
-                  ? "0px 8px 20px -6px var(--mui-palette-primary-main)"
-                  : "none",
-              }}
-            >
-              {bookingLoading ? (
-                <CircularProgress size={22} color="inherit" />
-              ) : (
-                <>
-                  Confirm Readiness
-                  <i className="ri-check-line ml-1.5" />
-                </>
-              )}
-            </Button>
-          </Box>
-=======
           <Step6CaptchaVerification
             handleCaptchaRefresh={handleCaptchaRefresh}
             captchaValue={captchaValue}
@@ -1994,7 +1353,6 @@ const PreCounsellingContent = () => {
             handleConfirm={handleConfirm}
             bookingLoading={bookingLoading}
           />
->>>>>>> 1846dec204c16585790bec4429306d01ead7b6bf
 
           <SuccessDialog
             showConfirmPopup={showConfirmPopup}
