@@ -52,3 +52,9 @@ export interface getSlotsPayload {
   consultantId: string;
   date: string;
 }
+
+export interface CancelBookingPayload {
+  leadId: string;
+  actionBy: string;
+  cancelReason?: string;
+}

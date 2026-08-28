@@ -40,7 +40,7 @@ export const createInquiryAction = async (
   formData: InquiryFormValues,
 ): Promise<AxiosResponse<inquiryResponse>> => {
   const res = await axiosClient.post("/inquiry/create", formData);
-  // return res.data;
+   
   return res;
 };
 
@@ -52,7 +52,7 @@ export const updateInquiryAction = async (
     payload.id = inquiryId;
   }
   const res = await axiosClient.post(`/inquiry/update`, payload);
-  // return res.data;
+  
   return res;
 };
 

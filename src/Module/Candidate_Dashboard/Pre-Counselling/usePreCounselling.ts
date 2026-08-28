@@ -1,50 +1,649 @@
+// "use client";
+
+// import { useState, useEffect, useCallback, useRef } from "react";
+// import { useSearchParams, useRouter } from "next/navigation";
+// import { useSelector } from "react-redux";
+
+// import toast from "react-hot-toast";
+
+// import {
+//   bookSlotAction,
+//   cancelBookingAction,
+//   checkBookingStatusAction,
+//   getSlotsAction,
+//   getTacsListAction,
+// } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+// import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
+// import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+// import { ExistingBooking } from "@/Types/Frontend_Payload/precounselling.types";
+// import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
+// import { preTACData } from "@/Types/object.types";
+// import { confirmToast } from "@/Utils/confirmToast";
+// import { ILead } from "@/lib/models/Lead.model";
+
+// export type CounsellingMode = "online" | "offline";
+
+// export interface Branch {
+//   _id: string;
+//   title: string;
+//   city?: string;
+//   address?: string;
+//   distanceKm?: number;
+// }
+
+// export interface TAC {
+//   _id: string;
+//   name: string;
+//   photoUrl?: string;
+//   designation?: string;
+//   experienceYears?: number;
+//   rating?: number;
+//   languages?: string[];
+//   specialization?: string[];
+//   bio?: string;
+// }
+
+// const DEFAULT_LAT = 26.7271;
+// const DEFAULT_LNG = 88.3953;
+
+// export const usePreCounselling = () => {
+//   const searchParams = useSearchParams();
+//   const router = useRouter();
+
+//   const reduxUser = useSelector(
+//     (state: any) => state.userSlice?.userData || state.user?.userData,
+//   );
+//   const reduxLeadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
+//   const leadId = searchParams?.get("leadId") || reduxLeadId;
+
+//   const serverNow = new Date();
+//   const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
+//   const istTime = new Date(utcTime + 330 * 60000);
+//   const todayStr = istTime.toISOString().split("T")[0];
+
+//   // ---- lead / existing-booking guard ----
+//   const [isReduxReady, setIsReduxReady] = useState(false);
+//   const [showScheduling, setShowScheduling] = useState(true);
+//   const [isValidLead, setIsValidLead] = useState(true);
+//   const [isCompleted, setIsCompleted] = useState(false);
+//   const [existingBooking, setExistingBooking] =
+//     useState<ExistingBooking | null>(null);
+//   const [activeStepperStep, setActiveStepperStep] = useState(1);
+//   const [canReschedule, setCanReschedule] = useState<boolean>(false);
+
+//   // ---- 1. branch (geolocation driven) ----
+//   const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
+//     null,
+//   );
+//   const [branches, setBranches] = useState<Branch[]>([]);
+//   const [loadingBranches, setLoadingBranches] = useState(false);
+//   const [locationDenied, setLocationDenied] = useState(false);
+//   const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+
+//   // ---- 2. mode ----
+//   const [mode, setMode] = useState<CounsellingMode>("offline");
+
+//   // ---- 3. cv ----
+//   const [resumeFile, setResumeFile] = useState<File | null>(null);
+//   const [isDragging, setIsDragging] = useState(false);
+//   const fileInputRef = useRef<HTMLInputElement | null>(null);
+//   const initialCV = { path: "" };
+
+//   // ---- 4. tac ----
+//   const [tacs, setTacs] = useState<preTACData[]>([]);
+//   const [loadingTacs, setLoadingTacs] = useState(false);
+//   const [tacSearch, setTacSearch] = useState("");
+//   const [selectedTacId, setSelectedTacId] = useState<string>("");
+
+//   // ---- 5. date -> slots ----
+//   const [date, setDate] = useState(todayStr);
+//   const [slots, setSlots] = useState<Slot[]>([]);
+//   const [loadingSlots, setLoadingSlots] = useState(false);
+//   const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
+
+//   // ---- 6. captcha ----
+//   const [captchaValue, setCaptchaValue] = useState("");
+//   const [captchaVerified, setCaptchaVerified] = useState(false);
+
+//   // ---- 7. submit ----
+//   const [bookingLoading, setBookingLoading] = useState(false);
+//   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
+//   const [profileTac, setProfileTac] = useState<preTACData | null>(null);
+//   const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(
+//     null,
+//   );
+//   const [showCancel, setShowCancel] = useState(false);
+//   const [cancelReason, setCancelReason] = useState<string>("");
+
+//   const [leadData, setLeadData] = useState<ILead | null>(null);
+
+//   useEffect(() => {
+//     const timer = setTimeout(() => setIsReduxReady(true), 500);
+//     return () => clearTimeout(timer);
+//   }, []);
+
+//   useEffect(() => {
+//     if (!isReduxReady) return;
+//     if (!leadId) {
+//       toast.error("Please generate inquiry first");
+//       router.push("/inquiry");
+//     }
+//   }, [isReduxReady, leadId, router]);
+
+//   useEffect(() => {
+//     if (reduxUser && !leadData) {
+//       const leadObj =
+//         (typeof reduxUser?.leadId === "object" ? reduxUser?.leadId : null) ||
+//         (typeof reduxUser?.user?.leadId === "object"
+//           ? reduxUser?.user?.leadId
+//           : null) ||
+//         reduxUser?.lead ||
+//         reduxUser?.user ||
+//         reduxUser;
+
+//       if (leadObj?.inqNo) {
+//         setLeadData(leadObj as ILead);
+//       }
+//     }
+//   }, [reduxUser, leadData]);
+//   useEffect(() => {
+//     const checkStatus = async () => {
+//       if (!leadId) return;
+//       try {
+//         const res = await checkBookingStatusAction({ leadId });
+//         if (res?.data?.success && res.data?.data) {
+//           const rawData = res.data.data;
+
+//           const bookingData =
+//             rawData.existingBooking !== undefined
+//               ? rawData.existingBooking
+//               : rawData;
+//           const populatedLead =
+//             rawData.lead ||
+//             (typeof bookingData?.leadId === "object"
+//               ? bookingData?.leadId
+//               : null);
+
+//           if (populatedLead) {
+//             setLeadData(populatedLead);
+
+//             if (populatedLead?.preferences?.branchId) {
+//               setSelectedBranchId(
+//                 populatedLead.preferences.branchId.toString(),
+//               );
+//             }
+
+//             if (populatedLead?.candidateResume?.path) {
+//               const resumePath = populatedLead.candidateResume.path;
+//               setExistingResumeUrl(resumePath);
+//               setPreviewUrl(resumePath);
+//             }
+//           }
+
+//           if (bookingData && (bookingData._id || bookingData.schedule)) {
+//             setExistingBooking(bookingData);
+//             setShowScheduling(false);
+
+//             const scheduleDate = bookingData.schedule?.date;
+//             const scheduleFrom = bookingData.schedule?.from || "00:00";
+
+//             if (scheduleDate) {
+//               const datePart = new Date(scheduleDate)
+//                 .toISOString()
+//                 .split("T")[0];
+//               const scheduleDateTime = new Date(`${datePart} ${scheduleFrom}`);
+//               const thirtyMinutesBeforeSchedule = new Date(
+//                 scheduleDateTime.getTime() - 30 * 60 * 1000,
+//               );
+
+//               setCanReschedule(
+//                 Date.now() > thirtyMinutesBeforeSchedule.getTime(),
+//               );
+//               setDate(datePart);
+//             }
+
+//             if (bookingData.status?.toLowerCase() === "completed") {
+//               setIsCompleted(true);
+//             }
+
+//             if (bookingData.schedule?.method) {
+//               setMode(
+//                 bookingData.schedule.method === "on" ? "online" : "offline",
+//               );
+//             }
+//             if (bookingData.assignedTo) {
+//               const tacId =
+//                 typeof bookingData.assignedTo === "object"
+//                   ? bookingData.assignedTo._id
+//                   : bookingData.assignedTo;
+
+//               setSelectedTacId(tacId.toString());
+//             }
+//             if (bookingData.schedule?.from && bookingData.schedule?.to) {
+//               setSelectedSlot({
+//                 from: bookingData.schedule.from,
+//                 to: bookingData.schedule.to,
+//                 time: `${bookingData.schedule.from} - ${bookingData.schedule.to}`,
+//                 available: true,
+//               });
+//             }
+//           }
+//         } else if (res?.data?.message?.toLowerCase().includes("not found")) {
+//           setIsValidLead(false);
+//         }
+//       } catch (err: any) {
+//         if (err?.response?.status === 404) setIsValidLead(false);
+//       }
+//     };
+//     checkStatus();
+//   }, [leadId]);
+
+//   useEffect(() => {
+//     const userBranch = reduxUser?.preferences?.branchId || reduxUser?.branchId;
+//     if (userBranch && !selectedBranchId) {
+//       setSelectedBranchId(userBranch.toString());
+//     }
+//   }, [reduxUser, selectedBranchId]);
+//   // ---- geolocation -> branches ----
+
+//   const fetchBranches = useCallback(
+//     async (lat: number, lng: number) => {
+//       setLoadingBranches(true);
+//       try {
+//         const response = await branchListingApi({ lat, lng });
+//         const list = response?.data?.data?.data || [];
+//         setBranches(list);
+
+//         if (list.length > 0) {
+//           setSelectedBranchId((prev) => {
+//             if (prev) return prev;
+
+//             const userPrefBranch =
+//               reduxUser?.preferences?.branchId || reduxUser?.branchId;
+//             const matched = list.find(
+//               (b: Branch) => b._id.toString() === userPrefBranch?.toString(),
+//             );
+
+//             return matched ? matched._id : list[0]._id;
+//           });
+//         }
+//       } catch (error) {
+//         console.error("Branch fetch error:", error);
+//         toast.error("Failed to fetch nearby branches");
+//       } finally {
+//         setLoadingBranches(false);
+//       }
+//     },
+//     [reduxUser],
+//   );
+//   useEffect(() => {
+//     if (typeof window === "undefined" || !navigator.geolocation) {
+//       setLocationDenied(true);
+//       fetchBranches(DEFAULT_LAT, DEFAULT_LNG);
+//       return;
+//     }
+//     navigator.geolocation.getCurrentPosition(
+//       (pos) => {
+//         const { latitude, longitude } = pos.coords;
+//         setCoords({ lat: latitude, lng: longitude });
+//         fetchBranches(latitude, longitude);
+//       },
+//       () => {
+//         // setLocationDenied(true);
+//         // toast.error("Couldn't access your location — showing default branches");
+//         // fetchBranches(DEFAULT_LAT, DEFAULT_LNG);
+//       },
+//       { timeout: 8000 },
+//     );
+//     // eslint-disable-next-line react-hooks/exhaustive-deps
+//   }, []);
+
+//   // ---- branch + mode -> tac list ----
+//   useEffect(() => {
+//     const fetchTacs = async () => {
+//       if (!selectedBranchId) {
+//         setTacs([]);
+//         return;
+//       }
+//       setLoadingTacs(true);
+//       try {
+//         const payload = {
+//           page: 1,
+//           limit: 10,
+//           search: tacSearch,
+//           mode,
+//           branchId: selectedBranchId,
+//         };
+//         const res = await getTacsListAction(payload);
+//         const list = res?.data?.data?.tacList || [];
+//         // console.log(list);
+
+//         setTacs(list);
+//         // setSelectedTacId((prev) => (list.some((t: TAC) => t._id === prev) ? prev : ""));
+//       } catch (err) {
+//         console.error("TAC fetch error:", err);
+//         // toast.error("Failed to fetch TAC list");
+//         setTacs([]);
+//       } finally {
+//         setLoadingTacs(false);
+//       }
+//     };
+//     fetchTacs();
+//   }, [selectedBranchId, mode, tacSearch]);
+
+//   useEffect(() => {
+//     const fetchSlots = async () => {
+//       if (!selectedTacId) {
+//         setSlots([]);
+//         return;
+//       }
+//       setLoadingSlots(true);
+//       try {
+//         const res = await getSlotsAction({ consultantId: selectedTacId, date });
+//         if (res?.data?.success) setSlots(res?.data?.data);
+//         else {
+//           toast.error(res?.data?.message || "Failed to fetch slots");
+//           setSlots([]);
+//         }
+//       } finally {
+//         setLoadingSlots(false);
+//       }
+//     };
+//     fetchSlots();
+//   }, [selectedTacId, date]);
+
+//   // ---- captcha ----
+//   useEffect(() => {
+//     loadCaptchaEnginge(5);
+//   }, []);
+
+//   const handleCaptchaChange = (value: string) => {
+//     setCaptchaValue(value);
+//     setCaptchaVerified(false);
+//   };
+
+//   const handleCaptchaVerify = () => {
+//     if (!captchaValue.trim()) return;
+//     setCaptchaVerified(validateCaptcha(captchaValue));
+//   };
+
+//   const handleCaptchaRefresh = () => {
+//     loadCaptchaEnginge(5);
+//     setCaptchaValue("");
+//     setCaptchaVerified(false);
+//   };
+
+//   // ---- submit ----
+//   const canConfirm =
+//     !!selectedBranchId &&
+//     !!mode &&
+//     (!!resumeFile || !!existingResumeUrl) &&
+//     !!captchaVerified &&
+//     !!selectedTacId === !!selectedSlot;
+
+//   const handleConfirm = async () => {
+//     if (!leadId) {
+//       return toast.error(
+//         "Missing inquiry details. Please go back and try again.",
+//       );
+//     }
+
+//     if (!selectedBranchId) {
+//       return toast.error("Please select a branch.");
+//     }
+
+//     if (!mode) {
+//       return toast.error("Please select a consultation mode.");
+//     }
+
+//     if (!resumeFile) {
+//       return toast.error("Please upload your CV.");
+//     }
+
+//     if (!!selectedTacId !== !!selectedSlot) {
+//       return toast.error(
+//         selectedTacId
+//           ? "Please select an available time slot."
+//           : "Please select a preferred TAC.",
+//       );
+//     }
+
+//     if (!captchaVerified) {
+//       return toast.error("Please complete the CAPTCHA verification.");
+//     }
+
+//     setBookingLoading(true);
+//     try {
+//       // const payload = {
+//       //   leadId,
+//       //   branchId: selectedBranchId,
+//       //   consultantId: selectedTacId,
+//       //   date,
+//       //   from: selectedSlot.from,
+//       //   to: selectedSlot.to,
+//       //   method: mode === "online" ? "on" : "off",
+//       //   resumeFile
+//       // };
+
+//       const payload = new FormData();
+//       payload.append("leadId", leadId);
+//       payload.append("branchId", selectedBranchId);
+
+//       if (selectedTacId) {
+//         payload.append("consultantId", selectedTacId);
+//         payload.append("date", date);
+//         payload.append("from", selectedSlot?.from as string);
+//         payload.append("to", selectedSlot?.to as string);
+//       }
+//       payload.append("method", mode === "online" ? "on" : "off");
+
+//       if (resumeFile) payload.append("resumeFile", resumeFile);
+
+//       const res = await bookSlotAction(payload);
+//       if (res?.data?.success) {
+//         setLeadData(res?.data?.data);
+//         toast.success("Pre-Counselling scheduled successfully!");
+//         setShowConfirmPopup(true);
+//       }
+//     } finally {
+//       setBookingLoading(false);
+//     }
+//   };
+
+//   const existingResume =
+//     initialCV && typeof initialCV === "object" && "path" in initialCV
+//       ? initialCV.path
+//       : undefined;
+
+//   const isPdf = resumeFile
+//     ? resumeFile.type === "application/pdf"
+//     : (existingResumeUrl?.toLowerCase().includes(".pdf") ?? false);
+
+//   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+//   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+
+//   // Drag and drop handlers
+//   const handleDragOver = (e: React.DragEvent) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     setIsDragging(true);
+//   };
+//   const handleDragLeave = (e: React.DragEvent) => {
+//     e.preventDefault();
+//     e.stopPropagation();
+//     setIsDragging(false);
+//   };
+
+//   const handleFileChange = (file: File | null) => {
+//     if (file) {
+//       setResumeFile(file);
+//       // preForm.setFieldValue("resumeFile", file);
+//     }
+//   };
+
+//   const handleDrop = (e: React.DragEvent) => {
+//     e.preventDefault();
+//     setIsDragging(false);
+//     if (e.dataTransfer.files?.length) handleFileChange(e.dataTransfer.files[0]);
+//   };
+
+//   const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     if (e.target.files?.length) handleFileChange(e.target.files[0]);
+//   };
+
+//   useEffect(() => {
+//     let objectUrl: string | null = null;
+//     if (resumeFile) {
+//       objectUrl = URL.createObjectURL(resumeFile);
+//       setPreviewUrl(objectUrl);
+//     } else {
+//       setPreviewUrl(existingResume ?? null);
+//     }
+
+//     return () => {
+//       if (objectUrl) {
+//         URL.revokeObjectURL(objectUrl);
+//       }
+//     };
+//   }, [resumeFile, existingResume]);
+
+//   const cancellationRequest = async () => {
+//     const confirmed = await confirmToast(
+//       `Are you sure to cancel this appointment !`,
+//     );
+//     if (!confirmed) return;
+
+//     const targetLeadId =
+//       typeof existingBooking?.leadId === "object"
+//         ? existingBooking.leadId._id
+//         : existingBooking?.leadId || leadId;
+
+//     try {
+//       const res = await cancelBookingAction({
+//         leadId: targetLeadId,
+//         actionBy: reduxUser?._id,
+//         cancelReason: cancelReason,
+//       });
+//       if (res?.data?.success) {
+//         setExistingBooking(null);
+//         toast.success("Cancellation request sent successfully!");
+//       }
+//     } catch (err: any) {
+//       console.error(
+//         err?.response?.data?.message ?? "Failed to send cancellation request",
+//       );
+//     }
+//   };
+
+//   const handleCancelReason = () => {
+//     setShowCancel((prev) => !prev);
+//     setShowScheduling(false);
+//     setShowScheduling(true);
+//   };
+
+//   const handleReschedule = () => {
+//     setShowScheduling((prev) => !prev);
+//     setShowCancel(false);
+//   };
+//   const handleBranchSelect = async (newBranchId: string) => {
+//     if (selectedBranchId && selectedBranchId !== newBranchId) {
+//       const confirmed = await confirmToast(
+//         "Are you sure you want to change the branch?",
+//       );
+
+//       if (!confirmed) return;
+
+//       setSelectedTacId("");
+//       setSelectedSlot(null);
+//     }
+
+//     setSelectedBranchId(newBranchId);
+//   };
+//   return {
+//     leadId,
+//     todayStr,
+//     isReduxReady,
+//     isValidLead,
+//     isCompleted,
+//     existingBooking,
+//     activeStepperStep,
+
+//     coords,
+//     locationDenied,
+//     branches,
+//     loadingBranches,
+//     selectedBranchId,
+//     setSelectedBranchId,
+//     showScheduling,
+//     handleReschedule,
+//     handleBranchSelect,
+//     mode,
+//     setMode,
+
+//     handleDragOver,
+//     handleDragLeave,
+//     handleDrop,
+//     onFileInputChange,
+//     resumeFile,
+//     isDragging,
+//     fileInputRef,
+//     previewUrl,
+//     isPreviewOpen,
+//     setIsPreviewOpen,
+//     isPdf,
+
+//     tacs,
+//     loadingTacs,
+//     tacSearch,
+//     setTacSearch,
+//     selectedTacId,
+//     setSelectedTacId,
+
+//     date,
+//     setDate,
+//     slots,
+//     loadingSlots,
+//     selectedSlot,
+//     setSelectedSlot,
+
+//     captchaValue,
+//     captchaVerified,
+//     handleCaptchaChange,
+//     handleCaptchaVerify,
+//     handleCaptchaRefresh,
+
+//     bookingLoading,
+//     showConfirmPopup,
+//     setShowConfirmPopup,
+//     canConfirm,
+//     handleConfirm,
+//     profileTac,
+//     setProfileTac,
+//     cancellationRequest,
+//     showCancel,
+//     handleCancelReason,
+//     reduxUser,
+//     cancelReason,
+//     setCancelReason,
+//     canReschedule,
+//     leadData,
+//   };
+// };
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useSelector } from "react-redux";
-
 import toast from "react-hot-toast";
 
-import {
-  bookSlotAction,
-  cancelBookingAction,
-  checkBookingStatusAction,
-  getSlotsAction,
-  getTacsListAction,
-} from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
-import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
-import { Slot } from "@/Types/Frontend_Payload/assessment.types";
-import { ExistingBooking } from "@/Types/Frontend_Payload/precounselling.types";
-import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
+import { bookSlotAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { preTACData } from "@/Types/object.types";
-import { confirmToast } from "@/Utils/confirmToast";
-import { ILead } from "@/lib/models/Lead.model";
 
-export type CounsellingMode = "online" | "offline";
-
-export interface Branch {
-  _id: string;
-  title: string;
-  city?: string;
-  address?: string;
-  distanceKm?: number;
-}
-
-export interface TAC {
-  _id: string;
-  name: string;
-  photoUrl?: string;
-  designation?: string;
-  experienceYears?: number;
-  rating?: number;
-  languages?: string[];
-  specialization?: string[];
-  bio?: string;
-}
-
-const DEFAULT_LAT = 26.7271;
-const DEFAULT_LNG = 88.3953;
+import { usePreCounsellingStatus } from "./Sub-hooks/usePreCounsellingStatus";
+import { useBranchSelection } from "./Sub-hooks/useBranchSelection";
+import { useCvUpload } from "./Sub-hooks/useCvUpload";
+import { useTacAndSlots, CounsellingMode } from "./Sub-hooks/useTacAndSlots";
+import { useCaptcha } from "./Sub-hooks/useCaptcha";
 
 export const usePreCounselling = () => {
   const searchParams = useSearchParams();
@@ -61,387 +660,84 @@ export const usePreCounselling = () => {
   const istTime = new Date(utcTime + 330 * 60000);
   const todayStr = istTime.toISOString().split("T")[0];
 
-  // ---- lead / existing-booking guard ----
-  const [isReduxReady, setIsReduxReady] = useState(false);
-  const [showScheduling, setShowScheduling] = useState(true);
-  const [isValidLead, setIsValidLead] = useState(true);
-  const [isCompleted, setIsCompleted] = useState(false);
-  const [existingBooking, setExistingBooking] =
-    useState<ExistingBooking | null>(null);
-  const [activeStepperStep, setActiveStepperStep] = useState(1);
-  const [canReschedule, setCanReschedule] = useState<boolean>(false);
-
-  // ---- 1. branch (geolocation driven) ----
-  const [coords, setCoords] = useState<{ lat: number; lng: number } | null>(
-    null,
-  );
-  const [branches, setBranches] = useState<Branch[]>([]);
-  const [loadingBranches, setLoadingBranches] = useState(false);
-  const [locationDenied, setLocationDenied] = useState(false);
-  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
-
-  // ---- 2. mode ----
   const [mode, setMode] = useState<CounsellingMode>("offline");
-
-  // ---- 3. cv ----
-  const [resumeFile, setResumeFile] = useState<File | null>(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const initialCV = { path: "" };
-
-  // ---- 4. tac ----
-  const [tacs, setTacs] = useState<preTACData[]>([]);
-  const [loadingTacs, setLoadingTacs] = useState(false);
-  const [tacSearch, setTacSearch] = useState("");
-  const [selectedTacId, setSelectedTacId] = useState<string>("");
-
-  // ---- 5. date -> slots ----
-  const [date, setDate] = useState(todayStr);
-  const [slots, setSlots] = useState<Slot[]>([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState<Slot | null>(null);
-
-  // ---- 6. captcha ----
-  const [captchaValue, setCaptchaValue] = useState("");
-  const [captchaVerified, setCaptchaVerified] = useState(false);
-
-  // ---- 7. submit ----
   const [bookingLoading, setBookingLoading] = useState(false);
   const [showConfirmPopup, setShowConfirmPopup] = useState(false);
   const [profileTac, setProfileTac] = useState<preTACData | null>(null);
-  const [existingResumeUrl, setExistingResumeUrl] = useState<string | null>(
-    null,
+
+ 
+  const status = usePreCounsellingStatus(leadId, reduxUser, router);
+
+   
+  const branch = useBranchSelection(reduxUser);
+
+   
+  const tacAndSlots = useTacAndSlots(
+    branch.selectedBranchId,  
+    mode,
+    todayStr,
+    status.existingBooking,
   );
-  const [showCancel, setShowCancel] = useState(false);
-  const [cancelReason, setCancelReason] = useState<string>("");
 
-  const [leadData, setLeadData] = useState<ILead | null>(null);
+  const { setSelectedBranchId } = branch;
 
-  useEffect(() => {
-    const timer = setTimeout(() => setIsReduxReady(true), 500);
-    return () => clearTimeout(timer);
-  }, []);
+   
+  const cv = useCvUpload(status.existingResumeUrl);
 
-  useEffect(() => {
-    if (!isReduxReady) return;
-    if (!leadId) {
-      toast.error("Please generate inquiry first");
-      router.push("/inquiry");
-    }
-  }, [isReduxReady, leadId, router]);
+  
+  const captcha = useCaptcha();
 
-  useEffect(() => {
-    if (reduxUser && !leadData) {
-      const leadObj =
-        (typeof reduxUser?.leadId === "object" ? reduxUser?.leadId : null) ||
-        (typeof reduxUser?.user?.leadId === "object"
-          ? reduxUser?.user?.leadId
-          : null) ||
-        reduxUser?.lead ||
-        reduxUser?.user ||
-        reduxUser;
-
-      if (leadObj?.inqNo) {
-        setLeadData(leadObj as ILead);
-      }
-    }
-  }, [reduxUser, leadData]);
-  useEffect(() => {
-    const checkStatus = async () => {
-      if (!leadId) return;
-      try {
-        const res = await checkBookingStatusAction({ leadId });
-        if (res?.data?.success && res.data?.data) {
-          const rawData = res.data.data;
-
-          const bookingData =
-            rawData.existingBooking !== undefined
-              ? rawData.existingBooking
-              : rawData;
-          const populatedLead =
-            rawData.lead ||
-            (typeof bookingData?.leadId === "object"
-              ? bookingData?.leadId
-              : null);
-
-          if (populatedLead) {
-            setLeadData(populatedLead);
-
-            if (populatedLead?.preferences?.branchId) {
-              setSelectedBranchId(
-                populatedLead.preferences.branchId.toString(),
-              );
-            }
-
-            if (populatedLead?.candidateResume?.path) {
-              const resumePath = populatedLead.candidateResume.path;
-              setExistingResumeUrl(resumePath);
-              setPreviewUrl(resumePath);
-            }
-          }
-
-          if (bookingData && (bookingData._id || bookingData.schedule)) {
-            setExistingBooking(bookingData);
-            setShowScheduling(false);
-
-            const scheduleDate = bookingData.schedule?.date;
-            const scheduleFrom = bookingData.schedule?.from || "00:00";
-
-            if (scheduleDate) {
-              const datePart = new Date(scheduleDate)
-                .toISOString()
-                .split("T")[0];
-              const scheduleDateTime = new Date(`${datePart} ${scheduleFrom}`);
-              const thirtyMinutesBeforeSchedule = new Date(
-                scheduleDateTime.getTime() - 30 * 60 * 1000,
-              );
-
-              setCanReschedule(
-                Date.now() > thirtyMinutesBeforeSchedule.getTime(),
-              );
-              setDate(datePart);
-            }
-
-            if (bookingData.status?.toLowerCase() === "completed") {
-              setIsCompleted(true);
-            }
-
-            if (bookingData.schedule?.method) {
-              setMode(
-                bookingData.schedule.method === "on" ? "online" : "offline",
-              );
-            }
-            if (bookingData.assignedTo) {
-              const tacId =
-                typeof bookingData.assignedTo === "object"
-                  ? bookingData.assignedTo._id
-                  : bookingData.assignedTo;
-
-              setSelectedTacId(tacId.toString());
-            }
-            if (bookingData.schedule?.from && bookingData.schedule?.to) {
-              setSelectedSlot({
-                from: bookingData.schedule.from,
-                to: bookingData.schedule.to,
-                time: `${bookingData.schedule.from} - ${bookingData.schedule.to}`,
-                available: true,
-              });
-            }
-          }
-        } else if (res?.data?.message?.toLowerCase().includes("not found")) {
-          setIsValidLead(false);
-        }
-      } catch (err: any) {
-        if (err?.response?.status === 404) setIsValidLead(false);
-      }
-    };
-    checkStatus();
-  }, [leadId]);
-
-  useEffect(() => {
-    const userBranch = reduxUser?.preferences?.branchId || reduxUser?.branchId;
-    if (userBranch && !selectedBranchId) {
-      setSelectedBranchId(userBranch.toString());
-    }
-  }, [reduxUser, selectedBranchId]);
-  // ---- geolocation -> branches ----
-
-  const fetchBranches = useCallback(
-    async (lat: number, lng: number) => {
-      setLoadingBranches(true);
-      try {
-        const response = await branchListingApi({ lat, lng });
-        const list = response?.data?.data?.data || [];
-        setBranches(list);
-
-        if (list.length > 0) {
-          setSelectedBranchId((prev) => {
-            if (prev) return prev;
-
-            const userPrefBranch =
-              reduxUser?.preferences?.branchId || reduxUser?.branchId;
-            const matched = list.find(
-              (b: Branch) => b._id.toString() === userPrefBranch?.toString(),
-            );
-
-            return matched ? matched._id : list[0]._id;
-          });
-        }
-      } catch (error) {
-        console.error("Branch fetch error:", error);
-        toast.error("Failed to fetch nearby branches");
-      } finally {
-        setLoadingBranches(false);
-      }
-    },
-    [reduxUser],
-  );
-  useEffect(() => {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setLocationDenied(true);
-      fetchBranches(DEFAULT_LAT, DEFAULT_LNG);
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const { latitude, longitude } = pos.coords;
-        setCoords({ lat: latitude, lng: longitude });
-        fetchBranches(latitude, longitude);
-      },
-      () => {
-        // setLocationDenied(true);
-        // toast.error("Couldn't access your location — showing default branches");
-        // fetchBranches(DEFAULT_LAT, DEFAULT_LNG);
-      },
-      { timeout: 8000 },
-    );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  // ---- branch + mode -> tac list ----
-  useEffect(() => {
-    const fetchTacs = async () => {
-      if (!selectedBranchId) {
-        setTacs([]);
-        return;
-      }
-      setLoadingTacs(true);
-      try {
-        const payload = {
-          page: 1,
-          limit: 10,
-          search: tacSearch,
-          mode,
-          branchId: selectedBranchId,
-        };
-        const res = await getTacsListAction(payload);
-        const list = res?.data?.data?.tacList || [];
-        // console.log(list);
-
-        setTacs(list);
-        // setSelectedTacId((prev) => (list.some((t: TAC) => t._id === prev) ? prev : ""));
-      } catch (err) {
-        console.error("TAC fetch error:", err);
-        // toast.error("Failed to fetch TAC list");
-        setTacs([]);
-      } finally {
-        setLoadingTacs(false);
-      }
-    };
-    fetchTacs();
-  }, [selectedBranchId, mode, tacSearch]);
-
-  useEffect(() => {
-    const fetchSlots = async () => {
-      if (!selectedTacId) {
-        setSlots([]);
-        return;
-      }
-      setLoadingSlots(true);
-      try {
-        const res = await getSlotsAction({ consultantId: selectedTacId, date });
-        if (res?.data?.success) setSlots(res?.data?.data);
-        else {
-          toast.error(res?.data?.message || "Failed to fetch slots");
-          setSlots([]);
-        }
-      } finally {
-        setLoadingSlots(false);
-      }
-    };
-    fetchSlots();
-  }, [selectedTacId, date]);
-
-  // ---- captcha ----
-  useEffect(() => {
-    loadCaptchaEnginge(5);
-  }, []);
-
-  const handleCaptchaChange = (value: string) => {
-    setCaptchaValue(value);
-    setCaptchaVerified(false);
-  };
-
-  const handleCaptchaVerify = () => {
-    if (!captchaValue.trim()) return;
-    setCaptchaVerified(validateCaptcha(captchaValue));
-  };
-
-  const handleCaptchaRefresh = () => {
-    loadCaptchaEnginge(5);
-    setCaptchaValue("");
-    setCaptchaVerified(false);
-  };
-
-  // ---- submit ----
+ 
   const canConfirm =
-    !!selectedBranchId &&
+    !!branch.selectedBranchId &&
     !!mode &&
-    (!!resumeFile || !!existingResumeUrl) &&
-    !!captchaVerified &&
-    !!selectedTacId === !!selectedSlot;
+    (!!cv.resumeFile || !!status.existingResumeUrl) &&
+    !!captcha.captchaVerified &&
+    !!tacAndSlots.selectedTacId === !!tacAndSlots.selectedSlot;
 
   const handleConfirm = async () => {
     if (!leadId) {
-      return toast.error(
-        "Missing inquiry details. Please go back and try again.",
-      );
+      return toast.error("Missing inquiry details. Please go back and try again.");
     }
-
-    if (!selectedBranchId) {
+    if (!branch.selectedBranchId) {
       return toast.error("Please select a branch.");
     }
-
     if (!mode) {
       return toast.error("Please select a consultation mode.");
     }
-
-    if (!resumeFile) {
+    if (!cv.resumeFile && !status.existingResumeUrl) {
       return toast.error("Please upload your CV.");
     }
-
-    if (!!selectedTacId !== !!selectedSlot) {
+    if (!!tacAndSlots.selectedTacId !== !!tacAndSlots.selectedSlot) {
       return toast.error(
-        selectedTacId
+        tacAndSlots.selectedTacId
           ? "Please select an available time slot."
           : "Please select a preferred TAC.",
       );
     }
-
-    if (!captchaVerified) {
+    if (!captcha.captchaVerified) {
       return toast.error("Please complete the CAPTCHA verification.");
     }
 
     setBookingLoading(true);
     try {
-      // const payload = {
-      //   leadId,
-      //   branchId: selectedBranchId,
-      //   consultantId: selectedTacId,
-      //   date,
-      //   from: selectedSlot.from,
-      //   to: selectedSlot.to,
-      //   method: mode === "online" ? "on" : "off",
-      //   resumeFile
-      // };
-
       const payload = new FormData();
       payload.append("leadId", leadId);
-      payload.append("branchId", selectedBranchId);
+      payload.append("branchId", branch.selectedBranchId);
 
-      if (selectedTacId) {
-        payload.append("consultantId", selectedTacId);
-        payload.append("date", date);
-        payload.append("from", selectedSlot?.from as string);
-        payload.append("to", selectedSlot?.to as string);
+      if (tacAndSlots.selectedTacId) {
+        payload.append("consultantId", tacAndSlots.selectedTacId);
+        payload.append("date", tacAndSlots.date);
+        payload.append("from", tacAndSlots.selectedSlot?.from as string);
+        payload.append("to", tacAndSlots.selectedSlot?.to as string);
       }
       payload.append("method", mode === "online" ? "on" : "off");
 
-      if (resumeFile) payload.append("resumeFile", resumeFile);
+      if (cv.resumeFile) payload.append("resumeFile", cv.resumeFile);
 
       const res = await bookSlotAction(payload);
       if (res?.data?.success) {
-        setLeadData(res?.data?.data);
+        status.setLeadData(res?.data?.data);
         toast.success("Pre-Counselling scheduled successfully!");
         setShowConfirmPopup(true);
       }
@@ -450,167 +746,65 @@ export const usePreCounselling = () => {
     }
   };
 
-  const existingResume =
-    initialCV && typeof initialCV === "object" && "path" in initialCV
-      ? initialCV.path
-      : undefined;
-
-  const isPdf = resumeFile
-    ? resumeFile.type === "application/pdf"
-    : (existingResumeUrl?.toLowerCase().includes(".pdf") ?? false);
-
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  // Drag and drop handlers
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(true);
-  };
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleFileChange = (file: File | null) => {
-    if (file) {
-      setResumeFile(file);
-      // preForm.setFieldValue("resumeFile", file);
+  // Branch badalne par TAC aur Slot reset karne ki wrapper Function
+  const handleBranchSelectWithReset = async (newBranchId: string) => {
+    const success = await branch.handleBranchSelect(newBranchId);
+    if (success) {
+      tacAndSlots.setSelectedTacId("");
+      tacAndSlots.setSelectedSlot(null);
     }
   };
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    if (e.dataTransfer.files?.length) handleFileChange(e.dataTransfer.files[0]);
-  };
-
-  const onFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files?.length) handleFileChange(e.target.files[0]);
-  };
-
-  useEffect(() => {
-    let objectUrl: string | null = null;
-    if (resumeFile) {
-      objectUrl = URL.createObjectURL(resumeFile);
-      setPreviewUrl(objectUrl);
-    } else {
-      setPreviewUrl(existingResume ?? null);
-    }
-
-    return () => {
-      if (objectUrl) {
-        URL.revokeObjectURL(objectUrl);
-      }
-    };
-  }, [resumeFile, existingResume]);
-
-  const cancellationRequest = async () => {
-    const confirmed = await confirmToast(
-      `Are you sure to cancel this appointment !`,
-    );
-    if (!confirmed) return;
-
-    const targetLeadId =
-      typeof existingBooking?.leadId === "object"
-        ? existingBooking.leadId._id
-        : existingBooking?.leadId || leadId;
-
-    try {
-      const res = await cancelBookingAction({
-        leadId: targetLeadId,
-        actionBy: reduxUser?._id,
-        cancelReason: cancelReason,
-      });
-      if (res?.data?.success) {
-        setExistingBooking(null);
-        toast.success("Cancellation request sent successfully!");
-      }
-    } catch (err: any) {
-      console.error(
-        err?.response?.data?.message ?? "Failed to send cancellation request",
-      );
-    }
-  };
-
-  const handleCancelReason = () => {
-    setShowCancel((prev) => !prev);
-    setShowScheduling(false);
-    setShowScheduling(true);
-  };
-
-  const handleReschedule = () => {
-    setShowScheduling((prev) => !prev);
-    setShowCancel(false);
-  };
-  const handleBranchSelect = async (newBranchId: string) => {
-    if (selectedBranchId && selectedBranchId !== newBranchId) {
-      const confirmed = await confirmToast(
-        "Are you sure you want to change the branch?",
-      );
-
-      if (!confirmed) return;
-
-      setSelectedTacId("");
-      setSelectedSlot(null);
-    }
-
-    setSelectedBranchId(newBranchId);
-  };
   return {
     leadId,
     todayStr,
-    isReduxReady,
-    isValidLead,
-    isCompleted,
-    existingBooking,
-    activeStepperStep,
+    isReduxReady: status.isReduxReady,
+    isValidLead: status.isValidLead,
+    isCompleted: status.isCompleted,
+    existingBooking: status.existingBooking,
 
-    coords,
-    locationDenied,
-    branches,
-    loadingBranches,
-    selectedBranchId,
+    locationDenied: branch.locationDenied,
+    branches: branch.branches,
+    loadingBranches: branch.loadingBranches,
+    selectedBranchId: branch.selectedBranchId,
     setSelectedBranchId,
-    showScheduling,
-    handleReschedule,
-    handleBranchSelect,
+    showScheduling: status.showScheduling,
+    handleReschedule: status.handleReschedule,
+    handleBranchSelect: handleBranchSelectWithReset,
     mode,
     setMode,
 
-    handleDragOver,
-    handleDragLeave,
-    handleDrop,
-    onFileInputChange,
-    resumeFile,
-    isDragging,
-    fileInputRef,
-    previewUrl,
-    isPreviewOpen,
-    setIsPreviewOpen,
-    isPdf,
+    handleDragOver: cv.handleDragOver,
+    handleDragLeave: cv.handleDragLeave,
+    handleDrop: cv.handleDrop,
+    onFileInputChange: cv.onFileInputChange,
+    resumeFile: cv.resumeFile,
+    isDragging: cv.isDragging,
+    fileInputRef: cv.fileInputRef,
+    previewUrl: cv.previewUrl,
+    isPreviewOpen: cv.isPreviewOpen,
+    setIsPreviewOpen: cv.setIsPreviewOpen,
+    isPdf: cv.isPdf,
 
-    tacs,
-    loadingTacs,
-    tacSearch,
-    setTacSearch,
-    selectedTacId,
-    setSelectedTacId,
+    tacs: tacAndSlots.tacs,
+    loadingTacs: tacAndSlots.loadingTacs,
+    tacSearch: tacAndSlots.tacSearch,
+    setTacSearch: tacAndSlots.setTacSearch,
+    selectedTacId: tacAndSlots.selectedTacId,
+    setSelectedTacId: tacAndSlots.setSelectedTacId,
 
-    date,
-    setDate,
-    slots,
-    loadingSlots,
-    selectedSlot,
-    setSelectedSlot,
+    date: tacAndSlots.date,
+    setDate: tacAndSlots.setDate,
+    slots: tacAndSlots.slots,
+    loadingSlots: tacAndSlots.loadingSlots,
+    selectedSlot: tacAndSlots.selectedSlot,
+    setSelectedSlot: tacAndSlots.setSelectedSlot,
 
-    captchaValue,
-    captchaVerified,
-    handleCaptchaChange,
-    handleCaptchaVerify,
-    handleCaptchaRefresh,
+    captchaValue: captcha.captchaValue,
+    captchaVerified: captcha.captchaVerified,
+    handleCaptchaChange: captcha.handleCaptchaChange,
+    handleCaptchaVerify: captcha.handleCaptchaVerify,
+    handleCaptchaRefresh: captcha.handleCaptchaRefresh,
 
     bookingLoading,
     showConfirmPopup,
@@ -619,13 +813,15 @@ export const usePreCounselling = () => {
     handleConfirm,
     profileTac,
     setProfileTac,
-    cancellationRequest,
-    showCancel,
-    handleCancelReason,
+    cancellationRequest: status.cancellationRequest,
+    showCancel: status.showCancel,
+    handleCancelReason: status.handleCancelReason,
     reduxUser,
-    cancelReason,
-    setCancelReason,
-    canReschedule,
-    leadData,
+    cancelReason: status.cancelReason,
+    setCancelReason: status.setCancelReason,
+    canReschedule: status.canReschedule,
+    leadData: status.leadData,
   };
 };
+
+export type { CounsellingMode };
