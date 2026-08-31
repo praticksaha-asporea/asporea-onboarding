@@ -1,5 +1,3 @@
-
-
 // import React, { Suspense } from "react";
 // import Grid from "@mui/material/Grid";
 // import Card from "@mui/material/Card";
@@ -1121,6 +1119,7 @@
 // };
 
 // export default PreCounselling;
+
 "use client";
 
 import React, { Suspense } from "react";
@@ -1269,14 +1268,42 @@ const PreCounsellingContent = () => {
           Your pre-counselling session has been successfully completed. You can
           now proceed to upload your documents.
         </Typography>
-        <Button
-          variant="contained"
-          href="/document-upload"
-          className="mt-6 rounded-xl normal-case shadow-none px-8 py-2.5 font-semibold"
-        >
-          Proceed to Documents
-          <i className="ri-arrow-right-line ml-1.5" />
-        </Button>
+        
+      <Box className="mt-8 flex flex-wrap items-center justify-center gap-4">
+          
+          {/* 🌟 NEW: 3D GLOSSY RATING BUTTON */}
+          <Button
+            variant="contained"
+            href="/rating"
+            className="rounded-xl normal-case px-7 py-3 font-bold text-white transition-all duration-300 transform active:scale-95"
+            style={{
+              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
+              boxShadow:
+                "inset 0px 1.5px 1px rgba(255, 255, 255, 0.5), 0px 8px 20px -4px rgba(245, 158, 11, 0.45)",
+            }}
+            sx={{
+              "&:hover": {
+                background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
+                transform: "translateY(-3px) scale(1.04)",
+                boxShadow:
+                  "inset 0px 2px 3px rgba(255, 255, 255, 0.7), 0px 14px 28px -4px rgba(245, 158, 11, 0.65)",
+              },
+            }}
+          >
+            <i className="ri-star-smile-fill text-lg mr-2 text-amber-100" />
+            Share Your Experience
+          </Button>
+
+          {/* PROCEED TO DOCUMENTS BUTTON */}
+          <Button
+            variant="contained"
+            href="/document-upload"
+            className="rounded-xl normal-case shadow-none px-8 py-3 font-semibold"
+          >
+            Proceed to Documents
+            <i className="ri-arrow-right-line ml-1.5" />
+          </Button>
+        </Box>
       </Card>
     );
   }

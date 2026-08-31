@@ -9,12 +9,12 @@ import {
   Button,
   Box,
   Avatar,
-  Divider
+  CircularProgress
 } from "@mui/material";
 import type { Mode } from "@core/types";
 import { useTacRating } from "./useTacRating";
 
-// --- Custom Premium SVG Emojis with Animation Classes ---
+ 
 const EmojiVeryBad = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-angry">
     <circle cx="12" cy="12" r="10" fill="#FFCA28" />
@@ -68,6 +68,12 @@ const REACTIONS = [
 ];
 
 const TacRating = ({ mode }: { mode: Mode }) => {
+   
+  const leadId = "6a915df0a437e8f8ba3de34e"; 
+  const phaseCode = "pre";  
+  const tacName = "Pratik Deshmukh";
+  const phaseName = "Pre-Counselling";
+
   const {
     rating,
     setRating,
@@ -76,19 +82,14 @@ const TacRating = ({ mode }: { mode: Mode }) => {
     review,
     setReview,
     handleSubmit,
-  } = useTacRating();
-
-  const [recommendation, setRecommendation] = useState<number | null>(null);
-
-  const phaseName = "Pre-Counselling";
-  const tacName = "Pratick Deshmukh";
+    loading,  
+  } = useTacRating(leadId, phaseCode);
 
   const currentLabel = REACTIONS.find(r => r.value === (hover || rating))?.label || "";
 
   return (
     <Box className="flex flex-col justify-center items-center min-h-[100dvh] relative p-4 md:p-6 bg-[var(--mui-palette-primary)]">
       <Card className="flex flex-col w-full max-w-[600px]  bg-[var(--mui-palette-primary)] shadow-2xl   rounded-[24px]  ">
-
         <Box className="px-8 pt-8 pb-5 flex justify-between ml-48 items-center ">
           <Typography variant="h3" fontWeight="500" className="text-[var(--mui-palette-text-primary)]">
             Feedback
@@ -96,7 +97,6 @@ const TacRating = ({ mode }: { mode: Mode }) => {
         </Box>
 
         <CardContent className="p-8 sm:!p-10 flex flex-col gap-8">
-
           {/* TAC Info Card */}
           <Box className="flex items-center gap-4 p-4 bg-[var(--mui-palette-primary)] rounded-[16px]  ">
             <Avatar
@@ -116,9 +116,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
             </Box>
           </Box>
 
-          {/* 🟢 FIXED: Directly passed handleSubmit */}
           <form noValidate autoComplete="off" onSubmit={handleSubmit} className="flex flex-col gap-10">
-
             {/* 1. Emoji Rating Section */}
             <Box className="flex flex-col gap-5">
               <Box className="flex justify-between items-end">
@@ -203,6 +201,7 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                 variant="outlined"
                 value={review}
                 onChange={(e) => setReview(e.target.value)}
+                disabled={loading}
                 sx={{
                   '& .MuiOutlinedInput-root': {
                     borderRadius: '16px',
@@ -212,7 +211,6 @@ const TacRating = ({ mode }: { mode: Mode }) => {
                       backgroundColor: 'var(--mui-palette-background-paper)',
                     }
                   },
-
                   '& .MuiInputLabel-root': {
                     color: 'var(--mui-palette-text-secondary)',
                   }
@@ -220,59 +218,17 @@ const TacRating = ({ mode }: { mode: Mode }) => {
               />
             </Box>
 
-            {/* 3. Recommendation Scale */}
-            {/* <Box className="flex flex-col gap-5">
-              <Box className="flex justify-between items-end">
-                <Typography variant="subtitle1" fontWeight="600" className="text-[var(--mui-palette-text-primary)]">
-                  How likely would you recommend {tacName} to your friends and colleagues?
-                </Typography>
-              </Box>
-              
-              <Box className="flex flex-col gap-3">
-                <Box className="flex w-full overflow-x-auto gap-1.5 pb-2 custom-scrollbar">
-                  {[...Array(10)].map((_, index) => {
-                    const value = index + 1;
-                    const isSelected = recommendation === value;
-                    return (
-                      <button
-                        key={value}
-                        type="button"
-                        onClick={() => setRecommendation(value)}
-                        className={`flex-1 min-w-[36px] h-10 rounded-[8px] flex items-center justify-center font-bold text-sm transition-all border ${
-                          isSelected 
-                            ? "bg-[var(--mui-palette-primary-main)] text-[var(--mui-palette-primary-contrastText)] border-[var(--mui-palette-primary-main)] shadow-md" 
-                            : "bg-[var(--mui-palette-background-paper)] text-[var(--mui-palette-text-primary)] border-[var(--mui-palette-divider)] hover:bg-[var(--mui-palette-action-hover)] hover:border-[var(--mui-palette-primary-main)]"
-                        }`}
-                      >
-                        {value}
-                      </button>
-                    );
-                  })}
-                </Box>
-                <Box className="flex justify-between px-1">
-                  <Typography variant="caption" fontWeight="600" className="text-[var(--mui-palette-text-secondary)]">
-                    Not at all
-                  </Typography>
-                  <Typography variant="caption" fontWeight="600" className="text-[var(--mui-palette-text-secondary)]">
-                    Very likely
-                  </Typography>
-                </Box>
-              </Box>
-            </Box> */}
-
-
-
             {/* Submit Button */}
             <Box className="flex justify-end">
               <Button
                 variant="contained"
                 type="submit"
                 size="large"
-                disabled={rating === 0}
+                disabled={rating === 0 || loading}
                 className="rounded-[12px] px-8 py-3 font-bold text-base shadow-none hover:shadow-lg transition-shadow bg-[var(--mui-palette-primary-main)] text-[var(--mui-palette-primary-contrastText)] disabled:bg-[var(--mui-palette-action-disabledBackground)] disabled:text-[var(--mui-palette-text-disabled)]"
                 disableElevation
               >
-                Submit Feedback
+                {loading ? <CircularProgress size={24} color="inherit" /> : "Submit Feedback"}
               </Button>
             </Box>
 
@@ -283,21 +239,11 @@ const TacRating = ({ mode }: { mode: Mode }) => {
       {/* 🟢 LIVE ANIMATION CSS KEYFRAMES */}
       <style jsx global>{`
         /* EMOJI ANIMATIONS */
-        .emoji-angry {
-          animation: shake 3s infinite ease-in-out;
-        }
-        .emoji-sad {
-          animation: sway 4s infinite ease-in-out;
-        }
-        .emoji-neutral {
-          animation: float 4s infinite ease-in-out;
-        }
-        .emoji-happy {
-          animation: bounce-slight 3s infinite ease-in-out;
-        }
-        .emoji-heart {
-          animation: heartbeat 1.5s infinite ease-in-out;
-        }
+        .emoji-angry { animation: shake 3s infinite ease-in-out; }
+        .emoji-sad { animation: sway 4s infinite ease-in-out; }
+        .emoji-neutral { animation: float 4s infinite ease-in-out; }
+        .emoji-happy { animation: bounce-slight 3s infinite ease-in-out; }
+        .emoji-heart { animation: heartbeat 1.5s infinite ease-in-out; }
 
         /* KEYFRAMES */
         @keyframes shake {
@@ -327,12 +273,8 @@ const TacRating = ({ mode }: { mode: Mode }) => {
         }
 
         /* CUSTOM SCROLLBAR */
-        .custom-scrollbar::-webkit-scrollbar {
-          height: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
+        .custom-scrollbar::-webkit-scrollbar { height: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background-color: var(--mui-palette-divider);
           border-radius: 4px;

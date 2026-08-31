@@ -37,3 +37,10 @@ export interface sendEmailTACReq {
     leadId: string;
     message: string;
 }
+
+export interface SubmitRatingPayload {
+  leadId: string;
+  phase: string;
+  rating: number;
+  review?: string;
+}

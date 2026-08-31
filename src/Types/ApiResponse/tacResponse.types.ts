@@ -110,3 +110,9 @@ export interface todaySchedule {
     },
     status: string
 }
+
+export interface TacRatingResponse {
+  success: boolean;
+  message: string;
+  data: any; 
+}
