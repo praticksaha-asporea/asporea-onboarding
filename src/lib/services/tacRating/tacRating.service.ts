@@ -9,10 +9,10 @@ export const createTacRatingService = async (
   rating: number,
   review: string,
   ratedBy: string,
-  userRole: string 
+  userRole: string
 ) => {
 
-    if (userRole?.toLowerCase() !== "user") {
+  if (userRole?.toLowerCase() !== "user") {
     throw new ApiError(
       "Unauthorized access. Only candidate users are allowed to submit ratings.",
       403
@@ -118,4 +118,13 @@ export const getTacRatingsService = async (filters: {
     averageRating,
     ratings,
   };
+};
+
+export const getLeadLastAppointment = async (leadId: string) => {
+  const assignment = await Assignment.findOne({ leadId: new mongoose.Types.ObjectId(leadId) })
+    .sort({ createdAt: -1 })
+    .populate("assignedTo", "firstName lastName email profilePic candidateProfile")
+    .lean();
+
+  return assignment;
 };
