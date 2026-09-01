@@ -14,7 +14,7 @@ import {
 import type { Mode } from "@core/types";
 import { useTacRating } from "./useTacRating";
 
- 
+
 const EmojiVeryBad = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-angry">
     <circle cx="12" cy="12" r="10" fill="#FFCA28" />
@@ -68,11 +68,11 @@ const REACTIONS = [
 ];
 
 const TacRating = ({ mode }: { mode: Mode }) => {
-   
-  const leadId = "6a915df0a437e8f8ba3de34e"; 
-  const phaseCode = "pre";  
-  const tacName = "Pratik Deshmukh";
-  const phaseName = "Pre-Counselling";
+
+  // const leadId = "6a915df0a437e8f8ba3de34e"; 
+  // const phaseCode = "pre";
+  // const tacName = "Pratik Deshmukh";
+  // const phaseName = "Pre-Counselling";
 
   const {
     rating,
@@ -82,8 +82,9 @@ const TacRating = ({ mode }: { mode: Mode }) => {
     review,
     setReview,
     handleSubmit,
-    loading,  
-  } = useTacRating(leadId, phaseCode);
+    loading,
+    tacDetails
+  } = useTacRating(); //leadId,phaseCode 
 
   const currentLabel = REACTIONS.find(r => r.value === (hover || rating))?.label || "";
 
@@ -101,17 +102,21 @@ const TacRating = ({ mode }: { mode: Mode }) => {
           <Box className="flex items-center gap-4 p-4 bg-[var(--mui-palette-primary)] rounded-[16px]  ">
             <Avatar
               src="/images/avatars/avatar.png"
-              alt={tacName}
+              alt={tacDetails?.assignedTo?.firstName}
               sx={{ bgcolor: 'var(--mui-palette-primary-main)', width: 56, height: 56, fontSize: '1.25rem', fontWeight: 'bold' }}
             >
-              {tacName.charAt(0)}
+              {tacDetails?.assignedTo?.firstName.charAt(0) + ` ` + tacDetails?.assignedTo?.lastName.charAt(0)}
             </Avatar>
             <Box className="text-left flex-1">
               <Typography variant="subtitle1" fontWeight="700" className="text-[var(--mui-palette-text-primary)] text-lg">
-                {tacName}
+                {tacDetails?.assignedTo?.firstName + ` ` + tacDetails?.assignedTo?.lastName}
               </Typography>
               <Typography variant="caption" fontWeight="600" className="text-[var(--mui-palette-text-secondary)] uppercase tracking-wider">
-                Consultant • {phaseName} Phase
+                Consultant • {tacDetails?.phase == 'pre'
+                  ? "Pre-Counselling" :
+                  tacDetails?.phase == 'assess'
+                    ? "Assessment"
+                    : ""} Phase
               </Typography>
             </Box>
           </Box>
@@ -121,7 +126,11 @@ const TacRating = ({ mode }: { mode: Mode }) => {
             <Box className="flex flex-col gap-5">
               <Box className="flex justify-between items-end">
                 <Typography variant="subtitle1" fontWeight="600" className="text-[var(--mui-palette-text-primary)]">
-                  What do you think of our {phaseName} phase?
+                  What do you think of our {tacDetails?.phase == 'pre'
+                    ? "Pre-Counselling" :
+                    tacDetails?.phase == 'assess'
+                      ? "Assessment"
+                      : ""} phase?
                 </Typography>
                 <Typography variant="caption" className="text-[var(--mui-palette-error-main)] font-semibold mb-0.5">
                   Required *

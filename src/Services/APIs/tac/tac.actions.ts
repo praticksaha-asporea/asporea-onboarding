@@ -8,6 +8,7 @@ import {
 import {
   candidateDetailResponse,
   CandidatesResponse,
+  LeadLastAppointmentResponse,
   QuestionsListReponse,
   sendEmailRes,
   TacAssessmentResponse,
@@ -64,10 +65,10 @@ export const updateAssignmentAction = async (
     payload,
     payload instanceof FormData
       ? {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
       : undefined,
   );
 };
@@ -80,10 +81,10 @@ export const updateAssignmentAssessAction = async (
     payload,
     payload instanceof FormData
       ? {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
       : undefined,
   );
 };
@@ -177,4 +178,12 @@ export const getTacRatingsAction = async (params: {
 }): Promise<AxiosResponse<any>> => {
   const query = new URLSearchParams(params as any);
   return axiosClient.get(`/tac-ratings?${query.toString()}`);
+};
+
+
+export const getcandidateLastAppointment = async (
+  leadId?: string
+): Promise<AxiosResponse<LeadLastAppointmentResponse>> => {
+
+  return axiosClient.get("/tac-ratings/latest-appointment", { params: { leadId } });
 };

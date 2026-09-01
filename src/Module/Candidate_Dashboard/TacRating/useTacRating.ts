@@ -1,14 +1,21 @@
-import { useState } from "react";
-import { submitTacRatingAction } from "@/Services/APIs/tac/tac.actions";
+import { useEffect, useState } from "react";
+import { getcandidateLastAppointment, submitTacRatingAction } from "@/Services/APIs/tac/tac.actions";
 import { useRouter } from "next/navigation";
-import toast from "react-hot-toast";  
+import toast from "react-hot-toast";
+import { useSelector } from "react-redux";
+import { lastAssignmentData } from "@/Types/object.types";
 
-export const useTacRating = (leadId: string, phase: string) => {
+export const useTacRating = () => {//leadId: string, phase: string
   const [rating, setRating] = useState<number>(0);
   const [hover, setHover] = useState<number>(0);
   const [review, setReview] = useState<string>("");
   const [loading, setLoading] = useState<boolean>(false);
-  
+  const [phase, setPhase] = useState<string>("");
+  const [tacDetails, setTacDetails] = useState<lastAssignmentData | null>(null);
+  const reduxUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData,
+  );
+  const leadId = reduxUser?.candidateProfile?.leadId;
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,7 +26,7 @@ export const useTacRating = (leadId: string, phase: string) => {
     try {
       const payload = {
         leadId,
-        phase,  
+        phase,
         rating,
         review,
       };
@@ -28,8 +35,8 @@ export const useTacRating = (leadId: string, phase: string) => {
 
       if (res?.data?.success) {
         toast.success(res.data.message || "Feedback submitted successfully!");
-        
-        router.push("/dashboard"); 
+
+        router.push("/dashboard");
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to submit rating");
@@ -37,6 +44,18 @@ export const useTacRating = (leadId: string, phase: string) => {
       setLoading(false);
     }
   };
+
+  const getTacDetails = async () => {
+
+    const lastAppointment = await getcandidateLastAppointment(leadId);
+    setTacDetails(lastAppointment?.data?.data);
+    setPhase(lastAppointment?.data?.data?.phase)
+
+  }
+
+  useEffect(() => {
+    getTacDetails();
+  }, []);
 
   return {
     rating,
@@ -46,6 +65,7 @@ export const useTacRating = (leadId: string, phase: string) => {
     review,
     setReview,
     handleSubmit,
-    loading,  
+    loading,
+    tacDetails
   };
 };

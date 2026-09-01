@@ -176,3 +176,37 @@ export interface preTACData {
         effectiveFrom: string
     }
 }
+
+export interface lastAssignmentData {
+
+    _id: string,
+    leadId: string,
+    phase: string,
+    assignedTo: {
+        _id: string,
+        firstName: string,
+        lastName: string,
+        email: string,
+        profilePic: string,
+    },
+    attended: string,
+    createdAt: string,
+    schedule: string,
+    date: string,
+    from: string,
+    to: string,
+    method: string,
+    status: string,
+    token: {
+        generated: boolean,
+        number: string,
+    },
+    transfer: {
+        requested: boolean,
+    },
+    updatedAt: string,
+    pre: string,
+    additionalDetails: string,
+    specificNotes: string,
+    advice: string
+}

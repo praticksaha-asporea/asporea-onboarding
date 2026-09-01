@@ -1,5 +1,5 @@
 import { ILead } from "@/lib/models/Lead.model"
-import { CandidateRow, QuestionType } from "../object.types"
+import { CandidateRow, lastAssignmentData, QuestionType } from "../object.types"
 import { IAssignment } from "@/lib/models/Assignment.model"
 import { IGeneralSetting } from "@/lib/models/GeneralSetting.model"
 import { IAssessment } from "@/lib/models/Assessment.model"
@@ -112,7 +112,14 @@ export interface todaySchedule {
 }
 
 export interface TacRatingResponse {
-  success: boolean;
-  message: string;
-  data: any; 
+    success: boolean;
+    message: string;
+    data: any;
+}
+
+export interface LeadLastAppointmentResponse {
+    success: boolean;
+    message: string;
+    data: lastAssignmentData,
+    error: null
 }
