@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { TacRating, ITacRating } from "@/lib/models/TacRating.model";
 import { Assignment } from "@/lib/models/Assignment.model";
 import { ApiError } from "@/lib/error/api.error";
+import User from "@/lib/models/User.model";
 
 export const createTacRatingService = async (
   leadId: string,
@@ -35,19 +36,19 @@ export const createTacRatingService = async (
   });
 
   if (!assignment) {
-    throw new ApiError(`No assignment found for phase '${phase}'`, 404);
+    throw new ApiError(`No assignment found for this phase `, 404);
   }
 
   // 2. Phase completion check (TL Requirement)
   if (assignment.status !== "completed") {
     throw new ApiError(
-      `Rating can only be submitted after the '${phase}' phase is completed`,
+      `Rating can only be submitted after the this phase is completed`,
       400
     );
   }
 
   if (!assignment.assignedTo) {
-    throw new ApiError(`No TAC was assigned to the '${phase}' phase`, 400);
+    throw new ApiError(`No TAC was assigned to this phase`, 400);
   }
 
   // 3. Duplicate rating check for this specific phase
@@ -57,7 +58,7 @@ export const createTacRatingService = async (
   });
 
   if (existingRating) {
-    throw new ApiError(`You have already submitted a rating for the '${phase}' phase`, 400);
+    throw new ApiError(`You have already submitted a rating for this phase`, 400);
   }
 
   // 4. Create Rating: Assignment model se is phase ke TAC ki ID pick karo
@@ -70,6 +71,30 @@ export const createTacRatingService = async (
     review: review?.trim() || "",
   });
 
+  const updatedRating = await TacRating.aggregate([
+    {
+      $match: {
+        tacId: new mongoose.Types.ObjectId(assignment.assignedTo),
+      },
+    },
+    {
+      $group: {
+        _id: null,
+        averageRating: { $avg: "$rating" },
+        totalRating: { $sum: "$rating" },
+        numberOfRatings: { $sum: 1 },
+      },
+    },
+  ]);
+  const averageRating = Number((updatedRating[0]?.averageRating ?? 0).toFixed(1));
+  await User.findByIdAndUpdate(
+    assignment.assignedTo,
+    {
+      $set: {
+        "tacProfile.rating": averageRating,
+      },
+    }
+  );
   return await TacRating.findById(newRating._id)
     .populate("tacId", "firstName lastName email profilePic")
     .populate("ratedBy", "firstName lastName email");
