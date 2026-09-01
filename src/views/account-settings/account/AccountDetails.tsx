@@ -520,7 +520,7 @@ const AccountDetails = () => {
                     onChange={formik.handleChange}
                   />
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                {/* <Grid size={{ xs: 12, sm: 6 }}>
                   <TextField
                     fullWidth
                     type="number"
@@ -530,7 +530,7 @@ const AccountDetails = () => {
                     value={formik.values.experienceInMonths}
                     onChange={formik.handleChange}
                   />
-                </Grid>
+                </Grid> */}
 
                 <Grid size={{ xs: 12 }}>
                   <TextField

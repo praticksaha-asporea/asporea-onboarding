@@ -19,7 +19,6 @@ import {
   IconButton,
   Chip,
   Avatar,
-  
 } from "@mui/material";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { usePreCounselling } from "./usePreCounselling";
@@ -124,7 +123,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
   };
 
   return (
-    <Card className="p-6 md:p-8 rounded-3xl shadow-xl   bg-[var(--mui-palette-background-paper)]">
+    <Card className="p-5 md:p-8 rounded-3xl shadow-xl bg-[var(--mui-palette-background-paper)]">
       <form onSubmit={preForm.handleSubmit}>
         {/* HEADER SECTION */}
         <Box className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
@@ -133,7 +132,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
               <i className="ri-calendar-event-line text-2xl" />
             </Box>
             <Box>
-              <Typography className=" text-[18px] font-medium  leading-tight">
+              <Typography className="text-[18px] font-medium leading-tight">
                 Pre-Counselling
               </Typography>
             </Box>
@@ -141,7 +140,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
 
           <Box className="flex items-center gap-2">
             <Box
-              className={`px-3 py-1.5 rounded-full shadow-xl dark:shadow-md dark:shadow-white/10  text-xs font-semibold flex items-center gap-2 ${currentStatusInfo.colorClass}`}
+              className={`px-3 py-1.5 rounded-full shadow-xl dark:shadow-md dark:shadow-white/10 text-xs font-semibold flex items-center gap-2 ${currentStatusInfo.colorClass}`}
             >
               <span className="w-2 h-2 rounded-full bg-current inline-block" />
               {currentStatusInfo.label}
@@ -153,20 +152,14 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
           <Grid container spacing={3}>
             {/* ---------------- LEFT COLUMN: ASSIGNED CONSULTANT ---------------- */}
             <Grid size={{ xs: 12, md: 4.5, lg: 4 }}>
-              <Box className="h-full bg-[var(--mui-palette-background-default)]   rounded-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl gap-4">
-                {/* Top Header / Status Indicator */}
-                <Box className="w-full flex items-center  justify-between">
-                  <Box className="bg-[var(--mui-palette-background-default)] translate-x-4 px-3 py-1 rounded-full     flex items-center gap-1.5 shadow-2xl">
-                    <i className="ri-calendar-todo-line text-[var(--mui-palette-primary-main)] text-xs" />
-                    <Typography
-                      className="text-[13px] shadow-2xl font-medium text-[var(--mui-palette-warning-dark)]
-"
-                    >
+              <Box className="h-full bg-[var(--mui-palette-background-default)] rounded-2xl p-6 flex flex-col items-center justify-center text-center relative overflow-hidden shadow-2xl gap-5">
+                {/* Top Header / Status Indicator (Green tick removed & centered) */}
+                <Box className="w-full flex items-center justify-center">
+                  <Box className="bg-[var(--mui-palette-background-paper)] px-3.5 py-1.5 rounded-full flex items-center gap-1.5 shadow-sm shrink-0">
+                    <i className="ri-calendar-todo-line text-[var(--mui-palette-primary-main)] text-sm shrink-0" />
+                    <Typography className="text-[12px] font-semibold text-[var(--mui-palette-warning-dark)] whitespace-nowrap">
                       Assigned Consultant
                     </Typography>
-                  </Box>
-                  <Box className="w-5 h-5 rounded-full translate-x-2 bg-[var(--mui-palette-success-main)] text-[var(--mui-palette-primary-contrastText)] flex items-center justify-center text-xs shadow-sm">
-                    <i className="ri-check-line" />
                   </Box>
                 </Box>
 
@@ -179,17 +172,17 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                         : "/images/avatars/avatar.png"
                     }
                     alt={consultantFullName}
-                    className="w-24 h-24 border-4 border-[var(--mui-palette-background-paper)] shadow-2xl mx-auto text-2xl !bg-[var(--mui-palette-primary-main)] font-bold text-white"
+                    className="w-24 h-24 border-4 border-[var(--mui-palette-background-paper)] shadow-xl mx-auto text-2xl !bg-[var(--mui-palette-primary-main)] font-bold text-white"
                   >
                     {consultantFullName.charAt(0)}
                   </Avatar>
                 </Box>
 
-                {/* Consultant Details (Vertically Centered) */}
-                <Box className="flex flex-col items-center gap-3 w-full">
+                {/* Consultant Details */}
+                <Box className="flex flex-col items-center gap-2 w-full">
                   <Typography
                     variant="h6"
-                    className="font-medium text-[var(--mui-palette-primary-main)] leading-snug"
+                    className="font-bold text-[var(--mui-palette-primary-main)] leading-snug truncate max-w-full"
                   >
                     {consultantFullName}
                   </Typography>
@@ -210,186 +203,177 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                   <Chip
                     label="Certified Counsellor"
                     size="small"
-                    className="mt-2 bg-[var(--mui-palette-background-default)] border border-[var(--mui-palette-divider)] text-[var(--mui-palette-text-primary)] font-medium text-[11px] shadow-sm"
+                    className="mt-1 bg-[var(--mui-palette-background-paper)] border border-[var(--mui-palette-divider)] text-[var(--mui-palette-text-primary)] font-medium text-[11px] shadow-sm"
                   />
                 </Box>
               </Box>
             </Grid>
 
-            {/* ---------------- RIGHT COLUMN: INFORMATION TILES ---------------- */}
+            {/* ---------------- RIGHT COLUMN: MIXED GRID (FULL WIDTH + 2x2 TILES) ---------------- */}
             <Grid size={{ xs: 12, md: 7.5, lg: 8 }}>
-            <Grid container spacing={2}>
-  {/* Tile 1: Scheduled Date */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-calendar-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Scheduled Date
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {formattedDate}
-        </Typography>
-        {formattedDay && (
-          <Typography className="text-[12px] font-normal tracking-wide text-[var(--mui-palette-text-disabled)] mt-0.5">
-            {formattedDay}
-          </Typography>
-        )}
-      </Box>
-    </Box>
-  </Grid>
+              <Grid container spacing={2}>
+                {/* 1. Scheduled Date (Full Width) */}
+                <Grid size={{ xs: 12 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-calendar-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Scheduled Date
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] leading-tight mt-0.5">
+                        {formattedDate} {formattedDay ? `(${formattedDay})` : ""}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 2: Time Slot */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-time-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Time Slot
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {formattedTimeSlot}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 2. Time Slot (Full Width) */}
+                <Grid size={{ xs: 12 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-time-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Time Slot
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] leading-snug mt-0.5 whitespace-normal break-words">
+                        {formattedTimeSlot}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 3: Visit Method */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-map-pin-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Visit Method
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {visitMethodLabel}
-        </Typography>
-        <Typography className="text-[12px] font-normal tracking-wide text-[var(--mui-palette-text-disabled)] mt-0.5">
-          {visitMethodSub}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 3. Visit Method (Full Width) */}
+                <Grid size={{ xs: 12 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-map-pin-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Visit Method
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] leading-tight mt-0.5">
+                        {visitMethodLabel} <span className="text-[12px] text-[var(--mui-palette-text-disabled)]">({visitMethodSub})</span>
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 4: Branch */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-building-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Branch
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {branchId?.title ?? "—"}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 4. Branch (2x2 Grid) */}
+                <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-building-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Branch
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                        {branchId?.title ?? "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 5: Source */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-links-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Source
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {CamelCase(source?.type ?? "") || "—"}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 5. Source (2x2 Grid) */}
+                <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-links-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Source
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                        {CamelCase(source?.type ?? "") || "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 6: Referred By (Type) */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-price-tag-3-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Referred By (Type)
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {CamelCase(source?.refType ?? "") || "—"}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 6. Referred By Type (2x2 Grid) */}
+                <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-price-tag-3-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Referred By (Type)
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                        {CamelCase(source?.refType ?? "") || "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 7: Referred By (Name) */}
-  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-user-shared-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Referred By (Name)
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {source?.refName || "—"}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 7. Referred By Name (2x2 Grid) */}
+                <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-user-shared-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Referred By (Name)
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                        {source?.refName || "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
 
-  {/* Tile 8: Queue Position / Token (Conditional) */}
-  {preferences?.visitType === "offline" && (
-    <Grid size={{ xs: 12, sm: 6 }} className="flex">
-      <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-        <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-          <i className="ri-group-line" />
-        </Box>
-        <Box className="min-w-0">
-          <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-            Queue Position / Token
-          </Typography>
-          <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-            {inqAssign?.token?.number || "—"}
-          </Typography>
-        </Box>
-      </Box>
-    </Grid>
-  )}
+                {/* 8. Queue Position / Token (Conditional 2x2 Grid) */}
+                {preferences?.visitType === "offline" && (
+                  <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                    <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                        <i className="ri-group-line" />
+                      </Box>
+                      <Box className="min-w-0 flex-1">
+                        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                          Queue Position / Token
+                        </Typography>
+                        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                          {inqAssign?.token?.number || "—"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                )}
 
-  {/* Tile 9: Inquiry Created */}
-  <Grid size={{ xs: 12 }} className="flex">
-    <Box className="bg-[var(--mui-palette-background-default)] shadow-2xl rounded-xl p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg">
-        <i className="ri-history-line" />
-      </Box>
-      <Box className="min-w-0">
-        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-          Inquiry Created
-        </Typography>
-        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-          {c?.createdAt
-            ? dayjs(c.createdAt).format("DD MMM YYYY, hh:mm A")
-            : "—"}
-        </Typography>
-      </Box>
-    </Box>
-  </Grid>
+                {/* 9. Inquiry Created (Full Width) */}
+                <Grid size={{ xs: 12 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-history-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Inquiry Created
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                        {c?.createdAt
+                          ? dayjs(c.createdAt).format("DD MMM YYYY, hh:mm A")
+                          : "—"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
               </Grid>
             </Grid>
           </Grid>
- 
 
           {/* ---------------- INTERACTIVE STATUS CONTROL BAR ---------------- */}
-          <Box className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 shadow-2xl rounded-2xl bg-[var(--mui-palette-background-default)]  ">
+          <Box className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 shadow-2xl rounded-2xl bg-[var(--mui-palette-background-default)]">
             <FormControl>
               <FormLabel className="text-xs font-semibold uppercase tracking-wider text-[var(--mui-palette-text-secondary)] mb-2">
                 Update Status
@@ -464,7 +448,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
               </RadioGroup>
             </FormControl>
 
-            {/* ACTION BUTTONS (STRICTLY EXISTING PROJECT COLORS) */}
+            {/* ACTION BUTTONS */}
             <Box className="flex items-center gap-3 w-full md:w-auto mt-2 md:mt-0 pt-3 md:pt-0 border-t md:border-t-0 border-[var(--mui-palette-divider)]">
               {inqAssign && inqAssign.schedule?.method === "on" && (
                 <>
@@ -539,7 +523,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             </Box>
           </Box>
 
-          {/* ---------------- CONDITIONAL FORM DETAILS (Notes & Resume Upload) ---------------- */}
+          {/* ---------------- CONDITIONAL FORM DETAILS ---------------- */}
           {["completed", "rejected", "queued"].includes(
             preForm?.values?.preStatus,
           ) && (
