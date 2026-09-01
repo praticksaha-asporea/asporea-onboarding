@@ -82,7 +82,7 @@ export const useAccount = () => {
       bio: reduxUser?.bio || "",
 
 
-      designation: reduxUser?.tacProfile?.designation || "",
+      designation: reduxUser?.tacProfile?.designation,
       areasOfExp: reduxUser?.tacProfile?.areasOfExp?.join(", ") || "",
       languagesKnown: reduxUser?.tacProfile?.languagesKnown || [],
       industryExp: reduxUser?.tacProfile?.industryExp?.join(", ") || "",

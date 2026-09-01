@@ -51,8 +51,24 @@ export const login = async (body: LoginBody) => {
       lastName: user.lastName,
       address: user.address,
       role: user.role,
-      bio:user.bio,
+      bio: user.bio,
       experienceInMonths: user.experienceInMonths,
+      candidateProfile: {
+        // leadId: user.candidateProfile?.leadId,
+        technicalQualification: user.candidateProfile?.technicalQualification,
+        academic: user.candidateProfile?.academic,
+        nationality: user.candidateProfile?.nationality,
+        workExp: user.candidateProfile?.workExp,
+      },
+      tacProfile: {
+        areasOfExp: user.tacProfile?.areasOfExp,
+        languagesKnown: user.tacProfile?.languagesKnown,
+        industryExp: user.tacProfile?.industryExp,
+        specialization: user.tacProfile?.specialization,
+        mode: user.tacProfile?.mode,
+        rating: user.tacProfile?.rating,
+        designation: user.tacProfile?.designation,
+      }
     },
     tokens,
   };

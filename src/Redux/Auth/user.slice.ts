@@ -22,6 +22,7 @@ export interface UserData {
     industryExp?: string[];
     specialization?: string[];
     mode?: "online" | "offline" | "both";
+    rating?: number;
   };
   profilePic?: {
     _id?: string;
@@ -44,8 +45,8 @@ export interface UserData {
   passportNo?: string;
   experienceInMonths?: string | number;
   bio?: string;
-  enquired?: string;     
-  status?: string;        
+  enquired?: string;
+  status?: string;
   createdAt?: string;
   updatedAt?: string;
   isSocialLogin?: boolean;
@@ -55,9 +56,9 @@ export interface UserData {
     email: boolean;
   };
   leadId?: string;
-  visitOption?: number; 
+  visitOption?: number;
   prefferedConsultant?: string;
-  branch?:{
+  branch?: {
     _id: string;
     title: string;
   };
@@ -78,7 +79,7 @@ export const userSlice = createSlice({
     setUserData: (state, action: PayloadAction<{ userData: UserData }>) => {
       state.userData = action.payload.userData;
     },
-   
+
     updateUserData: (state, action: PayloadAction<Partial<UserData>>) => {
       if (state.userData) {
         state.userData = { ...state.userData, ...action.payload };
