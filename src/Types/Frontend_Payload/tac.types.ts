@@ -15,6 +15,7 @@ export interface UpdateAssignmentPayload {
     specificNotes?: string;
     advice?: string;
     attended?: boolean;
+    positionOffering: string;
 };
 
 export interface UpdateAssignmentAssessPayload {
@@ -39,8 +40,8 @@ export interface sendEmailTACReq {
 }
 
 export interface SubmitRatingPayload {
-  leadId: string;
-  phase: string;
-  rating: number;
-  review?: string;
+    leadId: string;
+    phase: string;
+    rating: number;
+    review?: string;
 }

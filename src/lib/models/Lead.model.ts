@@ -30,6 +30,7 @@ export interface ILead extends Document {
   inqFy?: string;
   inqForType?: Types.ObjectId;
   inqForPosition?: Types.ObjectId;
+  offeredPosition?: Types.ObjectId;
   followUpRequired?: boolean;
   followUpAssignedTo?: Types.ObjectId;
   candidateResume?: Types.ObjectId | IUpload;
@@ -121,6 +122,10 @@ const LeadSchema = new Schema<ILead>(
       ref: "Pathway"
     },
     inqForPosition: {
+      type: Schema.Types.ObjectId,
+      ref: "Position"
+    },
+    offeredPosition: {
       type: Schema.Types.ObjectId,
       ref: "Position"
     },

@@ -6,14 +6,19 @@ import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
+import { positionDBData } from "@/Types/object.types";
+import { getPathwayPositionsAction } from "@/Services/APIs/Pathway/pathway.action";
+import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 
-export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string) => {
+export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string, candidate: CandidateLead) => {
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isPreLocked, setIsPreLocked] = useState(true);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
+  const [positionData, setPositionData] = useState<positionDBData[] | null>(
+    null,
+  );
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const initialCV = inqAssign?.pre?.initialCV;
 
@@ -53,6 +58,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     } else if (inqAssign?.status === "queued" && (isWithinSchedule(inqAssign) && inqAssign?.schedule?.from != "" && inqAssign?.schedule?.to != "")) {
       setIsPreLocked(false);
     }
+    fetchPositions();
   }, [inqAssign]);
 
   // Drag and drop handlers
@@ -84,6 +90,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       specificNotes: inqAssign?.pre?.specificNotes ?? "",
       advice: inqAssign?.pre?.advice ?? "",
       resumeFile: null as File | null,
+      positionOffering: "",
     },
     enableReinitialize: true,
     validationSchema: Yup.object({
@@ -92,6 +99,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       specificNotes: Yup.string().trim().optional(),
       advice: Yup.string().trim().optional(),
       resumeFile: Yup.mixed<File>().nullable().optional(),
+      positionOffering: Yup.string().trim().required("Position Offering is required"),
     }),
     onSubmit: async (values, { setSubmitting }) => {
       if (!inqAssign?._id) {
@@ -114,6 +122,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
         formData.append("specificNotes", values.specificNotes);
         formData.append("advice", values.advice);
         if (values.resumeFile) formData.append("resume", values.resumeFile);
+        if (values.positionOffering) formData.append("offeredPosition", values.positionOffering);
 
         const preResult = await updateAssignmentAction(formData);
         if (preResult?.data?.data?.status === "completed" || preResult?.data?.data?.status === "rejected") {
@@ -166,6 +175,28 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     }
   };
 
+  const fetchPositions = async () => {
+    try {
+      const response = await getPathwayPositionsAction();
+
+
+      const rawData = response?.data?.data;
+      if (Array.isArray(rawData)) {
+        setPositionData(rawData);
+
+      } else if (rawData && Array.isArray((rawData as any).data)) {
+        setPositionData((rawData as any).data);
+      } else {
+        setPositionData([]);
+      }
+      preForm.setFieldValue("positionOffering", candidate?.offeredPosition);
+
+    } catch (err) {
+      console.error("Position fetch error:", err);
+      setPositionData([]);
+    }
+  };
+
   return {
     preForm,
     isPreLocked,
@@ -180,6 +211,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     handleDragLeave,
     handleDrop,
     onFileInputChange,
-    updateAssignmentStatus
+    updateAssignmentStatus,
+    positionData
   };
 };

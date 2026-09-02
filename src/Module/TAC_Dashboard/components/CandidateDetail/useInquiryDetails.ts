@@ -115,6 +115,7 @@ export const useInquiryDetails = (candidate: CandidateLead) => {
         }
     };
 
+
     function buildCategoryOptions(
         categories: IPathway[]
     ): CategoryOption[] {

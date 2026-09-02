@@ -15,11 +15,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         const token = getTokenFromHeader(req);
         if (!token) throw new ApiError("Unauthenticated user", 401);
         await verifyToken(token);
+        const pathwayId = req.query.id as string | undefined;
 
-        const pathwayId = req.query.id as string;
-        if (!pathwayId) throw new ApiError("Pathway ID is required", 400);
-
-        const data = await positionListbyType({ pathWay: pathwayId });
+        const data = await positionListbyType({
+            ...(pathwayId && { pathWay: pathwayId }),
+        });
         return ResponseHandler.sendSuccess(res, data, "Positions fetched successfully");
     } catch (error: unknown) {
         if (error instanceof ApiError)

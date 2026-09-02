@@ -22,12 +22,12 @@ import { UserData } from "@/Redux/Auth/user.slice";
 import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
 import LeadLogsCard from "./LeadLogsCard";
 
-interface CandidateDetailProps {}
+interface CandidateDetailProps { }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
- 
+
   const [tabValue, setTabValue] = useState<string>("inquiry");
 
   const params = useParams<{ id: string }>();
@@ -68,11 +68,11 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           address: response?.data?.data.lead.address,
           preferences: response?.data?.data.lead.preferences
             ? {
-                branchId: response?.data?.data.lead.preferences.branchId,
-                consultantId:
-                  response?.data?.data.lead.preferences.consultantId,
-                visitType: response?.data?.data.lead.preferences.visitType,
-              }
+              branchId: response?.data?.data.lead.preferences.branchId,
+              consultantId:
+                response?.data?.data.lead.preferences.consultantId,
+              visitType: response?.data?.data.lead.preferences.visitType,
+            }
             : undefined,
           source: response?.data?.data.lead.source,
           experience: response?.data?.data.lead.experience,
@@ -89,6 +89,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           inqForType: response?.data?.data.lead.inqForType ?? "",
           inqForPosition: response?.data?.data.lead.inqForPosition ?? "",
           user: response?.data?.data?.user ?? "",
+          offeredPosition: response?.data?.data.lead.offeredPosition ?? "",
         });
       })
       .catch((err) =>

@@ -23,6 +23,26 @@ export const PositionSelector: React.FC<PositionSelectorProps> = ({ positions, s
           Position applying for
         </Typography>
 
+        <Box className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <Box className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+            <Typography variant="caption" color="text.secondary">
+              Position Inquired
+            </Typography>
+            <Typography variant="body1" className="font-semibold">
+              {positionInquired || "Not specified"}
+            </Typography>
+          </Box>
+
+          <Box className="p-3 rounded-xl bg-gray-50 border border-gray-200">
+            <Typography variant="caption" color="text.secondary">
+              Position Offered
+            </Typography>
+            <Typography variant="body1" className="font-semibold">
+              {positionOffered || "Not specified"}
+            </Typography>
+          </Box>
+        </Box>
+
         {loading ? (
           <CircularProgress size={30} />
         ) : (
@@ -32,24 +52,19 @@ export const PositionSelector: React.FC<PositionSelectorProps> = ({ positions, s
                 key={pos._id}
                 variant={selected === pos._id ? "contained" : "outlined"}
                 onClick={() => onSelect(selected === pos._id ? "" : pos._id)}
-                className={`rounded-full normal-case px-3 border
-                ${
-                  selected === pos._id
-                    ? " border-[var(--mui-palette-primary-main)] text-white hover:border-[var(--mui-palette-primary-main)]"
-                    : "bg-[var(--variant-outlinedBg)] border-[#e0e0e0] text-[var(--mui-palette-text-primary)] hover:border-[#e0e0e0]"
-                }
-                disabled:bg-[#f5f5f5] disabled:text-[#bdbdbd] disabled:border-[#e0e0e0]
-              `}
+                className="rounded-full normal-case px-3"
               >
                 {pos.title}
               </Button>
             ))}
           </Box>
         )}
+
         <Box className="flex items-center gap-2">
           <Box className="w-4 h-4 rounded bg-blue-600" />
           <Typography variant="body2">Selected</Typography>
-          <Box className="w-4 h-4 rounded border border-gray-300 bg-transparent" />
+
+          <Box className="w-4 h-4 rounded border border-gray-300" />
           <Typography variant="body2">Available</Typography>
         </Box>
       </Box>

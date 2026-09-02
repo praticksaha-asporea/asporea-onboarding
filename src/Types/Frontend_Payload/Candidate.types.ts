@@ -89,4 +89,5 @@ export interface CandidateLead extends DocumentBaseCandidate {
   stage?: string;
   token?: string | null;
   user?: IUser;
+  offeredPosition?: string;
 }

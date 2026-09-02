@@ -46,6 +46,10 @@ const updateAssignmentSchema = Joi.object({
     .trim()
     .allow("", null)
     .optional(),
+  offeredPosition: Joi.string()
+    .hex()
+    .length(24)
+    .optional()
 })
   .options({
     abortEarly: false,
@@ -75,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const { assignmentId, status, additionalDetails, specificNotes, advice } = value;
+    const { assignmentId, status, additionalDetails, specificNotes, advice, offeredPosition } = value;
 
     if (!mongoose.Types.ObjectId.isValid(assignmentId))
       throw new ApiError("Invalid assignment ID", 400);
@@ -177,7 +181,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       const updatedLead = await Lead.findByIdAndUpdate(
         assignment?.leadId,
-        { $set: { status: updatableStatus?.[status] } },
+        { $set: { status: updatableStatus?.[status], offeredPosition: offeredPosition } },
         { returnDocument: "after", runValidators: true }
       );
       if (updatableStatus?.[status] === "pre_queued") {
