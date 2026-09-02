@@ -84,7 +84,7 @@ export const getDelayedPendingLeadsService = async (
 
         const rawLeads = await Lead.find(matchQuery)
             .select(
-                "fullName name personalDetails contact inqNo profilePic inquiryStages createdAt updatedAt status"
+                "fullName followUpRequired name personalDetails contact inqNo profilePic inquiryStages createdAt updatedAt status"
             )
             .sort({ updatedAt: -1 })
             .skip(skip)
@@ -104,6 +104,7 @@ export const getDelayedPendingLeadsService = async (
             },
             inquiryStages: lead.inquiryStages || {},
             status: lead.status || "",
+            followUpRequired: lead.followUpRequired ?? false,  
             createdAt: lead.createdAt,
             updatedAt: lead.updatedAt,
         }));
