@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import FollowUpBadge from "@/Components/Common/FollowUpBadge";  
 import {
   Box,
   Typography,
@@ -169,7 +170,8 @@ const PendingTrackingView: React.FC = () => {
 
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={lead._id}>
-                <Card className="h-full flex flex-col rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
+                <Card className="h-full flex flex-col relative rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
+                  <FollowUpBadge show={lead?.followUpRequired} />
                   <CardContent className="p-5 flex flex-col flex-grow">
 
                     {/* Top Section */}

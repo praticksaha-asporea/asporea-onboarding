@@ -15,6 +15,7 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
+import FollowUpBadge from "@/Components/Common/FollowUpBadge";
 import { CamelCase } from "@/Utils/common";
 import { CandidateRow } from "@/Types/object.types";
 import { useDashboardTable } from "./useDashboardTable";
@@ -48,7 +49,7 @@ const getInitials = (name?: string) => {
 
 const resolveFileSrc = (path?: string) => {
   if (!path || path.trim() === "") return "/images/avatars/avatar.png";
-  if (
+  if (  
     path.startsWith("http://") ||
     path.startsWith("https://") ||
     path.startsWith("data:")
@@ -107,18 +108,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={candidate._id}>
                 <Card className="h-full flex flex-col relative rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
-                  {candidate?.followUpRequired && (
-                    <Box className="absolute animate-blink top-3 right-3 z-10">
-                      <Chip
-                        label="Follow Up"
-                        size="small"
-                        sx={{ backgroundColor: "transparent !important" }}
-                        icon={<i className="ri-alarm-warning-fill text-xs text-red-500 " />}
-                        className="text-[13px] h-[22px] font-medium   text-[var(--mui-palette-error-main)]
- "
-                      />
-                    </Box>
-                  )}
+                  <FollowUpBadge show={candidate?.followUpRequired} />
                   <CardContent className="p-4 md:p-5 flex flex-col flex-grow">
                     
                     {/* --- TOP CENTERED HEADER: Image -> Visit Chip -> Name -> Inquiry ID --- */}
