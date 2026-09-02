@@ -10,7 +10,7 @@ import {
   Tab,
 } from "@mui/material";
 import { useParams } from "next/navigation";
-
+import { updateLeadAction } from "@/Services/APIs/tac/tac.actions";
 import CandidateHeader from "./CandidateHeader";
 import InquiryDetailsForm from "./InquiryDetailsForm";
 import PreCounsellingForm from "./PreCounsellingForm";
@@ -21,15 +21,16 @@ import { useCandidateDetail } from "./useCandidateDetail";
 import { UserData } from "@/Redux/Auth/user.slice";
 import { getTacCandidateDetailAction } from "@/Services/APIs/tac/tac.actions";
 import LeadLogsCard from "./LeadLogsCard";
+import { confirmToast } from "@/Utils/confirmToast";
+import toast from "react-hot-toast";
 
 interface CandidateDetailProps {}
 
 const CandidateDetail: React.FC<CandidateDetailProps> = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
 
- 
   const [tabValue, setTabValue] = useState<string>("inquiry");
-
+  const [updatingFollowUp, setUpdatingFollowUp] = useState(false);
   const params = useParams<{ id: string }>();
   const id = params?.id;
 
@@ -63,6 +64,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           inqNo: response?.data?.data.lead.inqNo ?? "—",
           stage: response?.data?.data.lead.status ?? "—",
           status: response?.data?.data.lead.status ?? "—",
+          followUpRequired: response?.data?.data.lead.followUpRequired ?? false,
           profilePic: response?.data?.data.lead.profilePic,
           contact: response?.data?.data.lead.contact,
           address: response?.data?.data.lead.address,
@@ -96,14 +98,42 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
       )
       .finally(() => setLoading(false));
   }, [id]);
+const handleToggleFollowUp = async (checked: boolean) => {
+  if (!c?._id) return;
 
-  if (loading) {
-    return (
-      <Box className="flex items-center justify-center min-h-screen">
-        <CircularProgress />
-      </Box>
+  const msg = checked
+    ? "Are you sure you want to flag this candidate for priority follow-up?"
+    : "Are you sure you want to remove the follow-up requirement for this candidate?";
+
+  const confirmed = await confirmToast(msg);
+  if (!confirmed) return;
+
+  setUpdatingFollowUp(true);
+  try {
+    await updateLeadAction({
+      id: c._id,
+      followUpRequired: checked,
+    });
+    setSelectedCandidate((prev: any) => ({
+  ...prev,
+  inqForType: prev?.inqForType ?? "",
+  inqForPosition: prev?.inqForPosition ?? "",
+  followUpRequired: checked,
+}));
+    toast.success(
+      checked
+        ? "Candidate successfully flagged for priority follow-up."
+        : "Follow-up requirement removed from candidate profile."
     );
+  } catch (err: any) {
+    toast.error(
+      err?.response?.data?.message ??
+        "Failed to update candidate follow-up status. Please try again."
+    );
+  } finally {
+    setUpdatingFollowUp(false);
   }
+};
 
   if (error) {
     return (
@@ -125,7 +155,12 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
 
   return (
     <Box className="w-full min-h-screen p-4 md:p-6">
-      <CandidateHeader candidate={c} onBack={handleBack} />
+      <CandidateHeader
+        candidate={c}
+        onBack={handleBack}
+        onToggleFollowUp={handleToggleFollowUp}
+        updatingFollowUp={updatingFollowUp}
+      />
 
       <Box className="bg-[var(--mui-palette-primary)] rounded-xl shadow-2xl mb-6 mt-4 px-2">
         <Tabs

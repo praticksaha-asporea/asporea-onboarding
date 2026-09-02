@@ -33,6 +33,7 @@ export interface InquiryUpdatePayload {
   address?: string;
   passportStatus?: string;
   passportNo?: string;
+  followUpRequired?: boolean;
 }
 
 export interface LeadListPayload {

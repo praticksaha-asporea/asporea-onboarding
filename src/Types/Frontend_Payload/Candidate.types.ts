@@ -86,6 +86,7 @@ export interface CandidateLead extends DocumentBaseCandidate {
   updatedAt?: string | Date;
   notificationPreference?: { email?: boolean; sms?: boolean; whatsapp?: boolean } | any;
   assignmentByPhase?: Record<string, any>;
+  followUpRequired?: boolean;
   stage?: string;
   token?: string | null;
   user?: IUser;

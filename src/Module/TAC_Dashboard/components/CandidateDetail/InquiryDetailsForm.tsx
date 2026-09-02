@@ -66,7 +66,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
                 labelId="inquiry-category-label"
                 id="inquiry-category"
                 name="inqForType"
-                value={inquiryForm?.values.inqForType}
+   value={candidate?.inqForType ?? ""}
                 onChange={(e) => inquiryForm.setFieldValue("inqForType", e.target.value)}
                 label="Inquiry For"
                 // disabled
