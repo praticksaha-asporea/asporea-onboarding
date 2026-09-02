@@ -114,6 +114,7 @@ export interface CandidateRow {
     inqNo: string;
     stage: string;
     status: string;
+   followUpRequired?: boolean;  
     experience: string | null;
     visitType: string | null;
     token: string | null;

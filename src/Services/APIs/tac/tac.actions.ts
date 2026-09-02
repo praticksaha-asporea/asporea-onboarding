@@ -8,6 +8,7 @@ import {
 import {
   candidateDetailResponse,
   CandidatesResponse,
+  GetTacRatingsResponse,
   LeadLastAppointmentResponse,
   QuestionsListReponse,
   sendEmailRes,
@@ -175,9 +176,14 @@ export const getTacRatingsAction = async (params: {
   leadId?: string;
   tacId?: string;
   phase?: string;
-}): Promise<AxiosResponse<any>> => {
-  const query = new URLSearchParams(params as any);
-  return axiosClient.get(`/tac-ratings?${query.toString()}`);
+}): Promise<AxiosResponse<GetTacRatingsResponse>> => {
+  const query = new URLSearchParams(
+    Object.entries(params).reduce((acc, [key, value]) => {
+      if (value !== undefined) acc[key] = value;
+      return acc;
+    }, {} as Record<string, string>)
+  );
+  return axiosClient.get<GetTacRatingsResponse>(`/tac-ratings?${query.toString()}`);
 };
 
 

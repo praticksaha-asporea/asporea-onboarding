@@ -12,6 +12,7 @@ import User from "@/lib/models/User.model";
 
 const updateLeadSchema = Joi.object({
   id: Joi.string().hex().length(24).required(),
+  followUpRequired: Joi.boolean().optional(),
   fullName: Joi.string().trim().optional(),
   email: Joi.string().email().lowercase().trim().optional(),
   phone: Joi.string().pattern(/^[0-9]{10}$/).optional().messages({
@@ -27,12 +28,36 @@ const updateLeadSchema = Joi.object({
     then: Joi.required().messages({ "any.required": "Passport number is required when status is Having" }),
     otherwise: Joi.optional().allow("", null),
   }),
-  inqForType: Joi.string().trim().required(),
-  inqForPosition: Joi.string().trim().required(),
-  nationality: Joi.string().trim().required(),
-  latestAcademic: Joi.string().trim().required(),
-  latestTechnical: Joi.string().trim().required(),
-  workExperience: Joi.string().trim().required(),
+  inqForType: Joi.string().trim().when("followUpRequired", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  inqForPosition: Joi.string().trim().when("followUpRequired", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  nationality: Joi.string().trim().when("followUpRequired", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  latestAcademic: Joi.string().trim().when("followUpRequired", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  latestTechnical: Joi.string().trim().when("followUpRequired", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
+  workExperience: Joi.string().trim().when("followUpRequired", {
+    is: Joi.exist(),
+    then: Joi.optional(),
+    otherwise: Joi.required(),
+  }),
 }).options({ abortEarly: false, allowUnknown: false });
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -54,7 +79,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const { id, fullName, email, phone, whatsapp, address, passportStatus, passportNo,
+    const { id,followUpRequired, fullName, email, phone, whatsapp, address, passportStatus, passportNo,
       inqForType, inqForPosition, nationality, latestAcademic, latestTechnical, workExperience } = value;
 
     if (!mongoose.Types.ObjectId.isValid(id))
@@ -75,6 +100,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!lead) throw new ApiError("Lead not found or not accessible to you", 404);
 
     const update: Record<string, unknown> = {};
+    if (followUpRequired !== undefined) update.followUpRequired = followUpRequired;
     if (fullName !== undefined) update.fullName = fullName;
     if (address !== undefined) update.address = address;
     if (email !== undefined) update["contact.email"] = email;

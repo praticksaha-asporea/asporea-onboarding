@@ -99,7 +99,11 @@ export async function getCandidateDetailService({
 
   const lead = await Lead.findOne(leadFilter)
     .populate("preferences.branchId", "title location timeZone")
-    .populate("preferences.consultantId", "firstName lastName")
+   .populate({
+      path: "preferences.consultantId",
+      select: "firstName lastName profilePic tacProfile",
+      populate: { path: "profilePic", select: "path" },
+    })
     .populate("documents.position", "title")
     .lean();
 
@@ -164,7 +168,11 @@ export async function getCandidateDetailService({
       model: "Upload",
       select: "path",
     })
-    .populate("assignedTo", "firstName lastName")
+  .populate({
+      path: "assignedTo",
+      select: "firstName lastName profilePic tacProfile",
+      populate: { path: "profilePic", select: "path" },
+    })
     .lean();
 
   // Build a phase map for easy lookup on the frontend

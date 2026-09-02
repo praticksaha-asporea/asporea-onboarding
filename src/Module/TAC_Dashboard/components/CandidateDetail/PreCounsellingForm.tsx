@@ -92,6 +92,14 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     ? `${inqAssign.schedule.from} ${inqAssign.schedule.to ? "– " + inqAssign.schedule.to : ""
     }`
     : "—";
+const consultantProfilePic =
+  typeof consultantId?.profilePic === "object" && consultantId?.profilePic !== null
+    ? (consultantId.profilePic as any).path
+    : typeof consultantId?.profilePic === "string"
+    ? consultantId.profilePic
+    : undefined;
+    
+const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
 
   const visitMethodLabel =
     inqAssign?.schedule?.method === "on" ? "Remote" : "In-Office";
@@ -168,40 +176,56 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                 </Box>
 
                 {/* Avatar */}
-                <Box className="relative my-1">
-                  <Avatar
-                    src={
-                      consultantId?.profilePic
-                        ? String(consultantId.profilePic)
-                        : "/images/avatars/avatar.png"
-                    }
-                    alt={consultantFullName}
-                    className="w-24 h-24 border-4 border-[var(--mui-palette-background-paper)] shadow-xl mx-auto text-2xl !bg-[var(--mui-palette-primary-main)] font-bold text-white"
-                  >
-                    {consultantFullName.charAt(0)}
-                  </Avatar>
-                </Box>
+              <Box className="relative my-1">
+  <Avatar
+    src={consultantProfilePic}
+    alt={consultantFullName}
+    className="w-24 h-24 border-4 border-[var(--mui-palette-background-paper)] shadow-xl mx-auto text-2xl !bg-[var(--mui-palette-primary-main)] font-bold text-white"
+  >
+    {consultantFullName.charAt(0)}
+  </Avatar>
+</Box>
 
                 {/* Consultant Details */}
                 <Box className="flex flex-col items-center gap-2 w-full">
                   <Typography
                     variant="h6"
-                    className="font-bold text-[var(--mui-palette-primary-main)] leading-snug truncate max-w-full"
+                    className="font-medium tracking-wide text-[var(--mui-palette-primary-main)] leading-snug truncate max-w-full"
                   >
                     {consultantFullName}
                   </Typography>
 
                   {/* Rating */}
-                  <Box className="flex items-center justify-center gap-1 text-amber-400 text-sm">
-                    <i className="ri-star-fill" />
-                    <i className="ri-star-fill" />
-                    <i className="ri-star-fill" />
-                    <i className="ri-star-fill" />
-                    <i className="ri-star-line" />
-                    <Typography className="text-xs font-semibold text-[var(--mui-palette-text-secondary)] ml-1">
-                      4.0
-                    </Typography>
-                  </Box>
+               {/* Dynamic Rating Section */}
+<Box className="flex items-center justify-center gap-1 text-sm min-h-[22px]">
+  {consultantRating > 0 ? (
+    <>
+      {[1, 2, 3, 4, 5].map((starIndex) => {
+        const isFilled = starIndex <= Math.round(consultantRating);
+        return (
+          <i
+            key={starIndex}
+            className={
+              isFilled
+                ? "ri-star-fill text-amber-400"
+                : "ri-star-line text-gray-300 dark:text-gray-600"
+            }
+          />
+        );
+      })}
+      <Typography className="text-xs font-semibold text-[var(--mui-palette-text-secondary)] ml-1">
+        {consultantRating.toFixed(1)}
+      </Typography>
+    </>
+  ) : (
+    <Box className="flex items-center gap-1 text-gray-400">
+      <i className="ri-star-line text-sm" />
+      <Typography className="text-xs font-medium text-[var(--mui-palette-text-secondary)]">
+        Not Rated
+      </Typography>
+    </Box>
+  )}
+</Box>
 
                   {/* Experience Badge */}
                   <Chip
