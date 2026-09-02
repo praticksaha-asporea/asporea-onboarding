@@ -13,7 +13,8 @@ import { Lead } from '../../models/Lead.model';
 import { Upload } from '../../models/Upload.model';
 import fs from 'fs';
 import path from 'path';
-import { handleProfilePicUpload } from '../../utils/uploadUtil';  
+import { handleProfilePicUpload } from '../../utils/uploadUtil';
+import rating from '@/@core/theme/overrides/rating';
 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
@@ -62,8 +63,8 @@ export const userList = async ({
       { firstName: regex },
       { lastName: regex },
       { email: regex },
-      {phoneNumber:regex},
-     { whatsappNumber: regex },
+      { phoneNumber: regex },
+      { whatsappNumber: regex },
     ];
   }
 
@@ -72,11 +73,11 @@ export const userList = async ({
   const [users, total] = await Promise.all([
     UserModel.find(filter)
       .select('-password')
-      .populate('profilePic', 'path')  
+      .populate('profilePic', 'path')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
-    UserModel.countDocuments(filter),  
+    UserModel.countDocuments(filter),
   ]);
 
   const totalPages = Math.ceil(total / limit);
@@ -220,19 +221,19 @@ export const updateUser = async (userId: string, body: any) => {
   }
 
 
- 
+
 
   const ALLOWED = [
     'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
     'address', 'role', 'passportStatus', 'passportNo', 'status',
-    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths','tacProfile', 
+    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths',
   ];
-const update: Record<string, unknown> = {};
+  const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
   }
 
-  
+
   if (body.candidateProfile !== undefined) {
     const existingProfile = user.candidateProfile
       ? typeof (user.candidateProfile as any).toObject === 'function'
@@ -245,6 +246,21 @@ const update: Record<string, unknown> = {};
       ...body.candidateProfile,
       // Ensure leadId is NEVER wiped out
       leadId: body.candidateProfile?.leadId || existingProfile?.leadId,
+    };
+  }
+
+  if (body.tacProfile !== undefined) {
+    const existingProfile = user.tacProfile
+      ? typeof (user.tacProfile as any).toObject === 'function'
+        ? (user.tacProfile as any).toObject()
+        : user.tacProfile
+      : {};
+
+    update['tacProfile'] = {
+      ...existingProfile,
+      ...body.tacProfile,
+      // Ensure leadId is NEVER wiped out
+      rating: body.tacProfile?.rating || existingProfile?.rating,
     };
   }
 
@@ -269,10 +285,10 @@ const update: Record<string, unknown> = {};
   const updated = await UserModel.findByIdAndUpdate(
     userId,
     { $set: update },
-    { returnDocument: 'after', runValidators: true }  
+    { returnDocument: 'after', runValidators: true }
   )
-  .select("-password")
-  .populate('profilePic', 'path'); 
+    .select("-password")
+    .populate('profilePic', 'path');
 
   return updated;
 };

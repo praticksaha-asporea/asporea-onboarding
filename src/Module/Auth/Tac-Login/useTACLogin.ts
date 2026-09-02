@@ -189,6 +189,7 @@ export function useTACLogin({ mode }: { mode: Mode }) {
         }
 
         dispatch(setUserData({ userData: user as UserData }));
+        console.log(user, 75554);
 
         respectiveDashboard(user, router);
 

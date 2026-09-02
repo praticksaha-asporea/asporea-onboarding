@@ -15,7 +15,6 @@ import MenuItem from "@mui/material/MenuItem";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
 import { Avatar, Dialog, Box, IconButton, Slider, FormHelperText } from "@mui/material";
-import { Radio, RadioGroup, FormControlLabel, FormLabel } from "@mui/material";
 import toast from "react-hot-toast";
 import { useAccount } from "./useAccount";
 
@@ -106,6 +105,7 @@ const AccountDetails = () => {
     setCropModalOpen(false);
     toast.success("Original image selected!");
   };
+
 
   return (
     <Card>
@@ -299,90 +299,92 @@ const AccountDetails = () => {
                     }
                     helperText={
                       formik.touched.passportNumber &&
-                      formik.errors.passportNumber
+                        formik.errors.passportNumber
                         ? (formik.errors.passportNumber as string)
                         : undefined
                     }
                   />
                 </Grid>
               )}
-           <Grid size={{ xs: 12, sm: 6 }}>
-  <FormControl 
-    fullWidth 
-    error={formik.touched.academic && Boolean(formik.errors.academic)}
-  >
-    <InputLabel id="academic-label">Academic Qualification</InputLabel>
-    <Select
-      labelId="academic-label"
-      id="academic"
-      name="academic"
-      label="Academic Qualification"
-      value={formik.values.academic || ""}
-      onChange={formik.handleChange}
-      onBlur={formik.handleBlur}
-    >
-      <MenuItem value="secondary">Secondary</MenuItem>
-      <MenuItem value="higher_secondary">Higher secondary</MenuItem>
-      <MenuItem value="graduate">Graduate</MenuItem>
-      <MenuItem value="post_graduate">Post graduate</MenuItem>
-    </Select>
-    {formik.touched.academic && formik.errors.academic && (
-      <FormHelperText>{formik.errors.academic as string}</FormHelperText>
-    )}
-  </FormControl>
-</Grid>
+            {reduxUser.role === "user" && (
+              <>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <FormControl
+                    fullWidth
+                    error={formik.touched.academic && Boolean(formik.errors.academic)}
+                  >
+                    <InputLabel id="academic-label">Academic Qualification</InputLabel>
+                    <Select
+                      labelId="academic-label"
+                      id="academic"
+                      name="academic"
+                      label="Academic Qualification"
+                      value={formik.values.academic || ""}
+                      onChange={formik.handleChange}
+                      onBlur={formik.handleBlur}
+                    >
+                      <MenuItem value="secondary">Secondary</MenuItem>
+                      <MenuItem value="higher_secondary">Higher secondary</MenuItem>
+                      <MenuItem value="graduate">Graduate</MenuItem>
+                      <MenuItem value="post_graduate">Post graduate</MenuItem>
+                    </Select>
+                    {formik.touched.academic && formik.errors.academic && (
+                      <FormHelperText>{formik.errors.academic as string}</FormHelperText>
+                    )}
+                  </FormControl>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    id="technicalQualification"
+                    name="technicalQualification"
+                    label="Technical Qualification"
+                    placeholder="e.g. MERN Stack Certification, AWS Associate"
+                    value={formik.values.technicalQualification}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                </Grid>
 
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
-                id="technicalQualification"
-                name="technicalQualification"
-                label="Technical Qualification"
-                placeholder="e.g. MERN Stack Certification, AWS Associate"
-                value={formik.values.technicalQualification}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <FormControl fullWidth>
+                    <InputLabel id="nationality-label">Nationality</InputLabel>
+                    <Select
+                      labelId="nationality-label"
+                      id="nationality"
+                      name="nationality"
+                      label="Nationality"
+                      value={formik.values.nationality || ""}
+                      onChange={(e) =>
+                        formik.setFieldValue("nationality", e.target.value)
+                      }
+                      onBlur={formik.handleBlur}
+                    >
+                      <MenuItem value="indian">Indian</MenuItem>
+                      <MenuItem value="nepalese">Nepalese</MenuItem>
+                      <MenuItem value="bhutanese">Bhutanese</MenuItem>
+                      <MenuItem value="tibetan">Tibetan</MenuItem>
+                      <MenuItem value="bangladeshi">Bangladeshi</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
 
-            {/* Row 2: Left 6 - Nationality | Right 6 - Work Experience Summary */}
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <FormControl fullWidth>
-                <InputLabel id="nationality-label">Nationality</InputLabel>
-                <Select
-                  labelId="nationality-label"
-                  id="nationality"
-                  name="nationality"
-                  label="Nationality"
-                  value={formik.values.nationality || ""}
-                  onChange={(e) =>
-                    formik.setFieldValue("nationality", e.target.value)
-                  }
-                  onBlur={formik.handleBlur}
-                >
-                  <MenuItem value="indian">Indian</MenuItem>
-                  <MenuItem value="nepalese">Nepalese</MenuItem>
-                  <MenuItem value="bhutanese">Bhutanese</MenuItem>
-                  <MenuItem value="tibetan">Tibetan</MenuItem>
-                  <MenuItem value="bangladeshi">Bangladeshi</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-
-            <Grid size={{ xs: 12, sm: 6 }}>
-              <TextField
-                fullWidth
-                multiline
-                rows={3}
-                id="workExp"
-                name="workExp"
-                label="Work Experience Summary"
-                placeholder="Describe prior roles & responsibilities..."
-                value={formik.values.workExp}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-              />
-            </Grid>
+                <Grid size={{ xs: 12, sm: 6 }}>
+                  <TextField
+                    fullWidth
+                    multiline
+                    rows={3}
+                    id="workExp"
+                    name="workExp"
+                    label="Work Experience Summary"
+                    placeholder="Describe prior roles & responsibilities..."
+                    value={formik.values.workExp}
+                    onChange={formik.handleChange}
+                    onBlur={formik.handleBlur}
+                  />
+                </Grid>
+              </>
+            )}
             <Grid size={{ xs: 12, sm: 6 }}>
               <TextField
                 fullWidth
