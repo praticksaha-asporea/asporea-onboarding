@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
@@ -9,11 +9,13 @@ import {
   Button,
   Box,
   Avatar,
-  CircularProgress
+  CircularProgress,
+  Skeleton,
+  useTheme,
+  lighten
 } from "@mui/material";
 import type { Mode } from "@core/types";
 import { useTacRating } from "./useTacRating";
-
 
 const EmojiVeryBad = () => (
   <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full emoji-angry">
@@ -68,11 +70,8 @@ const REACTIONS = [
 ];
 
 const TacRating = ({ mode }: { mode: Mode }) => {
-
-  // const leadId = "6a915df0a437e8f8ba3de34e"; 
-  // const phaseCode = "pre";
-  // const tacName = "Pratik Deshmukh";
-  // const phaseName = "Pre-Counselling";
+  const theme = useTheme();
+  const headerGradient = `linear-gradient(270deg, var(--mui-palette-primary-main), ${lighten(theme.palette.primary.main, 0.5)} 100%)`;
 
   const {
     rating,
@@ -84,54 +83,75 @@ const TacRating = ({ mode }: { mode: Mode }) => {
     handleSubmit,
     loading,
     tacDetails
-  } = useTacRating(); //leadId,phaseCode 
+  } = useTacRating();
 
   const currentLabel = REACTIONS.find(r => r.value === (hover || rating))?.label || "";
 
   return (
     <Box className="flex flex-col justify-center items-center min-h-[100dvh] relative p-4 md:p-6 bg-[var(--mui-palette-primary)]">
-      <Card className="flex flex-col w-full max-w-[600px]  bg-[var(--mui-palette-primary)] shadow-2xl   rounded-[24px]  ">
-        <Box className="px-8 pt-8 pb-5 flex justify-between ml-48 items-center ">
-          <Typography variant="h3" fontWeight="500" className="text-[var(--mui-palette-text-primary)]">
+      <Card className="flex flex-col w-full max-w-[600px] bg-[var(--mui-palette-primary)] shadow-2xl rounded-[24px] overflow-hidden">
+        
+        {/* 🌟 GRADIENT HEADER */}
+        <Box 
+          className="px-6 py-4 flex justify-center items-center"
+          style={{ background: headerGradient }}
+        >
+          <Typography variant="h5" fontWeight="600" className="text-white text-[20px]">
             Feedback
           </Typography>
         </Box>
 
         <CardContent className="p-8 sm:!p-10 flex flex-col gap-8">
-          {/* TAC Info Card */}
-          <Box className="flex items-center gap-4 p-4 bg-[var(--mui-palette-primary)] rounded-[16px]  ">
-            <Avatar
-              src="/images/avatars/avatar.png"
-              alt={tacDetails?.assignedTo?.firstName}
-              sx={{ bgcolor: 'var(--mui-palette-primary-main)', width: 56, height: 56, fontSize: '1.25rem', fontWeight: 'bold' }}
-            >
-              {tacDetails?.assignedTo?.firstName.charAt(0) + ` ` + tacDetails?.assignedTo?.lastName.charAt(0)}
-            </Avatar>
-            <Box className="text-left flex-1">
-              <Typography variant="subtitle1" fontWeight="700" className="text-[var(--mui-palette-text-primary)] text-lg">
-                {tacDetails?.assignedTo?.firstName + ` ` + tacDetails?.assignedTo?.lastName}
-              </Typography>
-              <Typography variant="caption" fontWeight="600" className="text-[var(--mui-palette-text-secondary)] uppercase tracking-wider">
-                Consultant • {tacDetails?.phase == 'pre'
-                  ? "Pre-Counselling" :
-                  tacDetails?.phase == 'assess'
-                    ? "Assessment"
-                    : ""} Phase
-              </Typography>
-            </Box>
+          {/* TAC Info Card with Skeleton */}
+          <Box className="flex items-center gap-4 p-4 bg-[var(--mui-palette-primary)] rounded-[16px]">
+            {!tacDetails?.assignedTo ? (
+              <>
+                <Skeleton variant="circular" width={56} height={56} />
+                <Box className="flex-1 flex flex-col gap-1">
+                  <Skeleton variant="text" width={160} height={28} />
+                  <Skeleton variant="text" width={120} height={20} />
+                </Box>
+              </>
+            ) : (
+              <>
+                <Avatar
+                  src="/images/avatars/avatar.png"
+                  alt={tacDetails?.assignedTo?.firstName}
+                  sx={{ bgcolor: 'var(--mui-palette-primary-main)', width: 56, height: 56, fontSize: '1.25rem', fontWeight: 'bold' }}
+                >
+                  {(tacDetails?.assignedTo?.firstName?.charAt(0) || '') + (tacDetails?.assignedTo?.lastName?.charAt(0) || '')}
+                </Avatar>
+                <Box className="text-left flex-1">
+                  <Typography variant="subtitle1" fontWeight="700" className="text-[var(--mui-palette-text-primary)] text-lg">
+                    {(tacDetails?.assignedTo?.firstName || '') + ' ' + (tacDetails?.assignedTo?.lastName || '')}
+                  </Typography>
+                  <Typography variant="caption" fontWeight="600" className="text-[var(--mui-palette-text-secondary)] uppercase tracking-wider">
+                    Consultant • {tacDetails?.phase === 'pre'
+                      ? "Pre-Counselling" :
+                      tacDetails?.phase === 'assess'
+                        ? "Assessment"
+                        : ""} Phase
+                  </Typography>
+                </Box>
+              </>
+            )}
           </Box>
 
           <form noValidate autoComplete="off" onSubmit={handleSubmit} className="flex flex-col gap-10">
             {/* 1. Emoji Rating Section */}
             <Box className="flex flex-col gap-5">
               <Box className="flex justify-between items-end">
-                <Typography variant="subtitle1" fontWeight="600" className="text-[var(--mui-palette-text-primary)]">
-                  What do you think of our {tacDetails?.phase == 'pre'
-                    ? "Pre-Counselling" :
-                    tacDetails?.phase == 'assess'
-                      ? "Assessment"
-                      : ""} phase?
-                </Typography>
+                {!tacDetails ? (
+                  <Skeleton variant="text" width={220} height={24} />
+                ) : (
+                  <Typography variant="subtitle1" fontWeight="600" className="text-[var(--mui-palette-text-primary)]">
+                    What do you think of our {tacDetails?.phase === 'pre'
+                      ? "Pre-Counselling" :
+                      tacDetails?.phase === 'assess'
+                        ? "Assessment"
+                        : ""} phase?
+                  </Typography>
+                )}
                 <Typography variant="caption" className="text-[var(--mui-palette-error-main)] font-semibold mb-0.5">
                   Required *
                 </Typography>

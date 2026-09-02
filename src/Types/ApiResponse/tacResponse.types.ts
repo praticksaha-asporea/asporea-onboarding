@@ -123,3 +123,44 @@ export interface LeadLastAppointmentResponse {
     data: lastAssignmentData,
     error: null
 }
+
+export interface ITacUserRef {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  profilePic?: string | null;
+}
+
+export interface IRatedByUserRef {
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+}
+
+export interface ITacRatingItem {
+  _id: string;
+  leadId: string;
+  phase: string;
+  tacId: ITacUserRef;
+  ratedBy: IRatedByUserRef;
+  rating: number;
+  review: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
+}
+
+export interface GetTacRatingsData {
+  totalRatings: number;
+  averageRating: number;
+  ratings: ITacRatingItem[];
+}
+
+export interface GetTacRatingsResponse {
+  success: boolean;
+  message: string;
+  data: GetTacRatingsData;
+  error: string | null;
+}
