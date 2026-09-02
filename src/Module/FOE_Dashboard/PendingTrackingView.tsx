@@ -140,6 +140,7 @@ const PendingTrackingView: React.FC = () => {
             <MenuItem value="stage1">Step 1 Pending</MenuItem>
             <MenuItem value="stage2">Step 2 Pending</MenuItem>
             <MenuItem value="stage3">Step 3 Pending</MenuItem>
+            <MenuItem value="followUpRequired">Mark as Follow Up</MenuItem>
           </Select>
         </Box>
       </Box>
@@ -170,7 +171,7 @@ const PendingTrackingView: React.FC = () => {
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={lead._id}>
                 <Card className="h-full flex flex-col rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
                   <CardContent className="p-5 flex flex-col flex-grow">
-                    
+
                     {/* Top Section */}
                     <Box className="flex items-start justify-between mb-4 gap-2">
                       <Box className="flex items-center gap-3 overflow-hidden">

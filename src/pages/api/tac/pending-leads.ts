@@ -18,13 +18,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (!token) throw new ApiError("Unauthenticated user", 401);
 
     const authUser = await verifyToken(token);
-    if (authUser.role !== "foe" && authUser.role !== "admin") 
+    if (authUser.role !== "foe" && authUser.role !== "admin")
       throw new ApiError("Only FOE can access this tracking", 403);
 
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 10;
     const search = typeof req.query.search === "string" ? req.query.search : "";
-const stageFilter = typeof req.query.stageFilter === "string" ? req.query.stageFilter : "all";
+    const stageFilter = typeof req.query.stageFilter === "string" ? req.query.stageFilter : "all";
     const data = await getDelayedPendingLeadsService(page, limit, search, stageFilter);
 
     return ResponseHandler.sendSuccess(res, data, "Delayed pending leads fetched");

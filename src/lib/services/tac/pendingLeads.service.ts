@@ -10,7 +10,7 @@ export const getDelayedPendingLeadsService = async (
     try {
         const skip = (page - 1) * limit;
 
-   
+
         const delayHours = Number(process.env.FOLLOWUP_DELAY_HOURS || 1);
         const delayInMs = delayHours * 60 * 60 * 1000;
         const overdueThreshold = new Date(Date.now() - delayInMs);
@@ -34,8 +34,15 @@ export const getDelayedPendingLeadsService = async (
                 "inquiryStages.stage3": "pending",
                 updatedAt: { $lte: overdueThreshold },
             });
-        } else {
-           
+        }
+        else if (stageFilter === "followUpRequired") {
+            matchConditions.push({
+                "followUpRequired": true,
+            });
+        }
+
+        else {
+
             matchConditions.push({
                 $or: [
                     {
