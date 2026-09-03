@@ -14,6 +14,7 @@ import {
   sendEmailRes,
   TacAssessmentResponse,
   TacRatingResponse,
+  TacScheduleResponse,
 } from "@/Types/ApiResponse/tacResponse.types";
 import { documentStatusUpdateReq } from "@/Types/Frontend_Payload/document.types";
 import { expStatusUpdateReq } from "@/Types/Frontend_Payload/experience.types";
@@ -25,6 +26,7 @@ import {
   UpdateAssessmentPayload,
   UpdateAssignmentAssessPayload,
   UpdateAssignmentPayload,
+  GetTacSchedulePayload
 } from "@/Types/Frontend_Payload/tac.types";
 import { AxiosResponse } from "axios";
 import { transferReqPayload } from "@/Types/Frontend_Payload/transfer.types";
@@ -192,4 +194,10 @@ export const getcandidateLastAppointment = async (
 ): Promise<AxiosResponse<LeadLastAppointmentResponse>> => {
 
   return axiosClient.get("/tac-ratings/latest-appointment", { params: { leadId } });
+};
+
+export const getTacScheduleAction = async (
+  params: GetTacSchedulePayload
+): Promise<AxiosResponse<TacScheduleResponse>> => {
+  return axiosClient.get("/tac/schedule", { params });
 };
