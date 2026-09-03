@@ -92,14 +92,14 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     ? `${inqAssign.schedule.from} ${inqAssign.schedule.to ? "– " + inqAssign.schedule.to : ""
     }`
     : "—";
-const consultantProfilePic =
-  typeof consultantId?.profilePic === "object" && consultantId?.profilePic !== null
-    ? (consultantId.profilePic as any).path
-    : typeof consultantId?.profilePic === "string"
-    ? consultantId.profilePic
-    : undefined;
-    
-const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
+  const consultantProfilePic =
+    typeof consultantId?.profilePic === "object" && consultantId?.profilePic !== null
+      ? (consultantId.profilePic as any).path
+      : typeof consultantId?.profilePic === "string"
+        ? consultantId.profilePic
+        : undefined;
+
+  const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
 
   const visitMethodLabel =
     inqAssign?.schedule?.method === "on" ? "Remote" : "In-Office";
@@ -176,15 +176,15 @@ const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
                 </Box>
 
                 {/* Avatar */}
-              <Box className="relative my-1">
-  <Avatar
-    src={consultantProfilePic}
-    alt={consultantFullName}
-    className="w-24 h-24 border-4 border-[var(--mui-palette-background-paper)] shadow-xl mx-auto text-2xl !bg-[var(--mui-palette-primary-main)] font-bold text-white"
-  >
-    {consultantFullName.charAt(0)}
-  </Avatar>
-</Box>
+                <Box className="relative my-1">
+                  <Avatar
+                    src={consultantProfilePic}
+                    alt={consultantFullName}
+                    className="w-24 h-24 border-4 border-[var(--mui-palette-background-paper)] shadow-xl mx-auto text-2xl !bg-[var(--mui-palette-primary-main)] font-bold text-white"
+                  >
+                    {consultantFullName.charAt(0)}
+                  </Avatar>
+                </Box>
 
                 {/* Consultant Details */}
                 <Box className="flex flex-col items-center gap-2 w-full">
@@ -196,36 +196,36 @@ const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
                   </Typography>
 
                   {/* Rating */}
-               {/* Dynamic Rating Section */}
-<Box className="flex items-center justify-center gap-1 text-sm min-h-[22px]">
-  {consultantRating > 0 ? (
-    <>
-      {[1, 2, 3, 4, 5].map((starIndex) => {
-        const isFilled = starIndex <= Math.round(consultantRating);
-        return (
-          <i
-            key={starIndex}
-            className={
-              isFilled
-                ? "ri-star-fill text-amber-400"
-                : "ri-star-line text-gray-300 dark:text-gray-600"
-            }
-          />
-        );
-      })}
-      <Typography className="text-xs font-semibold text-[var(--mui-palette-text-secondary)] ml-1">
-        {consultantRating.toFixed(1)}
-      </Typography>
-    </>
-  ) : (
-    <Box className="flex items-center gap-1 text-gray-400">
-      <i className="ri-star-line text-sm" />
-      <Typography className="text-xs font-medium text-[var(--mui-palette-text-secondary)]">
-        Not Rated
-      </Typography>
-    </Box>
-  )}
-</Box>
+                  {/* Dynamic Rating Section */}
+                  <Box className="flex items-center justify-center gap-1 text-sm min-h-[22px]">
+                    {consultantRating > 0 ? (
+                      <>
+                        {[1, 2, 3, 4, 5].map((starIndex) => {
+                          const isFilled = starIndex <= Math.round(consultantRating);
+                          return (
+                            <i
+                              key={starIndex}
+                              className={
+                                isFilled
+                                  ? "ri-star-fill text-amber-400"
+                                  : "ri-star-line text-gray-300 dark:text-gray-600"
+                              }
+                            />
+                          );
+                        })}
+                        <Typography className="text-xs font-semibold text-[var(--mui-palette-text-secondary)] ml-1">
+                          {consultantRating.toFixed(1)}
+                        </Typography>
+                      </>
+                    ) : (
+                      <Box className="flex items-center gap-1 text-gray-400">
+                        <i className="ri-star-line text-sm" />
+                        <Typography className="text-xs font-medium text-[var(--mui-palette-text-secondary)]">
+                          Not Rated
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
 
                   {/* Experience Badge */}
                   <Chip
@@ -274,22 +274,6 @@ const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
                   </Box>
                 </Grid>
 
-                {/* 3. Visit Method (Full Width) */}
-                <Grid size={{ xs: 12 }} className="flex">
-                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
-                      <i className="ri-map-pin-line" />
-                    </Box>
-                    <Box className="min-w-0 flex-1">
-                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-                        Visit Method
-                      </Typography>
-                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] leading-tight mt-0.5">
-                        {visitMethodLabel} <span className="text-[12px] text-[var(--mui-palette-text-disabled)]">({visitMethodSub})</span>
-                      </Typography>
-                    </Box>
-                  </Box>
-                </Grid>
 
                 {/* 4. Branch (2x2 Grid) */}
                 <Grid size={{ xs: 12, sm: 6 }} className="flex">
@@ -325,6 +309,40 @@ const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
                   </Box>
                 </Grid>
 
+                {/* 3. Visit Method (Full Width) */}
+                <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                  <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                    <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                      <i className="ri-map-pin-line" />
+                    </Box>
+                    <Box className="min-w-0 flex-1">
+                      <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                        Visit Method
+                      </Typography>
+                      <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] leading-tight mt-0.5">
+                        {visitMethodLabel} <span className="text-[12px] text-[var(--mui-palette-text-disabled)]">({visitMethodSub})</span>
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Grid>
+                {/* 8. Queue Position / Token (Conditional 2x2 Grid) */}
+                {preferences?.visitType === "off" && (
+                  <Grid size={{ xs: 12, sm: 6 }} className="flex">
+                    <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
+                      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
+                        <i className="ri-group-line" />
+                      </Box>
+                      <Box className="min-w-0 flex-1">
+                        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
+                          Token No.
+                        </Typography>
+                        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
+                          {inqAssign?.token?.number || "—"}
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Grid>
+                )}
                 {/* 6. Referred By Type (2x2 Grid) */}
                 <Grid size={{ xs: 12, sm: 6 }} className="flex">
                   <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
@@ -359,24 +377,6 @@ const consultantRating = Number((consultantId as any)?.tacProfile?.rating) || 0;
                   </Box>
                 </Grid>
 
-                {/* 8. Queue Position / Token (Conditional 2x2 Grid) */}
-                {preferences?.visitType === "offline" && (
-                  <Grid size={{ xs: 12, sm: 6 }} className="flex">
-                    <Box className="bg-[var(--mui-palette-background-default)] shadow-xl rounded-xl p-3.5 sm:p-4 flex items-center gap-3.5 transition-colors w-full h-full">
-                      <Box className="w-10 h-10 rounded-xl flex items-center justify-center text-[var(--mui-palette-primary-main)] shrink-0 text-lg bg-[var(--mui-palette-primary-lightOpacity)]">
-                        <i className="ri-group-line" />
-                      </Box>
-                      <Box className="min-w-0 flex-1">
-                        <Typography className="text-[12px] font-bold text-[var(--mui-palette-text-primary)] uppercase tracking-wider">
-                          Queue Position / Token
-                        </Typography>
-                        <Typography className="text-[14px] font-normal tracking-wide text-[var(--mui-palette-text-primary)] truncate leading-tight mt-0.5">
-                          {inqAssign?.token?.number || "—"}
-                        </Typography>
-                      </Box>
-                    </Box>
-                  </Grid>
-                )}
 
                 {/* 9. Inquiry Created (Full Width) */}
                 <Grid size={{ xs: 12 }} className="flex">
