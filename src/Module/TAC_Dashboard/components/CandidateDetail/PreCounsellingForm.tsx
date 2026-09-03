@@ -74,6 +74,9 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     onFileInputChange,
     updateAssignmentStatus,
     positionData,
+    setIsRescheduleOpen,
+    canManageAppointment,
+    setIsCancelOpen
   } = usePreCounselling(inqAssign, candidatePhone, c);
 
   const consultantFullName = consultantId?.firstName
@@ -233,6 +236,32 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                     size="small"
                     className="mt-1 bg-[var(--mui-palette-background-paper)] border border-[var(--mui-palette-divider)] text-[var(--mui-palette-text-primary)] font-medium text-[11px] shadow-sm"
                   />
+                  <Box className="flex items-center gap-2 flex-wrap justify-end">
+
+                    {canManageAppointment && (
+                      <Box className="flex items-center gap-1.5">
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => setIsRescheduleOpen(true)}
+                          className="rounded-lg normal-case text-xs font-semibold"
+                          startIcon={<i className="ri-calendar-2-line text-sm" />}
+                        >
+                          Reschedule
+                        </Button>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          color="error"
+                          onClick={() => setIsCancelOpen(true)}
+                          className="rounded-lg normal-case text-xs font-semibold"
+                          startIcon={<i className="ri-close-circle-line text-sm" />}
+                        >
+                          Cancel
+                        </Button>
+                      </Box>
+                    )}
+                  </Box>
                 </Box>
               </Box>
             </Grid>

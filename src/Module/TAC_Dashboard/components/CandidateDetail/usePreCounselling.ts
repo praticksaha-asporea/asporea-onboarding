@@ -2,15 +2,23 @@ import { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
+import { cancelAppointmentAction, rescheduleSlotAction, updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
 import { positionDBData } from "@/Types/object.types";
 import { getPathwayPositionsAction } from "@/Services/APIs/Pathway/pathway.action";
 import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
+import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+import dayjs from "dayjs";
 
 export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string, candidate: CandidateLead) => {
+  const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState<string>(
+    inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
+  );
+
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isPreLocked, setIsPreLocked] = useState(true);
@@ -19,6 +27,17 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
   const [positionData, setPositionData] = useState<positionDBData[] | null>(
     null,
   );
+  const [rescheduleSlots, setRescheduleSlots] = useState<Slot[]>([]);
+  const [loadingRescheduleSlots, setLoadingRescheduleSlots] = useState(false);
+  const [selectedRescheduleSlot, setSelectedRescheduleSlot] = useState<Slot | null>(null);
+  const [rescheduling, setRescheduling] = useState(false);
+
+  const [isCancelOpen, setIsCancelOpen] = useState(false);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelling, setCancelling] = useState(false);
+
+  const canManageAppointment = true;//!["completed", "rejected", "cancelled"].includes(inqAssign?.status);
+
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const initialCV = inqAssign?.pre?.initialCV;
 
@@ -197,6 +216,82 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     }
   };
 
+  useEffect(() => {
+    const consultantId =
+      typeof inqAssign?.assignedTo === "string" ? inqAssign.assignedTo : inqAssign?.assignedTo?._id;
+
+    if (!isRescheduleOpen || !consultantId) return;
+
+    const fetchRescheduleSlots = async () => {
+      setLoadingRescheduleSlots(true);
+      try {
+        const res = await getSlotsAction({ consultantId: consultantId as any, date: rescheduleDate });
+        if (res?.data?.success) setRescheduleSlots(res.data.data || []);
+        else {
+          toast.error(res?.data?.message || "Failed to fetch slots");
+          setRescheduleSlots([]);
+        }
+      } catch (err) {
+        toast.error("Failed to fetch slots");
+        setRescheduleSlots([]);
+      } finally {
+        setLoadingRescheduleSlots(false);
+        setSelectedRescheduleSlot(null);
+      }
+    };
+
+    fetchRescheduleSlots();
+  }, [isRescheduleOpen, rescheduleDate, inqAssign?.assignedTo]);
+
+  // ---------------------------------------------------------------------------
+  // 4. NEW HANDLERS
+  // ---------------------------------------------------------------------------
+  const handleConfirmReschedule = async () => {
+    if (!selectedRescheduleSlot) return toast.error("Please select a new time slot");
+
+    setRescheduling(true);
+    try {
+      const res = await rescheduleSlotAction({
+        assignmentId: inqAssign?._id,
+        date: rescheduleDate,
+        from: selectedRescheduleSlot.from,
+        to: selectedRescheduleSlot.to,
+      });
+      if (res?.data?.success) {
+        toast.success("Appointment rescheduled successfully");
+        setIsRescheduleOpen(false);
+        // TODO: refresh inqAssign / candidate data from the parent so the
+        // "Scheduled Date" / "Time Slot" cards reflect the new booking.
+      } else {
+        toast.error(res?.data?.message || "Failed to reschedule appointment");
+      }
+    } catch (err) {
+      toast.error("Failed to reschedule appointment");
+    } finally {
+      setRescheduling(false);
+    }
+  };
+
+  const handleCancelAppointment = async () => {
+    setCancelling(true);
+    try {
+      const res = await cancelAppointmentAction({
+        assignmentId: inqAssign?._id,
+        reason: cancelReason,
+      });
+      if (res?.data?.success) {
+        toast.success("Appointment cancelled");
+        setIsCancelOpen(false);
+        // TODO: refresh inqAssign / candidate data from the parent here too.
+      } else {
+        toast.error(res?.data?.message || "Failed to cancel appointment");
+      }
+    } catch (err) {
+      toast.error("Failed to cancel appointment");
+    } finally {
+      setCancelling(false);
+    }
+  };
   return {
     preForm,
     isPreLocked,
@@ -212,6 +307,9 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     handleDrop,
     onFileInputChange,
     updateAssignmentStatus,
-    positionData
+    positionData,
+    setIsRescheduleOpen,
+    canManageAppointment,
+    setIsCancelOpen
   };
 };

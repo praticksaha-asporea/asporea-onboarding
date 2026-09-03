@@ -29,6 +29,7 @@ import {
 import { AxiosResponse } from "axios";
 import { transferReqPayload } from "@/Types/Frontend_Payload/transfer.types";
 import { PendingLeadsApiResponse } from "@/Types/ApiResponse/pendingLeadsRes.types";
+import { Types } from "mongoose";
 
 export const getTacCandidatesAction = async (
   params: GetTacCandidatesPayload,
@@ -192,4 +193,21 @@ export const getcandidateLastAppointment = async (
 ): Promise<AxiosResponse<LeadLastAppointmentResponse>> => {
 
   return axiosClient.get("/tac-ratings/latest-appointment", { params: { leadId } });
+};
+
+
+export const rescheduleSlotAction = async (payload: {
+  assignmentId: Types.ObjectId;
+  date: string;
+  from?: string;
+  to?: string;
+}) => {
+  return axiosClient.patch("/precounselling/reschedule", payload);
+};
+
+export const cancelAppointmentAction = async (payload: {
+  assignmentId: Types.ObjectId;
+  reason?: string;
+}) => {
+  return axiosClient.patch("/precounselling/cancel", payload);
 };

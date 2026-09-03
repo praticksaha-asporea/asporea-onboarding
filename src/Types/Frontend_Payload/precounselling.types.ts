@@ -12,8 +12,8 @@ export interface IPopulatedLead {
 
 export interface ExistingBooking {
   _id?: string;
-  leadId?: string | IPopulatedLead; 
-assignedTo?: string | { _id: string; [key: string]: any }; 
+  leadId?: string | IPopulatedLead;
+  assignedTo?: string | { _id: string;[key: string]: any };
   phase?: string;
   schedule?: {
     date: string;
