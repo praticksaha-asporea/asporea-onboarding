@@ -32,6 +32,8 @@ export const useDocumentUpload = () => {
   const [loadingDocs, setLoadingDocs] = useState(false);
   const [hasDocuments, setHasDocuments] = useState(true);
   const [isReduxReady, setIsReduxReady] = useState(false);
+  const [positionInquired, setPositionInquired] = useState("");
+  const [positionOffered, setPositionOffered] = useState("");
 
   const [groupedDocs, setGroupedDocs] = useState<GroupedDocuments>({
     resume: [],
@@ -95,6 +97,8 @@ export const useDocumentUpload = () => {
         }
         const res = await checkDocumentStatusAction({ leadId });
         if (res?.data?.success && res?.data?.data) {
+          setPositionInquired(res?.data?.data?.inqForPosition);
+          setPositionOffered(res?.data?.data?.offeredPosition);
           const submittedStages = [
             "doc_submitted",
             "doc_verified",
@@ -110,6 +114,9 @@ export const useDocumentUpload = () => {
           ) {
             setIsAlreadySubmitted(true);
           }
+
+
+
         }
       } catch (err: any) {
         if (
@@ -265,5 +272,7 @@ export const useDocumentUpload = () => {
     handleSubmit,
     isReduxReady,
     isValidLead,
+    positionInquired,
+    positionOffered
   };
 };

@@ -214,6 +214,8 @@ export interface documentUploadResponse {
         documentStatus: string;
         realDocsCount: number;
         experienceType: string;
+        inqForPosition: string;
+        offeredPosition: string;
     };
     error: null;
 }
@@ -389,48 +391,48 @@ export interface getInquiryDetailResponse {
 
 
 export interface CancelBookingResponse {
-  success: boolean;
-  message: string;
-  data: {
-    _id: string;
-    fullName: string;
-    status: string;
-    inqNo: string;
-    inqForType?: string;
-    inqForPosition?: string;
-    followUpRequired?: boolean;
-    inqFy?: string;
-    contact?: {
-      phone: string;
-      whatsapp: string;
-      email: string;
+    success: boolean;
+    message: string;
+    data: {
+        _id: string;
+        fullName: string;
+        status: string;
+        inqNo: string;
+        inqForType?: string;
+        inqForPosition?: string;
+        followUpRequired?: boolean;
+        inqFy?: string;
+        contact?: {
+            phone: string;
+            whatsapp: string;
+            email: string;
+        };
+        preferences?: {
+            branchId?: string;
+            consultantId?: string;
+            visitType?: string;
+        };
+        source?: {
+            type?: string;
+            refType?: string;
+            refName?: string;
+        };
+        inquiryStages?: {
+            stage1?: string;
+            stage2?: string;
+            stage3?: string;
+        };
+        documents?: {
+            status?: string;
+        };
+        createdBy?: {
+            id?: string;
+            type?: string;
+        };
+        candidateResume?: string;
+        createdAt?: string;
+        updatedAt?: string;
+        __v?: number;
     };
-    preferences?: {
-      branchId?: string;
-      consultantId?: string;
-      visitType?: string;
-    };
-    source?: {
-      type?: string;
-      refType?: string;
-      refName?: string;
-    };
-    inquiryStages?: {
-      stage1?: string;
-      stage2?: string;
-      stage3?: string;
-    };
-    documents?: {
-      status?: string;
-    };
-    createdBy?: {
-      id?: string;
-      type?: string;
-    };
-    candidateResume?: string;
-    createdAt?: string;
-    updatedAt?: string;
-    __v?: number;
-  };
-  error: string | null;
+    error: string | null;
 }

@@ -6,6 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
+import { Position } from "@/lib/models/Position.model";
 
 export default async function handler(
   req: NextApiRequest,
@@ -30,22 +31,51 @@ export default async function handler(
 
     const lead = await db.collection("leads").findOne(
       { _id: new mongoose.Types.ObjectId(leadId as string) },
-      { projection: { status: 1, documents: 1, experience: 1 } }  
+      { projection: { status: 1, documents: 1, experience: 1, offeredPosition: 1, inqForPosition: 1 } }
     );
+    if (lead) {
+      const positionIds = [
+        lead.offeredPosition,
+        lead.inqForPosition,
+      ]
+        .filter(
+          (id) => id && mongoose.Types.ObjectId.isValid(id.toString())
+        )
+        .map((id) => new mongoose.Types.ObjectId(id.toString()));
 
-    
+      const positions = await Position.find(
+        { _id: { $in: positionIds } },
+        { title: 1 }
+      ).lean();
+
+      const positionMap = new Map(
+        positions.map((p) => [p._id.toString(), p.title])
+      );
+
+      lead.offeredPosition = lead.offeredPosition
+        ? positionMap.get(lead.offeredPosition.toString()) ?? ""
+        : "";
+
+      lead.inqForPosition = lead.inqForPosition
+        ? positionMap.get(lead.inqForPosition.toString()) ?? ""
+        : "";
+    }
+
+
 
     if (!lead) return ResponseHandler.sendError(res, "Lead not found", 404);
 
-    const documentCount = await db.collection("documents").countDocuments({ 
-      leadId: new mongoose.Types.ObjectId(leadId as string) 
+    const documentCount = await db.collection("documents").countDocuments({
+      leadId: new mongoose.Types.ObjectId(leadId as string)
     });
 
     if (documentCount === 0) {
       return ResponseHandler.sendSuccess(res, {
-        status:lead.status,  
+        status: lead.status,
         documentStatus: "na",
-        realDocsCount: 0
+        realDocsCount: 0,
+        offeredPosition: lead.offeredPosition || null,
+        inqForPosition: lead.inqForPosition || null
       }, "No documents found");
     }
 
@@ -55,7 +85,9 @@ export default async function handler(
         status: lead.status,
         documentStatus: lead.documents?.status,
         realDocsCount: documentCount,
-        experienceType: lead.experience?.type || null
+        experienceType: lead.experience?.type || null,
+        offeredPosition: lead.offeredPosition || null,
+        inqForPosition: lead.inqForPosition || null
       },
       "Status fetched"
     )

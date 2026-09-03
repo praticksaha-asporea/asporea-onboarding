@@ -104,7 +104,7 @@ export const viewPositionForUser = async (positionId: string) => {
     .populate("requiredDocuments", "title section subTitle supportedExtensions multiple required")
     .populate("mandatoryDocuments", "title section subTitle supportedExtensions multiple required")
     .populate("type", "title underPathway")
-    .populate("countries", "name code")
+    .populate("country", "name code")
     .populate("positionBrochure", "url")
     .lean();
 
