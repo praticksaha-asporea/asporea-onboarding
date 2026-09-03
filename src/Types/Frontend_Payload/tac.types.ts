@@ -45,3 +45,8 @@ export interface SubmitRatingPayload {
     rating: number;
     review?: string;
 }
+
+export interface GetTacSchedulePayload {
+  month: number;
+  year: number;
+}
