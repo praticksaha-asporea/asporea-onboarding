@@ -209,7 +209,7 @@ export const rescheduleSlotAction = async (payload: {
   from?: string;
   to?: string;
 }) => {
-  return axiosClient.patch("/precounselling/reschedule", payload);
+  return axiosClient.patch("/tac/schedule", payload);
 };
 
 export const cancelAppointmentAction = async (payload: {

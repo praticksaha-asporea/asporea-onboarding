@@ -9,16 +9,17 @@ import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
 import { positionDBData } from "@/Types/object.types";
 import { getPathwayPositionsAction } from "@/Services/APIs/Pathway/pathway.action";
 import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
-import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { bookSlotAction, getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 import dayjs from "dayjs";
+import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 
 export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string, candidate: CandidateLead) => {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState<string>(
     inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
   );
-
+  const [mode, setMode] = useState<CounsellingMode>("offline");
   const [resumeFile, setResumeFile] = useState<File | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [isPreLocked, setIsPreLocked] = useState(true);
@@ -36,7 +37,14 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
   const [cancelReason, setCancelReason] = useState("");
   const [cancelling, setCancelling] = useState(false);
 
-  const canManageAppointment = true;//!["completed", "rejected", "cancelled"].includes(inqAssign?.status);
+
+  const serverNow = new Date();
+  const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
+  const istTime = new Date(utcTime + 330 * 60000);
+  const todayStr = istTime.toISOString().split("T")[0];
+  const [selectedTacId, setSelectedTacId] = useState<string>("");
+
+  const canManageAppointment = !["completed", "rejected", "cancelled"].includes(inqAssign?.status);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const initialCV = inqAssign?.pre?.initialCV;
@@ -78,6 +86,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       setIsPreLocked(false);
     }
     fetchPositions();
+    setSelectedTacId(inqAssign?.assignedTo as any)
   }, [inqAssign]);
 
   // Drag and drop handlers
@@ -250,20 +259,44 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     if (!selectedRescheduleSlot) return toast.error("Please select a new time slot");
 
     setRescheduling(true);
+    // try {
+    //   const res = await rescheduleSlotAction({
+    //     assignmentId: inqAssign?._id,
+    //     date: rescheduleDate,
+    //     from: selectedRescheduleSlot.from,
+    //     to: selectedRescheduleSlot.to,
+    //   });
+
+
+    //   if (res?.data?.success) {
+    //     toast.success("Appointment rescheduled successfully");
+    //     setIsRescheduleOpen(false);
+    //     // TODO: refresh inqAssign / candidate data from the parent so the
+    //     // "Scheduled Date" / "Time Slot" cards reflect the new booking.
+    //   } else {
+    //     toast.error(res?.data?.message || "Failed to reschedule appointment");
+    //   }
+
+
+    const payload = new FormData();
+    payload.append("leadId", candidate?._id);
+    payload.append("branchId", candidate?.preferences?.branchId as string);
+
+    if (selectedTacId) {
+      payload.append("consultantId", selectedTacId);
+      payload.append("date", rescheduleDate);
+      payload.append("from", selectedRescheduleSlot.from as string);
+      payload.append("to", selectedRescheduleSlot.to as string);
+    }
+    payload.append("method", mode === "online" ? "on" : "off");
+
+    // if (cv.resumeFile) payload.append("resumeFile", cv.resumeFile);
     try {
-      const res = await rescheduleSlotAction({
-        assignmentId: inqAssign?._id,
-        date: rescheduleDate,
-        from: selectedRescheduleSlot.from,
-        to: selectedRescheduleSlot.to,
-      });
+      const res = await bookSlotAction(payload);
       if (res?.data?.success) {
-        toast.success("Appointment rescheduled successfully");
+        // status.setLeadData(res?.data?.data);
+        toast.success("Rescheduled successfully!");
         setIsRescheduleOpen(false);
-        // TODO: refresh inqAssign / candidate data from the parent so the
-        // "Scheduled Date" / "Time Slot" cards reflect the new booking.
-      } else {
-        toast.error(res?.data?.message || "Failed to reschedule appointment");
       }
     } catch (err) {
       toast.error("Failed to reschedule appointment");
@@ -308,8 +341,25 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     onFileInputChange,
     updateAssignmentStatus,
     positionData,
+    isRescheduleOpen,
     setIsRescheduleOpen,
     canManageAppointment,
-    setIsCancelOpen
+    setIsCancelOpen,
+    rescheduleDate,
+    setRescheduleDate,
+    loadingRescheduleSlots,
+    rescheduleSlots,
+    selectedRescheduleSlot, setSelectedRescheduleSlot,
+    rescheduling, setRescheduling,
+    isCancelOpen,
+    handleConfirmReschedule,
+    cancelReason,
+    setCancelReason,
+    handleCancelAppointment,
+    cancelling,
+    todayStr,
+    selectedTacId,
+    mode,
+    setMode,
   };
 };

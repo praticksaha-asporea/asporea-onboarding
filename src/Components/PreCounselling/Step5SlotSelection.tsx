@@ -18,6 +18,7 @@ interface Step5SlotSelectionProps {
   slots: Slot[];
   selectedSlot: Slot | null;
   setSelectedSlot: React.Dispatch<React.SetStateAction<Slot | null>>;
+  reschedule?: boolean;
 }
 
 export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
@@ -29,12 +30,13 @@ export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
   slots,
   selectedSlot,
   setSelectedSlot,
+  reschedule
 }) => {
   return (
     <Card className={sectionCardClass}>
       <SectionHeader
         icon="ri-calendar-schedule-line"
-        step="Step 5"
+        step={reschedule ? "Reschedule " : "Step 5"}
         title="Pick a Date & Time Slot"
         accent="var(--mui-palette-secondary-main)"
       />
@@ -131,10 +133,10 @@ export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
                       color: isSelected
                         ? "#ffffff !important"
                         : slot.available
-                        ? "var(--mui-palette-text-primary)"
-                        : "var(--mui-palette-text-disabled)",
+                          ? "var(--mui-palette-text-primary)"
+                          : "var(--mui-palette-text-disabled)",
 
-                      
+
                       "&.Mui-disabled": {
                         bgcolor: isSelected
                           ? "var(--mui-palette-primary-main)"

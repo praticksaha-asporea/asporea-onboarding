@@ -1,7 +1,7 @@
 import axiosClient from "@/Services/AxiosConfig/axiosClient";
-import { bookPreCounsellingRes, pre_TacListRes, CancelBookingResponse,preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
+import { bookPreCounsellingRes, pre_TacListRes, CancelBookingResponse, preCounsellingStatus, slotsResponse } from "@/Types/ApiResponse/leadRes.types";
 import { LeadListPayload } from "@/Types/Frontend_Payload/lead.types";
-import { getSlotsPayload, PreCounsellingPayload,CancelBookingPayload } from "@/Types/Frontend_Payload/precounselling.types";
+import { getSlotsPayload, PreCounsellingPayload, CancelBookingPayload } from "@/Types/Frontend_Payload/precounselling.types";
 import { trackingById } from "@/Types/Frontend_Payload/tracking.types";
 import { AxiosResponse } from "axios";
 
