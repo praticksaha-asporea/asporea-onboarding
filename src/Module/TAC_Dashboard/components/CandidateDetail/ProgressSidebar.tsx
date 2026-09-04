@@ -27,8 +27,7 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ candidate, isFoe, bra
       </Box>
 
       {!isFoe && (
-        <Box className="mt-2">
-          {/* 👉 Toggle Button (Read More / Transfer Candidate) */}
+        <Box className="mt-2"> 
           <Button
             size="small"
             variant="text"
@@ -39,7 +38,7 @@ const ProgressSidebar: React.FC<ProgressSidebarProps> = ({ candidate, isFoe, bra
             <i className={showTransfer ? "ri-arrow-up-s-line text-lg" : "ri-arrow-down-s-line text-lg"} />
           </Button>
 
-          {/* 👉 Show Form only when showTransfer is true */}
+ 
           {showTransfer && (
             <form onSubmit={transferForm.handleSubmit}>
               <FormControl fullWidth className="mb-4" error={fe("toId")}>

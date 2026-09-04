@@ -91,7 +91,7 @@ export async function getCandidateDetailService({
     );
     leadFilter["preferences.branchId"] = { $in: branchObjectIds };
   } else if (userRole === "tac") {
-    // Normal TAC sirf apna khud ka assigned lead dekh sakta hai
+    
     leadFilter["preferences.consultantId"] = new mongoose.Types.ObjectId(
       authUser.id,
     );
@@ -105,6 +105,8 @@ export async function getCandidateDetailService({
       populate: { path: "profilePic", select: "path" },
     })
     .populate("documents.position", "title")
+    .populate("inqForPosition", "title")  
+    .populate("offeredPosition", "title") 
     .lean();
 
   if (!lead)

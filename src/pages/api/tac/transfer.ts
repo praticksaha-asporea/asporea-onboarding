@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return ResponseHandler.sendSuccess(
       res,
       newEscalation,
-      "Lead transfer requested successfully. Waiting for approval."
+      "Lead transferred successfully to selected TAC."
     );
 
   } catch (error: unknown) {
