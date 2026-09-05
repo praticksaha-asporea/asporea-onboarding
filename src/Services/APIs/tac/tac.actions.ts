@@ -203,14 +203,6 @@ export const getTacScheduleAction = async (
   return axiosClient.get("/tac/schedule", { params });
 };
 
-export const rescheduleSlotAction = async (payload: {
-  assignmentId: Types.ObjectId;
-  date: string;
-  from?: string;
-  to?: string;
-}) => {
-  return axiosClient.patch("/tac/schedule", payload);
-};
 
 export const cancelAppointmentAction = async (payload: {
   assignmentId: Types.ObjectId;

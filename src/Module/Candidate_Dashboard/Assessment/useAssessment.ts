@@ -142,7 +142,7 @@ export const useAssessment = () => {
 
 
   const statusCardRef = useRef<HTMLDivElement | null>(null);
-useEffect(() => {
+  useEffect(() => {
     const checkAssessmentStatus = async () => {
       if (!leadId || !isBookingMode) {
         setCheckingStatus(false);
@@ -153,7 +153,7 @@ useEffect(() => {
         const res = await getJourneyTimelineAction({ leadId });
 
         if (res?.data?.success && res?.data?.data) {
-         
+
           setActiveStepperStep(res.data.data.activeStep ?? 1);
 
           if (res?.data?.data?.assessment) {
@@ -265,14 +265,25 @@ useEffect(() => {
 
     setIsSubmitting(true);
     try {
-      const payload = {
-        leadId,
-        consultantId: finalConsultantId,
-        date,
-        method: visitMethod,
-        from: selectedSlot.from || selectedSlot.time.split("-")[0].trim(),
-        to: selectedSlot.to || selectedSlot.time.split("-")[1].trim(),
-      };
+      // const payload = {
+      //   leadId,
+      //   consultantId: finalConsultantId,
+      //   date,
+      //   method: visitMethod,
+      //   from: selectedSlot.from || selectedSlot.time.split("-")[0].trim(),
+      //   to: selectedSlot.to || selectedSlot.time.split("-")[1].trim(),
+      // };
+      const payload = new FormData();
+      payload.append("leadId", leadId);
+      payload.append("branchId", reduxUser.branchId as string);
+      payload.append("method", visitMethod);
+
+      if (finalConsultantId) {
+        payload.append("consultantId", finalConsultantId);
+        payload.append("date", date);
+        payload.append("from", selectedSlot?.from as string);
+        payload.append("to", selectedSlot?.to as string);
+      }
       const res = await scheduleAssessmentAction(payload);
       if (res?.data?.success) {
         toast.success("Assessment Scheduled Successfully!");

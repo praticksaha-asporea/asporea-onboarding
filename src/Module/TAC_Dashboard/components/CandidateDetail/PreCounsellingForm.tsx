@@ -50,6 +50,7 @@ interface PreCounsellingFormProps {
     visitType?: string;
   };
   candidatePhone: string;
+  setLeadUpdated: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
@@ -60,6 +61,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
   source,
   preferences,
   candidatePhone,
+  setLeadUpdated
 }) => {
   const {
     preForm,
@@ -97,7 +99,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     selectedTacId,
     mode,
     setMode,
-  } = usePreCounselling(inqAssign, candidatePhone, c);
+  } = usePreCounselling(inqAssign, candidatePhone, c, setLeadUpdated);
 
   const consultantFullName = consultantId?.firstName
     ? `${consultantId.firstName} ${consultantId.lastName ?? ""}`.trim()

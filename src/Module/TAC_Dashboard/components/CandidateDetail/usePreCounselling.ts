@@ -2,19 +2,20 @@ import { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { cancelAppointmentAction, rescheduleSlotAction, updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
+import { cancelAppointmentAction, updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
 import { positionDBData } from "@/Types/object.types";
 import { getPathwayPositionsAction } from "@/Services/APIs/Pathway/pathway.action";
-import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
-import { bookSlotAction, getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { BranchType, CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
+import { bookSlotAction, cancelBookingAction, getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 import dayjs from "dayjs";
 import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
+import { useSelector } from "react-redux";
 
-export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string, candidate: CandidateLead) => {
+export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string, candidate: CandidateLead, setLeadUpdated: React.Dispatch<React.SetStateAction<boolean>>) => {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
   const [rescheduleDate, setRescheduleDate] = useState<string>(
     inqAssign?.schedule?.date ? dayjs(inqAssign.schedule.date).format("YYYY-MM-DD") : dayjs().format("YYYY-MM-DD"),
@@ -56,6 +57,10 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       ? initialCV.path
       : undefined;
 
+  const currentUser = useSelector(
+    (state: any) => state.userSlice?.userData || state.user?.userData
+  );
+
   // Handle preview URL creation/cleanup
 
   useEffect(() => {
@@ -86,7 +91,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       setIsPreLocked(false);
     }
     fetchPositions();
-    setSelectedTacId(inqAssign?.assignedTo as any)
+    setSelectedTacId(inqAssign?.assignedTo?._id as any)
   }, [inqAssign]);
 
   // Drag and drop handlers
@@ -277,11 +282,20 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     //     toast.error(res?.data?.message || "Failed to reschedule appointment");
     //   }
 
+    // console.log(candidate?.preferences?.branchId, selectedTacId, 5555);
 
     const payload = new FormData();
     payload.append("leadId", candidate?._id);
-    payload.append("branchId", candidate?.preferences?.branchId as string);
+    const branchId = candidate?.preferences?.branchId;
 
+    if (branchId) {
+      payload.append(
+        "branchId",
+        typeof branchId === "string"
+          ? branchId
+          : branchId._id.toString()
+      );
+    }
     if (selectedTacId) {
       payload.append("consultantId", selectedTacId);
       payload.append("date", rescheduleDate);
@@ -295,6 +309,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       const res = await bookSlotAction(payload);
       if (res?.data?.success) {
         // status.setLeadData(res?.data?.data);
+        setLeadUpdated((prev) => !prev);
         toast.success("Rescheduled successfully!");
         setIsRescheduleOpen(false);
       }
@@ -306,24 +321,31 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
   };
 
   const handleCancelAppointment = async () => {
-    setCancelling(true);
+    // setCancelling(true);
+    if (!cancelReason) {
+      toast.error("Please provide a reason");
+      return;
+    }
     try {
-      const res = await cancelAppointmentAction({
-        assignmentId: inqAssign?._id,
-        reason: cancelReason,
+      const res = await cancelBookingAction({
+        leadId: candidate?._id,
+        actionBy: currentUser?.id.toString(),
+        cancelReason: cancelReason,
       });
-      if (res?.data?.success) {
-        toast.success("Appointment cancelled");
-        setIsCancelOpen(false);
-        // TODO: refresh inqAssign / candidate data from the parent here too.
-      } else {
-        toast.error(res?.data?.message || "Failed to cancel appointment");
-      }
+      // if (res?.data?.success) {
+      toast.success("Appointment cancelled");
+      setIsCancelOpen(false);
+      setLeadUpdated((prev) => !prev);
+      // TODO: refresh inqAssign / candidate data from the parent here too.
+      // } else {
+      //   toast.error(res?.data?.message || "Failed to cancel appointment");
+      // }
     } catch (err) {
       toast.error("Failed to cancel appointment");
-    } finally {
-      setCancelling(false);
     }
+    // finally {
+    //   setCancelling(false);
+    // }
   };
   return {
     preForm,

@@ -2,7 +2,6 @@ import User from "@/lib/models/User.model";
 import { Otp } from "@/lib/models/Otp.model";
 import { generateTokens } from "@/lib/utils/tokenUtil";
 import { ApiError } from "@/lib/error/api.error";
-import { channel } from "diagnostics_channel";
 
 export const verifyOtpService = async (identity: string, otp: string) => {
   const normalizedIdentity = identity.trim();
@@ -40,7 +39,7 @@ export const verifyOtpService = async (identity: string, otp: string) => {
     throw new ApiError("OTP expired", 400);
   }
 
-  
+
   await Otp.deleteOne({ _id: otpData._id });
 
   if (!user) {
@@ -48,7 +47,7 @@ export const verifyOtpService = async (identity: string, otp: string) => {
       user: null,
       isRegistered: false,
       verifiedIdentity: normalizedIdentity,
-      channel:otpData.otp.channel
+      channel: otpData.otp.channel
     };
   }
 
@@ -68,6 +67,6 @@ export const verifyOtpService = async (identity: string, otp: string) => {
       hasPassword: !!user.password,
     },
     tokens,
-    channel:otpData.otp.channel
+    channel: otpData.otp.channel
   };
 };

@@ -167,14 +167,26 @@ export const useDashboardView = () => {
     const method = (targetLead.visitType === "online" ? "on" : "off") as
       | "on"
       | "off";
-    const payload = {
-      leadId: targetLead._id,
-      consultantId: selectedTac as string,
-      date,
-      from: selectedSlot.from as keyof Slot,
-      to: selectedSlot.to as keyof Slot,
-      method: method as "on" | "off",
-    };
+    // const payload = {
+    //   leadId: targetLead._id,
+    //   consultantId: selectedTac as string,
+    //   date,
+    //   from: selectedSlot.from as keyof Slot,
+    //   to: selectedSlot.to as keyof Slot,
+    //   method: method as "on" | "off",
+    // };
+
+    const payload = new FormData();
+    payload.append("leadId", targetLead._id);
+    payload.append("branchId", targetLead.branchId as string);
+    payload.append("method", method);
+
+    if (selectedTac) {
+      payload.append("consultantId", selectedTac?.toString());
+      payload.append("date", date);
+      payload.append("from", selectedSlot?.from as string);
+      payload.append("to", selectedSlot?.to as string);
+    }
 
     let res;
 
