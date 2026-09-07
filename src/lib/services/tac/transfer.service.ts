@@ -48,18 +48,28 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
     toId,
     leadId,
     reason,
-    status: "requested",
+    status: "approved", 
+    actionedAt: new Date(),
+  });
+
+  await Lead.findByIdAndUpdate(leadId, {
+    $set: {
+      "preferences.consultantId": toId,
+      transferredTo: toId,
+    },
   });
 
   await Assignment.updateMany(
     { leadId: leadId, assignedTo: fromId },
     {
       $set: {
-        "transfer.requested": true,
-        "transfer.transferredTo": toId,
+        assignedTo: toId,
+        "transfer.requested": false,
       },
-    },
+      $unset: { "transfer.transferredTo": 1 },
+    }
   );
+   
 
   return newTransfer;
 };

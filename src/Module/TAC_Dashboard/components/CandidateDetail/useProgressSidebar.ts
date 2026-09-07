@@ -1,6 +1,7 @@
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
+import { confirmToast } from "@/Utils/confirmToast";
 import { transferLeadAction } from "@/Services/APIs/tac/tac.actions";
 import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 
@@ -13,6 +14,11 @@ export const useProgressSidebar = (candidate: CandidateLead, transferTo: string,
       reason: Yup.string().trim().required("Reason is required for transfer."),
     }),
     onSubmit: async (values, { setSubmitting, resetForm }) => {
+      const isConfirmed = await confirmToast("Are you sure you want to transfer this lead directly to the selected TAC?");
+      if (!isConfirmed) {
+        setSubmitting(false);
+        return; 
+      }
       try {
         await transferLeadAction({ leadId: candidate._id, toId: values.toId, reason: values.reason });
         toast.success("Transfer request submitted successfully!", { id: "escalation-submit-toast" });

@@ -422,26 +422,53 @@ const AssessmentFormSection: React.FC<AssessmentFormSectionProps> = ({
         assessBasicForm?.values?.status === "rejected" ||
         docStatus !== "uploaded") && (
         <>
-          {/* DOCUMENTS VERIFICATION */}
+         
           <Box className="shadow-2xl rounded-2xl p-6 mt-6 bg-[var(--mui-palette-primary)]">
             <Typography className="mb-4 font-bold text-[15px] text-[var(--mui-palette-text-primary)]">
               Documents Verification
             </Typography>
-            <Grid container spacing={3}>
+      <Grid container spacing={2} className="mb-4">
+              
+              {/* 1. Inquiry Position */}
               <Grid size={{ xs: 12, md: 6 }}>
-                <TextField
-                  fullWidth
-                  label="Position Applied"
-                  disabled
-                  value={
-                    typeof candidate?.documents?.position === "string"
+                <Box className="bg-[var(--mui-palette-background-default)] p-3.5 rounded-xl shadow-lg">
+                  <Typography className="text-[11px] font-bold text-[var(--mui-palette-text-secondary)] uppercase tracking-wider mb-1">
+                    Inquiry Position
+                  </Typography>
+                  <Typography className="text-sm font-medium text-[var(--mui-palette-text-primary)] break-words">
+                    {typeof candidate?.inqForPosition === "string"
+                      ? candidate.inqForPosition
+                      : (candidate?.inqForPosition as any)?.title || "N/A"}
+                  </Typography>
+                </Box>
+              </Grid>
+
+              {/* 2. Offered Position */}
+            <Grid size={{ xs: 12, md: 6 }}>
+                <Box className="bg-[var(--mui-palette-background-default)] p-3.5 rounded-xl shadow-xl ">
+                  <Typography className="text-[11px] font-bold text-[var(--mui-palette-text-secondary)] uppercase tracking-wider mb-1">
+                    Offered Position
+                  </Typography>
+                  <Typography className="text-sm font-medium text-[var(--mui-palette-text-primary)] break-words">
+                    {typeof candidate?.offeredPosition === "string"
+                      ? candidate.offeredPosition
+                      : (candidate?.offeredPosition as any)?.title || "N/A"}
+                  </Typography>
+                </Box>
+              </Grid>
+
+              
+             <Grid size={{ xs: 12 }}>
+                <Box className="bg-[var(--mui-palette-background-default)] p-3.5 rounded-xl shadow-xl ">
+                  <Typography className="text-[11px] font-bold text-[var(--mui-palette-text-secondary)] uppercase tracking-wider mb-1">
+                    Position Applied (Docs)
+                  </Typography>
+                  <Typography className="text-sm font-medium text-[var(--mui-palette-text-primary)] break-words">
+                    {typeof candidate?.documents?.position === "string"
                       ? candidate.documents.position
-                      : candidate?.documents?.position?.title || ""
-                  }
-                  slotProps={{
-                    input: { className: "text-sm rounded-xl bg-[var(--mui-palette-background-default)]" }
-                  }}
-                />
+                      : candidate?.documents?.position?.title || "N/A"}
+                  </Typography>
+                </Box>
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <CandidateDocumentsSection candidate={candidate} />
