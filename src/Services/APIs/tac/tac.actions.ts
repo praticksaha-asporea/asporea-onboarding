@@ -202,11 +202,3 @@ export const getTacScheduleAction = async (
 ): Promise<AxiosResponse<TacScheduleResponse>> => {
   return axiosClient.get("/tac/schedule", { params });
 };
-
-
-export const cancelAppointmentAction = async (payload: {
-  assignmentId: Types.ObjectId;
-  reason?: string;
-}) => {
-  return axiosClient.patch("/precounselling/cancel", payload);
-}

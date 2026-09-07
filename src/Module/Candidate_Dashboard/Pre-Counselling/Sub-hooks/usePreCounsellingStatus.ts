@@ -15,6 +15,7 @@ export const usePreCounsellingStatus = (
   leadId: string,
   reduxUser: any,
   router: any,
+  leadUpdated: boolean
 ) => {
   const [isReduxReady, setIsReduxReady] = useState(false);
   const [isValidLead, setIsValidLead] = useState(true);
@@ -88,7 +89,6 @@ export const usePreCounsellingStatus = (
           if (bookingData && (bookingData._id || bookingData.schedule)) {
             setExistingBooking(bookingData);
             setShowScheduling(false);
-
             const scheduleDate = bookingData.schedule?.date;
             const scheduleFrom = bookingData.schedule?.from || "00:00";
 
@@ -119,7 +119,7 @@ export const usePreCounsellingStatus = (
       }
     };
     checkStatus();
-  }, [leadId]);
+  }, [leadId, leadUpdated]);
 
   const cancellationRequest = async () => {
     const confirmed = await confirmToast(

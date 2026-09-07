@@ -1002,7 +1002,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             multiline
             rows={2}
             fullWidth
-            placeholder="Reason for cancellation (optional)"
+            placeholder="Reason for cancellation"
             value={cancelReason}
             onChange={(e) => setCancelReason(e.target.value)}
             className="mb-5"

@@ -6,6 +6,7 @@ import {
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 import { preTACData } from "@/Types/object.types";
+import { ILead } from "@/lib/models/Lead.model";
 
 export type CounsellingMode = "online" | "offline";
 
@@ -14,6 +15,7 @@ export const useTacAndSlots = (
   mode: CounsellingMode,
   todayStr: string,
   existingBooking: any,
+  leadData: ILead
 ) => {
   const [tacs, setTacs] = useState<preTACData[]>([]);
   const [loadingTacs, setLoadingTacs] = useState(false);
@@ -33,6 +35,10 @@ export const useTacAndSlots = (
           : existingBooking.assignedTo;
       setSelectedTacId(tacId.toString());
     }
+    else if (leadData?.preferences?.consultantId) {
+      setSelectedTacId(leadData?.preferences?.consultantId.toString());
+    }
+
     if (existingBooking?.schedule?.from && existingBooking?.schedule?.to) {
       setSelectedSlot({
         from: existingBooking.schedule.from,
@@ -41,7 +47,7 @@ export const useTacAndSlots = (
         available: true,
       });
     }
-  }, [existingBooking]);
+  }, [existingBooking, leadData]);
 
   // Fetch TAC list
   useEffect(() => {

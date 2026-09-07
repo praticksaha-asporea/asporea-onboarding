@@ -171,6 +171,7 @@ export const useAssessment = () => {
         if (!initialConsultantId) {
           try {
             const bookingRes = await checkBookingStatusAction({ leadId });
+
             if (bookingRes?.data?.success && bookingRes?.data?.data?.assignedTo) {
               const tacId =
                 typeof bookingRes?.data?.data?.assignedTo === "object"

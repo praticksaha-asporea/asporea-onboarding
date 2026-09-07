@@ -81,11 +81,10 @@ export const Step4TacSelection: React.FC<Step4TacSelectionProps> = ({
                 onClick={() =>
                   setSelectedTacId((prev) => (prev === tacId ? "" : tacId))
                 }
-                className={`relative flex flex-col items-center text-center shadow-2xl p-5 rounded-2xl cursor-pointer transition-all duration-200 ${
-                  isSelected
-                    ? "bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_16%,transparent)] shadow-2xl"
-                    : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
-                }`}
+                className={`relative flex flex-col items-center text-center shadow-2xl p-5 rounded-2xl cursor-pointer transition-all duration-200 ${isSelected
+                  ? "bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_16%,transparent)] shadow-2xl"
+                  : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40 hover:shadow-sm"
+                  }`}
               >
                 {isSelected && (
                   <i className="ri-checkbox-circle-fill absolute top-3 right-3 text-xl text-[var(--mui-palette-primary-main)]" />

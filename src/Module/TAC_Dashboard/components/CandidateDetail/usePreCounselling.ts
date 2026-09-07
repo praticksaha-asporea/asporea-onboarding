@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
-import { cancelAppointmentAction, updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
+import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
