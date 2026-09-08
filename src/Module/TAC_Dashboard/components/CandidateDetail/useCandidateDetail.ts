@@ -11,6 +11,7 @@ interface UseCandidateDetailProps {
   //   React.SetStateAction<CandidateLead | null>
   // >;
   // setCurrentView: (view: "dashboard" | "detail") => void;
+  // setLeadUpdated: boolean;
 }
 export const useCandidateDetail = ({
   selectedCandidate,
@@ -25,6 +26,8 @@ export const useCandidateDetail = ({
   const currentUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData
   );
+  const [leadUpdated, setLeadUpdated] = useState(false);
+
   const isFoe = currentUser?.role === "foe" || currentUser?.user?.role === "foe";
 
   const c = selectedCandidate ?? {};
@@ -70,6 +73,6 @@ export const useCandidateDetail = ({
 
   return {
     c, preferences, source, branchId, consultantId, inqAssign, assessAssign,
-    tacList, transferTo, setTransferTo, currentUser, isFoe, handleBack
+    tacList, transferTo, setTransferTo, currentUser, isFoe, handleBack, leadUpdated, setLeadUpdated
   };
 };

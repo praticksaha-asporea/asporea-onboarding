@@ -19,7 +19,7 @@ export const getJourneyTimelineAction = async (bodyData: trackingById): Promise<
   // }
 };
 
-export const scheduleAssessmentAction = async (data: scheduleAssessmentPayload): Promise<AxiosResponse<assessmentScheduleResponse>> => {
+export const scheduleAssessmentAction = async (data: FormData | scheduleAssessmentPayload): Promise<AxiosResponse<assessmentScheduleResponse>> => {
   // try {
   const response = await axiosClient.post(`/assessment/schedule`, data);
   return response

@@ -52,6 +52,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
     currentUser,
     isFoe,
     handleBack,
+    leadUpdated,
+    setLeadUpdated
   } = useCandidateDetail({ selectedCandidate });
 
   useEffect(() => {
@@ -99,7 +101,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
         setError(err?.response?.data?.message ?? "Failed to load candidate"),
       )
       .finally(() => setLoading(false));
-  }, [id]);
+  }, [id, leadUpdated]);
   const handleToggleFollowUp = async (checked: boolean) => {
     if (!c?._id) return;
 
@@ -225,6 +227,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
               source={source}
               preferences={preferences}
               candidatePhone={c?.contact?.phone ?? ""}
+              setLeadUpdated={setLeadUpdated}
             />
           )}
 
