@@ -8,6 +8,8 @@ import Button from "@mui/material/Button";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 import { SectionHeader } from "./SectionHeader";
 import { sectionCardClass } from "./HeaderCard";
+import { ExistingBooking } from "@/Types/Frontend_Payload/precounselling.types";
+import { ILead } from "@/lib/models/Lead.model";
 
 interface Step5SlotSelectionProps {
   selectedTacId: string;
@@ -19,6 +21,9 @@ interface Step5SlotSelectionProps {
   selectedSlot: Slot | null;
   setSelectedSlot: React.Dispatch<React.SetStateAction<Slot | null>>;
   reschedule?: boolean;
+  mode: string;
+  bookingData: ExistingBooking | null;
+  leadData: ILead | null;
 }
 
 export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
@@ -30,8 +35,25 @@ export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
   slots,
   selectedSlot,
   setSelectedSlot,
-  reschedule
+  reschedule,
+  mode,
+  bookingData,
+  leadData
 }) => {
+
+  const bookingStatus =
+    mode === "online"
+      ? bookingData
+        ? "BOOKED"
+        : "SELECT_SLOT"
+      : bookingData
+        ? leadData?.preferences?.consultantId
+          ? "OFFLINE_TAC"
+          : "OFFLINE_NO_TAC"
+        : "OFFLINE_NO_TAC";
+
+
+  const bookingStatusMessage = "TAC assigned to you. Please choose an available time slot that suits you.";
   return (
     <Card className={sectionCardClass}>
       <SectionHeader
@@ -39,6 +61,7 @@ export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
         step={reschedule ? "Reschedule " : "Step 5"}
         title="Pick a Date & Time Slot"
         accent="var(--mui-palette-secondary-main)"
+        description={bookingStatus === "SELECT_SLOT" ? bookingStatusMessage : ""}
       />
 
       {!selectedTacId ? (
