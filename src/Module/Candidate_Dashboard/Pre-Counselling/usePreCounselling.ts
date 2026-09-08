@@ -112,7 +112,14 @@ export const usePreCounselling = () => {
         status.setLeadData(res?.data?.data);
         setLeadUpdated((prev) => !prev);
         toast.success("Pre-Counselling scheduled successfully!");
-        setShowConfirmPopup(true);
+
+        //  do not show if time slot choosen , date
+        if (tacAndSlots.date && tacAndSlots.selectedSlot?.from && tacAndSlots.selectedSlot?.to) {
+          setShowConfirmPopup(false);
+        }
+        else {
+          setShowConfirmPopup(true);
+        }
       }
     } finally {
       setBookingLoading(false);
