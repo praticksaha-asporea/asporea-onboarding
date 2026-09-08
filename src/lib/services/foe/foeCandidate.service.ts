@@ -8,6 +8,7 @@ import { generateInquiryNo } from "@/Utils/generateInquiryNo";
 import { currentFy } from "@/Utils/common";
 import { FoeInquiryPayload, FoeSendOtpPayload } from "../../../Types/foe.types";
 import { hashPassword } from "../../utils/bcryptUtil";
+import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 
 export const foeSendCandidateOtpService = async (
   payload: FoeSendOtpPayload,
@@ -118,7 +119,7 @@ export const foeVerifyAndCreateCandidateService = async (
       whatsappNumber: normalizedWhatsapp,
       password: hashedPassword,
       role: "user",
-      passportStatus,
+      passportStatus: passportStatus,
       passportNo: passportStatus === "having" ? passportNo : "",
       enquired: "yes",
       candidateProfile: {
@@ -143,10 +144,20 @@ export const foeVerifyAndCreateCandidateService = async (
     await user.save();
   }
 
+  const userObjectId = new mongoose.Types.ObjectId(foeId);
+
+  const currentShift = await EmployeeBranchShiftModel.findOne(
+    { employeeId: userObjectId },
+    { branchId: 1, _id: 0 }
+  )
+    .sort({ effectiveFrom: -1 })
+    .lean();
+
+  const branchId = currentShift?.branchId;
+
   const inqNo = await generateInquiryNo();
   const currentFYear = currentFy();
-
-  const newLead = await Lead.create({
+  const leadData = {
     fullName,
     contact: {
       phone: normalizedPhone,
@@ -161,6 +172,9 @@ export const foeVerifyAndCreateCandidateService = async (
     createdBy: {
       id: new mongoose.Types.ObjectId(foeId),
       type: "foe",
+    },
+    preferences: {
+      branchId: new mongoose.Types.ObjectId(branchId)
     },
     source: {
       type: typeMapping[referedFrom] || "none",
@@ -178,10 +192,12 @@ export const foeVerifyAndCreateCandidateService = async (
     inquiryStages: { stage1: "done", stage2: "done", stage3: "pending" },
     documents: { status: "na" },
     passport: {
-      status: passportStatus,
+      status: passportStatus === "not" ? "no" : passportStatus,
       no: passportStatus === "having" ? passportNo : undefined,
     },
-  });
+  };
+  // console.log("LEAD DATA", leadData);
+  const newLead = await Lead.create(leadData);
 
   if (!user.candidateProfile) {
     user.candidateProfile = {};

@@ -26,7 +26,7 @@ export const foeInquiryValidationSchema = Yup.object({
   whatsappNumber: Yup.string()
     .matches(/^[0-9]{10}$/, "Enter a valid 10-digit WhatsApp number")
     .required("WhatsApp number is required"),
-    password: Yup.string()
+  password: Yup.string()
     .required("Candidate password is required")
     .matches(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/,
@@ -47,7 +47,7 @@ export const foeInquiryValidationSchema = Yup.object({
   latestTechnical: Yup.string().trim().notRequired(),
   workExperience: Yup.string().trim().notRequired(),
   referedFrom: Yup.string().required("Please select how they heard about us"),
-  captchaValue: Yup.string().required("Captcha is required"),  
+  captchaValue: Yup.string().required("Captcha is required"),
   referedType: Yup.string().when("referedFrom", {
     is: "reffer",
     then: (s) => s.required("Please select referral type"),
@@ -74,7 +74,7 @@ export function useCreateInquiry(onSuccess?: () => void) {
   const [otp, setOtp] = useState("");
   const [sendingOtp, setSendingOtp] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-useEffect(() => {
+  useEffect(() => {
     loadCaptchaEnginge(6);
   }, []);
   const initialValues: FoeInquiryPayload = {
@@ -96,14 +96,14 @@ useEffect(() => {
     referedBy: "",
     otherReferedBy: "",
     otp: "",
-    captchaValue: "",  
+    captchaValue: "",
   };
 
   const formik = useFormik<FoeInquiryPayload>({
     initialValues,
     validationSchema: foeInquiryValidationSchema,
     onSubmit: async (values) => {
-        if (!validateCaptcha(values.captchaValue)) {
+      if (!validateCaptcha(values.captchaValue)) {
         toast.error("Invalid Captcha! Please enter correct code.");
         formik.setFieldValue("captchaValue", "");
         return;
@@ -126,30 +126,30 @@ useEffect(() => {
           const errorRes = err as {
             response?: { data?: { message?: string } };
           };
-          
+
         } finally {
           setSendingOtp(false);
         }
       } else {
         if (!otp || otp.length !== 6) {
-          
+
           return;
         }
 
-      setSubmitting(true);
+        setSubmitting(true);
         try {
           const payload = { ...values, otp };
           const res = await foeCreateInquiryAction(payload);
 
           if (res?.data?.success) {
             toast.success("Candidate and Inquiry created successfully!");
-            
-          
+
+
             formik.resetForm();
             setOtpSent(false);
             setOtp("");
 
-           
+
             if (onSuccess) {
               onSuccess();
             } else {
@@ -162,7 +162,7 @@ useEffect(() => {
           };
           toast.error(
             errorRes?.response?.data?.message ||
-              "Failed to verify OTP or create inquiry",
+            "Failed to verify OTP or create inquiry",
           );
         } finally {
           setSubmitting(false);
