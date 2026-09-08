@@ -26,6 +26,12 @@ export const foeInquiryValidationSchema = Yup.object({
   whatsappNumber: Yup.string()
     .matches(/^[0-9]{10}$/, "Enter a valid 10-digit WhatsApp number")
     .required("WhatsApp number is required"),
+    password: Yup.string()
+    .required("Candidate password is required")
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/,
+      "Password must be at least 8 characters and include uppercase, lowercase, number and special character"
+    ),
   inquiryCategory: Yup.string().required("Please select a category"),
   inquiryFor: Yup.string().required("Please select a position"),
   passportStatus: Yup.string().required("Passport status is required"),
@@ -59,7 +65,7 @@ export const foeInquiryValidationSchema = Yup.object({
   }),
 });
 
-export function useCreateInquiry() {
+export function useCreateInquiry(onSuccess?: () => void) {
   const router = useRouter();
   const category = useInquiryCategories();
   const referrals = useInquiryReferrals();
@@ -76,6 +82,7 @@ useEffect(() => {
     email: "",
     phoneNumber: "",
     whatsappNumber: "",
+    password: "",
     passportStatus: "not",
     passportNo: "",
     inquiryCategory: "",
@@ -119,26 +126,35 @@ useEffect(() => {
           const errorRes = err as {
             response?: { data?: { message?: string } };
           };
-          toast.error(
-            errorRes?.response?.data?.message || "Failed to send OTP",
-          );
+          
         } finally {
           setSendingOtp(false);
         }
       } else {
         if (!otp || otp.length !== 6) {
-          toast.error("Please enter a valid 6-digit OTP");
+          
           return;
         }
 
-        setSubmitting(true);
+      setSubmitting(true);
         try {
           const payload = { ...values, otp };
           const res = await foeCreateInquiryAction(payload);
 
           if (res?.data?.success) {
             toast.success("Candidate and Inquiry created successfully!");
-            router.push("/dashboard");
+            
+          
+            formik.resetForm();
+            setOtpSent(false);
+            setOtp("");
+
+           
+            if (onSuccess) {
+              onSuccess();
+            } else {
+              router.push("/dashboard");
+            }
           }
         } catch (err: unknown) {
           const errorRes = err as {

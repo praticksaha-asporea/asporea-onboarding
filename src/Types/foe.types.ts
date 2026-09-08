@@ -5,6 +5,7 @@ export interface FoeInquiryPayload {
   email: string;
   phoneNumber: string;
   whatsappNumber: string;
+  password?: string;
   passportStatus: PassportStatusType;
   passportNo?: string;
   inquiryCategory: string;

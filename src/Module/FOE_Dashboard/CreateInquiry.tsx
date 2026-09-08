@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
@@ -20,9 +20,9 @@ import Radio from "@mui/material/Radio";
 import Button from "@mui/material/Button";
 import CircularProgress from "@mui/material/CircularProgress";
 import Divider from "@mui/material/Divider";
-import { useTheme, lighten } from "@mui/material";
+import { useTheme, lighten, IconButton, InputAdornment } from "@mui/material";
 import { MuiOtpInput } from "mui-one-time-password-input";
-import { LoadCanvasTemplate } from "react-simple-captcha";  
+import { LoadCanvasTemplate } from "react-simple-captcha";
 
 import { useCreateInquiry } from "./useCreateInquiry";
 import { positionDBData } from "@/Types/object.types";
@@ -45,8 +45,9 @@ const CreateInquiry: React.FC<CreateInquiryProps> = ({ onSuccess }) => {
     handleCategoryChange,
     externalSources,
     loadingSources,
-  } = useCreateInquiry();
+  } = useCreateInquiry(onSuccess);
   const theme = useTheme();
+  const [showPassword, setShowPassword] = useState(false);
   const bgGradient = `linear-gradient(270deg, var(--mui-palette-primary-main), ${lighten(theme.palette.primary.main, 0.5)} 100%)`;
   return (
     <Box className="max-w-5xl mx-auto p-4 md:p-6">
@@ -143,7 +144,36 @@ const CreateInquiry: React.FC<CreateInquiryProps> = ({ onSuccess }) => {
                   helperText={helperText("whatsappNumber")}
                 />
               </Grid>
-
+              <Grid size={{ xs: 12, md: 6 }}>
+                <TextField
+                  fullWidth
+                  name="password"
+                  label="Password"
+                  type={showPassword ? "text" : "password"}
+                  value={formik.values.password || ""}
+                  onChange={formik.handleChange}
+                  onBlur={formik.handleBlur}
+                  error={err("password")}
+                  helperText={helperText("password")}
+                  autoComplete="new-password"
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          <i
+                            className={
+                              showPassword ? "ri-eye-off-line" : "ri-eye-line"
+                            }
+                          />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
               {/* Inquiry Category Select */}
               <Grid size={{ xs: 12, md: 6 }}>
                 <FormControl fullWidth error={err("inquiryCategory")}>
@@ -522,54 +552,57 @@ const CreateInquiry: React.FC<CreateInquiryProps> = ({ onSuccess }) => {
                   )}
                 </>
               )}
-             {!otpSent && (
-  <Grid size={{ xs: 12 }}>
-    <Divider className="my-2" />
-    <Box className="flex flex-col sm:flex-row items-center justify-center gap-4 p-4">
-      
-       <Box className="flex items-center justify-center [&_div]:flex [&_div]:items-center [&_div]:gap-2.5 dark:[&_canvas]:invert dark:[&_canvas]:hue-rotate-180 dark:[&_a]:text-blue-400 dark:[&_a]:text-lg">
-        <LoadCanvasTemplate reloadText="↻" reloadColor="#125da3" />
-      </Box>
+              {!otpSent && (
+                <Grid size={{ xs: 12 }}>
+                  <Divider className="my-2" />
+                  <Box className="flex flex-col sm:flex-row items-center justify-center gap-4 p-4">
+                    <Box className="flex items-center justify-center [&_div]:flex [&_div]:items-center [&_div]:gap-2.5 dark:[&_canvas]:invert dark:[&_canvas]:hue-rotate-180 dark:[&_a]:text-blue-400 dark:[&_a]:text-lg">
+                      <LoadCanvasTemplate
+                        reloadText="↻"
+                        reloadColor="#125da3"
+                      />
+                    </Box>
 
-      {/* Google Search Bar Styled Compact TextField */}
-      <Box className="flex flex-col">
-        <TextField
-          size="small"
-          name="captchaValue"
-          placeholder="Enter Captcha"
-          value={formik.values.captchaValue}
-          onChange={formik.handleChange}
-          onBlur={formik.handleBlur}
-          error={err("captchaValue")}
-          helperText={helperText("captchaValue")}
-          autoComplete="off"
-          sx={{
-            width: { xs: "100%", sm: "210px" },
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "99px",
-              backgroundColor: "var(--mui-palette-background-paper)",
-              boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-              transition: "all 0.2s ease-in-out",
-              "& fieldset": {
-                border: "none",
-              },
-              "&:hover fieldset": {
-                border: "none",
-              },
-              "&.Mui-focused fieldset": {
-                border: "none",
-                boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
-              },
-            },
-            "& .MuiFormHelperText-root": {
-              marginLeft: "14px",
-            },
-          }}
-        />
-      </Box>
-    </Box>
-  </Grid>
-)}
+                    {/* Google Search Bar Styled Compact TextField */}
+                    <Box className="flex flex-col">
+                      <TextField
+                        size="small"
+                        name="captchaValue"
+                        placeholder="Enter Captcha"
+                        value={formik.values.captchaValue}
+                        onChange={formik.handleChange}
+                        onBlur={formik.handleBlur}
+                        error={err("captchaValue")}
+                        helperText={helperText("captchaValue")}
+                        autoComplete="off"
+                        sx={{
+                          width: { xs: "100%", sm: "210px" },
+                          "& .MuiOutlinedInput-root": {
+                            borderRadius: "99px",
+                            backgroundColor:
+                              "var(--mui-palette-background-paper)",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
+                            transition: "all 0.2s ease-in-out",
+                            "& fieldset": {
+                              border: "none",
+                            },
+                            "&:hover fieldset": {
+                              border: "none",
+                            },
+                            "&.Mui-focused fieldset": {
+                              border: "none",
+                              boxShadow: "0 2px 10px rgba(0, 0, 0, 0.2)",
+                            },
+                          },
+                          "& .MuiFormHelperText-root": {
+                            marginLeft: "14px",
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Grid>
+              )}
             </Grid>
 
             {/* OTP Section */}
