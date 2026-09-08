@@ -207,7 +207,7 @@ const LeadSchema = new Schema<ILead>(
       id: { type: Schema.Types.ObjectId, ref: "User" },
       type: {
         type: String,
-        enum: ["self", "tac", "pca", "pcra", "sub_pca", "institute"],
+        enum: ["self", "tac", "pca", "pcra", "sub_pca", "institute","foe"],
       },
     },
 
