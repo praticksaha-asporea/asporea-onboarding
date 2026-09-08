@@ -45,7 +45,7 @@ export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
     mode === "online"
       ? bookingData
         ? "BOOKED"
-        : "SELECT_SLOT"
+        : leadData?.preferences?.consultantId ? "SELECT_SLOT" : "OFFLINE_NO_TAC"
       : bookingData
         ? leadData?.preferences?.consultantId
           ? "OFFLINE_TAC"
@@ -61,7 +61,14 @@ export const Step5SlotSelection: React.FC<Step5SlotSelectionProps> = ({
         step={reschedule ? "Reschedule " : "Step 5"}
         title="Pick a Date & Time Slot"
         accent="var(--mui-palette-secondary-main)"
-        description={bookingStatus === "SELECT_SLOT" ? bookingStatusMessage : ""}
+        description={
+          bookingStatus === "SELECT_SLOT" ?
+            (
+              <span className="text-red-500">
+                {bookingStatusMessage}
+              </span>
+            ) : undefined
+        }
       />
 
       {!selectedTacId ? (

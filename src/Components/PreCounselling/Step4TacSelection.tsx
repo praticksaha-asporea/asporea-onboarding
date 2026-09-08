@@ -48,7 +48,7 @@ export const Step4TacSelection: React.FC<Step4TacSelectionProps> = ({
         </Box>
       ) : loadingTacs ? (
         <Box className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2].map((i) => (
+          {[1, 2, 3].map((i) => (
             <Box
               key={i}
               className="relative flex flex-col items-center text-center p-5 rounded-2xl border-2 cursor-pointer transition-all duration-200"
