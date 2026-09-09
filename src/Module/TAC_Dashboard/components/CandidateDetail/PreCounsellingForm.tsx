@@ -958,8 +958,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             slots={rescheduleSlots}
             selectedSlot={selectedRescheduleSlot}
             setSelectedSlot={setSelectedRescheduleSlot}
-            reschedule={true}
-          />
+            reschedule={true} mode={""} bookingData={null} leadData={null}          />
 
         </DialogContent>
 
