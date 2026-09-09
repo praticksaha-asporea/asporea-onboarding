@@ -5,6 +5,7 @@ import { Dialog, DialogContent, Typography, Box, Button } from "@mui/material";
 import { ILead } from "@/lib/models/Lead.model";
 import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 import { ExistingBooking } from "@/Types/Frontend_Payload/precounselling.types";
+import { useRouter } from "next/navigation";
 
 interface SuccessDialogProps {
   showConfirmPopup: boolean;
@@ -21,6 +22,7 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
   mode,
   bookingData
 }) => {
+  const router = useRouter();
   const bookingStatus =
     mode === "online"
       ? bookingData
@@ -79,7 +81,8 @@ export const SuccessDialog: React.FC<SuccessDialogProps> = ({
             variant="contained"
             disableRipple
             disableElevation
-            href={bookingStatusUrl}
+            // href={bookingStatusUrl}
+            onClick={() => { setShowConfirmPopup(false); return router.replace(bookingStatusUrl); }}
             className="rounded-full bg-[var(--mui-palette-primary-main)] px-4 py-1.5 normal-case text-[var(--mui-palette-primary-contrastText)] hover:text-white shadow-md"
           >
             Close

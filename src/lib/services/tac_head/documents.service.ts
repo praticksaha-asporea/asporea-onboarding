@@ -3,7 +3,7 @@ import { DocumentModel } from "@/lib/models/Document.model";
 import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
-import { Assignment, IAssignment } from "@/lib/models/Assignment.model";
+import { Assignment } from "@/lib/models/Assignment.model";
 import '../../models/User.model';
 import '../../models/Position.model'
 
@@ -81,7 +81,7 @@ export const getAwaitingApprovalDocumentsService = async (
 };
 
 export const approveRejectDocumentService = async (
-leadId: string, status: "verified" | "rejected", remarks?: string, actionBy?: string, schedule?: any) => {
+  leadId: string, status: "verified" | "rejected", remarks?: string, actionBy?: string, schedule?: any) => {
   if (!mongoose.Types.ObjectId.isValid(leadId)) {
     throw new ApiError("Invalid Lead ID", 400);
   }
@@ -128,25 +128,25 @@ leadId: string, status: "verified" | "rejected", remarks?: string, actionBy?: st
     throw new ApiError("Lead not found", 404);
   }
 
- if (status === "verified" && schedule) {
+  if (status === "verified" && schedule) {
     await Assignment.findOneAndUpdate(
-      { 
-        leadId: new mongoose.Types.ObjectId(leadId), 
-        phase: "assess" 
+      {
+        leadId: new mongoose.Types.ObjectId(leadId),
+        phase: "assess"
       },
       {
         $set: {
           "schedule.date": new Date(schedule.date),
           "schedule.from": schedule.from,
           "schedule.to": schedule.to,
-          "token.generated": false,     
-          "status": "assigned"          
+          "token.generated": false,
+          "status": "assigned"
         },
         $unset: {
-          "token.number": 1            
+          "token.number": 1
         }
       },
-      { new: true } 
+      { new: true }
     );
   }
 

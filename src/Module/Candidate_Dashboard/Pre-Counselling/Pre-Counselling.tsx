@@ -246,6 +246,9 @@ const PreCounsellingContent = () => {
             slots={slots}
             selectedSlot={selectedSlot}
             setSelectedSlot={setSelectedSlot}
+            mode={mode}
+            bookingData={existingBooking}
+            leadData={leadData}
           />
 
           <Step6CaptchaVerification

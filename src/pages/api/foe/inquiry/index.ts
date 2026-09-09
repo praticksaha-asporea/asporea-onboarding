@@ -45,6 +45,8 @@ export default async function handler(
 
     return ResponseHandler.sendError(res, "Method not allowed", 405);
   } catch (error: unknown) {
+    // console.log(error, 5135135);
+
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(res, error.message, error.statusCode);
     }

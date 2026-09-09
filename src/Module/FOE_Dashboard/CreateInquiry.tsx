@@ -114,6 +114,7 @@ const CreateInquiry: React.FC<CreateInquiryProps> = ({ onSuccess }) => {
                   onBlur={formik.handleBlur}
                   error={err("email")}
                   helperText={helperText("email")}
+                  autoComplete="username"
                 />
               </Grid>
 
@@ -646,7 +647,7 @@ const CreateInquiry: React.FC<CreateInquiryProps> = ({ onSuccess }) => {
                       onClick={() => setOtpSent(false)}
                       disabled={submitting}
                     >
-                      Resend / Edit Form
+                      Resend
                     </Button>
                     <Button
                       type="submit"

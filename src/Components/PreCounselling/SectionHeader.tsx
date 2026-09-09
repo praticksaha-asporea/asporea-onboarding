@@ -6,7 +6,7 @@ interface SectionHeaderProps {
   icon: string;
   step: string;
   title: string;
-  description?: string;
+  description?: React.ReactNode;
   accent?: string;
 }
 
