@@ -55,6 +55,22 @@ export const createUserSchema = Joi.object({
   notificationPreference: notificationPreferenceSchema,
   enquired: Joi.string(),
   status: Joi.string().valid("active", "inactive", "deleted").optional(),
+  tacProfile: Joi.object({
+    designation: Joi.string().trim().allow("", null).optional(),
+    areasOfExp: Joi.array().items(Joi.string()).optional(),
+    languagesKnown: Joi.array().items(Joi.string()).optional(),
+    industryExp: Joi.array().items(Joi.string()).optional(),
+    specialization: Joi.array().items(Joi.string()).optional(),
+    mode: Joi.string().valid("online", "offline", "both").optional(),
+    rating: Joi.number().allow(0, null, "").optional(),
+  }).optional(),
+  candidateProfile: Joi.object({
+    leadId: Joi.any().optional(),
+    technicalQualification: Joi.string().trim().allow("", null).optional(),
+    academic: Joi.string().trim().allow("", null).optional(),
+    nationality: Joi.string().trim().allow("", null).optional(),
+    workExp: Joi.string().trim().allow("", null).optional(),
+  }).optional(),
 }).options({ abortEarly: false, allowUnknown: false });
 
 // ─── Update User ──────────────────────────────────────────────────────────────
@@ -106,6 +122,7 @@ export const updateUserSchema = Joi.object({
     industryExp: Joi.array().items(Joi.string()).optional(),
     specialization: Joi.array().items(Joi.string()).optional(),
     mode: Joi.string().valid("online", "offline", "both").optional(),
+    rating: Joi.number().allow(0, null, "").optional(),
   }).optional(),
   candidateProfile: Joi.object({
     leadId: Joi.any().optional(),

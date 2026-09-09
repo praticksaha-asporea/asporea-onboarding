@@ -100,7 +100,7 @@ export const userList = async ({
 export const createUser = async (body: any, createdBy: string) => {
   const {
     firstName, lastName, email, password, phoneNumber, whatsappNumber,
-    address, role, passportStatus, passportNo, notificationPreference,
+    address, role, passportStatus, passportNo, notificationPreference,candidateProfile,tacProfile
   } = body;
 
   const existing = await UserModel.findOne({ email });
@@ -123,6 +123,8 @@ export const createUser = async (body: any, createdBy: string) => {
     password: hashedPassword,
     phoneNumber, whatsappNumber, address, role,
     passportStatus, passportNo, notificationPreference,
+    candidateProfile: role === 'user' ? candidateProfile : undefined,
+    tacProfile: ['tac', 'tac_head'].includes(role) ? tacProfile : undefined,
     status: 'active',
     createdBy: new mongoose.Types.ObjectId(createdBy),
   });

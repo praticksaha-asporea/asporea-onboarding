@@ -1,18 +1,13 @@
 import "react-perfect-scrollbar/dist/css/styles.css";
 import { Toaster } from "react-hot-toast";
 import GlobalAlertProvider from "@/Components/GlobalAlertProvider/GlobalAlertProvider";
-
 import type { ChildrenType } from "@core/types";
-
 import "./globals.css";
-
 import "@assets/iconify-icons/generated-icons.css";
-
 import NextAuthProvider from "@/Components_Theme/NextAuthProvider";
 import MainLayout from "@/Components/Layouts/MainLayout/MainLayout";
-
 import Providers from "@/Components_Theme/Providers";
-
+import SocketListenerWrapper from "@/Components/socketlistner/SocketListenerWrapper";  
 export const metadata = {
   title: "Asporea - Candidate Onboarding",
   description: "Developed for future",
@@ -29,11 +24,14 @@ const RootLayout = ({ children }: ChildrenType) => {
       <body className="flex is-full min-bs-full flex-auto flex-col">
         <Providers direction={direction}>
           <NextAuthProvider>
+           
             <MainLayout>
+              <SocketListenerWrapper />
               {children}
               <Toaster position="top-center" reverseOrder={false} />
               <GlobalAlertProvider />
             </MainLayout>
+            
           </NextAuthProvider>
         </Providers>
       </body>

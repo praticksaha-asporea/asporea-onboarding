@@ -7,7 +7,7 @@ import { updateUser } from '@/lib/services/admin/user.service';
 import { updateUserSchema } from '@/lib/validation/userValidation';
 import { applyCors } from '@/lib/cors';
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(req: NextApiRequest, res:any) {
   await connectToDatabase();
   if (applyCors(req, res)) return;
 
@@ -30,7 +30,9 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     const updated = await updateUser(userId, req.body);
-    
+    if (res.socket?.server?.io) {
+      res.socket.server.io.to(userId).emit('USER_PROFILE_UPDATED', updated);
+    }
     return ResponseHandler.sendSuccess(res, updated, 'User updated successfully');
   } catch (error: unknown) {
     if (error instanceof ApiError)
