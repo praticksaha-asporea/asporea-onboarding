@@ -137,6 +137,7 @@ export const getTacCandidates = async ({
       _id: String(lead._id),
       name: lead.fullName ?? "—",
       inqNo: lead.inqNo ?? "—",
+      createdBy: lead.createdBy ?? null,
       stage: resolveStage(lead),
       status: lead.status ?? "pending",
       followUpRequired: lead.followUpRequired ?? false,  

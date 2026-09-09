@@ -20,14 +20,16 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
       <form onSubmit={inquiryForm.handleSubmit}>
         <Grid container spacing={5}>
           {/* step 1*/}
+            <Grid size={{ xs: 12, md: 12 }}>
           <SectionHeader
+
             icon="ri-file-list-3-line"
             eyebrow="Inquiry Details"
             title="Inquiry Details - Step 1"
             description="Basic information provided during inquiry creation."
             accentColor="primary"
           />
-
+       </Grid>
           {/* Step 1 fields */}
           <Grid size={{ xs: 12, md: 6 }}>
             <TextField
@@ -162,8 +164,8 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             </FormControl>
           </Grid>
           {/* step 2*/}
-          <Divider className="my-6" />
-
+          
+  <Grid size={{ xs: 12, md: 12 }}>
           <SectionHeader
             icon="ri-calendar-check-line"
             eyebrow="Inquiry Details"
@@ -171,7 +173,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             description="Basic information provided during inquiry creation."
             accentColor="success"
           />
-
+</Grid>
           {/* Step 2 fields */}
           <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth
@@ -281,7 +283,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             </Grid>
           }
 
-
+  <Grid size={{ xs: 12, md: 12 }}> 
           <SectionHeader
             icon="ri-information-line"
             eyebrow="Additional Information"
@@ -289,7 +291,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             description="System-generated and workflow information."
             accentColor="info"
           />
-
+</Grid>
           {/* Additional information */}
 
           <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Inquiry Created" disabled value={candidate?.createdAt ? dayjs(candidate.createdAt).format("DD/MM/YYYY hh:mm A") : "—"} /></Grid>

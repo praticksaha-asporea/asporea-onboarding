@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-
+import CancelBookingModal from "../../../FOE_Dashboard/CancelBookingModal";
 import {
   Box,
   Typography,
@@ -72,7 +72,15 @@ const DashboardView: React.FC<DashboardProps> = () => {
     setCommModalOpen,
     commCandidate,
     commMode,
-    todaySchedule
+    todaySchedule,
+    cancelModalOpen,
+    setCancelModalOpen,
+    cancelTargetLead,
+    cancelReason,
+    setCancelReason,
+    cancelLoading,
+    openCancelModal,
+    handleConfirmCancel
   } = useDashboardView();
 
   return (
@@ -120,6 +128,7 @@ const DashboardView: React.FC<DashboardProps> = () => {
               openCommModal={openCommModal}
               onViewCandidate={(id) => router.push(`/dashboard/candidate/${id}`)}
               onPreviewImage={setPreviewImage}
+              openCancelModal={openCancelModal}  
             />
           </Box>
         </Fade>
@@ -173,6 +182,15 @@ const DashboardView: React.FC<DashboardProps> = () => {
         onClose={() => setCommModalOpen(false)}
         candidate={commCandidate as CandidateRow}
         mode={commMode}
+      />
+      <CancelBookingModal
+        open={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        candidateName={cancelTargetLead?.name || "Candidate"}
+        cancelReason={cancelReason}
+        setCancelReason={setCancelReason}
+        onConfirmCancel={handleConfirmCancel}
+        loading={cancelLoading}
       />
     </Box>
   );

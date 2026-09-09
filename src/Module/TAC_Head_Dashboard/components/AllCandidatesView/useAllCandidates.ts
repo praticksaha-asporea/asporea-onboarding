@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { useRouter } from "next/navigation";  
 import toast from "react-hot-toast";
 import { getAllCandidatesAction } from "@/Services/APIs/tacHead/candidate.action";
 import { TacHeadCandidate, CandidateBranch, ParsedTacConsultant } from "@/Types/Frontend_Payload/tacHead.types";
 
 export const useAllCandidates = () => {
- 
+ const router = useRouter();  
   const [candidates, setCandidates] = useState<TacHeadCandidate[]>([]);
   const [branches, setBranches] = useState<CandidateBranch[]>([]);
   const [tacs, setTacs] = useState<ParsedTacConsultant[]>([]);
@@ -154,7 +155,9 @@ export const useAllCandidates = () => {
   const handlePageChange = (newPage: number) => {
     setFilters((prev) => ({ ...prev, page: newPage }));
   };
-
+const handleViewCandidate = (id: string) => {
+   router.push(`/tac-head/candidate/${id}`);
+  };
   const filteredTacs = filters.branchId
     ? tacs.filter((t: any) => t.branchIds.includes(filters.branchId))
     : tacs;
@@ -185,5 +188,6 @@ export const useAllCandidates = () => {
     onSearchChange,
     handleFilterChange,
     handlePageChange,
+    handleViewCandidate
   };
 };

@@ -15,6 +15,8 @@ import {
   TextField,
   Select,
   MenuItem,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import { useAllCandidates } from "./useAllCandidates";
 
@@ -53,7 +55,7 @@ const responsiveTableSx = {
   },
 };
 
-const COLS = ["Candidate", "Branch", "Assigned TAC", "Contact", "Status"];
+const COLS = ["Candidate", "Branch", "Assigned TAC", "Contact", "Status","Actions"];
 
 const AllCandidatesView = () => {
   const {
@@ -67,6 +69,7 @@ const AllCandidatesView = () => {
     onSearchChange,
     handleFilterChange,
     handlePageChange,
+    handleViewCandidate,
   } = useAllCandidates();
 
   return (
@@ -222,6 +225,24 @@ const AllCandidatesView = () => {
                     >
                       {row.statusLabel}
                     </Box>
+                  </TableCell>
+                  <TableCell
+                    className="resp-cell !py-3 !px-4 md:text-center"
+                    data-label="Actions"
+                  >
+                    <Tooltip title="View Profile" placement="top" arrow>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleViewCandidate(row._id)}
+                        className="hover:bg-[rgba(147,51,234,0.08)] transition-all"
+                        sx={{
+                          color: "var(--mui-palette-primary-main) !important",
+                          padding: "6px",
+                        }}
+                      >
+                        <i className="mdi--user text-[20px]" />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))

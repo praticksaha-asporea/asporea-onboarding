@@ -11,7 +11,7 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-
+import { cancelBookingAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";  
 
 export interface kpiTypes {
   openCases: number, pendingCounselling: number, pendingAssessment: number,
@@ -63,7 +63,45 @@ export const useDashboardView = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [schedulePhase, setSchedulePhase] = useState<"pre" | "assess">("pre");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelTargetLead, setCancelTargetLead] = useState<CandidateRow | null>(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
+  const openCancelModal = (candidate: CandidateRow) => {
+    setCancelTargetLead(candidate);
+    setCancelReason("");
+    setCancelModalOpen(true);
+  };
+  const handleConfirmCancel = async () => {
+    if (!cancelTargetLead) return;
 
+    if (!cancelReason.trim()) {
+      return toast.error("Please enter a reason for cancellation.");
+    }
+
+    setCancelLoading(true);
+    try {
+      const res = await cancelBookingAction({
+        leadId: cancelTargetLead._id,
+        actionBy: currentUser?._id || currentUser?.id,
+        cancelReason: cancelReason.trim(),
+      });
+
+      if (res?.data?.success) {
+        toast.success("Session cancelled successfully!");
+        setCancelModalOpen(false);
+        setCancelTargetLead(null);
+        setCancelReason("");
+        fetchCandidates();  
+      } else {
+        toast.error(res?.data?.message || "Failed to cancel session.");
+      }
+    } catch (err: any) {
+      toast.error(err?.response?.data?.message || "Something went wrong.");
+    } finally {
+      setCancelLoading(false);
+    }
+  };
   const openCommModal = (candidate: CandidateRow, mode: "chat" | "email") => {
     setCommCandidate(candidate);
     setCommMode(mode);
@@ -252,6 +290,14 @@ export const useDashboardView = () => {
     commMode,
     previewImage,
     setPreviewImage,
-    todaySchedule
+    todaySchedule,
+    cancelModalOpen,
+    setCancelModalOpen,
+    cancelTargetLead,
+    cancelReason,
+    setCancelReason,
+    cancelLoading,
+    openCancelModal,
+    handleConfirmCancel
   };
 };
