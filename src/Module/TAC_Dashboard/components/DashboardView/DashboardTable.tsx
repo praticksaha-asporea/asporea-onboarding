@@ -18,7 +18,7 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import FollowUpBadge from "@/Components/Common/FollowUpBadge";
 import { CamelCase } from "@/Utils/common";
-import { CandidateRow } from "@/Types/object.types";
+import { branchDB, CandidateRow } from "@/Types/object.types";
 import { useDashboardTable } from "./useDashboardTable";
 
 dayjs.extend(relativeTime);
@@ -38,7 +38,8 @@ interface DashboardTableProps {
   openCommModal: (candidate: CandidateRow, mode: "chat" | "email") => void;
   onViewCandidate: (id: string) => void;
   onPreviewImage: (url: string) => void;
-  openCancelModal: (candidate: CandidateRow) => void;  
+  openCancelModal: (candidate: CandidateRow) => void;
+  branches: branchDB[];
 }
 const cancellableStatuses = [
   "pre_scheduled",
@@ -48,7 +49,7 @@ const cancellableStatuses = [
   // "assess_contacted",
   // "assess_queued",
 ];
- 
+
 const getInitials = (name?: string) => {
   if (!name) return "NA";
   const parts = name.trim().split(" ");
@@ -58,7 +59,7 @@ const getInitials = (name?: string) => {
 
 const resolveFileSrc = (path?: string) => {
   if (!path || path.trim() === "") return "/images/avatars/avatar.png";
-  if (  
+  if (
     path.startsWith("http://") ||
     path.startsWith("https://") ||
     path.startsWith("data:")
@@ -88,7 +89,8 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
   openCommModal,
   onViewCandidate,
   onPreviewImage,
-  openCancelModal
+  openCancelModal,
+  branches
 }) => {
   const {
     getStatusBadge,
@@ -97,12 +99,12 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
     preRescheduleStatuses,
     assessScheduleStatuses,
   } = useDashboardTable(isFoe);
-const currentUser = useSelector(
+  const currentUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData
   );
 
   const currentUserId = extractId(currentUser?._id || currentUser?.id || currentUser?.user);
- 
+
   return (
     <Box className="w-full">
       {/* ---------------- LOADING & ERROR STATES ---------------- */}
@@ -126,21 +128,21 @@ const currentUser = useSelector(
           {rows.map((candidate: any) => {
             const avatarSrc = resolveFileSrc(candidate.profilePic);
             const displayName = candidate?.name || "Unknown";
-         
+
             const createdById = extractId(candidate?.createdBy);
 
             const isCreatedByMe = Boolean(
               currentUserId && createdById && currentUserId === createdById
             );
 
-            
-            console.log("MATCH CHECK:", { candidateName: displayName, currentUserId, createdById, isCreatedByMe });
+
+            // console.log("MATCH CHECK:", { candidateName: displayName, currentUserId, createdById, isCreatedByMe });
 
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={candidate._id}>
                 <Card className="h-full flex flex-col relative rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
                   <FollowUpBadge show={candidate?.followUpRequired} />
-                {isCreatedByMe && (
+                  {isCreatedByMe && (
                     <Chip
                       label="Added by you"
                       size="small"
@@ -150,10 +152,10 @@ const currentUser = useSelector(
                     />
                   )}
                   <CardContent className="p-4 md:p-5 flex flex-col flex-grow">
-                    
-                   
+
+
                     <Box className="flex flex-col items-center text-center mb-4 w-full">
-                      
+
                       {/* 1. Avatar */}
                       <Avatar
                         src={avatarSrc || undefined}
@@ -174,7 +176,7 @@ const currentUser = useSelector(
                         {!avatarSrc && getInitials(displayName)}
                       </Avatar>
 
-                     
+
                       <Chip
                         label={getVisitLabel(candidate.visitType)}
                         color={getVisitChipColor(candidate.visitType) as any}
@@ -184,19 +186,19 @@ const currentUser = useSelector(
                         sx={{ border: "none" }}
                       />
 
-                       
+
                       <Box className="w-full space-y-1 text-center">
-                         <Typography className="text-[11.5px] mt-0.5 text-[var(--mui-palette-text-secondary)] font-semibold break-all">
+                        <Typography className="text-[11.5px] mt-0.5 text-[var(--mui-palette-text-secondary)] font-semibold break-all">
                           {candidate.inqNo || "—"}
                         </Typography>
                         <Typography className="font-bold tracking-wider text-[14px] leading-tight text-[var(--mui-palette-text-primary)] ">
                           {displayName}
                         </Typography>
-                       
+
                       </Box>
                     </Box>
 
-                   
+
                     <Box className="grid grid-cols-2 gap-y-3 gap-x-2 mb-4 mt-1 flex-grow">
                       <Box>
                         <Typography className="text-[11px] text-[var(--mui-palette-text-primary)] font-semibold uppercase tracking-wider">
@@ -289,7 +291,7 @@ const currentUser = useSelector(
                           </>
                         )}
 
-                       
+
                         {isFoe && candidate.status === "inquiry_submitted" && (
                           <Tooltip
                             title="Schedule Pre-Counselling"
@@ -312,7 +314,7 @@ const currentUser = useSelector(
                           </Tooltip>
                         )}
 
-                         
+
                         {isFoe &&
                           (candidate.status === "pre_not_responded" ||
                             preRescheduleStatuses.includes(
@@ -339,7 +341,7 @@ const currentUser = useSelector(
                             </Tooltip>
                           )}
 
-                       
+
                         {isFoe &&
                           assessScheduleStatuses.includes(
                             candidate.status
@@ -365,7 +367,7 @@ const currentUser = useSelector(
                             </Tooltip>
                           )}
 
-                         
+
                         {cancellableStatuses.includes(candidate.status) && (
                           <Tooltip title="Cancel Session" placement="top" arrow>
                             <IconButton

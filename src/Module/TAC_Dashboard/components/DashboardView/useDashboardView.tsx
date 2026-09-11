@@ -6,12 +6,13 @@ import {
 } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { getTacCandidatesAction } from "@/Services/APIs/tac/tac.actions";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
-import { CandidateRow, tacData } from "@/Types/object.types";
+import { branchDB, CandidateRow, tacData } from "@/Types/object.types";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
-import { cancelBookingAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";  
+import { cancelBookingAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 
 export interface kpiTypes {
   openCases: number, pendingCounselling: number, pendingAssessment: number,
@@ -63,10 +64,15 @@ export const useDashboardView = () => {
   const [bookingLoading, setBookingLoading] = useState(false);
   const [schedulePhase, setSchedulePhase] = useState<"pre" | "assess">("pre");
   const [previewImage, setPreviewImage] = useState<string | null>(null);
-const [cancelModalOpen, setCancelModalOpen] = useState(false);
+  const [cancelModalOpen, setCancelModalOpen] = useState(false);
   const [cancelTargetLead, setCancelTargetLead] = useState<CandidateRow | null>(null);
   const [cancelReason, setCancelReason] = useState("");
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [branches, setBranches] = useState<branchDB[]>([]);
+  const [selectedBranch, setSelectedBranch] = useState<string>("");
+  const [method, setMethod] = useState<string>(targetLead?.visitType === "on" ? "online" : "offline");
+
+
   const openCancelModal = (candidate: CandidateRow) => {
     setCancelTargetLead(candidate);
     setCancelReason("");
@@ -92,7 +98,7 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
         setCancelModalOpen(false);
         setCancelTargetLead(null);
         setCancelReason("");
-        fetchCandidates();  
+        fetchCandidates();
       } else {
         toast.error(res?.data?.message || "Failed to cancel session.");
       }
@@ -143,8 +149,25 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
     }
   }, [page, search, statusFilter, experienceFilter]);
 
+
+  const fetchBranches = useCallback(
+    async () => {
+      //lat: number, lng: number
+      try {
+        const response = await branchListingApi();
+        const list = response?.data?.data?.data || [];
+        setBranches(list);
+      } catch (error) {
+        console.error("Branch fetch error:", error);
+        toast.error("Failed to fetch nearby branches");
+      }
+    },
+    [],
+  );
+
   useEffect(() => {
     fetchCandidates();
+    fetchBranches();
   }, [fetchCandidates]);
 
   const openScheduleModal = async (
@@ -171,9 +194,12 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
     setDate(todayStr);
     setSlots([]);
     setSelectedSlot(null);
+    setMethod(candidate?.visitType === "on" ? "online" : "offline");
 
     if (candidate.branchId) {
       const res = await getTacListAction({ branchId: candidate.branchId });
+      //here
+      setSelectedBranch(candidate.branchId);
       if (res?.data?.success) setTacList(res?.data?.data);
     }
   };
@@ -199,10 +225,20 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
     loadSlots();
   }, [selectedTac, date, modalOpen]);
 
+  useEffect(() => {
+    const loadTacList = async (selectedBranch: string) => {
+      if (selectedBranch) {
+        const res = await getTacListAction({ branchId: selectedBranch });
+        if (res?.data?.success) setTacList(res?.data?.data);
+      }
+    }
+    loadTacList(selectedBranch);
+  }, [selectedBranch])
+
   const handleBookSlot = async () => {
-    if (!targetLead || !selectedTac || !selectedSlot) return;
+    if (!selectedBranch || !method || !targetLead || !selectedTac || !selectedSlot) return;
     setBookingLoading(true);
-    const method = (targetLead.visitType === "online" ? "on" : "off") as
+    const methodMentioned = (method === "online" ? "on" : "off") as
       | "on"
       | "off";
     // const payload = {
@@ -216,8 +252,8 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
 
     const payload = new FormData();
     payload.append("leadId", targetLead._id);
-    payload.append("branchId", targetLead.branchId as string);
-    payload.append("method", method);
+    payload.append("branchId", selectedBranch);
+    payload.append("method", methodMentioned);
 
     if (selectedTac) {
       payload.append("consultantId", selectedTac?.toString());
@@ -247,6 +283,8 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
   };
 
   const lastCandidate = rows.length > 0 ? rows[0] : null;
+
+
 
   return {
     isFoe,
@@ -298,6 +336,11 @@ const [cancelModalOpen, setCancelModalOpen] = useState(false);
     setCancelReason,
     cancelLoading,
     openCancelModal,
-    handleConfirmCancel
+    handleConfirmCancel,
+    branches,
+    selectedBranch,
+    setSelectedBranch,
+    method,
+    setMethod
   };
 };
