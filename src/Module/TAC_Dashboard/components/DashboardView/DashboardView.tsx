@@ -80,7 +80,12 @@ const DashboardView: React.FC<DashboardProps> = () => {
     setCancelReason,
     cancelLoading,
     openCancelModal,
-    handleConfirmCancel
+    handleConfirmCancel,
+    branches,
+    selectedBranch,
+    setSelectedBranch,
+    method,
+    setMethod
   } = useDashboardView();
 
   return (
@@ -128,7 +133,8 @@ const DashboardView: React.FC<DashboardProps> = () => {
               openCommModal={openCommModal}
               onViewCandidate={(id) => router.push(`/dashboard/candidate/${id}`)}
               onPreviewImage={setPreviewImage}
-              openCancelModal={openCancelModal}  
+              openCancelModal={openCancelModal}
+              branches={branches}
             />
           </Box>
         </Fade>
@@ -175,6 +181,12 @@ const DashboardView: React.FC<DashboardProps> = () => {
         handleBookSlot={handleBookSlot}
         bookingLoading={bookingLoading}
         schedulePhase={schedulePhase}
+        branches={branches}
+        selectedBranch={selectedBranch}
+        setSelectedBranch={setSelectedBranch}
+        method={method}
+        setMethod={setMethod}
+
       />
 
       <DashboardCommunicationModal

@@ -3,8 +3,12 @@ import { BranchListing, CounterTokenListing } from "@/Types/ApiResponse/branchRe
 import { BranchListingPayload, branchTokensPayload } from "@/Types/Frontend_Payload/branch.types";
 import { AxiosResponse } from "axios";
 
-export const branchListingApi = async (bodyData: BranchListingPayload): Promise<AxiosResponse<BranchListing>> => {
-    const response = await axiosClient.get(`/branch/list?lat=${bodyData?.lat}&lng=${bodyData?.lng}&radiusKm=5000&limit=50`);
+export const branchListingApi = async (bodyData?: BranchListingPayload): Promise<AxiosResponse<BranchListing>> => {
+    let apiUrl = '/branch/list';
+    if (bodyData?.lat !== undefined && bodyData?.lng !== undefined) {
+        apiUrl += `?lat=${bodyData.lat}&lng=${bodyData.lng}&radiusKm=5000&limit=50`;
+    }
+    const response = await axiosClient.get(apiUrl);
     return response;
 };
 

@@ -3,7 +3,7 @@ import {
   Box, Button, CircularProgress, Dialog, DialogActions, DialogContent,
   DialogTitle, FormControl, InputLabel, MenuItem, Select, TextField, Typography
 } from "@mui/material";
-import { CandidateRow, tacData } from "@/Types/object.types";
+import { branchDB, CandidateRow, tacData } from "@/Types/object.types";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 
 interface DashboardScheduleModalProps {
@@ -23,12 +23,18 @@ interface DashboardScheduleModalProps {
   handleBookSlot: () => void;
   bookingLoading: boolean;
   schedulePhase: "pre" | "assess";
+  branches: branchDB[];
+  selectedBranch: string;
+  setSelectedBranch: (val: string) => void;
+  method: string;
+  setMethod: (val: string) => void;
 }
 
 const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
-  modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac,
+  modalOpen, setModalOpen, targetLead, tacList, selectedTac, setSelectedTac, selectedBranch, setSelectedBranch,
   date, setDate, todayStr, slotsLoading, slots, selectedSlot, setSelectedSlot,
-  handleBookSlot, bookingLoading, schedulePhase
+  handleBookSlot, bookingLoading, schedulePhase, branches, method,
+  setMethod
 }) => {
   return (
     <Dialog open={modalOpen} onClose={() => setModalOpen(false)} maxWidth="sm" fullWidth PaperProps={{ className: "rounded-xl p-2" }}>
@@ -44,6 +50,25 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
           <Typography variant="body2" className="text-gray-500">Candidate</Typography>
           <Typography className="font-bold">{targetLead?.name} ({targetLead?.inqNo})</Typography>
         </Box>
+
+        <FormControl fullWidth size="small">
+          <InputLabel>Select Branch</InputLabel>
+          <Select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value as string)} label="Select Branch">
+            {branches.map((br) => (
+              <MenuItem key={br._id} value={br._id}>
+                {br.title}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+
+        <FormControl fullWidth size="small">
+          <InputLabel>Select Method</InputLabel>
+          <Select value={method} onChange={(e) => setMethod(e.target.value as string)} label="Select Method">
+            <MenuItem value="online">Online</MenuItem>
+            <MenuItem value="offline">Offline</MenuItem>
+          </Select>
+        </FormControl>
 
         <FormControl fullWidth size="small">
           <InputLabel>Select Assigning TAC</InputLabel>
