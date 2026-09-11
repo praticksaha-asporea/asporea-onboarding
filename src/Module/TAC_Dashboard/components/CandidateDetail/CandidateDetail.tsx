@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";  
 import {
   Box,
   Grid,
@@ -28,8 +29,8 @@ interface CandidateDetailProps { }
 
 const CandidateDetail: React.FC<CandidateDetailProps> = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
-
-
+  const pathname = usePathname();
+ 
   const [tabValue, setTabValue] = useState<string>("inquiry");
   const [updatingFollowUp, setUpdatingFollowUp] = useState(false);
   const params = useParams<{ id: string }>();
@@ -55,7 +56,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
     leadUpdated,
     setLeadUpdated
   } = useCandidateDetail({ selectedCandidate });
-
+const userRole = currentUser?.role || (currentUser as any)?.user?.role;
+  const isTacHead = pathname?.startsWith("/tac-head") || userRole === "tac_head";
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -215,8 +217,8 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
       </Box>
 
       <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: 9 }}>
-          {tabValue === "inquiry" && <InquiryDetailsForm candidate={c} />}
+<Grid size={{ xs: 12, lg: isTacHead ? 12 : 9 }}>          
+  {tabValue === "inquiry" && <InquiryDetailsForm candidate={c} />}
 
           {tabValue === "precounselling" && showPreCounselling && (
             <PreCounsellingForm
@@ -249,20 +251,22 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           {tabValue === "logs" && c._id && <LeadLogsCard leadId={c._id} />}
         </Grid>
 
-        <Grid size={{ xs: 12, lg: 3 }}>
-          <Box className="flex flex-col gap-6 w-full">
-            <ProgressSidebar
-              candidate={c}
-              isFoe={isFoe}
-              branchId={branchId}
-              consultantId={consultantId}
-              tacList={tacList}
-              transferTo={transferTo}
-              setTransferTo={setTransferTo}
-              currentUser={currentUser as UserData}
-            />
-          </Box>
-        </Grid>
+        {!isTacHead && (
+          <Grid size={{ xs: 12, lg: 3 }}>
+            <Box className="flex flex-col gap-6 w-full">
+              <ProgressSidebar
+                candidate={c}
+                isFoe={isFoe}
+                branchId={branchId}
+                consultantId={consultantId}
+                tacList={tacList}
+                transferTo={transferTo}
+                setTransferTo={setTransferTo}
+                currentUser={currentUser as UserData}
+              />
+            </Box>
+          </Grid>
+        )}
       </Grid>
     </Box>
   );
