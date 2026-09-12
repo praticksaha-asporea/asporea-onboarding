@@ -22,8 +22,19 @@ export const usePreCounselling = () => {
   const reduxUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData,
   );
-  const reduxLeadId = reduxUser?.leadId || reduxUser?.user?.leadId || "";
-  const leadId = searchParams?.get("leadId") || reduxLeadId;
+  const rawReduxLeadId =
+    reduxUser?.candidateProfile?.leadId ||
+    reduxUser?.user?.candidateProfile?.leadId ||
+    reduxUser?.leadId ||
+    reduxUser?.user?.leadId ||
+    "";
+ const rawLeadId = searchParams?.get("leadId") || rawReduxLeadId;
+
+  
+  const leadId =
+    typeof rawLeadId === "object" && rawLeadId !== null
+      ? (rawLeadId as any)?._id || ""
+      : String(rawLeadId || "");
 
   const serverNow = new Date();
   const utcTime = serverNow.getTime() + serverNow.getTimezoneOffset() * 60000;
@@ -126,8 +137,7 @@ export const usePreCounselling = () => {
     }
   };
 
-  // Branch badalne par TAC aur Slot reset karne ki wrapper Function
-  const handleBranchSelectWithReset = async (newBranchId: string) => {
+   const handleBranchSelectWithReset = async (newBranchId: string) => {
     const success = await branch.handleBranchSelect(newBranchId);
     if (success) {
       tacAndSlots.setSelectedTacId("");

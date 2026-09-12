@@ -1,61 +1,33 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import { verifyRefreshToken, generateTokens } from "@/lib/utils/tokenUtil";
-import User from "@/lib/models/User.model";
-import ResponseHandler from "@/lib/utils/responseUtil";
-import Token from "@/lib/models/Token.model";
 import { applyCors } from "@/lib/cors";
+import { ApiError } from "@/lib/error/api.error";
+import ResponseHandler from "@/lib/utils/responseUtil";
+import { refreshTokenService } from "@/lib/services/auth/refresh-token.service";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
   if (applyCors(req, res)) return;
+
+  if (req.method !== "POST") {
+    return ResponseHandler.sendError(res, "Method not allowed", 405);
+  }
+
   try {
-    const { refreshToken } = req.body;
-
-    if (!refreshToken || typeof refreshToken !== "string") {
-      return ResponseHandler.sendError(
-        res,
-        "Refresh token required or invalid refresh token",
-        400,
-      );
-    }
-
-    const decoded: any = verifyRefreshToken(refreshToken);
-    const tokenDoc = await Token.findOne({
-      token: refreshToken,
-      type: "refresh"
-    });
-
-    if (!tokenDoc) {
-      return ResponseHandler.sendError(
-        res, "Invalid refresh token (not found in DB)",
-        401
-      );
-    }
-
-    if (tokenDoc.expiresAt < new Date()) {
-      return ResponseHandler.sendError(
-        res, 'Refresh Token expired',
-        401
-      );
-    }
-
-    const user = await User.findById(decoded.userId);
-
-    if (!user) {
-      return ResponseHandler.sendError(res, "User not found", 404);
-    }
-
-    await Token.deleteOne({ _id: tokenDoc._id })
-
-    const tokens = await generateTokens(({
-      _id: String(user._id),
-      role: user?.role
-    }));
+    const tokens = await refreshTokenService(req.body?.refreshToken);
 
     return ResponseHandler.sendSuccess(res, tokens, "Token refreshed");
-  } catch (err) {
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return ResponseHandler.sendError(
+        res,
+        error.message,
+        error.statusCode,
+        error.data,
+      );
+    }
+
     return ResponseHandler.sendError(res, "Invalid refresh token", 401);
   }
 }

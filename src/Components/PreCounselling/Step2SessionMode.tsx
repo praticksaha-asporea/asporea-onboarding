@@ -23,19 +23,21 @@ export const Step2SessionMode: React.FC<Step2SessionModeProps> = ({
         description="How you'd like to connect with your TAC."
         accent="var(--mui-palette-secondary-main)"
       />
-      <Box className="flex gap-2 p-1 rounded-2xl bg-[var(--mui-overlays-1,_rgba(0,0,0,0.03))] w-fit">
-        {(["online", "offline"] as const).map((opt) => {
+<Box className="flex gap-2 p-1.5 rounded-2xl  bg-[var(--mui-overlays-1,_rgba(0,0,0,0.03))] w-fit">        {(["online", "offline"] as const).map((opt) => {
           const isActive = mode === opt;
           return (
             <button
               key={opt}
               type="button"
               onClick={() => setMode(opt)}
-              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl tracking-wide text-sm font-medium transition-all duration-200 cursor-pointer ${
-                isActive
-                  ? "bg-[var(--mui-palette-primary-main)] shadow-[0px_4px_14px_-4px_rgba(15,23,42,0.25)] text-white"
-                  : "text-[var(--mui-palette-text-primary)] hover:text-[var(--mui-palette-text-primary)]"
-              }`}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl tracking-wide text-sm font-semibold cursor-pointer transform select-none
+          /* 🚀 3D Cubic Spring Transition */
+          transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)]
+          ${
+            isActive
+              ? "bg-[var(--mui-palette-primary-main)] text-white scale-105 -translate-y-0.5   hover:scale-110 hover:-translate-y-1.5 hover:shadow-[0px_18px_36px_-6px_rgba(0,0,0,0.45)] active:scale-95"
+              : "text-[var(--mui-palette-text-primary)] bg-[var(--mui-palette-primary)] hover:bg-[var(--mui-palette-primary-main)] hover:text-white hover:scale-108 hover:-translate-y-1.5 hover:shadow-[0px_16px_32px_-6px_rgba(0,0,0,0.25)] active:scale-95"
+          }`}
             >
               <i
                 className={

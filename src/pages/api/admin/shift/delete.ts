@@ -6,7 +6,6 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { deleteAssignment } from "@/lib/services/admin/employeeAssignment.service";
 import { applyCors } from "@/lib/cors";
 import { deleteShift } from "@/lib/services/admin/shift.service";
 
