@@ -1,5 +1,5 @@
  
-import RemindersView from "@/Module/TAC_Head_Dashboard/Reminders/RemindersView";
+import RemindersView from "@/Module/TAC_Head_Dashboard/Reminders/ReminderContainer";
 
 export const metadata = {
   title: "Targeted Reminders | TAC Head Dashboard",
