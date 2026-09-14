@@ -18,6 +18,7 @@ export const usePreCounsellingStatus = (
   leadUpdated: boolean
 ) => {
   const [isReduxReady, setIsReduxReady] = useState(false);
+  const [isStatusLoading, setIsStatusLoading] = useState(true);  
   const [isValidLead, setIsValidLead] = useState(true);
   const [isCompleted, setIsCompleted] = useState(false);
   const [existingBooking, setExistingBooking] =
@@ -63,8 +64,12 @@ export const usePreCounsellingStatus = (
   }, [reduxUser, leadData]);
 
   useEffect(() => {
-    const checkStatus = async () => {
-      if (!leadId) return;
+   const checkStatus = async () => {
+      if (!leadId) {
+        setIsStatusLoading(false);
+        return;
+      }
+      setIsStatusLoading(true);
       try {
         const res = await checkBookingStatusAction({ leadId });
         if (res?.data?.success && res.data?.data) {
@@ -116,6 +121,8 @@ export const usePreCounsellingStatus = (
       } catch (err: unknown) {
         const error = err as { response?: { status?: number } };
         if (error?.response?.status === 404) setIsValidLead(false);
+     } finally {
+        setIsStatusLoading(false);  
       }
     };
     checkStatus();
@@ -161,6 +168,7 @@ export const usePreCounsellingStatus = (
 
   return {
     isReduxReady,
+    isStatusLoading,
     isValidLead,
     isCompleted,
     existingBooking,

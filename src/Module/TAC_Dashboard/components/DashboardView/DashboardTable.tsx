@@ -113,12 +113,12 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
           <CircularProgress size={36} thickness={4} />
         </Box>
       ) : error ? (
-        <Box className="text-center py-16 bg-[var(--mui-palette-background-paper)] rounded-2xl shadow-sm border border-[var(--mui-palette-divider)] text-red-500 font-medium">
+        <Box className="text-center  py-16 bg-[var(--mui-palette-background-paper)] rounded-2xl shadow-sm border border-[var(--mui-palette-divider)] text-red-500 font-medium">
           <i className="ri-error-warning-line text-4xl block mb-2" />
           {error}
         </Box>
       ) : rows.length === 0 ? (
-        <Box className="text-center py-20 bg-[var(--mui-palette-background-paper)] rounded-2xl shadow-sm border border-[var(--mui-palette-divider)] text-[var(--mui-palette-text-secondary)] font-medium">
+       <Box className="flex flex-col items-center justify-center text-center py-20 bg-[var(--mui-palette-background-paper)] rounded-2xl shadow-sm border border-[var(--mui-palette-divider)] text-[var(--mui-palette-text-secondary)] font-medium">
           <i className="ri-inbox-line text-5xl block mb-3 opacity-50" />
           No candidates found
         </Box>

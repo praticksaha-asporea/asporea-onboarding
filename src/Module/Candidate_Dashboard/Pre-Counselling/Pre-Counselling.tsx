@@ -25,6 +25,8 @@ import { ResumePreviewDialog } from "@/Components/PreCounselling/ResumePreviewDi
 
 const PreCounsellingContent = () => {
   const {
+    isReduxReady,
+    isStatusLoading,
     isValidLead,
     isCompleted,
     existingBooking,
@@ -98,7 +100,18 @@ const PreCounsellingContent = () => {
     reduxUser?.leadId?.inqNo ||
     reduxUser?.user?.leadId?.inqNo ||
     "N/A";
-
+if (!isReduxReady || isStatusLoading) {    return (
+      <Card className="p-12 rounded-3xl border border-[var(--mui-palette-divider)] shadow-[0px_8px_24px_-12px_rgba(15,23,42,0.12)] text-center flex flex-col items-center justify-center min-h-[420px]">
+        <CircularProgress size={42} thickness={4} />
+        <Typography
+          variant="body2"
+          className="mt-4 text-[var(--mui-palette-text-secondary)] font-medium"
+        >
+          Loading session details...
+        </Typography>
+      </Card>
+    );
+  }
   if (!isValidLead) {
     return (
       <Card className="p-12 rounded-3xl border border-[var(--mui-palette-divider)] shadow-[0px_8px_24px_-12px_rgba(15,23,42,0.12)] text-center flex flex-col items-center justify-center min-h-[420px]">
@@ -125,8 +138,7 @@ const PreCounsellingContent = () => {
       </Card>
     );
   }
-
-  if (isCompleted) {
+if (isCompleted) {
     return (
       <Card className="p-12 rounded-3xl text-center flex flex-col items-center justify-center min-h-[420px] border border-[var(--mui-palette-divider)] shadow-[0px_12px_32px_-16px_rgba(15,23,42,0.18)]">
         <Box
@@ -150,20 +162,20 @@ const PreCounsellingContent = () => {
         </Typography>
 
         <Box className="mt-8 flex flex-wrap items-center justify-center gap-4">
-
-          {/* 🌟 NEW: 3D GLOSSY RATING BUTTON */}
           <Button
             variant="contained"
             href="/rating"
             className="rounded-xl normal-case px-7 py-3 font-bold text-white transition-all duration-300 transform active:scale-95"
             style={{
-              background: "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
+              background:
+                "linear-gradient(135deg, #f59e0b 0%, #d97706 50%, #b45309 100%)",
               boxShadow:
                 "inset 0px 1.5px 1px rgba(255, 255, 255, 0.5), 0px 8px 20px -4px rgba(245, 158, 11, 0.45)",
             }}
             sx={{
               "&:hover": {
-                background: "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
+                background:
+                  "linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%)",
                 transform: "translateY(-3px) scale(1.04)",
                 boxShadow:
                   "inset 0px 2px 3px rgba(255, 255, 255, 0.7), 0px 14px 28px -4px rgba(245, 158, 11, 0.65)",
@@ -174,7 +186,6 @@ const PreCounsellingContent = () => {
             Share Your Experience
           </Button>
 
-          {/* PROCEED TO DOCUMENTS BUTTON */}
           <Button
             variant="contained"
             href="/document-upload"
