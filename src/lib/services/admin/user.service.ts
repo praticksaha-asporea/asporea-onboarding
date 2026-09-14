@@ -1,29 +1,39 @@
-import { FilterUserListQuery } from '@/Types/Backend_Payload/user.types';
-import UserModel from '../../models/User.model';
-import { SocialLogins } from '../../models/SocialLogins.model';
-import { EmployeeBranchShiftModel } from '../../models/EmployeeBranchShift.model';
-import { ExternalSourceModel } from '../../models/ExternalSource.model';
-import { ApiError } from '../../error/api.error';
-import { hashPassword } from '../../utils/bcryptUtil';
-import mongoose from 'mongoose';
-import '../../models/Shift.model'
-import '../../models/Branch.model'
-import '../../models/User.model';
-import { Lead } from '../../models/Lead.model';
-import { Upload } from '../../models/Upload.model';
-import fs from 'fs';
-import path from 'path';
-import { handleProfilePicUpload } from '../../utils/uploadUtil';
-import rating from '@/@core/theme/overrides/rating';
+import { FilterUserListQuery } from "@/Types/Backend_Payload/user.types";
+import UserModel from "../../models/User.model";
+import { SocialLogins } from "../../models/SocialLogins.model";
+import { EmployeeBranchShiftModel } from "../../models/EmployeeBranchShift.model";
+import { ExternalSourceModel } from "../../models/ExternalSource.model";
+import { ApiError } from "../../error/api.error";
+import { hashPassword } from "../../utils/bcryptUtil";
+import mongoose from "mongoose";
+import "../../models/Shift.model";
+import "../../models/Branch.model";
+import "../../models/User.model";
+import { Lead } from "../../models/Lead.model";
+import { Upload } from "../../models/Upload.model";
+import fs from "fs";
+import path from "path";
+import { handleProfilePicUpload } from "../../utils/uploadUtil";
+import rating from "@/@core/theme/overrides/rating";
 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
 export const VALID_ROLES = [
-  'admin', 'tac', 'user', 'foe', 'finance', 'coordinator',
-  'pca', 'pcra', 'institute', 'sub_pca', 'branch_head', 'tac_head',
+  "admin",
+  "tac",
+  "user",
+  "foe",
+  "finance",
+  "coordinator",
+  "pca",
+  "pcra",
+  "institute",
+  "sub_pca",
+  "branch_head",
+  "tac_head",
 ] as const;
 
-export type UserRole = typeof VALID_ROLES[number];
+export type UserRole = (typeof VALID_ROLES)[number];
 
 // ─── List ─────────────────────────────────────────────────────────────────────
 
@@ -52,13 +62,13 @@ export const userList = async ({
   }
 
   // Status filter
-  if (status && ['active', 'inactive', 'deleted'].includes(status)) {
+  if (status && ["active", "inactive", "deleted"].includes(status)) {
     filter.status = status;
   }
 
   // Keyword search across name + email
   if (keyword && keyword.trim().length > 0) {
-    const regex = new RegExp(keyword.trim(), 'i');
+    const regex = new RegExp(keyword.trim(), "i");
     filter.$or = [
       { firstName: regex },
       { lastName: regex },
@@ -72,8 +82,8 @@ export const userList = async ({
 
   const [users, total] = await Promise.all([
     UserModel.find(filter)
-      .select('-password')
-      .populate('profilePic', 'path')
+      .select("-password")
+      .populate("profilePic", "path")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit),
@@ -99,33 +109,52 @@ export const userList = async ({
 
 export const createUser = async (body: any, createdBy: string) => {
   const {
-    firstName, lastName, email, password, phoneNumber, whatsappNumber,
-    address, role, passportStatus, passportNo, notificationPreference,candidateProfile,tacProfile
+    firstName,
+    lastName,
+    email,
+    password,
+    phoneNumber,
+    whatsappNumber,
+    address,
+    role,
+    passportStatus,
+    passportNo,
+    notificationPreference,
+    candidateProfile,
+    tacProfile,
   } = body;
 
   const existing = await UserModel.findOne({ email });
-  if (existing) throw new ApiError('Email already exists', 401);
+  if (existing) throw new ApiError("Email already exists", 401);
 
   if (phoneNumber) {
     const phoneExists = await UserModel.findOne({ phoneNumber });
-    if (phoneExists) throw new ApiError('Phone number already exists', 401);
+    if (phoneExists) throw new ApiError("Phone number already exists", 401);
   }
 
   if (whatsappNumber) {
     const whatsappExists = await UserModel.findOne({ whatsappNumber });
-    if (whatsappExists) throw new ApiError('WhatsApp number already exists', 401);
+    if (whatsappExists)
+      throw new ApiError("WhatsApp number already exists", 401);
   }
 
   const hashedPassword = password ? await hashPassword(password) : undefined;
 
   const user = await UserModel.create({
-    firstName, lastName, email,
+    firstName,
+    lastName,
+    email,
     password: hashedPassword,
-    phoneNumber, whatsappNumber, address, role,
-    passportStatus, passportNo, notificationPreference,
-    candidateProfile: role === 'user' ? candidateProfile : undefined,
-    tacProfile: ['tac', 'tac_head'].includes(role) ? tacProfile : undefined,
-    status: 'active',
+    phoneNumber,
+    whatsappNumber,
+    address,
+    role,
+    passportStatus,
+    passportNo,
+    notificationPreference,
+    candidateProfile: role === "user" ? candidateProfile : undefined,
+    tacProfile: ["tac", "tac_head"].includes(role) ? tacProfile : undefined,
+    status: "active",
     createdBy: new mongoose.Types.ObjectId(createdBy),
   });
 
@@ -139,50 +168,55 @@ export const viewUser = async (userId: string) => {
   //   throw new ApiError('Invalid user ID', 400);
 
   const user = await UserModel.findById(userId)
-    .select('-password')
-    .populate('profilePic', 'path')
-    .populate('reviewer', 'firstName lastName email')
-    .populate('createdBy', 'firstName lastName email')
+    .select("-password")
+    .populate("profilePic", "path")
+    .populate("reviewer", "firstName lastName email")
+    .populate("createdBy", "firstName lastName email")
     .lean();
 
-  if (!user) throw new ApiError('User not found', 404);
+  if (!user) throw new ApiError("User not found", 404);
 
   // Linked social logins
   const socialLogins = await SocialLogins.find({ userId })
-    .select('type providerId scopes expiresAt createdAt')
+    .select("type providerId scopes expiresAt createdAt")
     .lean();
 
   // Branch + shift assignments
-  const branchShifts = await EmployeeBranchShiftModel.find({ employeeId: userId })
-    .populate('branchId', 'title location timeZone')
-    .populate('shiftId', 'name startTime endTime')
-    .select('-__v')
+  const branchShifts = await EmployeeBranchShiftModel.find({
+    employeeId: userId,
+  })
+    .populate("branchId", "title location timeZone")
+    .populate("shiftId", "name startTime endTime")
+    .select("-__v")
     .lean();
 
   // External source link (only relevant for pca / pcra / institute roles)
-  const EXTERNAL_ROLES = ['pca', 'pcra', 'institute'];
+  const EXTERNAL_ROLES = ["pca", "pcra", "institute"];
   let externalSource = null;
   if (EXTERNAL_ROLES.includes((user as any).role)) {
     externalSource = await ExternalSourceModel.findOne({
       type: (user as any).role,
-      status: 'active',
+      status: "active",
     })
-      .select('name type status')
+      .select("name type status")
       .lean();
   }
 
   let userDataToReturn = { ...user } as any;
-  userDataToReturn.isSocialLogin = socialLogins && socialLogins.length > 0
+  userDataToReturn.isSocialLogin = socialLogins && socialLogins.length > 0;
 
   const existingLead = await Lead.findOne({
-    "createdBy.id": new mongoose.Types.ObjectId(userId)
+    "createdBy.id": new mongoose.Types.ObjectId(userId),
   }).lean();
 
   if (existingLead) {
     userDataToReturn.leadId = existingLead._id?.toString();
-    userDataToReturn.prefferedConsultant = existingLead.preferences?.consultantId?.toString() || "";
+    userDataToReturn.prefferedConsultant =
+      existingLead.preferences?.consultantId?.toString() || "";
     if (existingLead.preferences?.branchId) {
-      userDataToReturn.branch = { _id: existingLead.preferences?.branchId?.toString() };
+      userDataToReturn.branch = {
+        _id: existingLead.preferences?.branchId?.toString(),
+      };
     }
 
     if (existingLead.preferences?.visitType === "online") {
@@ -201,49 +235,62 @@ export const viewUser = async (userId: string) => {
 
 export const updateUser = async (userId: string, body: any) => {
   if (!mongoose.Types.ObjectId.isValid(userId))
-    throw new ApiError('Invalid user ID', 400);
+    throw new ApiError("Invalid user ID", 400);
 
   const user = await UserModel.findById(userId);
-  if (!user) throw new ApiError('User not found', 404);
+  if (!user) throw new ApiError("User not found", 404);
 
   // Prevent email collision
   if (body.email && body.email !== user.email) {
     const collision = await UserModel.findOne({ email: body.email });
-    if (collision) throw new ApiError('Email already in use', 401);
+    if (collision) throw new ApiError("Email already in use", 401);
   }
 
   if (body.phoneNumber && body.phoneNumber !== user.phoneNumber) {
-    const phoneExists = await UserModel.findOne({ phoneNumber: body.phoneNumber });
-    if (phoneExists) throw new ApiError('Phone number already exists', 401);
+    const phoneExists = await UserModel.findOne({
+      phoneNumber: body.phoneNumber,
+    });
+    if (phoneExists) throw new ApiError("Phone number already exists", 401);
   }
 
   if (body.whatsappNumber && body.whatsappNumber !== user.whatsappNumber) {
-    const whatsappExists = await UserModel.findOne({ whatsappNumber: body.whatsappNumber });
-    if (whatsappExists) throw new ApiError('WhatsApp number already exists', 401);
+    const whatsappExists = await UserModel.findOne({
+      whatsappNumber: body.whatsappNumber,
+    });
+    if (whatsappExists)
+      throw new ApiError("WhatsApp number already exists", 401);
   }
 
-
-
-
   const ALLOWED = [
-    'firstName', 'lastName', 'email', 'phoneNumber', 'whatsappNumber',
-    'address', 'role', 'passportStatus', 'passportNo', 'status',
-    'notificationPreference', 'reviewer', 'enquired', 'bio', 'experienceInMonths',
+    "firstName",
+    "lastName",
+    "email",
+    "phoneNumber",
+    "whatsappNumber",
+    "address",
+    "role",
+    "passportStatus",
+    "passportNo",
+    "status",
+    "notificationPreference",
+    "reviewer",
+    "enquired",
+    "bio",
+    "experienceInMonths",
   ];
   const update: Record<string, unknown> = {};
   for (const key of ALLOWED) {
     if (body[key] !== undefined) update[key] = body[key];
   }
 
-
   if (body.candidateProfile !== undefined) {
     const existingProfile = user.candidateProfile
-      ? typeof (user.candidateProfile as any).toObject === 'function'
+      ? typeof (user.candidateProfile as any).toObject === "function"
         ? (user.candidateProfile as any).toObject()
         : user.candidateProfile
       : {};
 
-    update['candidateProfile'] = {
+    update["candidateProfile"] = {
       ...existingProfile,
       ...body.candidateProfile,
       // Ensure leadId is NEVER wiped out
@@ -253,12 +300,12 @@ export const updateUser = async (userId: string, body: any) => {
 
   if (body.tacProfile !== undefined) {
     const existingProfile = user.tacProfile
-      ? typeof (user.tacProfile as any).toObject === 'function'
+      ? typeof (user.tacProfile as any).toObject === "function"
         ? (user.tacProfile as any).toObject()
         : user.tacProfile
       : {};
 
-    update['tacProfile'] = {
+    update["tacProfile"] = {
       ...existingProfile,
       ...body.tacProfile,
       // Ensure leadId is NEVER wiped out
@@ -268,7 +315,7 @@ export const updateUser = async (userId: string, body: any) => {
 
   if (body.password) {
     const hashedPassword = await hashPassword(body.password);
-    update['password'] = hashedPassword;
+    update["password"] = hashedPassword;
   }
 
   update.experienceInMonths = update.experienceInMonths
@@ -277,20 +324,23 @@ export const updateUser = async (userId: string, body: any) => {
 
   if (body.profilePicData) {
     if (body.profilePicData === "REMOVE") {
-      update['profilePic'] = null;
+      update["profilePic"] = null;
     } else {
-      const newPicId = await handleProfilePicUpload(userId, body.profilePicData);
-      if (newPicId) update['profilePic'] = newPicId;
+      const newPicId = await handleProfilePicUpload(
+        userId,
+        body.profilePicData,
+      );
+      if (newPicId) update["profilePic"] = newPicId;
     }
   }
 
   const updated = await UserModel.findByIdAndUpdate(
     userId,
     { $set: update },
-    { returnDocument: 'after', runValidators: true }
+    { returnDocument: "after", runValidators: true },
   )
     .select("-password")
-    .populate('profilePic', 'path');
+    .populate("profilePic", "path");
 
   return updated;
 };
@@ -302,16 +352,16 @@ export const updateUserNote = async (
   body: { enquired?: string; reviewer?: string },
 ) => {
   if (!mongoose.Types.ObjectId.isValid(userId))
-    throw new ApiError('Invalid user ID', 400);
+    throw new ApiError("Invalid user ID", 400);
 
   const user = await UserModel.findById(userId);
-  if (!user) throw new ApiError('User not found', 404);
+  if (!user) throw new ApiError("User not found", 404);
 
   const update: Record<string, unknown> = {};
   if (body.enquired !== undefined) update.enquired = body.enquired;
   if (body.reviewer) {
     if (!mongoose.Types.ObjectId.isValid(body.reviewer))
-      throw new ApiError('Invalid reviewer ID', 400);
+      throw new ApiError("Invalid reviewer ID", 400);
     update.reviewer = new mongoose.Types.ObjectId(body.reviewer);
   }
 
@@ -319,8 +369,21 @@ export const updateUserNote = async (
     userId,
     { $set: update },
     { new: true },
-  ).select('enquired reviewer firstName lastName email');
+  ).select("enquired reviewer firstName lastName email");
 
   return updated;
 };
 
+export const getRolesService = async (userRole?: string): Promise<string[]> => {
+  if (userRole !== "admin") {
+    throw new ApiError("User must be an admin", 403);
+  }
+
+  const roles = await UserModel.distinct("role");
+
+  if (!roles || roles.length === 0) {
+    throw new ApiError("No roles found in system", 404);
+  }
+
+  return roles;
+};

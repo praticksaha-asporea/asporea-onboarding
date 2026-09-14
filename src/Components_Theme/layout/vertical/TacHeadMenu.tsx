@@ -70,10 +70,10 @@ const TacHeadMenu = ({
           Dashboard
         </MenuItem>
         <MenuItem
-          href="/tac-head/transfers"
+          href="/tac-head/escalations"
           icon={<i className="ri-shield-check-line" />}
         >
-          Transfers
+          Escalations
         </MenuItem>
         <MenuItem
           href="/tac-head/documents"
@@ -99,6 +99,12 @@ const TacHeadMenu = ({
           icon={<i className="ri-time-line" />}
         >
           Follow Ups
+        </MenuItem>
+        <MenuItem
+          href="/tac-head/reminders"
+          icon={<i className="ri-notification-3-line" />}
+        >
+          Reminders
         </MenuItem>
       </Menu>
     </ScrollWrapper>

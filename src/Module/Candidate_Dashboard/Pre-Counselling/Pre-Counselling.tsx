@@ -86,12 +86,14 @@ const PreCounsellingContent = () => {
     reduxUser,
     todayStr,
   } = usePreCounselling();
-
+ 
   const displayInqNo =
     leadData?.inqNo ||
     (typeof existingBooking?.leadId === "object"
       ? (existingBooking?.leadId as any)?.inqNo
       : null) ||
+    reduxUser?.candidateProfile?.leadId?.inqNo ||
+    reduxUser?.user?.candidateProfile?.leadId?.inqNo ||
     reduxUser?.inqNo ||
     reduxUser?.leadId?.inqNo ||
     reduxUser?.user?.leadId?.inqNo ||

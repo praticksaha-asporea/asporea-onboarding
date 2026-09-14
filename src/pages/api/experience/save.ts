@@ -1,7 +1,6 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import connectToDatabase from "@/lib/mongodb";
 import ResponseHandler from "@/lib/utils/responseUtil";
-
 import { saveExperienceTypeService } from "@/lib/services/experience/experience.service";
 
 export default async function handler(

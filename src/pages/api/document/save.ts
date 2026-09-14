@@ -1,67 +1,48 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import connectToDatabase from "@/lib/mongodb";
-import { DocumentModel } from "@/lib/models/Document.model";
-import ResponseHandler from "@/lib/utils/responseUtil";
+import { applyCors } from "@/lib/cors";
+import { ApiError } from "@/lib/error/api.error";
 import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import mongoose from "mongoose";
+import ResponseHandler from "@/lib/utils/responseUtil";
+import { submitDocumentsService } from "@/lib/services/document/submit-documents.service";
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
-  await connectToDatabase();
-  if (req.method !== "POST")
+  if (applyCors && applyCors(req, res)) return;
+
+  if (req.method !== "POST") {
     return ResponseHandler.sendError(res, "Method not allowed", 405);
+  }
 
   try {
     const token = getTokenFromHeader(req);
     const user = token ? await verifyToken(token) : null;
 
-    const { leadId, documents, position } = req.body;
-
-    if (!leadId || !documents || !position) {
-      return ResponseHandler.sendError(
-        res,
-        "Lead and documents and applying position are required",
-        400,
-      );
-    }
-
-    const savedDocs = [];
-
-    if (documents && documents.length > 0) {
-      for (const doc of documents) {
-        if (doc.typeId && doc.uploadId) {
-          const newDoc = await DocumentModel.create({
-            leadId,
-            userId: user?.id,
-            typeId: doc.typeId,
-            uploadId: doc.uploadId,
-            status: "uploaded",
-          });
-          savedDocs.push(newDoc);
-        }
-      }
-    }
-
-    const LeadModel = mongoose.models.Lead || mongoose.model("Lead");
-
-    await LeadModel.findByIdAndUpdate(leadId, {
-      status: "doc_submitted",
-      "documents.status": "uploaded",
-      "documents.submittedOn": new Date(),
-      "documents.position": position,
-    });
+    const savedDocs = await submitDocumentsService(req.body, user?.id);
 
     return ResponseHandler.sendSuccess(
       res,
       savedDocs,
       "Documents mapped successfully",
     );
-  } catch (error: any) {
-    return ResponseHandler.sendError(res, error.message || "Save Error", 500);
+  } catch (error: unknown) {
+    if (error instanceof ApiError) {
+      return ResponseHandler.sendError(
+        res,
+        error.message,
+        error.statusCode,
+        error.data,
+      );
+    }
+
+    return ResponseHandler.sendError(
+      res,
+      (error as Error)?.message || "Save Error",
+      500,
+    );
   }
 }

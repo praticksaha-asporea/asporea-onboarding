@@ -7,39 +7,8 @@ import { applyCors } from "@/lib/cors";
 import Joi from "joi";
 import { normalizeFormFields, parseForm } from "@/lib/utils/parseForm";
 import { AssessmentUpdate } from "@/lib/services/Assessments/assessment-tool.service";
+import { updateAssignmentSchema } from "@/lib/validation/assignmentValidation";
 
-
-const updateAssignmentSchema = Joi.object({
-  id: Joi.string()
-    .hex()
-    .length(24)
-    .required(),
-  passportNo: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(),
-  totalMarks: Joi.string()
-    .required(),
-  note1: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(), note2: Joi.string()
-      .trim()
-      .allow("", null)
-      .optional(),
-  note3: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(),
-  note4: Joi.string()
-    .trim()
-    .allow("", null)
-    .optional(),
-})
-  .options({
-    abortEarly: false,
-    allowUnknown: true, // IMPORTANT for multipart/form-data
-  });
 export const config = { api: { bodyParser: false } };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
