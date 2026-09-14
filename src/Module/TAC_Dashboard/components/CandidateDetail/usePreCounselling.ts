@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useFormik } from "formik";
 import * as Yup from "yup";
 import toast from "react-hot-toast";
@@ -6,14 +6,15 @@ import { updateAssignmentAction } from "@/Services/APIs/tac/tac.actions";
 import { confirmToast } from "@/Utils/confirmToast";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { AssignmentStatus, IAssignment } from "@/lib/models/Assignment.model";
-import { positionDBData } from "@/Types/object.types";
+import { positionDBData, preTACData } from "@/Types/object.types";
 import { getPathwayPositionsAction } from "@/Services/APIs/Pathway/pathway.action";
 import { BranchType, CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
-import { bookSlotAction, cancelBookingAction, getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
+import { bookSlotAction, cancelBookingAction, getSlotsAction, getTacsListAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { Slot } from "@/Types/Frontend_Payload/assessment.types";
 import dayjs from "dayjs";
 import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 import { useSelector } from "react-redux";
+import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 
 export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string, candidate: CandidateLead, setLeadUpdated: React.Dispatch<React.SetStateAction<boolean>>) => {
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);
@@ -44,7 +45,18 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
   const istTime = new Date(utcTime + 330 * 60000);
   const todayStr = istTime.toISOString().split("T")[0];
   const [selectedTacId, setSelectedTacId] = useState<string>("");
+  const [branches, setBranches] = useState<BranchType[]>([]);
+  const [selectedBranchId, setSelectedBranchId] = useState<string>("");
+  const handleBranchSelect = (branchId: string) => {
+    setSelectedBranchId(branchId);
+    setSelectedRescheduleSlot(null);
+    setSelectedTacId("");
 
+  };
+  const [tacs, setTacs] = useState<preTACData[]>([]);
+  const [loadingTacs, setLoadingTacs] = useState(false);
+
+  const [profileTac, setProfileTac] = useState<preTACData | null>(null);
   const canManageAppointment = !["completed", "rejected", "cancelled"].includes(inqAssign?.status);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -232,7 +244,8 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
 
   useEffect(() => {
     const consultantId =
-      typeof inqAssign?.assignedTo === "string" ? inqAssign.assignedTo : inqAssign?.assignedTo?._id;
+      // typeof inqAssign?.assignedTo === "string" ? inqAssign.assignedTo : inqAssign?.assignedTo?._id;
+      selectedTacId;
 
     if (!isRescheduleOpen || !consultantId) return;
 
@@ -255,7 +268,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     };
 
     fetchRescheduleSlots();
-  }, [isRescheduleOpen, rescheduleDate, inqAssign?.assignedTo]);
+  }, [isRescheduleOpen, rescheduleDate, inqAssign?.assignedTo, selectedBranchId, selectedTacId]);
 
   // ---------------------------------------------------------------------------
   // 4. NEW HANDLERS
@@ -264,36 +277,16 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     if (!selectedRescheduleSlot) return toast.error("Please select a new time slot");
 
     setRescheduling(true);
-    // try {
-    //   const res = await rescheduleSlotAction({
-    //     assignmentId: inqAssign?._id,
-    //     date: rescheduleDate,
-    //     from: selectedRescheduleSlot.from,
-    //     to: selectedRescheduleSlot.to,
-    //   });
-
-
-    //   if (res?.data?.success) {
-    //     toast.success("Appointment rescheduled successfully");
-    //     setIsRescheduleOpen(false);
-    //     // TODO: refresh inqAssign / candidate data from the parent so the
-    //     // "Scheduled Date" / "Time Slot" cards reflect the new booking.
-    //   } else {
-    //     toast.error(res?.data?.message || "Failed to reschedule appointment");
-    //   }
-
-    // console.log(candidate?.preferences?.branchId, selectedTacId, 5555);
 
     const payload = new FormData();
     payload.append("leadId", candidate?._id);
-    const branchId = candidate?.preferences?.branchId;
+    // const branchId = candidate?.preferences?.branchId;
+    // const branchId = selectedBranchId;
 
-    if (branchId) {
+
+    if (selectedBranchId) {
       payload.append(
-        "branchId",
-        typeof branchId === "string"
-          ? branchId
-          : branchId._id.toString()
+        "branchId", selectedBranchId
       );
     }
     if (selectedTacId) {
@@ -303,6 +296,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       payload.append("to", selectedRescheduleSlot.to as string);
     }
     payload.append("method", mode === "online" ? "on" : "off");
+    console.log(payload, 5135124);
 
     // if (cv.resumeFile) payload.append("resumeFile", cv.resumeFile);
     try {
@@ -347,6 +341,62 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     //   setCancelling(false);
     // }
   };
+
+
+  const fetchBranches = useCallback(
+    async () => {
+      //lat: number, lng: number
+      try {
+        const response = await branchListingApi();
+        const list = response?.data?.data?.data || [];
+        setBranches(list);
+        const branchId = (candidate?.preferences?.branchId as BranchType)?._id || candidate?.preferences?.branchId;
+
+        setSelectedBranchId(branchId as string);
+
+        setMode(candidate?.preferences?.visitType == "off" ? "offline" : "online")
+      } catch (error) {
+        console.error("Branch fetch error:", error);
+        toast.error("Failed to fetch nearby branches");
+      }
+    },
+    [],
+  );
+
+
+  useEffect(() => {
+    fetchBranches();
+  }, []);
+
+
+  // Fetch TAC list
+  useEffect(() => {
+    const fetchTacs = async () => {
+      if (!selectedBranchId) {
+        setTacs([]);
+        return;
+      }
+      setLoadingTacs(true);
+      try {
+        const payload = {
+          page: 1,
+          limit: 10,
+          search: '',
+          mode,
+          branchId: selectedBranchId,
+        };
+        const res = await getTacsListAction(payload);
+        const list = res?.data?.data?.tacList || [];
+        setTacs(list);
+      } catch (err) {
+        console.error("TAC fetch error:", err);
+        setTacs([]);
+      } finally {
+        setLoadingTacs(false);
+      }
+    };
+    fetchTacs();
+  }, [selectedBranchId, mode]);
   return {
     preForm,
     isPreLocked,
@@ -383,5 +433,13 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
     selectedTacId,
     mode,
     setMode,
+    branches,
+    selectedBranchId,
+    handleBranchSelect,
+    profileTac,
+    setProfileTac,
+    tacs,
+    loadingTacs,
+    setSelectedTacId,
   };
 };

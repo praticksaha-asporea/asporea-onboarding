@@ -65,6 +65,7 @@ export const useBranchSelection = (reduxUser: any) => {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         fetchBranches(pos.coords.latitude, pos.coords.longitude);
+        setLocationDenied(false);
       },
       () => {
         setLocationDenied(true);

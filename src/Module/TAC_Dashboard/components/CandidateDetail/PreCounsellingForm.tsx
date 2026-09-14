@@ -19,10 +19,9 @@ import {
   IconButton,
   Chip,
   Avatar,
-  InputLabel,
   Select,
   MenuItem,
-  Skeleton,
+  FormHelperText,
 } from "@mui/material";
 import { CamelCase, isWithinSchedule } from "@/Utils/common";
 import { usePreCounselling } from "./usePreCounselling";
@@ -37,6 +36,8 @@ import { IUser } from "@/lib/models/User.model";
 import { positionDBData } from "@/Types/object.types";
 import { Step5SlotSelection } from "@/Components/PreCounselling/Step5SlotSelection";
 import { Step2SessionMode } from "@/Components/PreCounselling/Step2SessionMode";
+import { Step1BranchSelection } from "@/Components/PreCounselling/Step1BranchSelection";
+import { Step4TacSelection } from "@/Components/PreCounselling/Step4TacSelection";
 
 interface PreCounsellingFormProps {
   candidate: CandidateLead;
@@ -99,6 +100,14 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     selectedTacId,
     mode,
     setMode,
+    branches,
+    selectedBranchId,
+    handleBranchSelect,
+
+    tacs,
+    loadingTacs,
+    setSelectedTacId,
+    setProfileTac
   } = usePreCounselling(inqAssign, candidatePhone, c, setLeadUpdated);
 
   const consultantFullName = consultantId?.firstName
@@ -685,6 +694,10 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                           MenuProps={{
                             PaperProps: { sx: { maxHeight: 400 } },
                           }}
+                          error={
+                            preForm.submitCount > 0 &&
+                            Boolean(preForm.errors.positionOffering)
+                          }
                         >
                           {Array.isArray(positionData) &&
                             positionData.map((p: positionDBData) => (
@@ -693,6 +706,10 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                               </MenuItem>
                             ))}
                         </Select>
+
+                        {preForm.errors.positionOffering && (
+                          <FormHelperText>{preForm.errors.positionOffering as string}</FormHelperText>
+                        )}
                       </FormControl>
                     </Grid>
 
@@ -885,7 +902,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
       <Dialog
         open={isRescheduleOpen}
         onClose={() => setIsRescheduleOpen(false)}
-        maxWidth="xs"
+        maxWidth="md"
         fullWidth
         PaperProps={{ className: "rounded-3xl overflow-hidden" }}
       >
@@ -899,55 +916,24 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
         </Box>
 
         <DialogContent className="p-6">
-          {/* <Typography variant="caption" className="font-semibold uppercase tracking-wide text-[var(--mui-palette-text-secondary)] mb-1.5 block">
-            Date
-          </Typography>
-          <TextField
-            type="date"
-            size="small"
-            fullWidth
-            value={rescheduleDate}
-            onChange={(e) => setRescheduleDate(e.target.value)}
-            className="mb-5"
-            slotProps={{ input: { className: "rounded-xl" } }}
+          <Step1BranchSelection
+            locationDenied={false}
+            loadingBranches={false}
+            branches={branches}
+            selectedBranchId={selectedBranchId}
+            handleBranchSelect={handleBranchSelect}
           />
 
-          <Typography variant="caption" className="font-semibold uppercase tracking-wide text-[var(--mui-palette-text-secondary)] mb-2 block">
-            Available Slots
-          </Typography>
-
-          {loadingRescheduleSlots ? (
-            <Box className="flex gap-2 flex-wrap">
-              {[1, 2, 3].map((i) => (
-                <Skeleton key={i} variant="rounded" width={84} height={38} className="rounded-xl" />
-              ))}
-            </Box>
-          ) : rescheduleSlots.length === 0 ? (
-            <Typography variant="body2" className="text-[var(--mui-palette-text-secondary)]">
-              No slots available for this date.
-            </Typography>
-          ) : (
-            <Box className="flex gap-2 flex-wrap">
-              {rescheduleSlots.map((slot, idx) => {
-                const isSelected = selectedRescheduleSlot?.from === slot.from && selectedRescheduleSlot?.to === slot.to;
-                return (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => setSelectedRescheduleSlot(slot)}
-                    className={`px-3.5 py-2 rounded-xl text-xs font-semibold border-2 transition-all duration-200 ${isSelected
-                      ? "border-[var(--mui-palette-primary-main)] bg-[var(--mui-palette-primary-main)] text-white"
-                      : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/50"
-                      }`}
-                  >
-                    {slot.from} - {slot.to}
-                  </button>
-                );
-              })}
-            </Box>
-          )} */}
-
           <Step2SessionMode mode={mode} setMode={setMode} />
+
+          <Step4TacSelection
+            selectedBranchId={selectedBranchId}
+            loadingTacs={loadingTacs}
+            tacs={tacs}
+            selectedTacId={selectedTacId}
+            setSelectedTacId={setSelectedTacId}
+            setProfileTac={setProfileTac}
+          />
 
           <Step5SlotSelection
             selectedTacId={selectedTacId}
@@ -958,11 +944,11 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             slots={rescheduleSlots}
             selectedSlot={selectedRescheduleSlot}
             setSelectedSlot={setSelectedRescheduleSlot}
-            reschedule={true} mode={""} bookingData={null} leadData={null}          />
+            reschedule={true} mode={""} bookingData={null} leadData={null} />
 
         </DialogContent>
 
-        <Box className="flex justify-end gap-3 px-6 pb-6">
+        <Box className="flex justify-end gap-3 px-6 pb-6 mt-5">
           <Button variant="outlined" onClick={() => setIsRescheduleOpen(false)} className="rounded-xl normal-case font-semibold">
             Close
           </Button>

@@ -51,7 +51,7 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
           <Typography className="font-bold">{targetLead?.name} ({targetLead?.inqNo})</Typography>
         </Box>
 
-        <FormControl fullWidth size="small">
+        <FormControl fullWidth size="medium">
           <InputLabel>Select Branch</InputLabel>
           <Select value={selectedBranch} onChange={(e) => setSelectedBranch(e.target.value as string)} label="Select Branch">
             {branches.map((br) => (
@@ -62,7 +62,7 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
           </Select>
         </FormControl>
 
-        <FormControl fullWidth size="small">
+        <FormControl fullWidth size="medium">
           <InputLabel>Select Method</InputLabel>
           <Select value={method} onChange={(e) => setMethod(e.target.value as string)} label="Select Method">
             <MenuItem value="online">Online</MenuItem>
@@ -70,7 +70,7 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
           </Select>
         </FormControl>
 
-        <FormControl fullWidth size="small">
+        <FormControl fullWidth size="medium">
           <InputLabel>Select Assigning TAC</InputLabel>
           <Select value={selectedTac} onChange={(e) => setSelectedTac(e.target.value as string)} label="Select Assigning TAC">
             {tacList.length === 0 && <MenuItem disabled>No TAC available in this branch</MenuItem>}
@@ -85,7 +85,7 @@ const DashboardScheduleModal: React.FC<DashboardScheduleModalProps> = ({
         <TextField
           fullWidth type="date" label="Select Date"
           InputLabelProps={{ shrink: true }} inputProps={{ min: todayStr }}
-          value={date} onChange={(e) => setDate(e.target.value)}
+          value={date} onChange={(e) => setDate(e.target.value)} size="medium"
         />
 
         {selectedTac && (

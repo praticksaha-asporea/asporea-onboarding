@@ -13,6 +13,7 @@ import toast from "react-hot-toast";
 import { useSelector } from "react-redux";
 import { cancelBookingAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
+import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 
 export interface kpiTypes {
   openCases: number, pendingCounselling: number, pendingAssessment: number,
@@ -70,7 +71,7 @@ export const useDashboardView = () => {
   const [cancelLoading, setCancelLoading] = useState(false);
   const [branches, setBranches] = useState<branchDB[]>([]);
   const [selectedBranch, setSelectedBranch] = useState<string>("");
-  const [method, setMethod] = useState<string>(targetLead?.visitType === "on" ? "online" : "offline");
+  const [method, setMethod] = useState<string>(targetLead?.visitType as CounsellingMode);
 
 
   const openCancelModal = (candidate: CandidateRow) => {
@@ -194,7 +195,7 @@ export const useDashboardView = () => {
     setDate(todayStr);
     setSlots([]);
     setSelectedSlot(null);
-    setMethod(candidate?.visitType === "on" ? "online" : "offline");
+    setMethod(candidate?.visitType);
 
     if (candidate.branchId) {
       const res = await getTacListAction({ branchId: candidate.branchId });
