@@ -62,54 +62,63 @@ export const Step1BranchSelection: React.FC<Step1BranchSelectionProps> = ({
           No branches found near your location.
         </Typography>
       ) : (
-        <Box className="flex gap-3 overflow-x-auto pb-1">
-          {branches.map((branch: Branch) => {
-            const isSelected = selectedBranchId === branch._id;
-            return (
-              <Box
-                key={branch._id}
-                onClick={() => handleBranchSelect(branch._id)}
-                className={`flex flex-col gap-1 p-4 rounded-2xl cursor-pointer shrink-0 transition-all duration-200 ${
-                  isSelected
+        <Box className="flex gap-3 overflow-x-auto pb-5">
+          {[...branches]
+            .sort((a, b) => {
+              if (a._id === selectedBranchId) return -1;
+              if (b._id === selectedBranchId) return 1;
+              return 0;
+            })
+            .map((branch: Branch) => {
+              const isSelected = selectedBranchId === branch._id;
+
+              return (
+                <Box
+                  key={branch._id}
+                  onClick={() => handleBranchSelect(branch._id)}
+                  className={`flex flex-col gap-1 p-4 rounded-2xl cursor-pointer shrink-0 transition-all duration-200 ${isSelected
                     ? "border-[var(--mui-palette-primary-main)] bg-[color-mix(in_srgb,var(--mui-palette-primary-main)_19%,transparent)]"
                     : "border-[var(--mui-palette-divider)] hover:border-[var(--mui-palette-primary-main)]/40"
-                }`}
-                style={{ minWidth: 200 }}
-              >
-                <Box className="flex items-center gap-2">
-                  <i
-                    className={
-                      isSelected
-                        ? "ri-checkbox-circle-fill text-[var(--mui-palette-primary-main)]"
-                        : "ri-building-4-line text-[var(--mui-palette-text-secondary)]"
-                    }
-                  />
-                  <Typography
-                    variant="subtitle2"
-                    className="font-medium tracking-wide text-[var(--mui-palette-primary)]"
-                  >
-                    {branch.title}
-                  </Typography>
+                    }`}
+                  style={{ minWidth: 200 }}
+                >
+                  <Box className="flex items-center gap-2">
+                    <i
+                      className={
+                        isSelected
+                          ? "ri-checkbox-circle-fill text-[var(--mui-palette-primary-main)]"
+                          : "ri-building-4-line text-[var(--mui-palette-text-secondary)]"
+                      }
+                    />
+
+                    <Typography
+                      variant="subtitle2"
+                      className="font-medium tracking-wide text-[var(--mui-palette-primary)]"
+                    >
+                      {branch.title}
+                    </Typography>
+                  </Box>
+
+                  {branch.city && (
+                    <Typography
+                      variant="caption"
+                      className="text-[var(--mui-palette-text-secondary)]"
+                    >
+                      {branch.city}
+                    </Typography>
+                  )}
+
+                  {typeof branch.distanceKm === "number" && (
+                    <Typography
+                      variant="caption"
+                      className="mt-1 text-[var(--mui-palette-info-main)]"
+                    >
+                      {branch.distanceKm.toFixed(1)} km away
+                    </Typography>
+                  )}
                 </Box>
-                {branch.city && (
-                  <Typography
-                    variant="caption"
-                    className="text-[var(--mui-palette-text-secondary)]"
-                  >
-                    {branch.city}
-                  </Typography>
-                )}
-                {typeof branch.distanceKm === "number" && (
-                  <Typography
-                    variant="caption"
-                    className="mt-1 text-[var(--mui-palette-info-main)]"
-                  >
-                    {branch.distanceKm.toFixed(1)} km away
-                  </Typography>
-                )}
-              </Box>
-            );
-          })}
+              );
+            })}
         </Box>
       )}
     </Card>
