@@ -24,7 +24,7 @@ export interface kpiTypes {
 export const useDashboardView = () => {
   const router = useRouter();
   const currentUser = useSelector(
-    (state: any) => state.userSlice?.userData || state.user?.userData,
+    (state: any) => state?.userSlice?.userData || state.user?.userData,
   );
   const isFoe =
     currentUser?.role === "foe" || currentUser?.user?.role === "foe";
@@ -82,7 +82,7 @@ export const useDashboardView = () => {
   const handleConfirmCancel = async () => {
     if (!cancelTargetLead) return;
 
-    if (!cancelReason.trim()) {
+    if (!cancelReason?.trim()) {
       return toast.error("Please enter a reason for cancellation.");
     }
 
@@ -91,7 +91,7 @@ export const useDashboardView = () => {
       const res = await cancelBookingAction({
         leadId: cancelTargetLead._id,
         actionBy: currentUser?._id || currentUser?.id,
-        cancelReason: cancelReason.trim(),
+        cancelReason: cancelReason?.trim(),
       });
 
       if (res?.data?.success) {

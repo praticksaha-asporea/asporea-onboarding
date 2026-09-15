@@ -38,6 +38,7 @@ import { Step5SlotSelection } from "@/Components/PreCounselling/Step5SlotSelecti
 import { Step2SessionMode } from "@/Components/PreCounselling/Step2SessionMode";
 import { Step1BranchSelection } from "@/Components/PreCounselling/Step1BranchSelection";
 import { Step4TacSelection } from "@/Components/PreCounselling/Step4TacSelection";
+import TacProfileDialog from "@/Components/modals/TacProfileDialog";
 
 interface PreCounsellingFormProps {
   candidate: CandidateLead;
@@ -107,6 +108,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
     tacs,
     loadingTacs,
     setSelectedTacId,
+    profileTac,
     setProfileTac
   } = usePreCounselling(inqAssign, candidatePhone, c, setLeadUpdated);
 
@@ -1010,6 +1012,13 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
           </Box>
         </Box>
       </Dialog>
+
+
+      <TacProfileDialog
+        open={Boolean(profileTac)}
+        tac={profileTac}
+        onClose={() => setProfileTac(null)}
+      />
     </>
   );
 };
