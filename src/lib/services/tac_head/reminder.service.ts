@@ -5,6 +5,10 @@ import { Assignment } from "@/lib/models/Assignment.model";
 import User from "@/lib/models/User.model";
 import "@/lib/models/Upload.model";
 import { Reminder } from "@/lib/models/Reminder.model";
+import {
+  getRemindersQuerySchema,
+  reminderIdParamSchema,
+} from "@/lib/validation/reminderValidation";
 import mongoose from "mongoose";
 
 export const getReminderTargetsService = async (
@@ -30,16 +34,14 @@ export const getReminderTargetsService = async (
     );
   }
 
-  // ── 2. Match Query (Status + Branch Scope) ──────────────────────────────────
-  const matchQuery: any = {
+   const matchQuery: any = {
     status: status,
     "preferences.branchId": {
       $in: assignedBranchIds.map((id) => new mongoose.Types.ObjectId(id)),
     },
   };
 
-  // ── 3. Fetch Candidates (Leads) ─────────────────────────────────────────────
-  const leads = await Lead.find(matchQuery)
+   const leads = await Lead.find(matchQuery)
     .populate({
       path: "preferences.consultantId",
       model: User,
@@ -67,7 +69,7 @@ export const getReminderTargetsService = async (
 
   const userPicMap = new Map<string, string>();
 
-  // Map leadId -> profilePic path/url
+ 
   for (const u of candidateUsers as any[]) {
     const lId = u.candidateProfile?.leadId?.toString();
     const pic = u.profilePic;
@@ -78,7 +80,7 @@ export const getReminderTargetsService = async (
     }
   }
 
-  // Fallback: Check createdBy.id if user created their own lead
+   
   const creatorIds = leads.map((l: any) => l.createdBy?.id).filter(Boolean);
   if (creatorIds.length > 0) {
     const creatorUsers = await User.find({ _id: { $in: creatorIds } })
@@ -105,7 +107,7 @@ export const getReminderTargetsService = async (
     }
   }
 
-  // ── 4. Format Candidates Array for UI ──────────────────────────────────────
+ 
   const formattedCandidates = leads.map((lead: any) => ({
     leadId: lead._id,
     inqNo: lead.inqNo || "—",
@@ -113,7 +115,7 @@ export const getReminderTargetsService = async (
     profilePic: userPicMap.get(lead._id.toString()) || null,
   }));
 
-  // ── 5. Fetch TACs from Assignment Table ────────────────────────────────────
+ 
   const assignments = await Assignment.find({
     leadId: { $in: leadIds },
     assignedTo: { $ne: null },
@@ -133,7 +135,7 @@ export const getReminderTargetsService = async (
 
   const formattedTacs: any[] = [];
   const tacTracker = new Set<string>();
-
+  
   for (const assign of assignments) {
     const tac = assign.assignedTo as any;
     const lead = assign.leadId as any;
@@ -290,4 +292,191 @@ export const createBulkRemindersService = async (
     count: result.length,
     message: `${result.length} reminders sent successfully`,
   };
+};
+
+// ── 3. Get Reminders List Service (With Filters & Pagination) ────────────────
+export interface IGetRemindersQuery {
+  page?: number;
+  limit?: number;
+  read?: string;
+  notifyType?: string;
+  sentFrom?: string;
+  notifyTo?: string;
+  search?: string;
+}
+
+export const getRemindersListService = async (
+  queryParams: IGetRemindersQuery
+) => {
+  const { error, value } = getRemindersQuerySchema.validate(queryParams);
+  if (error) {
+    const msg = error.details.map((d) => d.message).join(", ");
+    throw new ApiError(msg, 400);
+  }
+
+  const page = Number(value.page) || 1;
+  const limit = Number(value.limit) || 10;
+  const skip = (page - 1) * limit;
+
+  const matchQuery: Record<string, any> = {};
+
+  if (value.read && value.read !== "all") {
+    matchQuery.read = value.read === "true";
+  }
+
+  if (value.notifyType && value.notifyType !== "all") {
+    matchQuery.notifyType = value.notifyType;
+  }
+
+  if (value.sentFrom) {
+    matchQuery.sentFrom = new mongoose.Types.ObjectId(value.sentFrom);
+  }
+
+  if (value.notifyTo) {
+    matchQuery.notifyTo = new mongoose.Types.ObjectId(value.notifyTo);
+  }
+
+  if (value.search) {
+    matchQuery.$or = [
+      { heading: { $regex: value.search, $options: "i" } },
+      { message: { $regex: value.search, $options: "i" } },
+    ];
+  }
+
+  const [reminders, totalCount] = await Promise.all([
+    Reminder.find(matchQuery)
+      .populate({
+        path: "sentFrom",
+        model: User,
+        select: "firstName lastName email role profilePic",
+        populate: { path: "profilePic", select: "path url" },
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+
+    Reminder.countDocuments(matchQuery),
+  ]);
+
+  const populatedReminders = await Promise.all(
+    reminders.map(async (rem: any) => {
+      let recipientDetails: any = null;
+
+      if (rem.notifyType === "candidate") {
+        const lead = await Lead.findById(rem.notifyTo)
+          .select("fullName inqNo contact status")
+          .lean();
+        if (lead) {
+          recipientDetails = {
+            id: lead._id,
+            name: lead.fullName || "—",
+            inqNo: lead.inqNo || "—",
+            type: "candidate",
+          };
+        }
+      } else if (rem.notifyType === "tac") {
+        const user = await User.findById(rem.notifyTo)
+          .select("firstName lastName email role profilePic")
+          .populate({ path: "profilePic", select: "path url" })
+          .lean();
+        if (user) {
+          const pic = user.profilePic as any;
+          recipientDetails = {
+            id: user._id,
+            name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "TAC User",
+            email: user.email,
+            profilePic: typeof pic === "string" ? pic : pic?.path || pic?.url || null,
+            type: "tac",
+          };
+        }
+      }
+
+      return {
+        ...rem,
+        notifyToDetails: recipientDetails,
+      };
+    })
+  );
+
+  return {
+    reminders: populatedReminders,
+    pagination: {
+      total: totalCount,
+      page,
+      limit,
+      totalPages: Math.ceil(totalCount / limit),
+    },
+  };
+};
+
+// ── 4. Get Single Reminder By ID Service ────────────────────────────────────
+export const getReminderByIdService = async (reminderId: string) => {
+  const { error } = reminderIdParamSchema.validate({ id: reminderId });
+  if (error) {
+    throw new ApiError(error.details[0].message, 400);
+  }
+
+  const reminder = await Reminder.findById(reminderId)
+    .populate({
+      path: "sentFrom",
+      model: User,
+      select: "firstName lastName email role profilePic",
+      populate: { path: "profilePic", select: "path url" },
+    })
+    .lean();
+
+  if (!reminder) {
+    throw new ApiError("Reminder not found", 404);
+  }
+
+  let recipientDetails: any = null;
+  if (reminder.notifyType === "candidate") {
+    const lead = await Lead.findById(reminder.notifyTo)
+      .select("fullName inqNo contact status")
+      .lean();
+    if (lead) {
+      recipientDetails = {
+        id: lead._id,
+        name: lead.fullName || "—",
+        inqNo: lead.inqNo || "—",
+        type: "candidate",
+      };
+    }
+  } else {
+    const user = await User.findById(reminder.notifyTo)
+      .select("firstName lastName email role profilePic")
+      .populate({ path: "profilePic", select: "path url" })
+      .lean();
+    if (user) {
+      const pic = user.profilePic as any;
+      recipientDetails = {
+        id: user._id,
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim() || "TAC User",
+        email: user.email,
+        profilePic: typeof pic === "string" ? pic : pic?.path || pic?.url || null,
+        type: "tac",
+      };
+    }
+  }
+
+  return {
+    ...reminder,
+    notifyToDetails: recipientDetails,
+  };
+};
+
+// ── 5. Delete Reminder Service ─────────────────────────────────────────────
+export const deleteReminderService = async (reminderId: string) => {
+  const { error } = reminderIdParamSchema.validate({ id: reminderId });
+  if (error) {
+    throw new ApiError(error.details[0].message, 400);
+  }
+
+  const deleted = await Reminder.findByIdAndDelete(reminderId);
+  if (!deleted) {
+    throw new ApiError("Reminder not found or already deleted", 404);
+  }
+
+  return { message: "Reminder deleted successfully" };
 };

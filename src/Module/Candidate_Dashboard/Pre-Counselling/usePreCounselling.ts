@@ -149,6 +149,7 @@ export const usePreCounselling = () => {
     leadId,
     todayStr,
     isReduxReady: status.isReduxReady,
+    isStatusLoading: status.isStatusLoading, 
     isValidLead: status.isValidLead,
     isCompleted: status.isCompleted,
     existingBooking: status.existingBooking,
