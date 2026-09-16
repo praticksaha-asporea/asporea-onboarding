@@ -91,4 +91,5 @@ export interface CandidateLead extends DocumentBaseCandidate {
   token?: string | null;
   user?: IUser;
   offeredPosition?: string;
+  escalated?: boolean;
 }

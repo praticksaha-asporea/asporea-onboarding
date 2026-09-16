@@ -11,7 +11,7 @@ import { positionDBData } from "@/Types/object.types";
 import { createEscalateAction } from "@/Services/APIs/Escalate/escalate.action";
 
 
-export const useInquiryDetails = (candidate: CandidateLead) => {
+export const useInquiryDetails = (candidate: CandidateLead, setLeadUpdated: React.Dispatch<React.SetStateAction<boolean>>) => {
     const contact = candidate.contact ?? { phone: "", whatsapp: "", email: "" };
     const passport = candidate.passport ?? { status: "no", no: "" };
     const preferences = candidate.preferences ?? { visitType: "" };
@@ -200,6 +200,8 @@ export const useInquiryDetails = (candidate: CandidateLead) => {
             setIsEscalating(true);
             await createEscalateAction({ fromId: user?._id, leadId: candidate._id, reason: escalateReason !== "other" ? escalateReason : escalateNote, status: "requested" });
             handleCloseEscalate();
+            toast.success("Escalation requested successfully");
+            setLeadUpdated((prev) => !prev);
         } catch (err) {
             console.error("Failed to escalate inquiry", err);
         } finally {

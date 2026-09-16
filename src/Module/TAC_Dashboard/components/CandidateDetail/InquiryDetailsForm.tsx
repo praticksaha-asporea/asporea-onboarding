@@ -8,7 +8,7 @@ import { positionDBData } from "@/Types/object.types";
 import dayjs from "dayjs";
 import { SectionHeader } from "@/Components/InquiryStaff/SectionHeader";
 
-interface InquiryDetailsFormProps { candidate: CandidateLead; }
+interface InquiryDetailsFormProps { candidate: CandidateLead; setLeadUpdated: React.Dispatch<React.SetStateAction<boolean>> }
 
 const ESCALATION_REASONS = [
   { value: "no response", label: "No response from candidate" },
@@ -18,8 +18,8 @@ const ESCALATION_REASONS = [
   { value: "payment issue", label: "Payment / fee issue" },
   { value: "other", label: "Other" },
 ];
-const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) => {
-  const { inquiryForm, fe, fh, getChipStyle, preferences, notifPrefs, categoryOptions, positionData, handleOpenEscalate, escalateOpen, handleCloseEscalate, escalateReasonError, escalateReason, setEscalateReason, setEscalateReasonError, escalateNote, setEscalateNote, isEscalating, handleConfirmEscalate, } = useInquiryDetails(candidate);
+const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setLeadUpdated }) => {
+  const { inquiryForm, fe, fh, getChipStyle, preferences, notifPrefs, categoryOptions, positionData, handleOpenEscalate, escalateOpen, handleCloseEscalate, escalateReasonError, escalateReason, setEscalateReason, setEscalateReasonError, escalateNote, setEscalateNote, isEscalating, handleConfirmEscalate } = useInquiryDetails(candidate, setLeadUpdated);
   return (
     <Card className="p-6 rounded-xl shadow-2xl">
       <Typography className="text-[18px] font-medium mb-5">
@@ -348,16 +348,18 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
 
 
         <Box className="flex justify-end mt-6">
-          <Button
-            variant="outlined"
-            color="warning"
-            startIcon={<i className="ri-arrow-up-circle-line" />}
-            onClick={handleOpenEscalate}
-            disabled={inquiryForm.isSubmitting}
-            className="normal-case px-5 mr-3"
-          >
-            Escalate Inquiry
-          </Button>
+          {candidate?.escalated === true ? (
+            <Button
+              variant="outlined"
+              color="warning"
+              startIcon={<i className="ri-arrow-up-circle-line" />}
+              onClick={handleOpenEscalate}
+              disabled={inquiryForm.isSubmitting}
+              className="normal-case px-5 mr-3"
+            >
+              Escalate Inquiry
+            </Button>
+          ) : "Escalated"}
 
           <Button variant="contained" type="submit" disabled={inquiryForm.isSubmitting} className="normal-case px-6">
             {inquiryForm.isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Update"}
@@ -369,7 +371,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
       <Dialog open={escalateOpen} onClose={handleCloseEscalate} fullWidth maxWidth="sm">
         <DialogTitle>Escalate Inquiry {candidate?.inqNo ? `(${candidate.inqNo})` : ""}</DialogTitle>
         <DialogContent>
-          <DialogContentText className="mb-4">
+          <DialogContentText className="mb-4 text-sm">
             Select a reason for escalating this inquiry. This will notify the relevant person.
           </DialogContentText>
 
@@ -411,7 +413,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
           )}
         </DialogContent>
         <DialogActions className="px-6 pb-4">
-          <Button onClick={handleCloseEscalate} disabled={isEscalating} className="normal-case">
+          <Button onClick={handleCloseEscalate} disabled={isEscalating} className="normal-case" color="error">
             Cancel
           </Button>
           <Button

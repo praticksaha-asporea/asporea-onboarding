@@ -65,6 +65,7 @@ export interface ILead extends Document {
   };
 
   transferredTo?: Types.ObjectId;
+  escalated?: boolean;
 
   createdAt: Date;
   updatedAt: Date;// add to ILead interface
@@ -207,7 +208,7 @@ const LeadSchema = new Schema<ILead>(
       id: { type: Schema.Types.ObjectId, ref: "User" },
       type: {
         type: String,
-        enum: ["self", "tac", "pca", "pcra", "sub_pca", "institute","foe"],
+        enum: ["self", "tac", "pca", "pcra", "sub_pca", "institute", "foe"],
       },
     },
 
@@ -215,6 +216,11 @@ const LeadSchema = new Schema<ILead>(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    escalated: {
+      type: Boolean,
+      default: false,
+
+    }
   },
   { timestamps: true }
 );

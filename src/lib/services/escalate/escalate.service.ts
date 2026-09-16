@@ -1,5 +1,6 @@
 import { ApiError } from "@/lib/error/api.error";
 import { EscalationModel } from "@/lib/models/Escalation.model";
+import { Lead } from "@/lib/models/Lead.model";
 import mongoose from "mongoose";
 
 export const createEscalationService = async (
@@ -36,6 +37,12 @@ export const createEscalationService = async (
     if (existing) {
         throw new ApiError("This inquiry has already been escalated and its pending for approval", 409);
     }
+
+    await Lead.updateOne({
+        _id: leadObjectId,
+    }, {
+        escalated: true
+    })
 
     return await EscalationModel.create({
         leadId: new mongoose.Types.ObjectId(leadId),

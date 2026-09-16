@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";  
+import { usePathname } from "next/navigation";
 import {
   Box,
   Grid,
@@ -30,7 +30,7 @@ interface CandidateDetailProps { }
 const CandidateDetail: React.FC<CandidateDetailProps> = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<any>(null);
   const pathname = usePathname();
- 
+
   const [tabValue, setTabValue] = useState<string>("inquiry");
   const [updatingFollowUp, setUpdatingFollowUp] = useState(false);
   const params = useParams<{ id: string }>();
@@ -56,7 +56,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
     leadUpdated,
     setLeadUpdated
   } = useCandidateDetail({ selectedCandidate });
-const userRole = currentUser?.role || (currentUser as any)?.user?.role;
+  const userRole = currentUser?.role || (currentUser as any)?.user?.role;
   const isTacHead = pathname?.startsWith("/tac-head") || userRole === "tac_head";
   useEffect(() => {
     if (!id) return;
@@ -97,6 +97,7 @@ const userRole = currentUser?.role || (currentUser as any)?.user?.role;
           inqForPosition: response?.data?.data.lead.inqForPosition ?? "",
           user: response?.data?.data?.user ?? "",
           offeredPosition: response?.data?.data.lead.offeredPosition ?? "",
+          escalated: response?.data?.data.lead.escalated ?? false,
         });
       })
       .catch((err) =>
@@ -217,8 +218,8 @@ const userRole = currentUser?.role || (currentUser as any)?.user?.role;
       </Box>
 
       <Grid container spacing={3}>
-<Grid size={{ xs: 12, lg: isTacHead ? 12 : 9 }}>          
-  {tabValue === "inquiry" && <InquiryDetailsForm candidate={c} />}
+        <Grid size={{ xs: 12, lg: isTacHead ? 12 : 9 }}>
+          {tabValue === "inquiry" && <InquiryDetailsForm candidate={c} setLeadUpdated={setLeadUpdated} />}
 
           {tabValue === "precounselling" && showPreCounselling && (
             <PreCounsellingForm
