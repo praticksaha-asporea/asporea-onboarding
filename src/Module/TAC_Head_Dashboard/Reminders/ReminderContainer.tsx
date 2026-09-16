@@ -4,10 +4,12 @@ import { useState } from "react";
 import { Box, Button, Typography } from "@mui/material";
 import RemindersView from "./RemindersView"; 
 import ReminderHistoryTable from "./ReminderHistoryTable";
-
+import { useSelector } from "react-redux";
+import type { RootState } from "@/Redux/store";
 const ReminderContainer = () => {
   const [viewMode, setViewMode] = useState<"list" | "create">("list");
-
+const currentUser = useSelector((state: RootState) => state.user.userData);
+const currentUserId = currentUser?._id || currentUser?.id;
   return (
     <Box className="w-full p-4 md:p-6">
       <Box className="flex justify-between items-center mb-6">
@@ -32,7 +34,13 @@ const ReminderContainer = () => {
         </Button>
       </Box>
 
-      {viewMode === "list" ? <ReminderHistoryTable /> : <RemindersView />}
+
+     {viewMode === "list" ? (
+        <ReminderHistoryTable currentUserId={currentUserId} />
+      ) : (
+        <RemindersView />
+      )}
+
     </Box>
   );
 };

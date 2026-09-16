@@ -35,8 +35,10 @@ import {
   getRemindersListAction,
 } from "@/Services/APIs/tacHead/reminder.action";
 import { IReminderListItem } from "@/Types/reminder.types";
-
-const ReminderHistoryTable = () => {
+interface ReminderHistoryTableProps {
+  currentUserId?: string;  
+}
+const ReminderHistoryTable: React.FC<ReminderHistoryTableProps> = ({ currentUserId }) => {
   const [reminders, setReminders] = useState<IReminderListItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -53,7 +55,8 @@ const ReminderHistoryTable = () => {
   const [totalPages, setTotalPages] = useState<number>(1);
 
   // Modal States
-  const [selectedReminder, setSelectedReminder] = useState<IReminderListItem | null>(null);
+  const [selectedReminder, setSelectedReminder] =
+    useState<IReminderListItem | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<boolean>(false);
 
@@ -62,7 +65,7 @@ const ReminderHistoryTable = () => {
     try {
       const res = await getRemindersListAction({
         page,
-        limit: 12,  
+        limit: 12,
         notifyType,
         read: readStatus,
         search,
@@ -73,7 +76,9 @@ const ReminderHistoryTable = () => {
         setTotalPages(res.data.data.pagination.totalPages);
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to fetch reminders");
+      toast.error(
+        error?.response?.data?.message || "Failed to fetch reminders",
+      );
     } finally {
       setLoading(false);
     }
@@ -100,7 +105,9 @@ const ReminderHistoryTable = () => {
         fetchReminders();
       }
     } catch (error: any) {
-      toast.error(error?.response?.data?.message || "Failed to delete reminder");
+      toast.error(
+        error?.response?.data?.message || "Failed to delete reminder",
+      );
     } finally {
       setDeleting(false);
     }
@@ -124,7 +131,10 @@ const ReminderHistoryTable = () => {
     <Box className="w-full">
       {/* ── TOP SECTION: SEARCH & FILTERS ── */}
       <Box className="flex flex-wrap gap-4 items-center justify-between mb-6">
-        <form onSubmit={handleSearchSubmit} className="w-full md:w-auto flex-1 max-w-md">
+        <form
+          onSubmit={handleSearchSubmit}
+          className="w-full md:w-auto flex-1 max-w-md"
+        >
           <TextField
             fullWidth
             size="small"
@@ -254,7 +264,10 @@ const ReminderHistoryTable = () => {
       ) : reminders.length === 0 ? (
         <Box className="flex flex-col items-center justify-center text-center py-24 bg-[var(--mui-palette-background-paper)] rounded-3xl shadow-sm   text-[var(--mui-palette-text-secondary)] font-medium">
           <i className="ri-inbox-line text-6xl mb-4 opacity-30" />
-          <Typography variant="h6" className="font-semibold text-[var(--mui-palette-text-primary)]">
+          <Typography
+            variant="h6"
+            className="font-semibold text-[var(--mui-palette-text-primary)]"
+          >
             No reminders found
           </Typography>
           <Typography variant="body2" className="mt-1 opacity-70">
@@ -265,9 +278,16 @@ const ReminderHistoryTable = () => {
         /* ── GRID VIEW (NEW DESIGN) ── */
         <Box className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {reminders.map((row) => {
-            const senderName = row.sentFrom
-              ? `${row.sentFrom.firstName || ""} ${row.sentFrom.lastName || ""}`.trim()
-              : "System";
+            const isSentFromYou = Boolean(
+  currentUserId && 
+  (row.sentFrom?._id?.toString() === currentUserId.toString() || 
+   row.sentFrom?.id?.toString() === currentUserId.toString())
+);
+           const senderName = isSentFromYou
+  ? "You"
+  : row.sentFrom
+  ? `${row.sentFrom.firstName || ""} ${row.sentFrom.lastName || ""}`.trim()
+  : "System";
             const { cleanText, inqRef } = parseMessage(row.message);
 
             return (
@@ -279,7 +299,10 @@ const ReminderHistoryTable = () => {
                 <Box className="p-5 flex items-start justify-between">
                   <Box className="flex items-center gap-3 w-full overflow-hidden">
                     <Avatar
-                      src={row.notifyToDetails?.profilePic || "/images/avatars/avatar.png"}
+                      src={
+                        row.notifyToDetails?.profilePic ||
+                        "/images/avatars/avatar.png"
+                      }
                       className="w-11 h-11  "
                     >
                       {row.notifyToDetails?.name?.charAt(0) || "U"}
@@ -311,7 +334,9 @@ const ReminderHistoryTable = () => {
                   <Box className="grid grid-cols-[90px_1fr] items-start gap-3">
                     <Box className="flex items-center gap-2 text-[var(--mui-palette-text-primary)]">
                       <i className="ri-file-text-line text-[15px]" />
-                      <Typography className="text-xs font-medium tracking-wide">Heading</Typography>
+                      <Typography className="text-xs font-medium tracking-wide">
+                        Heading
+                      </Typography>
                     </Box>
                     <Typography className="text-[13px] font-medium text-[var(--mui-palette-text-secondary)] line-clamp-2 leading-snug">
                       {row.heading}
@@ -319,76 +344,80 @@ const ReminderHistoryTable = () => {
                   </Box>
 
                   {/* Message */}
-                <Box className="grid grid-cols-[90px_1fr] items-start gap-3">
-  <Box className="flex items-center gap-2 text-[var(--mui-palette-text-secondary)] mt-0.5">
-    <i className="ri-chat-3-line text-[15px]" />
-    <Typography className="text-xs font-medium tracking-wide">Message</Typography>
-  </Box>
-  <Tooltip
-  title={
-    <Box className="p-1 space-y-1.5 border-none max-w-[240px]">
-      <Typography className="text-[13px] font-medium tracking-wide text-[var(--mui-palette-text-secondary)] leading-relaxed break-words">
-        {cleanText}
-      </Typography>
-      {inqRef && (
-        <Box className="pt-1.5  "> 
-          <Typography className="text-[12px] font-semibold tracking-wider text-[var(--mui-palette-primary-main)] break-words">
-          Reference Inquiries: {inqRef}
-          </Typography>
-        </Box>
-      )}
-    </Box>
-  }
-  arrow
-  placement="top"
-  slotProps={{
-    tooltip: {
-      sx: {
-        bgcolor: "var(--mui-palette-background-paper)",
-        color: "var(--mui-palette-text-primary)",
-        boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.2)",
-        
-        borderRadius: "12px",
-        padding: "8px 12px",
-        maxWidth: "250px",  
-      },
-    },
-    arrow: {
-      sx: {
-        color: "var(--mui-palette-background-paper)",
-      },
-    },
-    popper: {
-      modifiers: [
-        {
-          name: "preventOverflow",
-          options: {
-            boundary: "window",  
-          },
-        },
-      ],
-    },
-  }}
->
-  <Box className="min-w-0 cursor-pointer group">
-    <Typography className="text-[13px] text-[var(--mui-palette-text-primary)] line-clamp-2 leading-relaxed group-hover:text-blue-500 transition-colors">
-      {cleanText}
-    </Typography>
-    {inqRef && (
-      <Chip
-        size="small"
-        label={`Inq: ${inqRef}`}
-        className="mt-1.5 h-5 text-[12px] font-medium bg-[var(--mui-palette-primary)] -ml-3 text-[var(--mui-palette-primary-main)]   max-w-[200px] truncate cursor-pointer    "
-      />
-    )}
-  </Box>
-</Tooltip>
-</Box>
+                  <Box className="grid grid-cols-[90px_1fr] items-start gap-3">
+                    <Box className="flex items-center gap-2 text-[var(--mui-palette-text-secondary)] mt-0.5">
+                      <i className="ri-chat-3-line text-[15px]" />
+                      <Typography className="text-xs font-medium tracking-wide">
+                        Message
+                      </Typography>
+                    </Box>
+                    <Tooltip
+                      title={
+                        <Box className="p-1 space-y-1.5 border-none max-w-[240px]">
+                          <Typography className="text-[13px] font-medium tracking-wide text-[var(--mui-palette-text-secondary)] leading-relaxed break-words">
+                            {cleanText}
+                          </Typography>
+                          {inqRef && (
+                            <Box className="pt-1.5  ">
+                              <Typography className="text-[12px] font-semibold tracking-wider text-[var(--mui-palette-primary-main)] break-words">
+                                Reference Inquiries: {inqRef}
+                              </Typography>
+                            </Box>
+                          )}
+                        </Box>
+                      }
+                      arrow
+                      placement="top"
+                      slotProps={{
+                        tooltip: {
+                          sx: {
+                            bgcolor: "var(--mui-palette-background-paper)",
+                            color: "var(--mui-palette-text-primary)",
+                            boxShadow: "0 10px 30px -5px rgba(0, 0, 0, 0.2)",
+
+                            borderRadius: "12px",
+                            padding: "8px 12px",
+                            maxWidth: "250px",
+                          },
+                        },
+                        arrow: {
+                          sx: {
+                            color: "var(--mui-palette-background-paper)",
+                          },
+                        },
+                        popper: {
+                          modifiers: [
+                            {
+                              name: "preventOverflow",
+                              options: {
+                                boundary: "window",
+                              },
+                            },
+                          ],
+                        },
+                      }}
+                    >
+                      <Box className="min-w-0 cursor-pointer group">
+                        <Typography className="text-[13px] text-[var(--mui-palette-text-primary)] line-clamp-2 leading-relaxed group-hover:text-blue-500 transition-colors">
+                          {cleanText}
+                        </Typography>
+                        {inqRef && (
+                          <Chip
+                            size="small"
+                            label={`Inq: ${inqRef}`}
+                            className="mt-1.5 h-5 text-[12px] font-medium bg-[var(--mui-palette-primary)] -ml-3 text-[var(--mui-palette-primary-main)]   max-w-[200px] truncate cursor-pointer    "
+                          />
+                        )}
+                      </Box>
+                    </Tooltip>
+                  </Box>
                   {/* Sent From */}
                   <Box className="grid grid-cols-[90px_1fr] items-start gap-3">
                     <Box className="flex items-center gap-2 text-[var(--mui-palette-text-secondary)]">
                       <i className="ri-user-3-line text-[15px]" />
-                      <Typography className="text-xs font-medium tracking-wide">Sent From</Typography>
+                      <Typography className="text-xs font-medium tracking-wide">
+                        Sent From
+                      </Typography>
                     </Box>
                     <Box>
                       <Typography className="text-[13px] font-medium text-[var(--mui-palette-text-primary)] leading-tight">
@@ -406,8 +435,10 @@ const ReminderHistoryTable = () => {
                 {/* Card Footer: Date & Actions */}
                 <Box className="px-5 py-3.5 flex items-center justify-between bg-[var(--mui-palette-action-hover)]/20">
                   <Box className="flex items-center gap-2 text-[var(--mui-palette-text-secondary)]">
-                    <i className="ri-calendar-line text-[var(--mui-palette-primary-main)]
- text-[15px]" />
+                    <i
+                      className="ri-calendar-line text-[var(--mui-palette-primary-main)]
+ text-[15px]"
+                    />
                     <Typography className="text-[12px] font-medium tracking-wide">
                       {format(new Date(row.createdAt), "dd MMM yyyy, hh:mm a")}
                     </Typography>
@@ -447,44 +478,79 @@ const ReminderHistoryTable = () => {
           <Table>
             <TableHead className="bg-[var(--mui-palette-action-hover)]/30">
               <TableRow>
-                <TableCell align="left" className="font-semibold tracking-wide text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="left"
+                  className="font-semibold tracking-wide text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Recipient (Notify To)
                 </TableCell>
-                <TableCell align="left" className="font-semibold text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="left"
+                  className="font-semibold text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Sent From
                 </TableCell>
-                <TableCell align="center" className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="center"
+                  className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Heading
                 </TableCell>
-                <TableCell align="center" className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="center"
+                  className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Message
                 </TableCell>
-                <TableCell align="center" className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="center"
+                  className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Status
                 </TableCell>
-                <TableCell align="center" className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="center"
+                  className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Sent At
                 </TableCell>
-                <TableCell align="center" className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]">
+                <TableCell
+                  align="center"
+                  className="font-semibold tracking-wider text-[13px] py-4 border-b border-[var(--mui-palette-divider)]"
+                >
                   Actions
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {reminders.map((row) => {
-                const senderName = row.sentFrom
-                  ? `${row.sentFrom.firstName || ""} ${row.sentFrom.lastName || ""}`.trim()
-                  : "System";
+              const isSentFromYou = Boolean(
+  currentUserId && 
+  (row.sentFrom?._id?.toString() === currentUserId.toString() || 
+   row.sentFrom?.id?.toString() === currentUserId.toString())
+);
+
+const senderName = isSentFromYou
+  ? "You"
+  : row.sentFrom
+  ? `${row.sentFrom.firstName || ""} ${row.sentFrom.lastName || ""}`.trim()
+  : "System";
 
                 const { cleanText, inqRef } = parseMessage(row.message);
 
                 return (
                   <TableRow key={row._id} hover className="transition-colors">
                     {/* Recipient */}
-                    <TableCell align="left" className="border-b border-[var(--mui-palette-divider)]">
+                    <TableCell
+                      align="left"
+                      className="border-b border-[var(--mui-palette-divider)]"
+                    >
                       <Box className="flex items-center gap-3">
                         <Avatar
-                          src={row.notifyToDetails?.profilePic || "/images/avatars/avatar.png"}
+                          src={
+                            row.notifyToDetails?.profilePic ||
+                            "/images/avatars/avatar.png"
+                          }
                           className="w-10 h-10 border border-[var(--mui-palette-divider)]"
                         >
                           {row.notifyToDetails?.name?.charAt(0) || "U"}
@@ -503,7 +569,10 @@ const ReminderHistoryTable = () => {
                     </TableCell>
 
                     {/* Sent From */}
-                    <TableCell align="left" className="border-b border-[var(--mui-palette-divider)]">
+                    <TableCell
+                      align="left"
+                      className="border-b border-[var(--mui-palette-divider)]"
+                    >
                       <Typography className="font-medium text-[13px] leading-tight">
                         {senderName}
                       </Typography>
@@ -513,7 +582,10 @@ const ReminderHistoryTable = () => {
                     </TableCell>
 
                     {/* Heading */}
-                    <TableCell align="center" className="max-w-[150px] border-b border-[var(--mui-palette-divider)]">
+                    <TableCell
+                      align="center"
+                      className="max-w-[150px] border-b border-[var(--mui-palette-divider)]"
+                    >
                       <Typography className="font-semibold text-[13px] truncate text-[var(--mui-palette-text-primary)]">
                         {row.heading}
                       </Typography>
@@ -530,7 +602,7 @@ const ReminderHistoryTable = () => {
                             {inqRef && (
                               <Box className="pt-1.5  ">
                                 <Typography className="text-[11px] font-semibold tracking-wider text-amber-500 dark:text-amber-400">
-                                Reference Inquiries: {inqRef}
+                                  Reference Inquiries: {inqRef}
                                 </Typography>
                               </Box>
                             )}
@@ -574,7 +646,10 @@ const ReminderHistoryTable = () => {
                     </TableCell>
 
                     {/* Status */}
-                    <TableCell align="center" className="border-b border-[var(--mui-palette-divider)]">
+                    <TableCell
+                      align="center"
+                      className="border-b border-[var(--mui-palette-divider)]"
+                    >
                       <Chip
                         size="small"
                         label={row.read ? "Read" : "Unread"}
@@ -584,12 +659,18 @@ const ReminderHistoryTable = () => {
                     </TableCell>
 
                     {/* Sent At */}
-                    <TableCell align="center" className="text-[12px] text-[var(--mui-palette-text-secondary)] whitespace-nowrap border-b border-[var(--mui-palette-divider)]">
+                    <TableCell
+                      align="center"
+                      className="text-[12px] text-[var(--mui-palette-text-secondary)] whitespace-nowrap border-b border-[var(--mui-palette-divider)]"
+                    >
                       {format(new Date(row.createdAt), "dd MMM yyyy, hh:mm a")}
                     </TableCell>
 
                     {/* Actions */}
-                    <TableCell align="center" className="border-b border-[var(--mui-palette-divider)]">
+                    <TableCell
+                      align="center"
+                      className="border-b border-[var(--mui-palette-divider)]"
+                    >
                       <Box className="flex items-center justify-center gap-1.5">
                         <Tooltip title="View Details" placement="top">
                           <IconButton
@@ -643,15 +724,19 @@ const ReminderHistoryTable = () => {
           className: "rounded-3xl shadow-2xl",
         }}
       >
-        <DialogTitle className="font-medium tracking-wide text-[var(--mui-palette-common-white)]
- bg-blue-400 text-[19px] py-4 px-6">
+        <DialogTitle
+          className="font-medium tracking-wide text-[var(--mui-palette-common-white)]
+ bg-blue-400 text-[19px] py-4 px-6"
+        >
           Reminder Details
         </DialogTitle>
         <DialogContent className="p-6 space-y-5">
           <Box className="grid grid-cols-2 gap-4  shadow-2xl bg-[var(--mui-palette-action-hover)]/20 p-4 rounded-2xl mt-4">
             <Box>
-              <Typography className="text-xs  font-medium text-[var(--mui-palette-primary)]
-">
+              <Typography
+                className="text-xs  font-medium text-[var(--mui-palette-primary)]
+"
+              >
                 Recipient Type
               </Typography>
               <Typography className="font-bold mt-1 uppercase text-[var(--mui-palette-primary-main)] text-[14px]">
@@ -659,9 +744,11 @@ const ReminderHistoryTable = () => {
               </Typography>
             </Box>
             <Box>
-              <Typography className="text-xs font-medium text-[var(--mui-palette-primary)]
-">
-            Recipient Name
+              <Typography
+                className="text-xs font-medium text-[var(--mui-palette-primary)]
+"
+              >
+                Recipient Name
               </Typography>
               <Typography className="font-bold mt-1 text-[var(--mui-palette-primary-main)] text-[14px]">
                 {selectedReminder?.notifyToDetails?.name}
@@ -699,8 +786,8 @@ const ReminderHistoryTable = () => {
       </Dialog>
 
       {/* ── DELETE CONFIRMATION DIALOG ── */}
-      <Dialog 
-        open={Boolean(deleteId)} 
+      <Dialog
+        open={Boolean(deleteId)}
         onClose={() => setDeleteId(null)}
         PaperProps={{
           className: "rounded-3xl shadow-2xl",
@@ -711,20 +798,21 @@ const ReminderHistoryTable = () => {
         </DialogTitle>
         <DialogContent className="px-6 pb-2">
           <Typography className="text-[14px] text-[var(--mui-palette-text-secondary)] leading-relaxed">
-            Are you sure you want to delete this reminder log? This action is permanent and cannot be undone.
+            Are you sure you want to delete this reminder log? This action is
+            permanent and cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions className="p-6">
-          <Button 
-            className="rounded-xl font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800" 
+          <Button
+            className="rounded-xl font-semibold text-gray-600 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
             onClick={() => setDeleteId(null)}
           >
             Cancel
           </Button>
-          <Button 
-            color="error" 
-            variant="contained" 
-            disabled={deleting} 
+          <Button
+            color="error"
+            variant="contained"
+            disabled={deleting}
             onClick={handleDelete}
             className="rounded-xl font-semibold px-5 shadow-none"
           >
