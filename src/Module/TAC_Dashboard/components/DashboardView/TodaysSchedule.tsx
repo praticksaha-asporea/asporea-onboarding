@@ -24,16 +24,16 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ slots }) => {
         <CardContent className="p-5">
           <Box className="flex items-center justify-between mb-5">
             <Box>
-              <Typography className="text-[16px] font-semibold">
+              <Typography className="text-lg font-semibold">
                 Today's Schedule
               </Typography>
 
-              <Typography className="text-sm text-gray-400">
+              <Typography className="text-md text-gray-400 mt-5">
                 Upcoming pre-counselling and assessment slots
               </Typography>
             </Box>
 
-            {slots.length > 4 && (
+            {slots?.length > 4 && (
               <Box className="flex gap-1">
                 <IconButton
                   size="small"
@@ -46,7 +46,7 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ slots }) => {
                 <IconButton
                   size="small"
                   onClick={handleNext}
-                  disabled={startIndex + 4 >= slots.length}
+                  disabled={startIndex + 4 >= slots?.length}
                 >
                   <i className="ri-arrow-right-s-line text-xl" />
                 </IconButton>
@@ -54,22 +54,21 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ slots }) => {
             )}
           </Box>
 
-          {slots.length === 0 ? (
+          {slots?.length === 0 ? (
             <Typography className="text-sm text-gray-400">
               No sessions scheduled for today.
             </Typography>
           ) : (
             <Box className="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-4 gap-4">
-              {visibleCards.map((slot: any, i) => (
+              {visibleCards?.map((slot: any, i) => (
                 <Box
                   key={i}
-               className={`rounded-xl p-4 shadow-2xl border-[var(--mui-palette-divider)] min-h-[80px] ${
-  slot?.status === 'completed'
-    ? 'bg-[var(--mui-palette-success-main)]/10'
-    : slot?.status === 'assigned'
-    ? 'bg-[var(--mui-palette-primary-main)]/10'
-    : 'bg-[var(--mui-palette-warning-main)]/10'
-}`}
+                  className={`rounded-xl p-4 shadow-2xl border-[var(--mui-palette-divider)] min-h-[80px] ${slot?.status === 'completed'
+                    ? 'bg-[var(--mui-palette-success-main)]/10'
+                    : slot?.status === 'assigned'
+                      ? 'bg-[var(--mui-palette-primary-main)]/10'
+                      : 'bg-[var(--mui-palette-warning-main)]/10'
+                    }`}
                 >
                   <Stack spacing={0.5}>
                     <Typography
@@ -95,7 +94,7 @@ const TodaysSchedule: React.FC<TodaysScheduleProps> = ({ slots }) => {
           )}
         </CardContent>
       </Card>
-      
+
     </>
   );
 };

@@ -100,7 +100,7 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
     assessScheduleStatuses,
   } = useDashboardTable(isFoe);
   const currentUser = useSelector(
-    (state: any) => state.userSlice?.userData || state.user?.userData
+    (state: any) => state?.userSlice?.userData || state?.user?.userData
   );
 
   const currentUserId = extractId(currentUser?._id || currentUser?.id || currentUser?.user);

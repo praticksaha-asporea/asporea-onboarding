@@ -7,7 +7,7 @@ export const useTodaySchedule = ({ slots }: { slots: todaySchedule[] }) => {
     const theme = useTheme();
     const [startIndex, setStartIndex] = useState(0);
 
-    const visibleCards = slots.slice(startIndex, startIndex + 4);
+    const visibleCards = slots?.slice(startIndex, startIndex + 4);
     const handlePrev = () => {
         setStartIndex((prev) => Math.max(prev - 4, 0));
     };

@@ -7,7 +7,7 @@ export const getAllCandidatesForTacHead = async (
   tacHeadId: string,
   queryFilters: any,
 ) => {
-  const { branchId, tacId, page = 1, limit = 10,search } = queryFilters;
+  const { branchId, tacId, page = 1, limit = 10, search } = queryFilters;
 
   const assignedBranches = await EmployeeBranchShiftModel.find({
     employeeId: tacHeadId,
@@ -28,8 +28,8 @@ export const getAllCandidatesForTacHead = async (
   };
 
   if (search && search.trim() !== "") {
-    const searchRegex = new RegExp(search.trim(), "i");  
-    
+    const searchRegex = new RegExp(search.trim(), "i");
+
     matchQuery.$or = [
       { fullName: { $regex: searchRegex } },
       { "contact.email": { $regex: searchRegex } },

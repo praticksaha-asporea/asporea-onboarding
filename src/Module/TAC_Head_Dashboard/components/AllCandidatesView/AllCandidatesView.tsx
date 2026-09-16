@@ -19,6 +19,11 @@ import {
   Tooltip,
 } from "@mui/material";
 import { useAllCandidates } from "./useAllCandidates";
+import { CandidateRow, tacData } from "@/Types/object.types";
+import DashboardScheduleModal from "@/Module/TAC_Dashboard/components/DashboardView/DashboardScheduleModal";
+import { Slot } from "@/Types/Frontend_Payload/assessment.types";
+import DashboardCommunicationModal from "@/Module/TAC_Dashboard/components/DashboardView/DashboardCommunicationModal";
+import CancelBookingModal from "@/Module/FOE_Dashboard/CancelBookingModal";
 
 const responsiveTableSx = {
   "& .resp-thead": { "@media (max-width: 767px)": { display: "none" } },
@@ -55,7 +60,7 @@ const responsiveTableSx = {
   },
 };
 
-const COLS = ["Candidate", "Branch", "Assigned TAC", "Contact", "Status","Actions"];
+const COLS = ["Candidate", "Branch", "Assigned TAC", "Contact", "Status", "Actions"];
 
 const AllCandidatesView = () => {
   const {
@@ -70,6 +75,41 @@ const AllCandidatesView = () => {
     handleFilterChange,
     handlePageChange,
     handleViewCandidate,
+    preRescheduleStatuses,
+    assessScheduleStatuses,
+    cancellableStatuses,
+    openScheduleModal,
+    openCancelModal,
+
+
+
+    modalOpen, setModalOpen,
+    targetLead, setTargetLead,
+    tacList, selectedTac, setSelectedTac,
+    date,
+    setDate,
+    todayStr,
+    slotsLoading,
+    slots,
+    selectedSlot,
+    setSelectedSlot,
+    handleBookSlot,
+    bookingLoading,
+    schedulePhase,
+    selectedBranch,
+    setSelectedBranch,
+    method,
+    setMethod,
+    commModalOpen, setCommModalOpen,
+    cancelModalOpen, setCancelModalOpen,
+    commCandidate, setCommCandidate,
+    commMode, setCommMode,
+    cancelReason, setCancelReason,
+    handleConfirmCancel,
+    cancelLoading,
+    setCancelLoading,
+    cancelTargetLead
+
   } = useAllCandidates();
 
   return (
@@ -230,6 +270,100 @@ const AllCandidatesView = () => {
                     className="resp-cell !py-3 !px-4 md:text-center"
                     data-label="Actions"
                   >
+
+
+
+                    {row.status === "inquiry_submitted" && (
+                      <Tooltip
+                        title="Schedule Pre-Counselling"
+                        placement="top"
+                        arrow
+                      >
+                        <IconButton
+                          size="small"
+                          onClick={() =>
+                            openScheduleModal(row, false, "pre")
+                          }
+                          className="hover:bg-[rgba(59,130,246,0.08)] transition-all"
+                          sx={{
+                            color: "#3b82f6 !important",
+                            padding: "6px",
+                          }}
+                        >
+                          <i className="ri-calendar-event-line text-[18px]" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+
+
+                    {(row.status === "pre_not_responded" ||
+                      preRescheduleStatuses.includes(
+                        row.status
+                      )) && (
+                        <Tooltip
+                          title="Reschedule Pre-Counselling"
+                          placement="top"
+                          arrow
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              openScheduleModal(row, true, "pre")
+                            }
+                            className="hover:bg-[rgba(249,115,22,0.08)] transition-all"
+                            sx={{
+                              color: "#f97316 !important",
+                              padding: "6px",
+                            }}
+                          >
+                            <i className="ri-calendar-schedule-line text-[18px]" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+
+
+                    {
+                      assessScheduleStatuses.includes(
+                        row.status
+                      ) && (
+                        <Tooltip
+                          title="Schedule / Reschedule Assessment"
+                          placement="top"
+                          arrow
+                        >
+                          <IconButton
+                            size="small"
+                            onClick={() =>
+                              openScheduleModal(row, true, "assess")
+                            }
+                            className="hover:bg-[rgba(236,72,153,0.08)] transition-all"
+                            sx={{
+                              color: "#ec4899 !important",
+                              padding: "6px",
+                            }}
+                          >
+                            <i className="ri-calendar-todo-line text-[18px]" />
+                          </IconButton>
+                        </Tooltip>
+                      )}
+
+
+                    {cancellableStatuses.includes(row.status) && (
+                      <Tooltip title="Cancel Session" placement="top" arrow>
+                        <IconButton
+                          size="small"
+                          onClick={() => openCancelModal(row as unknown as CandidateRow)}
+                          className="hover:bg-[rgba(239,68,68,0.08)] transition-all"
+                          sx={{
+                            color: "#ef4444 !important",
+                            padding: "6px",
+                          }}
+                        >
+                          <i className="ri-calendar-close-line text-[18px]" />
+                        </IconButton>
+                      </Tooltip>
+                    )}
+
                     <Tooltip title="View Profile" placement="top" arrow>
                       <IconButton
                         size="small"
@@ -263,6 +397,48 @@ const AllCandidatesView = () => {
           />
         </Box>
       )}
+
+
+      <DashboardScheduleModal
+        modalOpen={modalOpen}
+        setModalOpen={setModalOpen}
+        targetLead={targetLead as CandidateRow}
+        tacList={tacList}
+        selectedTac={selectedTac as tacData}
+        setSelectedTac={setSelectedTac}
+        date={date}
+        setDate={setDate}
+        todayStr={todayStr}
+        slotsLoading={slotsLoading}
+        slots={slots}
+        selectedSlot={selectedSlot as Slot}
+        setSelectedSlot={setSelectedSlot}
+        handleBookSlot={handleBookSlot}
+        bookingLoading={bookingLoading}
+        schedulePhase={schedulePhase}
+        branches={branches as any}
+        selectedBranch={selectedBranch}
+        setSelectedBranch={setSelectedBranch}
+        method={method}
+        setMethod={setMethod}
+
+      />
+
+      <DashboardCommunicationModal
+        open={commModalOpen}
+        onClose={() => setCommModalOpen(false)}
+        candidate={commCandidate as CandidateRow}
+        mode={commMode}
+      />
+      <CancelBookingModal
+        open={cancelModalOpen}
+        onClose={() => setCancelModalOpen(false)}
+        candidateName={cancelTargetLead?.name || "Candidate"}
+        cancelReason={cancelReason}
+        setCancelReason={setCancelReason}
+        onConfirmCancel={handleConfirmCancel}
+        loading={cancelLoading}
+      />
     </Box>
   );
 };
