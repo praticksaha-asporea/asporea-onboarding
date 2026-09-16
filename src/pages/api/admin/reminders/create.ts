@@ -7,42 +7,35 @@ import {
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
 import { applyCors } from "@/lib/cors";
-import { getTacScheduleService } from "@/lib/services/tac/tacSchedule.service";
+import { createAdminBulkRemindersService } from "@/lib/services/admin/reminder.service";
 
 export default async function handler(
-  req: NextApiRequest, 
+  req: NextApiRequest,
   res: NextApiResponse,
 ) {
   await connectToDatabase();
   if (applyCors(req, res)) return;
 
+  if (req.method !== "POST") {
+    return ResponseHandler.sendError(res, "Method not allowed", 405);
+  }
+
   try {
     const token = getTokenFromHeader(req);
     if (!token) throw new ApiError("Unauthenticated user", 401);
+
     const authUser = await verifyToken(token);
-    
-    if (authUser.role !== "tac") throw new ApiError("TAC access required", 403);
-
-    if (req.method === "GET") {
-      const { month, year } = req.query;
-
-      if (!month || !year)
-        throw new ApiError("Month and Year are required", 400);
-
-      const result = await getTacScheduleService(
-        authUser.id,
-        Number(month),
-        Number(year),
-      );
-
-      return ResponseHandler.sendSuccess(
-        res,
-        result,
-        "Schedules fetched successfully",
-      );
+    if (authUser.role !== "admin") {
+      throw new ApiError("Admin access required", 403);
     }
 
-    return ResponseHandler.sendError(res, "Method not allowed", 405);
+    const result = await createAdminBulkRemindersService(req.body, authUser.id);
+
+    return ResponseHandler.sendSuccess(
+      res,
+      result,
+      "Reminders sent successfully",
+    );
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(

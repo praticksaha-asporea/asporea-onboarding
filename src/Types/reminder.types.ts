@@ -55,6 +55,7 @@ export interface IReminderListItem {
   notifyTo: string;
   notifyType: "candidate" | "tac";
   sentFrom: {
+    id: any;
     _id: string;
     firstName: string;
     lastName: string;
