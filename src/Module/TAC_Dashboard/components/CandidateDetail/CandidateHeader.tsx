@@ -93,7 +93,7 @@ const CandidateHeader: React.FC<CandidateHeaderProps> = ({
           )}
         </Box>
 
-       
+
         <Box className="flex items-center gap-2  px-3 py-1 rounded-xl  ">
           {updatingFollowUp ? (
             <CircularProgress size={20} className="mr-2" />
@@ -112,7 +112,7 @@ const CandidateHeader: React.FC<CandidateHeaderProps> = ({
         </Box>
       </Box>
 
-      
+
       <Dialog
         open={previewOpen}
         onClose={() => setPreviewOpen(false)}

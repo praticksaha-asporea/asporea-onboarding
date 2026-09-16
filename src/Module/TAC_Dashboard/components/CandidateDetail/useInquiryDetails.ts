@@ -8,6 +8,7 @@ import { IPathway } from "@/lib/models/Pathway.model";
 import { useEffect, useMemo, useState } from "react";
 import { getPathwayPositionsAction, getPathwayTopLevelAction } from "@/Services/APIs/Pathway/pathway.action";
 import { positionDBData } from "@/Types/object.types";
+import { createEscalateAction } from "@/Services/APIs/Escalate/escalate.action";
 
 
 export const useInquiryDetails = (candidate: CandidateLead) => {
@@ -20,6 +21,12 @@ export const useInquiryDetails = (candidate: CandidateLead) => {
     const [positionData, setPositionData] = useState<positionDBData[] | null>(
         null,
     );
+
+    const [escalateOpen, setEscalateOpen] = useState(false);
+    const [escalateReason, setEscalateReason] = useState("");
+    const [escalateNote, setEscalateNote] = useState("");
+    const [escalateReasonError, setEscalateReasonError] = useState(false);
+    const [isEscalating, setIsEscalating] = useState(false);
     const user = candidate?.user;
     // console.log(candidate, 2222);
 
@@ -173,5 +180,32 @@ export const useInquiryDetails = (candidate: CandidateLead) => {
         fetchPositions(inquiryForm.values.inqForType);
     }, [inquiryForm.values.inqForType]);
 
-    return { inquiryForm, fe, fh, getChipStyle, preferences, notifPrefs, categoryOptions, positionData };
+
+    const handleOpenEscalate = () => setEscalateOpen(true);
+
+    const handleCloseEscalate = () => {
+        if (isEscalating) return;
+        setEscalateOpen(false);
+        setEscalateReason("");
+        setEscalateNote("");
+        setEscalateReasonError(false);
+    };
+
+    const handleConfirmEscalate = async () => {
+        if (!escalateReason) {
+            setEscalateReasonError(true);
+            return;
+        }
+        try {
+            setIsEscalating(true);
+            await createEscalateAction({ fromId: user?._id, leadId: candidate._id, reason: escalateReason !== "other" ? escalateReason : escalateNote, status: "requested" });
+            handleCloseEscalate();
+        } catch (err) {
+            console.error("Failed to escalate inquiry", err);
+        } finally {
+            setIsEscalating(false);
+        }
+    };
+
+    return { inquiryForm, fe, fh, getChipStyle, preferences, notifPrefs, categoryOptions, positionData, handleOpenEscalate, escalateOpen, handleCloseEscalate, escalateReasonError, escalateReason, setEscalateReason, setEscalateReasonError, escalateNote, setEscalateNote, isEscalating, handleConfirmEscalate, };
 };
