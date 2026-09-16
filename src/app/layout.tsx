@@ -7,7 +7,7 @@ import "@assets/iconify-icons/generated-icons.css";
 import NextAuthProvider from "@/Components_Theme/NextAuthProvider";
 import MainLayout from "@/Components/Layouts/MainLayout/MainLayout";
 import Providers from "@/Components_Theme/Providers";
-import SocketListenerWrapper from "@/Components/socketlistner/SocketListenerWrapper";  
+// import SocketListenerWrapper from "@/Components/socketlistner/SocketListenerWrapper";  
 export const metadata = {
   title: "Asporea - Candidate Onboarding",
   description: "Developed for future",
@@ -26,7 +26,7 @@ const RootLayout = ({ children }: ChildrenType) => {
           <NextAuthProvider>
            
             <MainLayout>
-              <SocketListenerWrapper />
+              {/* <SocketListenerWrapper /> */}
               {children}
               <Toaster position="top-center" reverseOrder={false} />
               <GlobalAlertProvider />

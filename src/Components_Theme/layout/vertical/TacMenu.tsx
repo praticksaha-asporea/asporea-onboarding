@@ -77,14 +77,20 @@ const TacMenu = ({
         <MenuItem href="/dashboard" icon={<i className="ri-dashboard-line" />}>
           Dashboard
         </MenuItem>
-        {!isFoe && (
+        {/* {!isFoe && (
           <MenuItem
             href="/dashboard/schedules"
             icon={<i className="ri-calendar-schedule-line" />}
           >
             Schedules
           </MenuItem>
-        )}
+        )} */}
+        <MenuItem
+  href="/dashboard/schedules"
+  icon={<i className="ri-calendar-schedule-line" />}
+>
+  Schedules
+</MenuItem>
         {isFoe && (
           <MenuItem
             href="/dashboard/pending-tracking"

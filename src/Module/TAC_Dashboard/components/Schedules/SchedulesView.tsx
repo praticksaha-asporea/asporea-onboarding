@@ -140,8 +140,20 @@ const DailyScheduleCard = ({
     ? "Today's Schedule"
     : `Schedule for ${date.getDate()} ${date.toLocaleString("default", { month: "short" })}`;
 
-  const sortedMeetings = useMemo(() => {
-    return [...meetings].sort((a, b) => a.startMinutes - b.startMinutes);
+  // Grouping logic based on TAC Name
+  const groupedMeetings = useMemo(() => {
+    if (!meetings.length) return {};
+    
+    const groups: Record<string, ScheduleMeeting[]> = {};
+    meetings.forEach((m: any) => {
+      const key = m.tacName || "My Appointments"; // FOE ke case me m.tacName hoga, TAC me undefined
+      if (!groups[key]) groups[key] = [];
+      groups[key].push(m);
+    });
+
+    // Har group ki list ko time ke hisab se sort karein
+    Object.values(groups).forEach(list => list.sort((a, b) => a.startMinutes - b.startMinutes));
+    return groups;
   }, [meetings]);
 
   return (
@@ -156,60 +168,87 @@ const DailyScheduleCard = ({
               {title}
             </Typography>
             <Typography variant="caption" color="text.secondary" fontWeight="500" className="text-[10px] sm:text-[11px]">
-              {sortedMeetings.length} Appointments
+              {meetings.length} Appointments
             </Typography>
           </Box>
         </Box>
       </Box>
 
       <Box className="flex-1 overflow-y-auto pr-1 space-y-2 custom-scrollbar">
-        {sortedMeetings.length === 0 ? (
+        {Object.keys(groupedMeetings).length === 0 ? (
           <Typography variant="body2" color="text.secondary" className="text-center mt-10 text-xs sm:text-sm">
             No meetings scheduled for this day.
           </Typography>
         ) : (
-          sortedMeetings.map((m) => {
-            const isSelected = m.id === selectedMeetingId;
-            const avatarSrc = resolveFileSrc(m.profilePic);
+          Object.entries(groupedMeetings).map(([groupName, groupMeetings]) => (
+            <Box key={groupName} className="space-y-2 mb-4">
+              
+              
+             {groupName !== "My Appointments" && (
+  <Box className="flex items-center gap-2.5 bg-[var(--mui-palette-primary-main)]/10   rounded-xl py-2 px-3 my-2.5 shadow-sm">
+    <Avatar
+      src={resolveFileSrc(groupMeetings[0]?.tacPic)}
+      sx={{ width: 30, height: 30 }}
+      className="text-[11px] font-bold shrink-0   shadow-2xl"
+    >
+      {!groupMeetings[0]?.tacPic && groupName.substring(0, 2).toUpperCase()}
+    </Avatar>
+    <Box className="flex flex-col min-w-0">
+      <Typography variant="caption" className="text-[9px] text-[var(--mui-palette-text-secondary)] font-bold uppercase tracking-widest leading-none">
+        TAC Consultant
+      </Typography>
+      <Typography variant="subtitle2" className="font-bold text-[var(--mui-palette-primary-main)] truncate text-xs sm:text-sm leading-tight mt-0.5">
+        {groupName}
+      </Typography>
+    </Box>
+  </Box>
+)}
 
-            return (
-              <Box
-                key={m.id}
-                onClick={() => onSelectMeeting(m)}
-                className={`flex gap-2 shadow-sm items-center p-2 rounded-xl transition-all cursor-pointer ${
-                  isSelected
-                    ? "bg-[var(--mui-palette-action-selected)] shadow-2xl"
-                    : "hover:bg-[var(--mui-palette-action-hover)] border border-transparent"
-                }`}
-              >
-                {/* Time */}
-                <Box className="flex flex-col items-center min-w-[48px] shrink-0">
-                  <Typography variant="caption" fontWeight="700" className="text-[var(--mui-palette-success-main)] text-[10px]">
-                    {m.startTime}
-                  </Typography>
-                  <Typography variant="caption" className="text-[var(--mui-palette-error-main)] text-[9px] font-semibold">
-                    {m.endTime}
-                  </Typography>
-                </Box>
+              {/* Us Group / TAC ki meetings */}
+              {groupMeetings.map((m: any) => {
+                const isSelected = m.id === selectedMeetingId;
+                const avatarSrc = resolveFileSrc(m.profilePic);
 
-                <Box className="w-1 rounded-full bg-[var(--mui-palette-warning-main)] self-stretch shrink-0" />
+                return (
+                  <Box
+                    key={m.id}
+                    onClick={() => onSelectMeeting(m)}
+                    className={`flex gap-2 shadow-sm items-center p-2 rounded-xl transition-all cursor-pointer ${
+                      isSelected
+                        ? "bg-[var(--mui-palette-action-selected)] shadow-2xl"
+                        : "hover:bg-[var(--mui-palette-action-hover)] border border-transparent"
+                    }`}
+                  >
+                    {/* Time */}
+                    <Box className="flex flex-col items-center min-w-[48px] shrink-0">
+                      <Typography variant="caption" fontWeight="700" className="text-[var(--mui-palette-success-main)] text-[10px]">
+                        {m.startTime}
+                      </Typography>
+                      <Typography variant="caption" className="text-[var(--mui-palette-error-main)] text-[9px] font-semibold">
+                        {m.endTime}
+                      </Typography>
+                    </Box>
 
-                {/* Avatar & Info */}
-                <Avatar src={avatarSrc} sx={{ width: 28, height: 28 }} className="text-[10px] font-bold shrink-0">
-                  {!avatarSrc && m.candidateName.substring(0, 2).toUpperCase()}
-                </Avatar>
+                    <Box className="w-1 rounded-full bg-[var(--mui-palette-warning-main)] self-stretch shrink-0" />
 
-                <Box className="flex flex-col overflow-hidden min-w-0">
-                  <Typography variant="subtitle2" fontWeight="600" className="text-[var(--mui-palette-text-primary)] truncate text-xs" title={m.title}>
-                    {m.candidateName}
-                  </Typography>
-                  <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] capitalize text-[10px] truncate">
-                    {m.phase} • {m.method === "on" ? "Online" : "Offline"}
-                  </Typography>
-                </Box>
-              </Box>
-            );
-          })
+                    {/* Avatar & Info */}
+                    <Avatar src={avatarSrc} sx={{ width: 28, height: 28 }} className="text-[10px] font-bold shrink-0">
+                      {!avatarSrc && m.candidateName.substring(0, 2).toUpperCase()}
+                    </Avatar>
+
+                    <Box className="flex flex-col overflow-hidden min-w-0">
+                      <Typography variant="subtitle2" fontWeight="600" className="text-[var(--mui-palette-text-primary)] truncate text-xs" title={m.title}>
+                        {m.candidateName}
+                      </Typography>
+                      <Typography variant="caption" className="text-[var(--mui-palette-text-secondary)] capitalize text-[10px] truncate">
+                        {m.phase} • {m.method === "on" ? "Online" : "Offline"}
+                      </Typography>
+                    </Box>
+                  </Box>
+                );
+              })}
+            </Box>
+          ))
         )}
       </Box>
     </Box>
