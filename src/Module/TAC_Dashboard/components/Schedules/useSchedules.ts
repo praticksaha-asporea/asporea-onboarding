@@ -1,6 +1,6 @@
-// src/hooks/useSchedules.ts
 import { useState, useEffect } from "react";
-import { getTacScheduleAction } from "@/Services/APIs/tac/tac.actions";
+import { useSelector } from "react-redux"; 
+import { getTacScheduleAction,getFoeScheduleAction } from "@/Services/APIs/tac/tac.actions";
 
 export interface ScheduleMeeting {
   id: string;
@@ -9,17 +9,21 @@ export interface ScheduleMeeting {
   inqNo: string;
   profilePic: string;
   phone: string;
-  date: string; // YYYY-MM-DD
-  startTime: string; // e.g. "11:00 AM"
-  endTime: string;   // e.g. "11:30 AM"
+  date: string;  
+  startTime: string;  
+  endTime: string;    
   type: string;
   method: "on" | "off";
   phase: string;
-  startMinutes: number; // For proper time sorting
+  startMinutes: number;  
   endMinutes: number;
+  tacName?: string; 
+  tacId?: string;
+  tacPic?: string;
+
 }
 
-// Helper: Convert "11:30 AM" or "01:00 PM" to minutes from midnight for sorting
+ 
 const timeToMinutes = (timeStr: string) => {
   if (!timeStr) return 0;
   const match = timeStr.match(/(\d+):(\d+)\s*(AM|PM)/i);
@@ -36,7 +40,8 @@ const timeToMinutes = (timeStr: string) => {
 export const useSchedules = (currentMonthDate: Date) => {
   const [schedules, setSchedules] = useState<ScheduleMeeting[]>([]);
   const [loading, setLoading] = useState(false);
-
+const currentUser = useSelector((state: any) => state.userSlice?.userData || state.user?.userData);
+const isFoe = currentUser?.role === "foe" || currentUser?.user?.role === "foe";
   const year = currentMonthDate.getFullYear();
   const month = currentMonthDate.getMonth() + 1;
 
@@ -44,7 +49,9 @@ export const useSchedules = (currentMonthDate: Date) => {
     const fetchSchedules = async () => {
       setLoading(true);
       try {
-        const res = await getTacScheduleAction({ month, year });
+       const res = isFoe 
+          ? await getFoeScheduleAction({ month, year }) 
+          : await getTacScheduleAction({ month, year });
         if (res.data?.success) {
           const formatted: ScheduleMeeting[] = res.data.data.map((item: any) => {
             const dateObj = new Date(item.schedule.date);
@@ -52,7 +59,8 @@ export const useSchedules = (currentMonthDate: Date) => {
 
             const lead = item.leadId || {};
             const phaseName = item.phase === "pre" ? "Pre-Counselling" : item.phase === "assess" ? "Assessment" : "Appointment";
-
+const tacFullName = item.assignedTo ? `${item.assignedTo.firstName} ${item.assignedTo.lastName}`.trim() : "Unknown TAC";
+const tacPicPath = item.assignedTo?.profilePic?.path || item.assignedTo?.profilePic?.url || "";
             return {
               id: item._id,
               title: `${phaseName} - ${lead.fullName || "Candidate"}`,
@@ -68,6 +76,9 @@ export const useSchedules = (currentMonthDate: Date) => {
               phase: phaseName,
               startMinutes: timeToMinutes(item.schedule?.from),
               endMinutes: timeToMinutes(item.schedule?.to),
+              tacName: isFoe ? tacFullName : undefined,  
+              tacId: isFoe ? item.assignedTo?._id : undefined,
+              tacPic: isFoe ? tacPicPath : undefined,  
             };
           });
 

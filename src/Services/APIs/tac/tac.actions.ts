@@ -202,3 +202,9 @@ export const getTacScheduleAction = async (
 ): Promise<AxiosResponse<TacScheduleResponse>> => {
   return axiosClient.get("/tac/schedule", { params });
 };
+
+export const getFoeScheduleAction = async (
+  params: GetTacSchedulePayload
+): Promise<AxiosResponse<TacScheduleResponse>> => {
+  return axiosClient.get("/foe/schedule", { params });
+};
