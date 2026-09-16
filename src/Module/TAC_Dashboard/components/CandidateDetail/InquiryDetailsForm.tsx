@@ -1,5 +1,5 @@
 import React from "react";
-import { Box, Button, Card, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, Chip, ListSubheader, FormHelperText, Divider } from "@mui/material";
+import { Box, Button, Card, CircularProgress, FormControl, Grid, InputLabel, MenuItem, Select, TextField, Typography, Chip, ListSubheader, FormHelperText, Divider, Dialog, DialogTitle, DialogContent, DialogContentText, FormLabel, RadioGroup, FormControlLabel, DialogActions, Radio } from "@mui/material";
 import { CamelCase } from "@/Utils/common";
 import { useInquiryDetails } from "./useInquiryDetails";
 import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
@@ -10,8 +10,16 @@ import { SectionHeader } from "@/Components/InquiryStaff/SectionHeader";
 
 interface InquiryDetailsFormProps { candidate: CandidateLead; }
 
+const ESCALATION_REASONS = [
+  { value: "no response", label: "No response from candidate" },
+  { value: "urgent followup", label: "Urgent follow-up required" },
+  { value: "complaint", label: "Candidate complaint" },
+  { value: "documentation issue", label: "Documentation issue" },
+  { value: "payment issue", label: "Payment / fee issue" },
+  { value: "other", label: "Other" },
+];
 const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) => {
-  const { inquiryForm, fe, fh, getChipStyle, preferences, notifPrefs, categoryOptions, positionData } = useInquiryDetails(candidate);
+  const { inquiryForm, fe, fh, getChipStyle, preferences, notifPrefs, categoryOptions, positionData, handleOpenEscalate, escalateOpen, handleCloseEscalate, escalateReasonError, escalateReason, setEscalateReason, setEscalateReasonError, escalateNote, setEscalateNote, isEscalating, handleConfirmEscalate, } = useInquiryDetails(candidate);
   return (
     <Card className="p-6 rounded-xl shadow-2xl">
       <Typography className="text-[18px] font-medium mb-5">
@@ -20,16 +28,16 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
       <form onSubmit={inquiryForm.handleSubmit}>
         <Grid container spacing={5}>
           {/* step 1*/}
-            <Grid size={{ xs: 12, md: 12 }}>
-          <SectionHeader
+          <Grid size={{ xs: 12, md: 12 }}>
+            <SectionHeader
 
-            icon="ri-file-list-3-line"
-            eyebrow="Inquiry Details"
-            title="Inquiry Details - Step 1"
-            description="Basic information provided during inquiry creation."
-            accentColor="primary"
-          />
-       </Grid>
+              icon="ri-file-list-3-line"
+              eyebrow="Inquiry Details"
+              title="Inquiry Details - Step 1"
+              description="Basic information provided during inquiry creation."
+              accentColor="primary"
+            />
+          </Grid>
           {/* Step 1 fields */}
           <Grid size={{ xs: 12, md: 6 }}>
             <TextField
@@ -68,7 +76,7 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
                 labelId="inquiry-category-label"
                 id="inquiry-category"
                 name="inqForType"
-   value={candidate?.inqForType ?? ""}
+                value={candidate?.inqForType ?? ""}
                 onChange={(e) => inquiryForm.setFieldValue("inqForType", e.target.value)}
                 label="Inquiry For"
                 // disabled
@@ -164,16 +172,16 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             </FormControl>
           </Grid>
           {/* step 2*/}
-          
-  <Grid size={{ xs: 12, md: 12 }}>
-          <SectionHeader
-            icon="ri-calendar-check-line"
-            eyebrow="Inquiry Details"
-            title="Inquiry Details - Step 2"
-            description="Basic information provided during inquiry creation."
-            accentColor="success"
-          />
-</Grid>
+
+          <Grid size={{ xs: 12, md: 12 }}>
+            <SectionHeader
+              icon="ri-calendar-check-line"
+              eyebrow="Inquiry Details"
+              title="Inquiry Details - Step 2"
+              description="Basic information provided during inquiry creation."
+              accentColor="success"
+            />
+          </Grid>
           {/* Step 2 fields */}
           <Grid size={{ xs: 12, md: 6 }}>
             <FormControl fullWidth
@@ -283,15 +291,15 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
             </Grid>
           }
 
-  <Grid size={{ xs: 12, md: 12 }}> 
-          <SectionHeader
-            icon="ri-information-line"
-            eyebrow="Additional Information"
-            title="Inquiry Information"
-            description="System-generated and workflow information."
-            accentColor="info"
-          />
-</Grid>
+          <Grid size={{ xs: 12, md: 12 }}>
+            <SectionHeader
+              icon="ri-information-line"
+              eyebrow="Additional Information"
+              title="Inquiry Information"
+              description="System-generated and workflow information."
+              accentColor="info"
+            />
+          </Grid>
           {/* Additional information */}
 
           <Grid size={{ xs: 12, md: 6 }}><TextField fullWidth label="Inquiry Created" disabled value={candidate?.createdAt ? dayjs(candidate.createdAt).format("DD/MM/YYYY hh:mm A") : "—"} /></Grid>
@@ -338,12 +346,85 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate }) =>
 
         </Grid>
 
+
         <Box className="flex justify-end mt-6">
+          <Button
+            variant="outlined"
+            color="warning"
+            startIcon={<i className="ri-arrow-up-circle-line" />}
+            onClick={handleOpenEscalate}
+            disabled={inquiryForm.isSubmitting}
+            className="normal-case px-5 mr-3"
+          >
+            Escalate Inquiry
+          </Button>
+
           <Button variant="contained" type="submit" disabled={inquiryForm.isSubmitting} className="normal-case px-6">
             {inquiryForm.isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Update"}
           </Button>
         </Box>
       </form>
+
+      {/* Escalation Dialog */}
+      <Dialog open={escalateOpen} onClose={handleCloseEscalate} fullWidth maxWidth="sm">
+        <DialogTitle>Escalate Inquiry {candidate?.inqNo ? `(${candidate.inqNo})` : ""}</DialogTitle>
+        <DialogContent>
+          <DialogContentText className="mb-4">
+            Select a reason for escalating this inquiry. This will notify the relevant person.
+          </DialogContentText>
+
+          <FormControl component="fieldset" error={escalateReasonError} fullWidth>
+            <FormLabel component="legend" className="mb-1">
+              Reason for Escalation
+            </FormLabel>
+            <RadioGroup
+              value={escalateReason}
+              onChange={(e) => {
+                setEscalateReason(e.target.value);
+                setEscalateReasonError(false);
+              }}
+            >
+              {ESCALATION_REASONS.map((reason) => (
+                <FormControlLabel
+                  key={reason.value}
+                  value={reason.value}
+                  control={<Radio />}
+                  label={reason.label}
+                />
+              ))}
+            </RadioGroup>
+            {escalateReasonError && (
+              <FormHelperText>Please select a reason to continue.</FormHelperText>
+            )}
+          </FormControl>
+          {escalateReason === "other" && (
+            <TextField
+              fullWidth
+              multiline
+              minRows={3}
+              className="mt-4"
+              label="Other Reason"
+              placeholder="Please provide the reason for escalation..."
+              value={escalateNote}
+              onChange={(e) => setEscalateNote(e.target.value)}
+            />
+          )}
+        </DialogContent>
+        <DialogActions className="px-6 pb-4">
+          <Button onClick={handleCloseEscalate} disabled={isEscalating} className="normal-case">
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            color="warning"
+            onClick={handleConfirmEscalate}
+            disabled={isEscalating}
+            className="normal-case px-5"
+          >
+            {isEscalating ? <CircularProgress size={20} color="inherit" /> : "Confirm Escalation"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Card>
   );
 };
