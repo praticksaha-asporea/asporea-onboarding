@@ -213,10 +213,9 @@ export const getEscalationListService = async (
     ...escalation,
     candidate: candidateMap.get(escalation.leadId.toString()) ?? null,
   }));
-  console.log(result);
 
   return {
-    escalations,
+    escalations: result,
     meta: {
       totalRecords,
       currentPage: page,

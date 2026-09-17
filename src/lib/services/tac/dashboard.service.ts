@@ -140,7 +140,7 @@ export const getTacCandidates = async ({
       createdBy: lead.createdBy ?? null,
       stage: resolveStage(lead),
       status: lead.status ?? "pending",
-      followUpRequired: lead.followUpRequired ?? false,  
+      followUpRequired: lead.followUpRequired ?? false,
       experience: lead.experience?.type ?? null,
       token: creatorId ? (tokenMap.get(String(creatorId)) ?? null) : null,
       profilePic: creatorId ? (userPicMap.get(String(creatorId)) ?? null) : null,
@@ -150,7 +150,8 @@ export const getTacCandidates = async ({
       visitType: resolvedVisitType,
       contact: lead.contact,
       consultantId: lead.preferences?.consultantId ?? null,
-      assignedTacName
+      assignedTacName,
+      escalated: lead.escalated ?? false
     };
   });
 
