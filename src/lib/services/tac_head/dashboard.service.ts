@@ -3,7 +3,7 @@ import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model
 import { TransferLeadModel } from "@/lib/models/TransferLead.model";
 import { Lead } from "@/lib/models/Lead.model";
 import mongoose from "mongoose";
-import { getTransferListService } from "../tac/transfer.service";
+import { getTransferListService } from "../tac/escalation.service";
 import { getTechnicalListService } from "../tac/technical.service";
 
 export const getTeamOverview = async ({

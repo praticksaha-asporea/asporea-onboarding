@@ -51,3 +51,11 @@ export const createEscalationService = async (
         status
     });
 };
+
+
+export const getEscalationList = async (payload: { leadId: string; }) => {
+    const escalations = await EscalationModel.find(payload)
+        .populate("fromId", "firstName lastName role counterNo")
+        .lean();
+    return escalations;
+};

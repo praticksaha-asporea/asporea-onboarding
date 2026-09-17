@@ -5,7 +5,7 @@ import {
   approveRejecttransferPayload,
 } from "@/Types/Frontend_Payload/transfer.types";
 import {
-  transferListResponse,
+  escalationListResponse,
   transferViewResponse,
   transferActionResponse,
 } from "@/Types/ApiResponse/transferRes.types";
@@ -15,7 +15,7 @@ import { AxiosResponse } from "axios";
 
 export const getEscalationListAction = async (
   payload: transferListPayload
-): Promise<AxiosResponse<transferListResponse>> => {
+): Promise<AxiosResponse<escalationListResponse>> => {
   const { page = 1, limit = 10, search = "", tacId = "" } = payload;
   const url = `/tac/tachead/escalation/list?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}&tacId=${encodeURIComponent(tacId)}`;
 

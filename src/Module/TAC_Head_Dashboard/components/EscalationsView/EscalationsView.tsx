@@ -39,7 +39,7 @@ const resolveFileSrc = (path?: string | null) => {
   const BACKEND_BASE = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000";
   return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
-const TransfersView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView }
+const EscalationssView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView }
   const {
     escalations,
     loading,
@@ -93,7 +93,7 @@ const TransfersView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView 
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl>-
 
         {(filters.search || filters.tacId) && (
           <Button variant="text" color="error" onClick={handleResetFilters} className="normal-case">
@@ -110,7 +110,6 @@ const TransfersView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView 
               <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Inq No.</TableCell>
               <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Candidate</TableCell>
               <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Escalated By</TableCell>
-              <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Target TAC</TableCell>
               <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Status</TableCell>
               <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white">Date</TableCell>
               <TableCell className="py-4 px-4 font-semibold bg-[var(--mui-palette-primary-main)] text-white text-right">Action</TableCell>
@@ -157,17 +156,7 @@ const TransfersView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView 
                         sx={{ width: 28, height: 28 }}
                         className="shadow-sm"
                       />
-                      <Typography className="text-[13px]">{row.fromName}</Typography>
-                    </Box>
-                  </TableCell>
-                  <TableCell className="py-3 px-4">
-                    <Box className="flex items-center gap-2">
-                      <Avatar
-                        src={resolveFileSrc(row.toAvatar)}
-                        sx={{ width: 28, height: 28 }}
-                        className="shadow-sm"
-                      />
-                      <Typography className="text-[13px] font-medium text-blue-700">{row.toName}</Typography>
+                      <Typography className="text-[13px] font-medium text-blue-700">{row.fromName}</Typography>
                     </Box>
                   </TableCell>
                   <TableCell className="py-3 px-4">
@@ -212,14 +201,14 @@ const TransfersView: React.FC<EscalationsViewProps> = () => {//{ setCurrentView 
       )}
 
       {/* ── ACTION INTERACTION MODAL ── */}
-      <EscalationActionModal
+      {/* <EscalationActionModal
         open={modalOpen}
         setOpen={setModalOpen}
         transfer={selectedEscalation}
         refreshData={fetchEscalations}
-      />
+      /> */}
     </Box>
   );
 };
 
-export default TransfersView;
+export default EscalationssView;

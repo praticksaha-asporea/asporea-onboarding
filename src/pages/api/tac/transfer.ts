@@ -3,7 +3,7 @@ import connectToDatabase from "@/lib/mongodb";
 import ResponseHandler from "@/lib/utils/responseUtil";
 import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
-import { createTransferLeadService } from "@/lib/services/tac/transfer.service";
+import { createTransferLeadService } from "@/lib/services/tac/escalation.service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   await connectToDatabase();

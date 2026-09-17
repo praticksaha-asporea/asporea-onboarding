@@ -3,7 +3,7 @@
 import React, { Suspense } from "react";
 import Box from "@mui/material/Box";
 import CircularProgress from "@mui/material/CircularProgress";
-import TransfersView from "./TransfersView";
+import TransfersView from "./EscalationsView";
 
 interface EscalationsViewWrapperProps {
   setCurrentView: (view: "dashboard" | "detail") => void;

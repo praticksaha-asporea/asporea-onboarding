@@ -20,8 +20,9 @@ export default async function handler(
     try {
         const token = getTokenFromHeader(req);
         if (!token) throw new ApiError("Unauthenticated user", 401);
-
         const authUser = await verifyToken(token);
+        if (authUser?.role !== "tac" && authUser?.role !== "tac_head" && authUser?.role !== "foe")
+            throw new ApiError("Unauthorized user", 401);
 
         const { error } = createEscalationSchema.validate(req.body);
         if (error)

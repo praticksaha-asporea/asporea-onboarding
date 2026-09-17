@@ -1,4 +1,4 @@
-import TransfersView from "@/Module/TAC_Head_Dashboard/components/TransfersView/TransfersView";
+import TransfersView from "@/Module/TAC_Head_Dashboard/components/EscalationsView/EscalationsView";
 
 const TACHeadDashboardPage = () => {
     return <TransfersView />;

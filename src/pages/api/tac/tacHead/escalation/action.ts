@@ -6,7 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { updateTransferLeadStatusService } from "@/lib/services/tac/transfer.service";
+import { updateTransferLeadStatusService } from "@/lib/services/tac/escalation.service";
 
 export default async function handler(
   req: NextApiRequest,

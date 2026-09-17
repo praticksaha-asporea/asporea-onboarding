@@ -16,13 +16,13 @@ export interface enrichedEscalationRow {
   fullName: string;
   leadStatus: string;
   fromName: string;
-  toName: string;
+  // toName: string;
   statusLabel: string;
   statusColor: "success" | "error" | "warning";
   timeAgo: string;
   candidateAvatar: string | null;
   fromAvatar: string | null;
-  toAvatar: string | null;
+  // toAvatar: string | null;
 }
 
 export const useEscalationsView = () => {
@@ -55,7 +55,7 @@ export const useEscalationsView = () => {
       const res = await getEscalationListAction(filters);
 
       if (res?.data?.success) {
-        const rawList = res.data.data.transfers || [];
+        const rawList = res.data.data.escalations || [];
         setEscalations(rawList);
         setTotalPages(res.data.data.meta.totalPages || 1);
 
@@ -110,7 +110,7 @@ export const useEscalationsView = () => {
 
     const candPic = row.leadId?.createdBy?.id?.profilePic?.path || null;
     const fromPic = row.fromId?.profilePic?.path || null;
-    const toPic = row.toId?.profilePic?.path || null;
+    // const toPic = row.toId?.profilePic?.path || null;
 
     return {
       _id: row._id,
@@ -119,13 +119,13 @@ export const useEscalationsView = () => {
       fullName: row.leadId?.fullName || "—",
       leadStatus: CamelCase(row.leadId?.status || ""),
       fromName: row.fromId ? `${row.fromId.firstName} ${row.fromId.lastName}` : "—",
-      toName: row.toId ? `${row.toId.firstName} ${row.toId.lastName}` : "—",
+      // toName: row.toId ? `${row.toId.firstName} ${row.toId.lastName}` : "—",
       statusLabel: CamelCase(row.status || ""),
       statusColor: getStatusColor(row.status || ""),
       timeAgo: dayjs(row.createdAt).fromNow(),
       candidateAvatar: candPic,
       fromAvatar: fromPic,
-      toAvatar: toPic,
+      // toAvatar: toPic,
     };
   });
   return {

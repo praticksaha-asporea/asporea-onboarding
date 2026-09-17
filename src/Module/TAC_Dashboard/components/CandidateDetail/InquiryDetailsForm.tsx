@@ -348,18 +348,27 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setL
 
 
         <Box className="flex justify-end mt-6">
-          {candidate?.escalated === true ? (
+          {candidate?.escalated ? (
+            <Box
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl mr-3 border border-amber-200 text-amber-700"
+            >
+              <i className="ri-arrow-up-circle-fill text-[18px]" />
+              <Typography variant="body2" className="font-semibold">
+                Escalated
+              </Typography>
+            </Box>
+          ) : (
             <Button
               variant="outlined"
               color="warning"
               startIcon={<i className="ri-arrow-up-circle-line" />}
               onClick={handleOpenEscalate}
               disabled={inquiryForm.isSubmitting}
-              className="normal-case px-5 mr-3"
+              className="normal-case px-5 py-2 rounded-xl mr-3"
             >
               Escalate Inquiry
             </Button>
-          ) : "Escalated"}
+          )}
 
           <Button variant="contained" type="submit" disabled={inquiryForm.isSubmitting} className="normal-case px-6">
             {inquiryForm.isSubmitting ? <CircularProgress size={20} color="inherit" /> : "Update"}

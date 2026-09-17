@@ -9,6 +9,7 @@ import { useEffect, useMemo, useState } from "react";
 import { getPathwayPositionsAction, getPathwayTopLevelAction } from "@/Services/APIs/Pathway/pathway.action";
 import { positionDBData } from "@/Types/object.types";
 import { createEscalateAction } from "@/Services/APIs/Escalate/escalate.action";
+import { useSelector } from "react-redux";
 
 
 export const useInquiryDetails = (candidate: CandidateLead, setLeadUpdated: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -28,6 +29,10 @@ export const useInquiryDetails = (candidate: CandidateLead, setLeadUpdated: Reac
     const [escalateReasonError, setEscalateReasonError] = useState(false);
     const [isEscalating, setIsEscalating] = useState(false);
     const user = candidate?.user;
+
+    const currentUser = useSelector(
+        (state: any) => state.userSlice?.userData || state.user?.userData
+    );
     // console.log(candidate, 2222);
 
     const inquiryForm = useFormik({
@@ -198,7 +203,7 @@ export const useInquiryDetails = (candidate: CandidateLead, setLeadUpdated: Reac
         }
         try {
             setIsEscalating(true);
-            await createEscalateAction({ fromId: user?._id, leadId: candidate._id, reason: escalateReason !== "other" ? escalateReason : escalateNote, status: "requested" });
+            await createEscalateAction({ fromId: currentUser?.id, leadId: candidate._id, reason: escalateReason !== "other" ? escalateReason : escalateNote, status: "requested" });
             handleCloseEscalate();
             toast.success("Escalation requested successfully");
             setLeadUpdated((prev) => !prev);

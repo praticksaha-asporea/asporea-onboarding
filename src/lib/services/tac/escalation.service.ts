@@ -6,6 +6,8 @@ import { Assignment } from "@/lib/models/Assignment.model";
 import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
+import { EscalationModel } from "@/lib/models/Escalation.model";
+import User from "@/lib/models/User.model";
 
 interface TransferPayload {
   fromId: string;
@@ -48,7 +50,7 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
     toId,
     leadId,
     reason,
-    status: "approved", 
+    status: "approved",
     actionedAt: new Date(),
   });
 
@@ -69,19 +71,19 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
       $unset: { "transfer.transferredTo": 1 },
     }
   );
-   
+
 
   return newTransfer;
 };
 
 
 
-export const getTransferListService = async (
+export const getEscalationListService = async (
   page = 1,
   limit = 10,
-  filterUserId?: string | null,
+  tacId?: string,
   search?: string,
-  tacId?: string
+  filterUserId?: string | null
 ) => {
   const skip = (page - 1) * limit;
 
@@ -90,7 +92,7 @@ export const getTransferListService = async (
 
 
   if (tacId && mongoose.Types.ObjectId.isValid(tacId)) {
-    matchQuery.toId = new mongoose.Types.ObjectId(tacId);
+    matchQuery.fromId = new mongoose.Types.ObjectId(tacId);
   }
 
 
@@ -149,42 +151,72 @@ export const getTransferListService = async (
 
     if (branchLeadIds.length === 0) {
       return {
-        transfers: [],
+        escalations: [],
         meta: { totalRecords: 0, currentPage: page, totalPages: 0 },
       };
     }
     matchQuery.leadId = { $in: branchLeadIds };
   }
 
-  const totalRecords = await TransferLeadModel.countDocuments(matchQuery);
+  const totalRecords = await EscalationModel.countDocuments(matchQuery);
 
-  const transfers = await TransferLeadModel.find(matchQuery)
+  // const escalations = await EscalationModel.find(matchQuery)
+  //   .populate({
+  //     path: "fromId",
+  //     select: "firstName lastName email role profilePic",
+  //     populate: { path: "profilePic", select: "path" }
+  //   })
+  //   .populate({
+  //     path: "leadId",
+  //     select: "fullName status inqNo preferences createdBy",
+  //     populate: {
+  //       path: "createdBy.id",
+  //       model: "User",
+  //       select: "profilePic",
+  //       populate: { path: "profilePic", select: "path" }
+  //     }
+  //   })
+  //   .sort({ createdAt: -1 })
+  //   .skip(skip)
+  //   .limit(limit)
+  //   .lean();
+
+  const escalations = await EscalationModel.find(matchQuery)
     .populate({
       path: "fromId",
       select: "firstName lastName email role profilePic",
-      populate: { path: "profilePic", select: "path" }
-    })
-    .populate({
-      path: "toId",
-      select: "firstName lastName email role profilePic",
-      populate: { path: "profilePic", select: "path" }
-    })
-    .populate({
-      path: "leadId",
-      select: "fullName status inqNo preferences createdBy",
-      populate: {
-        path: "createdBy.id",
-        model: "User",
-        select: "profilePic",
-        populate: { path: "profilePic", select: "path" }
-      }
+      populate: { path: "profilePic", select: "path" },
     })
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
     .lean();
+
+  const leadIds = escalations.map((e) => e.leadId);
+
+  const candidates = await User.find({
+    "candidateProfile.leadId": { $in: leadIds },
+  })
+    .select("firstName lastName email profilePic candidateProfile")
+    .populate("profilePic", "path")
+    .lean();
+  console.log(candidates);
+
+  const candidateMap = new Map(
+    candidates.map((user) => [
+      user.candidateProfile?.leadId?.toString(),
+      user,
+    ])
+  );
+
+  const result = escalations.map((escalation) => ({
+    ...escalation,
+    candidate: candidateMap.get(escalation.leadId.toString()) ?? null,
+  }));
+  console.log(result);
+
   return {
-    transfers,
+    escalations,
     meta: {
       totalRecords,
       currentPage: page,

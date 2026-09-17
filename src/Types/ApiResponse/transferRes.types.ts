@@ -35,11 +35,11 @@ export interface transferRecord {
     actionedAt?: string;
 }
 
-export interface transferListResponse {
+export interface escalationListResponse {
     success: boolean;
     message: string;
     data: {
-        transfers: transferRecord[];
+        escalations: transferRecord[];
         meta: {
             totalRecords: number;
             currentPage: number;

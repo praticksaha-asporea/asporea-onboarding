@@ -6,7 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { getTransferListService } from "@/lib/services/tac/transfer.service";
+import { getEscalationListService } from "@/lib/services/tac/escalation.service";
 
 export default async function handler(
   req: NextApiRequest,
@@ -31,7 +31,7 @@ export default async function handler(
     const search = req.query.search as string;
     const tacId = req.query.tacId as string;
     const filterUserId = userRole === "admin" ? null : authUser.id || (authUser as any)._id;
-    const result = await getTransferListService(page, limit, filterUserId, search, tacId);
+    const result = await getEscalationListService(page, limit, tacId, search, filterUserId);
     return ResponseHandler.sendSuccess(
       res,
       result,

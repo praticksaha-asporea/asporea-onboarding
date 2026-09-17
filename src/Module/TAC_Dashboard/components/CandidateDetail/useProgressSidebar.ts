@@ -4,8 +4,12 @@ import toast from "react-hot-toast";
 import { confirmToast } from "@/Utils/confirmToast";
 import { transferLeadAction } from "@/Services/APIs/tac/tac.actions";
 import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
+import { useEffect, useState } from "react";
+import { IEscalation } from "@/lib/models/Escalation.model";
+import { getEscalationListAction } from "@/Services/APIs/Escalate/escalate.action";
 
 export const useProgressSidebar = (candidate: CandidateLead, transferTo: string, setTransferTo: (val: string) => void) => {
+  const [escalateReasons, setEscalateReasons] = useState<IEscalation[]>();
   const transferForm = useFormik({
     initialValues: { toId: transferTo || "", reason: "" },
     enableReinitialize: true,
@@ -17,7 +21,7 @@ export const useProgressSidebar = (candidate: CandidateLead, transferTo: string,
       const isConfirmed = await confirmToast("Are you sure you want to transfer this lead directly to the selected TAC?");
       if (!isConfirmed) {
         setSubmitting(false);
-        return; 
+        return;
       }
       try {
         await transferLeadAction({ leadId: candidate._id, toId: values.toId, reason: values.reason });
@@ -35,5 +39,14 @@ export const useProgressSidebar = (candidate: CandidateLead, transferTo: string,
   const fe = (field: string) => !!(transferForm.touched[field as keyof typeof transferForm.touched] && transferForm.errors[field as keyof typeof transferForm.errors]);
   const fh = (field: string) => transferForm.touched[field as keyof typeof transferForm.touched] ? (transferForm.errors[field as keyof typeof transferForm.errors] as string) : undefined;
 
-  return { transferForm, fe, fh };
+  const getEscalateReasons = async () => {
+    const response = await getEscalationListAction({ leadId: candidate._id });
+    setEscalateReasons(response.data.data);
+  };
+  useEffect(() => {
+    if (candidate?.escalated === true) {
+      getEscalateReasons();
+    }
+  }, [candidate?.escalated]);
+  return { transferForm, fe, fh, escalateReasons };
 };
