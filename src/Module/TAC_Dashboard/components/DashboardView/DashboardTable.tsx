@@ -11,7 +11,6 @@ import {
   Card,
   CardContent,
   Grid,
-  Divider,
   Tooltip,
 } from "@mui/material";
 import dayjs from "dayjs";
@@ -22,6 +21,7 @@ import { branchDB, CandidateRow } from "@/Types/object.types";
 import { useDashboardTable } from "./useDashboardTable";
 
 dayjs.extend(relativeTime);
+
 interface DashboardTableProps {
   rows: CandidateRow[];
   loading: boolean;
@@ -41,6 +41,7 @@ interface DashboardTableProps {
   openCancelModal: (candidate: CandidateRow) => void;
   branches: branchDB[];
 }
+
 const cancellableStatuses = [
   "pre_scheduled",
   "pre_contacted",
@@ -69,6 +70,7 @@ const resolveFileSrc = (path?: string) => {
     process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3000";
   return `${BACKEND_BASE}${path.startsWith("/") ? path : `/${path}`}`;
 };
+
 const extractId = (obj: any): string => {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
@@ -77,6 +79,7 @@ const extractId = (obj: any): string => {
   if (obj.$oid) return obj.$oid;
   return obj.toString();
 };
+
 const DashboardTable: React.FC<DashboardTableProps> = ({
   rows,
   loading,
@@ -135,25 +138,34 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
               currentUserId && createdById && currentUserId === createdById
             );
 
-
-            // console.log("MATCH CHECK:", { candidateName: displayName, currentUserId, createdById, isCreatedByMe });
-
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4, xl: 3 }} key={candidate._id}>
                 <Card className="h-full flex flex-col relative rounded-2xl shadow-2xl hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] dark:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.6)] hover:-translate-y-2.5 hover:scale-[1.015] hover:border-[var(--mui-palette-primary-main)] transition-all duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] bg-[var(--mui-palette-primary)]">
                   <FollowUpBadge show={candidate?.followUpRequired} />
-                  {isCreatedByMe && (
-                    <Chip
-                      label="Added by you"
-                      size="small"
-                      color="primary"
-                      icon={<i className="ri-user-star-fill text-[12px] text-white pl-1" />}
-                      className="absolute top-2 left-2 text-[10px] font-bold h-[22px] bg-[var(--mui-palette-success-main)] text-[var(--mui-palette-common-white)] z-10 shadow-md border border-white/20"
-                    />
-                  )}
+                  
+                  {/* --- Stacking Corner Badges --- */}
+                  <Box className="absolute top-2 left-2 flex flex-col gap-1.5 z-10 items-start">
+                    {isCreatedByMe && (
+                      <Chip
+                        label="Added by you"
+                        size="small"
+                        color="primary"
+                        icon={<i className="ri-user-star-fill text-[12px] text-white pl-1" />}
+                        className="text-[10px] font-bold h-[22px] bg-[var(--mui-palette-success-main)] text-[var(--mui-palette-common-white)] shadow-md border border-white/20"
+                      />
+                    )}
+                    {candidate?.escalated && (
+                      <Chip
+                        label="Escalated"
+                        size="small"
+                        color="error"
+                        icon={<i className="ri-error-warning-fill text-[12px] text-white pl-1" />}
+                        className="text-[10px] font-bold h-[22px] bg-[var(--mui-palette-error-main)] text-[var(--mui-palette-common-white)] shadow-md border border-white/20"
+                      />
+                    )}
+                  </Box>
+
                   <CardContent className="p-4 md:p-5 flex flex-col flex-grow">
-
-
                     <Box className="flex flex-col items-center text-center mb-4 w-full">
 
                       {/* 1. Avatar */}
@@ -194,7 +206,6 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
                         <Typography className="font-bold tracking-wider text-[14px] leading-tight text-[var(--mui-palette-text-primary)] ">
                           {displayName}
                         </Typography>
-
                       </Box>
                     </Box>
 
@@ -424,4 +435,4 @@ const DashboardTable: React.FC<DashboardTableProps> = ({
   );
 };
 
-export default DashboardTable;
+export default DashboardTable;1
