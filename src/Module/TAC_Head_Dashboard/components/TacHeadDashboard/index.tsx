@@ -24,7 +24,6 @@ import { CamelCase } from "@/Utils/common";
 import { useRouter } from "next/navigation";
 import { TacHeadDashData, teamOverview } from "@/Types/ApiResponse/tacHeaddashboard.types";
 import { technicalRequestedLeadRecord } from "@/Types/ApiResponse/technicalRes.types";
-import { transferRecord } from "@/Types/ApiResponse/transferRes.types";
 
 // ---- Mock data — TODO: replace with API calls ----
 

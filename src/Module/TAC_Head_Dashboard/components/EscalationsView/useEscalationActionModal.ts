@@ -4,12 +4,12 @@ import { CamelCase } from "@/Utils/common";
 import { getSlotsAction } from "@/Services/APIs/Inquiry/PreCounselling/preCounselling.action";
 import { approveRejectTransgerAction } from "@/Services/APIs/tacHead/escalation.actions";
 import { approveRejecttransferPayload } from "@/Types/Frontend_Payload/transfer.types";
-import { transferRecord } from "@/Types/ApiResponse/transferRes.types";
+import { escalationRecord } from "@/Types/ApiResponse/transferRes.types";
 
 interface UseModalProps {
   open: boolean;
   setOpen: (val: boolean) => void;
-  transfer: transferRecord | null;
+  transfer: escalationRecord | null;
   refreshData: () => void;
 }
 

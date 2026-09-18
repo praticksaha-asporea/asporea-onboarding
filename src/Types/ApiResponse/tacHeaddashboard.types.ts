@@ -1,5 +1,5 @@
-import { transferRecord } from "./transferRes.types"
 import { technicalRequestedLeadRecord } from "./technicalRes.types"
+import { escalationRecord } from "./transferRes.types"
 
 export interface teamOverview {
     totalAssignments: number,
@@ -17,7 +17,7 @@ export interface tacHeadKpis {
 export interface TacHeadDashData {
     teamOverview: teamOverview[],
     recentTransfers: {
-        transfers: transferRecord[]
+        transfers: escalationRecord[]
     },
     technicalReviews: {
         technicalRequestedLeads: technicalRequestedLeadRecord[],

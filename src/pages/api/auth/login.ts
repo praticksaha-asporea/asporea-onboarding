@@ -4,7 +4,8 @@ import { login } from '@/lib/services/auth/login';
 import ResponseHandler from '@/lib/utils/responseUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { loginSchema } from '@/lib/validation/authValidation';
-import { applyCors } from '@/lib/cors'; 
+import { applyCors } from '@/lib/cors';
+import { createLeadLogService } from '@/lib/services/leadActivity/leadLog.service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (applyCors(req, res)) return;
@@ -25,22 +26,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const message = error.details.map((detail) => detail.message).join(', ');
       throw new ApiError(message, 400);
     }
-    const userData = await login(req.body);    
+    const userData = await login(req.body);
+
+    userData?.user?.candidateProfile?.leadId && await createLeadLogService(
+      String(userData?.user?.candidateProfile?.leadId),
+      "LOGIN",
+      "Logged in",
+      String(userData?.user?.id)
+    )
+
+
     return ResponseHandler.sendSuccess(
-      res, 
-      userData, 
+      res,
+      userData,
       'User Successfully Logged in'
     );
   } catch (error: unknown) {
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(
-        res, 
-        error.message, 
+        res,
+        error.message,
         error.statusCode
       );
     }
-    
-    
+
+
     return ResponseHandler.sendError(res, 'Unknown error occurred', 500);
   }
 }
