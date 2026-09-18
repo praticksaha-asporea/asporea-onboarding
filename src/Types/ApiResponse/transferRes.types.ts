@@ -1,3 +1,4 @@
+import { ILead } from "@/lib/models/Lead.model";
 
 
 export interface transferUserRef {
@@ -22,7 +23,7 @@ export interface transferLeadRef {
     };
 }
 
-export interface transferRecord {
+export interface escalationRecord {
     _id: string;
     fromId?: transferUserRef;
     toId?: transferUserRef;
@@ -33,13 +34,14 @@ export interface transferRecord {
     createdAt: string;
     updatedAt: string;
     actionedAt?: string;
+    candidate?: ILead
 }
 
 export interface escalationListResponse {
     success: boolean;
     message: string;
     data: {
-        escalations: transferRecord[];
+        escalations: escalationRecord[];
         meta: {
             totalRecords: number;
             currentPage: number;
@@ -52,20 +54,20 @@ export interface escalationListResponse {
 export interface transferViewResponse {
     success: boolean;
     message: string;
-    data: transferRecord;
+    data: escalationRecord;
     error: string | null;
 }
 
 export interface transferActionResponse {
     success: boolean;
     message: string;
-    data: transferRecord;
+    data: escalationRecord;
     error: string | null;
 }
 
 export interface transferActionResponse {
     success: boolean;
     message: string;
-    data: transferRecord;
+    data: escalationRecord;
     error: string | null;
 }

@@ -4,14 +4,14 @@ import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import { CamelCase } from "@/Utils/common";
 import { getEscalationListAction } from "@/Services/APIs/tacHead/escalation.actions";
-import { transferRecord, transferUserRef } from "@/Types/ApiResponse/transferRes.types";
+import { escalationRecord, transferUserRef } from "@/Types/ApiResponse/transferRes.types";
 import { transferListPayload } from "@/Types/Frontend_Payload/transfer.types";
 
 dayjs.extend(relativeTime);
 
 export interface enrichedEscalationRow {
   _id: string;
-  rawRecord: transferRecord;
+  rawRecord: escalationRecord;
   inqNo: string;
   fullName: string;
   leadStatus: string;
@@ -26,13 +26,13 @@ export interface enrichedEscalationRow {
 }
 
 export const useEscalationsView = () => {
-  const [escalations, setEscalations] = useState<transferRecord[]>([]);
+  const [escalations, setEscalations] = useState<escalationRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [totalPages, setTotalPages] = useState(1);
   const [uniqueTacs, setUniqueTacs] = useState<transferUserRef[]>([]);
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedEscalation, setSelectedEscalation] = useState<transferRecord | null>(null);
+  const [selectedEscalation, setSelectedEscalation] = useState<escalationRecord | null>(null);
 
 
   const [filters, setFilters] = useState<transferListPayload>({
@@ -80,7 +80,7 @@ export const useEscalationsView = () => {
     fetchEscalations();
   }, [fetchEscalations]);
 
-  const openActionModal = (escalation: transferRecord) => {
+  const openActionModal = (escalation: escalationRecord) => {
     setSelectedEscalation(escalation);
     setModalOpen(true);
   };
@@ -108,7 +108,7 @@ export const useEscalationsView = () => {
   const formattedEscalationsForUI = escalations.map((row: any): enrichedEscalationRow => {
 
 
-    const candPic = row.leadId?.createdBy?.id?.profilePic?.path || null;
+    const candPic = row.candidate?.profilePic?.path || null;
     const fromPic = row.fromId?.profilePic?.path || null;
     // const toPic = row.toId?.profilePic?.path || null;
 
@@ -116,7 +116,7 @@ export const useEscalationsView = () => {
       _id: row._id,
       rawRecord: row,
       inqNo: row.leadId?.inqNo || "N/A",
-      fullName: row.leadId?.fullName || "—",
+      fullName: `${row.candidate?.firstName} ${row.candidate?.lastName}` || "—",
       leadStatus: CamelCase(row.leadId?.status || ""),
       fromName: row.fromId ? `${row.fromId.firstName} ${row.fromId.lastName}` : "—",
       // toName: row.toId ? `${row.toId.firstName} ${row.toId.lastName}` : "—",

@@ -54,7 +54,7 @@ export const login = async (body: LoginBody) => {
       bio: user.bio,
       experienceInMonths: user.experienceInMonths,
       candidateProfile: {
-        // leadId: user.candidateProfile?.leadId,
+        leadId: user.candidateProfile?.leadId,
         technicalQualification: user.candidateProfile?.technicalQualification,
         academic: user.candidateProfile?.academic,
         nationality: user.candidateProfile?.nationality,
