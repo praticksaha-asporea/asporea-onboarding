@@ -87,120 +87,144 @@ export const getEscalationListService = async (
 ) => {
   const skip = (page - 1) * limit;
 
-  let matchQuery: any = {};
-  let leadMatchQuery: any = {};
+  const matchQuery: Record<string, any> = {};
+  const leadMatchQuery: Record<string, any> = {};
 
-
+  // Filter by escalated TAC
   if (tacId && mongoose.Types.ObjectId.isValid(tacId)) {
     matchQuery.fromId = new mongoose.Types.ObjectId(tacId);
   }
 
+  // Search Lead
+  if (search?.trim()) {
+    const searchValue = search.trim();
+    const searchRegex = new RegExp(searchValue, "i");
 
-  if (search) {
-    const searchRegex = new RegExp(search, "i");
     leadMatchQuery.$or = [
       { fullName: searchRegex },
-      { inqNo: searchRegex }
+      { inqNo: searchRegex },
     ];
 
-
-    if (!isNaN(Number(search))) {
-      leadMatchQuery.$or.push({ inquiryNumber: Number(search) });
+    if (!isNaN(Number(searchValue))) {
+      leadMatchQuery.$or.push({
+        inquiryNumber: Number(searchValue),
+      });
     }
   }
 
-
+  // Filter by user's assigned branches
   if (filterUserId) {
-    const shiftInfos = await EmployeeBranchShiftModel.find({
-      employeeId: new mongoose.Types.ObjectId(filterUserId),
-    }).lean();
-
-    if (!shiftInfos || shiftInfos.length === 0) {
-      throw new ApiError(
-        "No branch assigned to your account. Please contact Admin.",
-        403,
-      );
+    if (!mongoose.Types.ObjectId.isValid(filterUserId)) {
+      throw new ApiError("Invalid user ID", 400);
     }
 
-    const assignedBranchIds = [
-      ...new Set(
-        shiftInfos.map((shift) => shift.branchId?.toString()).filter(Boolean),
-      ),
-    ];
-
-    if (assignedBranchIds.length === 0) {
-      throw new ApiError(
-        "Your branch assignment data is invalid or corrupted. Please contact Admin.",
-        403,
-      );
-    }
-
-    const branchObjectIds = assignedBranchIds.map(
-      (id) => new mongoose.Types.ObjectId(id),
+    const branchIds = await EmployeeBranchShiftModel.distinct(
+      "branchId",
+      {
+        employeeId: new mongoose.Types.ObjectId(filterUserId),
+      }
     );
 
+    if (!branchIds.length) {
+      throw new ApiError(
+        "No branch assigned to your account. Please contact Admin.",
+        403
+      );
+    }
 
-    leadMatchQuery["preferences.branchId"] = { $in: branchObjectIds };
+    leadMatchQuery["preferences.branchId"] = {
+      $in: branchIds,
+    };
   }
 
+  // Convert Lead filters into Escalation leadId filter
+  if (Object.keys(leadMatchQuery).length) {
+    const leadIds = await Lead.find(leadMatchQuery)
+      .select("_id")
+      .lean();
 
-  if (Object.keys(leadMatchQuery).length > 0) {
-    const matchingLeads = await Lead.find(leadMatchQuery).select("_id").lean();
-    const branchLeadIds = matchingLeads.map((lead) => lead._id);
-
-
-    if (branchLeadIds.length === 0) {
+    if (!leadIds.length) {
       return {
         escalations: [],
-        meta: { totalRecords: 0, currentPage: page, totalPages: 0 },
+        meta: {
+          totalRecords: 0,
+          currentPage: page,
+          totalPages: 0,
+        },
       };
     }
-    matchQuery.leadId = { $in: branchLeadIds };
+
+    matchQuery.leadId = {
+      $in: leadIds.map(({ _id }) => _id),
+    };
   }
 
-  const totalRecords = await EscalationModel.countDocuments(matchQuery);
+  // Count + data in parallel
+  const [totalRecords, escalations] = await Promise.all([
+    EscalationModel.countDocuments(matchQuery),
 
-  // const escalations = await EscalationModel.find(matchQuery)
-  //   .populate({
-  //     path: "fromId",
-  //     select: "firstName lastName email role profilePic",
-  //     populate: { path: "profilePic", select: "path" }
-  //   })
-  //   .populate({
-  //     path: "leadId",
-  //     select: "fullName status inqNo preferences createdBy",
-  //     populate: {
-  //       path: "createdBy.id",
-  //       model: "User",
-  //       select: "profilePic",
-  //       populate: { path: "profilePic", select: "path" }
-  //     }
-  //   })
-  //   .sort({ createdAt: -1 })
-  //   .skip(skip)
-  //   .limit(limit)
-  //   .lean();
+    EscalationModel.find(matchQuery)
+      .populate({
+        path: "fromId",
+        select: "firstName lastName email role profilePic",
+        populate: {
+          path: "profilePic",
+          select: "path",
+        },
+      })
+      .populate({
+        path: "leadId",
+        select: `
+          fullName
+          status
+          inqNo
+          inquiryNumber
+          preferences
+          source
+          experience
+          createdBy
+        `,
+        populate: [
+          {
+            path: "preferences.branchId",
+            select: "title",
+          },
+          {
+            path: "preferences.consultantId",
+            select: "firstName lastName",
+          },
+          {
+            path: "createdBy.id",
+            model: "User",
+            select: "firstName lastName email profilePic",
+            populate: {
+              path: "profilePic",
+              select: "path",
+            },
+          },
+        ],
+      })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean(),
+  ]);
 
-  const escalations = await EscalationModel.find(matchQuery)
-    .populate({
-      path: "fromId",
-      select: "firstName lastName email role profilePic",
-      populate: { path: "profilePic", select: "path" },
+  // Get candidate profiles for these leads
+  const leadIds = escalations.map((item) => item.leadId?._id);
+
+  const candidates = leadIds.length
+    ? await User.find({
+      "candidateProfile.leadId": {
+        $in: leadIds,
+      },
     })
-    .sort({ createdAt: -1 })
-    .skip(skip)
-    .limit(limit)
-    .lean();
-
-  const leadIds = escalations.map((e) => e.leadId);
-
-  const candidates = await User.find({
-    "candidateProfile.leadId": { $in: leadIds },
-  })
-    .select("firstName lastName email profilePic candidateProfile")
-    .populate("profilePic", "path")
-    .lean();
-  console.log(candidates);
+      .select(
+        "firstName lastName email phone profilePic candidateProfile"
+      )
+      .populate("profilePic", "path")
+      .lean()
+    : [];
 
   const candidateMap = new Map(
     candidates.map((user) => [
@@ -211,7 +235,11 @@ export const getEscalationListService = async (
 
   const result = escalations.map((escalation) => ({
     ...escalation,
-    candidate: candidateMap.get(escalation.leadId.toString()) ?? null,
+
+    candidate:
+      candidateMap.get(
+        escalation.leadId?._id?.toString()
+      ) ?? null,
   }));
 
   return {
@@ -224,7 +252,7 @@ export const getEscalationListService = async (
   };
 };
 
-export const getETransferLeadByIdService = async (transferId: string) => {
+export const getEscalationLeadByIdService = async (transferId: string) => {
   if (!transferId || !mongoose.Types.ObjectId.isValid(transferId)) {
     throw new ApiError("Valid Transfer ID is required", 400);
   }
@@ -249,111 +277,32 @@ export const getETransferLeadByIdService = async (transferId: string) => {
   return transfer;
 };
 
-export const updateTransferLeadStatusService = async (
-  transferId: string,
-  status: "approved" | "rejected",
+export const updateEscalationLeadStatusService = async (
+  escalateId: string,
+  // status: "approved" | "rejected",
   remarks?: string,
-  newSchedule?: NewScheduleInfo,
+  // newSchedule?: NewScheduleInfo,
 ) => {
-  const transfer = await TransferLeadModel.findById(transferId);
+  const escalation = await EscalationModel.findById(escalateId);
 
-  if (!transfer) throw new ApiError("Transfer record not found", 404);
-  if (transfer.status !== "requested") {
+  if (!escalation) throw new ApiError("Escalation record not found", 404);
+  if (escalation.status !== "requested") {
     throw new ApiError(
-      `Cannot update. Request is already ${transfer.status}`,
+      `Cannot update. Request is already ${escalation.status}`,
       400,
     );
   }
 
-  let pendingAssignments: any[] = [];
+  escalation.status = "actionTaken";
+  if (remarks) escalation.remarks = remarks;
+  escalation.actionedAt = new Date();
+  await escalation.save();
 
-  if (status === "approved") {
-    pendingAssignments = await Assignment.find({
-      leadId: transfer.leadId,
-      assignedTo: transfer.fromId,
-      "transfer.requested": true,
-    });
+  await Lead.findByIdAndUpdate(escalation.leadId, {
+    $set: {
+      escalated: false,
+    },
+  });
 
-    if (pendingAssignments.length > 0) {
-      const assignmentNeedingSchedule = pendingAssignments.find(
-        (a) => ["pre", "assess"].includes(a.phase) && a.status === "assigned",
-      );
-
-      if (assignmentNeedingSchedule) {
-        if (
-          !newSchedule ||
-          !newSchedule.date ||
-          !newSchedule.from ||
-          !newSchedule.to
-        ) {
-          throw new ApiError(
-            `A new schedule is mandatory. BUT BACKEND RECEIVED: ${JSON.stringify(newSchedule)}`,
-            400,
-          );
-        }
-
-        const startOfDay = new Date(newSchedule.date);
-        startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(newSchedule.date);
-        endOfDay.setHours(23, 59, 59, 999);
-
-        const slotConflict = await Assignment.findOne({
-          assignedTo: transfer.toId,
-          "schedule.date": { $gte: startOfDay, $lte: endOfDay },
-          "schedule.from": newSchedule.from,
-          status: { $ne: "rejected" },
-        });
-
-        if (slotConflict) {
-          throw new ApiError(
-            "The selected target consultant is already booked at this specific time slot. Please select another slot.",
-            409,
-          );
-        }
-      }
-    }
-  }
-
-  transfer.status = status;
-  if (remarks) transfer.remarks = remarks;
-  transfer.actionedAt = new Date();
-  await transfer.save();
-
-  if (status === "approved") {
-    await Lead.findByIdAndUpdate(transfer.leadId, {
-      $set: {
-        "preferences.consultantId": transfer.toId,
-        transferredTo: transfer.toId,
-      },
-    });
-
-    for (let pendingAssignment of pendingAssignments) {
-      const requiresSchedule =
-        ["pre", "assess"].includes(pendingAssignment.phase) &&
-        pendingAssignment.status === "assigned";
-
-      if (requiresSchedule && newSchedule) {
-        pendingAssignment.schedule.date = new Date(newSchedule.date);
-        pendingAssignment.schedule.from = newSchedule.from;
-        pendingAssignment.schedule.to = newSchedule.to;
-        if (newSchedule.method)
-          pendingAssignment.schedule.method = newSchedule.method;
-      }
-
-      pendingAssignment.assignedTo = transfer.toId;
-      pendingAssignment.transfer.requested = false;
-      pendingAssignment.transfer.transferredTo = undefined;
-      await pendingAssignment.save();
-    }
-  } else if (status === "rejected") {
-    await Assignment.updateMany(
-      { leadId: transfer.leadId, assignedTo: transfer.fromId },
-      {
-        $set: { "transfer.requested": false },
-        $unset: { "transfer.transferredTo": 1 },
-      },
-    );
-  }
-
-  return transfer;
+  return escalation;
 };

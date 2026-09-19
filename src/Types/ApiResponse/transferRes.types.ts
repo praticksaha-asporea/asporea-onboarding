@@ -1,4 +1,5 @@
 import { ILead } from "@/lib/models/Lead.model";
+import { IUser } from "@/lib/models/User.model";
 
 
 export interface transferUserRef {
@@ -25,16 +26,16 @@ export interface transferLeadRef {
 
 export interface escalationRecord {
     _id: string;
-    fromId?: transferUserRef;
+    fromId?: IUser;
     toId?: transferUserRef;
-    leadId?: transferLeadRef;
+    leadId?: ILead;
     reason: string;
     status: "requested" | "approved" | "rejected";
     remarks?: string;
     createdAt: string;
     updatedAt: string;
     actionedAt?: string;
-    candidate?: ILead
+    candidate?: IUser
 }
 
 export interface escalationListResponse {

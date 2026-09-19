@@ -17,10 +17,10 @@ export interface transferViewPayload {
 }
 
 export interface approveRejecttransferPayload {
-  transferId: string;
-  status: "approved" | "rejected";
+  escalationId: string;
+  // status: "approved" | "rejected";
   remarks: string;
-  schedule?: transferScheduleInfo;
+  // schedule?: transferScheduleInfo;
 }
 
 export interface transferReqPayload {
