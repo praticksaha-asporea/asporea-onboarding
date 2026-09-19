@@ -2,6 +2,8 @@ import { ApiError } from "@/lib/error/api.error";
 import connectToDatabase from "@/lib/mongodb";
 import { DocumentModel } from "@/lib/models/Document.model";
 import mongoose from "mongoose";
+import User from "@/lib/models/User.model";
+import { createLeadLogService } from "../leadActivity/leadLog.service";
 
 export interface IDocumentItem {
   typeId: string;
@@ -13,7 +15,7 @@ export interface ISubmitDocumentsPayload {
   position: string;
   documents: IDocumentItem[];
 }
-
+ 
 export const submitDocumentsService = async (
   payload: ISubmitDocumentsPayload,
   userId?: string,
@@ -60,6 +62,34 @@ export const submitDocumentsService = async (
   if (!updatedLead) {
     throw new ApiError("Target lead record not found", 404);
   }
+
+ let roleLabel = "CANDIDATE";
+  const performerId = userId || String(updatedLead.createdBy?.id || updatedLead.createdBy);
+
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    const actionUser = await User.findById(userId).select("role").lean();
+    if (actionUser) {
+      const rawRole = actionUser.role || "user";
+      if (rawRole === "user") {
+        roleLabel = "CANDIDATE";
+      } else if (rawRole === "tac_head") {
+        roleLabel = "TAC_HEAD";
+      } else {
+        roleLabel = rawRole.toUpperCase();
+      }
+    }
+  }
+
+  const actionType = `DOCUMENT_SUBMITTED_BY_${roleLabel}`;
+  const docCount = savedDocs.length;
+  const actionNote = `${docCount} document(s) uploaded and submitted for position verification`;
+
+  await createLeadLogService(
+    String(leadId),
+    actionType,
+    actionNote,
+    performerId
+  );
 
   return savedDocs;
 };

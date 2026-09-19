@@ -5,7 +5,7 @@ import { Box, Card, CircularProgress, Typography, Chip } from "@mui/material";
 import dayjs from "dayjs";
 import { useLeadLogsCard } from "./useLeadLogsCard";
 import { ILeadLogItem } from "@/Types/ApiResponse/leadLogRes.types";
-
+import { useSelector } from "react-redux";
 const getActionTypeConfig = (type: string) => {
   switch (type) {
     case "STATUS_CHANGE":
@@ -28,10 +28,19 @@ const getActionTypeConfig = (type: string) => {
 interface LeadLogsCardProps {
   leadId: string;
 }
-
+const extractId = (obj: any): string => {
+  if (!obj) return "";
+  if (typeof obj === "string") return obj;
+  if (obj._id) return extractId(obj._id);
+  if (obj.id) return extractId(obj.id);
+  return obj.toString();
+};
 const LeadLogsCard: React.FC<LeadLogsCardProps> = ({ leadId }) => {
   const { logs, loading } = useLeadLogsCard(leadId);
-
+const currentUser = useSelector(
+    (state: any) => state?.userSlice?.userData || state?.user?.userData
+  );
+  const currentUserId = extractId(currentUser?._id || currentUser?.id || currentUser?.user);
   return (
     
     <Card className="p-5 rounded-xl shadow-2xl relative overflow-hidden bg-[var(--mui-palette-background)]">
@@ -55,11 +64,16 @@ const LeadLogsCard: React.FC<LeadLogsCardProps> = ({ leadId }) => {
           <Box className="space-y-4 relative border-l-2 border-[var(--mui-palette-divider)] ml-3 pl-4">
             {logs.map((log: ILeadLogItem) => {
               const config = getActionTypeConfig(log.actionType);
-              const actorName =
+              const actionUserId = extractId(log.actionBy);
+              const isMe = Boolean(
+                currentUserId && actionUserId && currentUserId === actionUserId
+              );
+             const actorName =
                 log.triggeredBy === "USER" && log.actionBy
-                  ? `${log.actionBy.firstName || ""} ${log.actionBy.lastName || ""}`.trim()
+                  ? isMe
+                    ? "You"
+                    : `${log.actionBy.firstName || ""} ${log.actionBy.lastName || ""}`.trim()
                   : "SYSTEM";
-
               return (
                 <Box key={log._id} className="relative">
                 
@@ -87,9 +101,9 @@ const LeadLogsCard: React.FC<LeadLogsCardProps> = ({ leadId }) => {
                         By: <strong className="font-semibold">{actorName}</strong>
                       </span>
 
-                      {log.eventDate && (
-                        <span className="text-[var(--mui-palette-warning-main)] font-medium">
-                          Scheduled: {dayjs(log.eventDate).format("DD MMM YYYY, hh:mm A")}
+                     {log.eventDate && (
+                        <span className="text-[var(--mui-palette-primary-main)] font-medium">
+                          Scheduled: {dayjs(log.eventDate).format("DD MMM YYYY")}
                         </span>
                       )}
                     </Box>

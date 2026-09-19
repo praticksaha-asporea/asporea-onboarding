@@ -42,7 +42,7 @@ export default async function handler(
     );
     body.initialCV = result?.uploadId;
 
-    const data = await savePreCounsellingBooking(body);
+    const data = await savePreCounsellingBooking(body, authUser.id);
 
     return ResponseHandler.sendSuccess(
       res,

@@ -8,6 +8,7 @@ import { BranchModel } from "../../models/Branch.model";
 import { GeneralSettingModel } from "../../models/GeneralSetting.model";
 import { generateInquiryNo } from "@/Utils/generateInquiryNo";
 import { currentFy } from "@/Utils/common";
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 export const createInquiry = async (body: any, createdById: string) => {
   const {
     fullName,
@@ -71,6 +72,12 @@ export const createInquiry = async (body: any, createdById: string) => {
         "candidateProfile.leadId": new mongoose.Types.ObjectId(existingInquiry._id),
       },
     });
+    await createLeadLogService(
+      String(existingInquiry._id),
+      "INQUIRY_STEP1_UPDATED",
+      "Step_1 Inquiry details re-submitted/updated",
+      createdById
+    );
 
     return updatedInquiry;
   }
@@ -116,11 +123,17 @@ export const createInquiry = async (body: any, createdById: string) => {
       "candidateProfile.leadId": new mongoose.Types.ObjectId(newInquiry?._id),
     },
   });
+  await createLeadLogService(
+    String(newInquiry._id),
+    "LEAD_GENERATED_BY_CANDIDATE",
+    `Step_1 Inquiry submitted successfully (${inqNo})`,
+    createdById
+  );
 
   return newInquiry;
 };
 
-export const updateInquiry = async (body: any) => {
+export const updateInquiry = async (body: any,updatedById?: string) => {
 
   const {
     referedFrom,
@@ -198,7 +211,12 @@ export const updateInquiry = async (body: any) => {
       { new: true }
     );
   }
-
+await createLeadLogService(
+    String(id),
+    "LEAD_STEP2_UPDATED",
+    "Step_2 Inquiry details (Source & Profile information) submitted",
+    updatedById || String(inquiry.createdBy?.id)
+  );
   return updatedInquiry;
 };
 

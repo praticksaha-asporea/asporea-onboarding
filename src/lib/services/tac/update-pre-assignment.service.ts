@@ -7,7 +7,7 @@ import { BranchTokenModel } from "@/lib/models/BranchToken.model";
 import { uploadFileService } from "@/lib/services/upload.service";
 import { UploadResult } from "@/Types/Frontend_Payload/document.types";
 import { updatePreAssignmentSchema } from "@/lib/validation/preAssignmentValidation";
-
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 export interface IUpdatePreAssignmentPayload {
   assignmentId?: string;
   preStatus?: string;
@@ -22,7 +22,7 @@ export interface IUpdatePreAssignmentPayload {
 export const updatePreAssignmentService = async (
   payload: IUpdatePreAssignmentPayload,
   authUser: { id: string; role: string },
-  files?: any
+  files?: any,
 ) => {
   if (authUser?.role !== "tac") {
     throw new ApiError("TAC access required", 403);
@@ -83,7 +83,7 @@ export const updatePreAssignmentService = async (
     if (assignmentAnyQueued.leadId?.status !== "doc_awaiting_approval") {
       throw new ApiError(
         `You already have an assignment in ${assignmentAnyQueued.status} status [ ${assignmentAnyQueued.leadId?.inqNo} ]. \r\n Please complete / reject update it first, or ask the FOE to reschedule it.`,
-        400
+        400,
       );
     }
   }
@@ -114,7 +114,7 @@ export const updatePreAssignmentService = async (
   const updated = await Assignment.findByIdAndUpdate(
     assignmentId,
     { $set: update },
-    { returnDocument: "after", runValidators: true }
+    { returnDocument: "after", runValidators: true },
   ).lean();
 
   const updatableStatus: Record<string, string> = {
@@ -130,7 +130,7 @@ export const updatePreAssignmentService = async (
     await Lead.findByIdAndUpdate(
       assignment?.leadId,
       { $set: { status: updatableStatus[status], offeredPosition } },
-      { returnDocument: "after", runValidators: true }
+      { returnDocument: "after", runValidators: true },
     );
 
     if (updatableStatus[status] === "pre_queued") {
@@ -138,21 +138,55 @@ export const updatePreAssignmentService = async (
         await BranchTokenModel.findOneAndUpdate(
           { tokenNo: updated.token.number },
           { $set: { status: "queued" } },
-          { returnDocument: "after", upsert: true, runValidators: true }
+          { returnDocument: "after", upsert: true, runValidators: true },
         ).lean();
       }
     } else if (
       updatableStatus[status] === "pre_completed" ||
       updatableStatus[status] === "pre_rejected"
     ) {
-      if (updated?.token?.number !== null && updated?.token?.number !== undefined) {
+      if (
+        updated?.token?.number !== null &&
+        updated?.token?.number !== undefined
+      ) {
         await BranchTokenModel.findOneAndUpdate(
           { tokenNo: updated.token.number },
           { $set: { status: "finished" } },
-          { returnDocument: "after", upsert: true, runValidators: true }
+          { returnDocument: "after", upsert: true, runValidators: true },
         ).lean();
       }
     }
+  }
+
+  if (status && assignment?.leadId) {
+    const rawRole = authUser.role ? authUser.role.toUpperCase() : "TAC";
+    const statusUpper = status.toUpperCase();
+    const actionType = `PRE_${statusUpper}_BY_${rawRole}`;
+
+    let baseNote = `Pre-Counselling status updated to ${status.replace(/_/g, " ")}`;
+    if (status === "queued") {
+      baseNote = "Candidate added to Pre-Counselling queue";
+    } else if (status === "contacted") {
+      baseNote = "Pre-Counselling session marked as in-progress / contacted";
+    } else if (status === "completed") {
+      baseNote = "Pre-Counselling session marked as completed";
+    } else if (status === "rejected") {
+      baseNote = "Pre-Counselling session marked as rejected";
+    } else if (status === "not_responded") {
+      baseNote = "Pre-Counselling session marked as not responded / unattended";
+    }
+
+    const noteDetails = specificNotes?.trim()
+      ? ` (Notes: ${specificNotes.trim()})`
+      : "";
+    const actionNote = `${baseNote}${noteDetails}`;
+
+    await createLeadLogService(
+      String(assignment.leadId),
+      actionType,
+      actionNote,
+      authUser.id,
+    );
   }
 
   return updated;

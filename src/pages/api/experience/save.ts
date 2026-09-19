@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import connectToDatabase from "@/lib/mongodb";
 import ResponseHandler from "@/lib/utils/responseUtil";
 import { saveExperienceTypeService } from "@/lib/services/experience/experience.service";
+import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 
 export default async function handler(
   req: NextApiRequest,
@@ -14,10 +15,12 @@ export default async function handler(
   }
 
   try {
+    const token = getTokenFromHeader(req);
+    const user = token ? await verifyToken(token) : null;
     const { leadId, experienceType } = req.body;
 
-    const updatedLead = await saveExperienceTypeService(leadId, experienceType);
-
+    const updatedLead = await saveExperienceTypeService(leadId, experienceType,user?.id);
+    
     return ResponseHandler.sendSuccess(
       res,
       updatedLead,
