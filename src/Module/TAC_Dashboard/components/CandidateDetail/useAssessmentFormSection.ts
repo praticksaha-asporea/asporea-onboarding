@@ -108,7 +108,7 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
       assessBasicForm.setValues({ ...assessBasicForm.values, status: status });
       if (status === "queued") setIsPreLocked(false);
     } catch (err: any) {
-      console.log(err?.response?.data?.message ?? "Update failed");
+      // console.log(err?.response?.data?.message ?? "Update failed");
     }
   };
 
@@ -143,7 +143,9 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
       setExpRFT(resDocStatus === "verified");
       setExpVerified(resDocStatus === "verified");
       setDocStatus(resDocStatus);
-    } catch (err: any) { console.log(err); }
+    } catch (err: any) {
+      //console.log(err); 
+    }
   };
 
   const updateExpStatus = async (status: "verified" | "rejected" | "request_technical") => {
@@ -159,7 +161,9 @@ export const useAssessmentFormSection = (candidate: CandidateLead, assessAssign:
       if (status === "request_technical") { setExpRequestTech(true); setTechStatus("refered"); }
       setExpStatus(updatedEXPLead?.data?.data?.experience?.status);
       setExpType(updatedEXPLead?.data?.data?.experience?.type as ExpType);
-    } catch (err: any) { console.log(err); }
+    } catch (err: any) {
+      // console.log(err); 
+    }
   };
 
   const currentStatus = assessBasicForm.values.status || assessAssign.status;

@@ -47,9 +47,9 @@ export const useChangePassword = (onClose: () => void) => {
           onClose();
         }
       } catch (error: any) {
-        console.log(
-          error?.response?.data?.message || "Failed to change password",
-        );
+        // console.log(
+        //   error?.response?.data?.message || "Failed to change password",
+        // );
       } finally {
         setSubmitting(false);
       }

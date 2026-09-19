@@ -141,7 +141,7 @@ export default function CompleteProfilePage() {
     if (socialRaw) {
       try {
         const social = JSON.parse(socialRaw);
-        console.log("DEBUG: Social profile data in storage ->", social);
+        // console.log("DEBUG: Social profile data in storage ->", social);
 
         localStorageImage =
           social?.user?.image ||
@@ -177,7 +177,7 @@ export default function CompleteProfilePage() {
     const finalDetectedImage = sessionGoogleImage || localStorageImage;
 
     if (finalDetectedImage) {
-      console.log("DEBUG: Final Google Avatar set ->", finalDetectedImage);
+      // console.log("DEBUG: Final Google Avatar set ->", finalDetectedImage);
       setImgSrc(finalDetectedImage);
       setFileInput(finalDetectedImage);
     }
@@ -368,7 +368,7 @@ export default function CompleteProfilePage() {
                   }
                   helperText={
                     formik.touched.whatsappNumber &&
-                    formik.errors.whatsappNumber
+                      formik.errors.whatsappNumber
                       ? (formik.errors.whatsappNumber as string)
                       : undefined
                   }
@@ -423,7 +423,7 @@ export default function CompleteProfilePage() {
                     }
                     helperText={
                       formik.touched.passportNumber &&
-                      formik.errors.passportNumber
+                        formik.errors.passportNumber
                         ? (formik.errors.passportNumber as string)
                         : undefined
                     }

@@ -134,7 +134,7 @@ axiosClient.interceptors.response.use(
       if (isUnauthorized && !isDuplicateError) {
         Object.keys(Cookies.get()).forEach((cookieName) => {
           if (cookieName !== "remEmail" && cookieName !== "remPass" && !errorMessage.includes("not eligible for generating token")) {
-            console.log('this working');
+            // console.log('this working');
             Cookies.remove(cookieName);
           }
         });

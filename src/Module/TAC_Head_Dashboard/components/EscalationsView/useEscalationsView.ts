@@ -83,7 +83,7 @@ export const useEscalationsView = () => {
   }, [fetchEscalations]);
 
   const openActionModal = (escalation: any) => {
-    console.log(escalation, 3958);
+    // console.log(escalation, 3958);
 
     setSelectedEscalation(escalation);
     setModalOpen(true);
