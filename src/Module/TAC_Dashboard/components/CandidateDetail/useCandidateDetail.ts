@@ -7,21 +7,10 @@ import { CandidateLead } from "@/Types/Frontend_Payload/Candidate.types";
 
 interface UseCandidateDetailProps {
   selectedCandidate: CandidateLead;
-  // setSelectedCandidate?: React.Dispatch<
-  //   React.SetStateAction<CandidateLead | null>
-  // >;
-  // setCurrentView: (view: "dashboard" | "detail") => void;
-  // setLeadUpdated: boolean;
 }
 export const useCandidateDetail = ({
   selectedCandidate,
-  // setSelectedCandidate,
-  // setCurrentView,
-}: UseCandidateDetailProps) =>
-// setSelectedCandidate: (candidate: CandidateLead) => void,
-//   setCurrentView: (view: "dashboard" | "detail") => void}
-// ) 
-{
+}: UseCandidateDetailProps) => {
   const router = useRouter();
   const currentUser = useSelector(
     (state: any) => state.userSlice?.userData || state.user?.userData
@@ -65,8 +54,6 @@ export const useCandidateDetail = ({
     if (window.history.length > 1) {
       router.back();
     } else {
-      // setSelectedCandidate(null);
-      // setCurrentView("dashboard");
       router.replace("/dashboard");
     }
   };
