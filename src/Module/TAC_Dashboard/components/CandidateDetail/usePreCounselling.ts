@@ -234,9 +234,10 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       } else {
         setPositionData([]);
       }
+
       console.log(rawData, candidate?.offeredPosition, 22255552);
 
-      preForm.setFieldValue("positionOffering", candidate?.offeredPosition?._id);
+      preForm.setFieldValue("positionOffering", candidate?.offeredPosition);
 
     } catch (err) {
       console.error("Position fetch error:", err);

@@ -3,8 +3,8 @@ import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model
 import { TransferLeadModel } from "@/lib/models/TransferLead.model";
 import { Lead } from "@/lib/models/Lead.model";
 import mongoose from "mongoose";
-import { getTransferListService } from "../tac/escalation.service";
 import { getTechnicalListService } from "../tac/technical.service";
+import { getEscalationListService } from "../tac/escalation.service";
 
 export const getTeamOverview = async ({
   userId
@@ -111,7 +111,7 @@ export const getTeamOverview = async ({
       },
     },
   ]);
-  const recentTransfers = await getTransferListService(1, 5);
+  const recentTransfers = await getEscalationListService(1, 5);
   const technicalRequested = await getTechnicalListService(1, 5, '', '', 'refered');
 
   return {
