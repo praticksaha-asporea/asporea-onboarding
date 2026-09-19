@@ -6,7 +6,7 @@ import {
   getTokenFromHeader,
   verifyToken,
 } from "@/lib/middleware/auth.middleware";
-import { updateTransferLeadStatusService } from "@/lib/services/tac/escalation.service";
+import { updateEscalationLeadStatusService } from "@/lib/services/tac/escalation.service";
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,31 +32,31 @@ export default async function handler(
       );
     }
 
-    const { escalationId, status, remarks, schedule } = req.body;
+    const { escalationId, remarks } = req.body;
 
-    if (!escalationId || !status) {
-      throw new ApiError("Escalation ID and Status are required", 400);
+    if (!escalationId) {
+      throw new ApiError("Escalation ID are required", 400);
     }
 
-    if (!["approved", "rejected"].includes(status)) {
-      throw new ApiError("Status must be either 'approved' or 'rejected'", 400);
-    }
+    // if (!["approved", "rejected"].includes(status)) {
+    //   throw new ApiError("Status must be either 'approved' or 'rejected'", 400);
+    // }
 
     // if (status === "approved" && (!schedule || !schedule.date || !schedule.from || !schedule.to)) {
     //   throw new ApiError("New schedule (date, from, to) is required when approving an escalation.", 400);
     // }
 
-    const updatedEscalation = await updateTransferLeadStatusService(
+    const updatedEscalation = await updateEscalationLeadStatusService(
       escalationId,
-      status,
+      // status,
       remarks,
-      schedule
+      // schedule
     );
 
     return ResponseHandler.sendSuccess(
       res,
       updatedEscalation,
-      `Escalation request has been ${status} successfully.`,
+      `Escalation request has been checked.`,
     );
   } catch (error: unknown) {
     if (error instanceof ApiError) {

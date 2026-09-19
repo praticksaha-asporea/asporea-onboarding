@@ -42,9 +42,9 @@ export const useEscalationsView = () => {
     tacId: ""
   });
 
-  const getStatusColor = (status: string): "success" | "error" | "warning" => {
-    if (status === "approved") return "success";
-    if (status === "rejected") return "error";
+
+  const getStatusColor = (status: string) => {
+    if (status === "ActionTaken") return "success";
     return "warning";
   };
 
@@ -56,6 +56,8 @@ export const useEscalationsView = () => {
 
       if (res?.data?.success) {
         const rawList = res.data.data.escalations || [];
+        // console.log(rawList, 57447);
+
         setEscalations(rawList);
         setTotalPages(res.data.data.meta.totalPages || 1);
 
@@ -80,7 +82,9 @@ export const useEscalationsView = () => {
     fetchEscalations();
   }, [fetchEscalations]);
 
-  const openActionModal = (escalation: escalationRecord) => {
+  const openActionModal = (escalation: any) => {
+    console.log(escalation, 3958);
+
     setSelectedEscalation(escalation);
     setModalOpen(true);
   };

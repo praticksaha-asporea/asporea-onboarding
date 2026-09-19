@@ -64,28 +64,15 @@ export const useEscalationActionModal = ({ open, setOpen, transfer, refreshData 
 
   const handleSubmit = async () => {
     if (!transfer) return;
-    if (!action) return toast.error("Please select an action (Approve/Reject)");
     if (!remarks.trim()) return toast.error("Remarks are mandatory");
 
-    let schedulePayload = undefined;
-    if (action === "approved" && requiresSchedule) {
-      if (!selectedSlot) return toast.error("Please select an available time slot");
-      schedulePayload = {
-        date,
-        from: selectedSlot.from,
-        to: selectedSlot.to,
-        method: transfer?.leadId?.preferences?.visitType === "offline" ? ("off" as const) : ("on" as const),
-      };
-    }
 
     setSubmitLoading(true);
     try {
 
       const payload: approveRejecttransferPayload = {
-        transferId: transfer._id,
-        status: action,
+        escalationId: transfer._id,
         remarks,
-        schedule: schedulePayload,
       };
 
       const res = await approveRejectTransgerAction(payload);

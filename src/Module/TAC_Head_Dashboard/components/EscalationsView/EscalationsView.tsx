@@ -25,8 +25,9 @@ import {
 } from "@mui/material";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
-import EscalationActionModal from "./EscalationActionModal";
 import { useEscalationsView } from "./useEscalationsView";
+import { useRouter } from "next/navigation";
+import EscalationActionModal from "./EscalationActionModal";
 
 dayjs.extend(relativeTime);
 
@@ -57,11 +58,8 @@ const EscalationssView: React.FC<EscalationsViewProps> = () => {//{ setCurrentVi
     fetchEscalations,
   } = useEscalationsView();
 
-  const getStatusColor = (status: string) => {
-    if (status === "approved") return "success";
-    if (status === "rejected") return "error";
-    return "warning";
-  };
+  const router = useRouter();
+
   return (
     <Box className="w-full rounded-[20px] shadow-2xl p-4 md:p-8 font-sans bg-[var(--mui-palette-primary)]">
       <Typography className="text-[22px] text-[var(--mui-palette-secondary)] md:text-[28px] font-medium tracking-tight mb-6">
@@ -132,7 +130,7 @@ const EscalationssView: React.FC<EscalationsViewProps> = () => {//{ setCurrentVi
               escalations.map((row) => (
                 <TableRow key={row._id} hover>
 
-                  <TableCell className="py-3 px-4 text-[13px] font-bold text-[var(--mui-palette-secondary)]">
+                  <TableCell className="py-3 px-4 text-[13px] text-[var(--mui-palette-secondary)]">
                     {row.inqNo}
                   </TableCell>
 
@@ -173,13 +171,23 @@ const EscalationssView: React.FC<EscalationsViewProps> = () => {//{ setCurrentVi
                   </TableCell>
                   <TableCell className="py-3 px-4 text-right">
                     <IconButton
-                      size="small"
-                      onClick={() => openActionModal(row.rawRecord)}
+                      // size="small"
+                      onClick={() => router.push(`/tac-head/candidate/${row?.rawRecord?.leadId?._id}`)}
                       color="primary"
                       className="bg-var(--mui-palette-primary-main)"
                     >
-                      <i className="ri-shield-check-line text-[20px]" />
+                      <i className="ri-eye-fill" />
                     </IconButton>
+                    {row.statusLabel !== "ActionTaken" && (
+                      <IconButton
+                        // size="small"
+                        onClick={() => openActionModal(row)}
+                        color="primary"
+                        className="bg-var(--mui-palette-primary-main)"
+                      >
+                        <i className="ri-edit-line" />
+                      </IconButton>
+                    )}
                   </TableCell>
                 </TableRow>
               ))
@@ -189,25 +197,27 @@ const EscalationssView: React.FC<EscalationsViewProps> = () => {//{ setCurrentVi
       </TableContainer>
 
       {/* ── PAGINATION CONTROLS ── */}
-      {totalPages > 1 && (
-        <Box className="flex justify-center mt-4">
-          <Pagination
-            count={totalPages}
-            page={filters.page}
-            onChange={(_e, val) => handlePageChange(val)}
-            color="primary"
-          />
-        </Box>
-      )}
+      {
+        totalPages > 1 && (
+          <Box className="flex justify-center mt-4">
+            <Pagination
+              count={totalPages}
+              page={filters.page}
+              onChange={(_e, val) => handlePageChange(val)}
+              color="primary"
+            />
+          </Box>
+        )
+      }
 
       {/* ── ACTION INTERACTION MODAL ── */}
-      {/* <EscalationActionModal
+      <EscalationActionModal
         open={modalOpen}
         setOpen={setModalOpen}
         transfer={selectedEscalation}
         refreshData={fetchEscalations}
-      /> */}
-    </Box>
+      />
+    </Box >
   );
 };
 

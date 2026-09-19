@@ -24,14 +24,14 @@ export const getEscalationListAction = async (
 };
 
 
-export const getEscalationViewAction = async (
-  payload: transferViewPayload
-): Promise<AxiosResponse<transferViewResponse>> => {
-  const url = `/tac/tachead/escalation/view?id=${encodeURIComponent(payload.id)}`;
+// export const getEscalationViewAction = async (
+//   payload: transferViewPayload
+// ): Promise<AxiosResponse<transferViewResponse>> => {
+//   const url = `/tac/tachead/escalation/view?id=${encodeURIComponent(payload.id)}`;
 
-  const response = await axiosClient.get(url);
-  return response;
-};
+//   const response = await axiosClient.get(url);
+//   return response;
+// };
 
 
 export const approveRejectTransgerAction = async (

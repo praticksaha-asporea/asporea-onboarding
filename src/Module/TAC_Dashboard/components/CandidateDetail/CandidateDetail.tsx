@@ -94,7 +94,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
             response?.data?.data.lead?.notificationPreference ?? {},
           inquiryStages: response?.data?.data.lead.inquiryStages ?? {},
           inqForType: response?.data?.data.lead.inqForType ?? "",
-          inqForPosition: response?.data?.data.lead.inqForPosition ?? "",
+          inqForPosition: response?.data?.data.lead.inqForPosition?._id ?? "",
           user: response?.data?.data?.user ?? "",
           offeredPosition: response?.data?.data.lead.offeredPosition ?? "",
           escalated: response?.data?.data.lead.escalated ?? false,

@@ -59,7 +59,7 @@ export interface CandidateLead extends DocumentBaseCandidate {
     email?: string;
   };
   inqForType: string;
-  inqForPosition: string;
+  inqForPosition: { _id: string; title: string } | string;
   address?: string;
   preferences?: {
     branchId?: BranchType | string;
@@ -90,6 +90,6 @@ export interface CandidateLead extends DocumentBaseCandidate {
   stage?: string;
   token?: string | null;
   user?: IUser;
-  offeredPosition?: string;
+  offeredPosition?: { _id: string; title: string } | string;
   escalated?: boolean;
 }
