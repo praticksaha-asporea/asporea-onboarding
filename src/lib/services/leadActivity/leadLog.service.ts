@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 import { LeadLog } from "@/lib/models/LeadLog.model";
 import "../../models/User.model"
+import "../../models/User.model"
 import { ApiError } from "@/lib/error/api.error";
 export const createLeadLogService = async (
   leadId: string,
@@ -38,7 +39,7 @@ export const createLeadLogService = async (
 
   return await LeadLog.findById(newLog._id).populate(
     "actionBy",
-    "firstName lastName email"
+    "firstName lastName email role"
   );
 };
 
@@ -48,7 +49,7 @@ export const getLeadLogsService = async (leadId: string) => {
   }
 
   return await LeadLog.find({ leadId: new mongoose.Types.ObjectId(leadId) })
-    .populate("actionBy", "firstName lastName email")
+    .populate("actionBy", "firstName lastName email role")
     .sort({ createdAt: -1 })
     .lean();
 };

@@ -11,7 +11,7 @@ import User from "@/lib/models/User.model";
 import { BranchTokenModel } from "@/lib/models/BranchToken.model";
 import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
 import { BranchModel } from "@/lib/models/Branch.model";
-
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 const timeToMinutes = (timeStr: string) => {
   if (!timeStr) return 0;
 
@@ -197,6 +197,7 @@ export const getConsultantSlots = async (
 
 export const savePreCounsellingBooking = async (
   body: SavePreCounsellingBookingBody,
+  userId?: string,
 ) => {
   const {
     leadId,
@@ -256,6 +257,15 @@ export const savePreCounsellingBooking = async (
   if (!currentLead) {
     throw new ApiError("Lead not found.", 404);
   }
+
+  const existingPreAssignment =await Assignment.findOne({
+    leadId: leadObjectId,
+    phase: "pre",
+  }).lean();
+const isReschedule = Boolean(
+    existingPreAssignment || 
+    (currentLead.status && currentLead.status !== "inquiry_submitted")
+  );
 
   if (hasConsultant && date && from && to) {
     const targetDate = new Date(date);
@@ -520,7 +530,43 @@ export const savePreCounsellingBooking = async (
       new: true,
     },
   );
+  let roleLabel = "CANDIDATE";
+  const performerId = userId || String(currentLead.createdBy?.id || currentLead.createdBy);
 
+  if (userId && mongoose.Types.ObjectId.isValid(userId)) {
+    const actionUser = await User.findById(userId).select("role").lean();
+
+    if (actionUser) {
+      const rawRole = actionUser.role || "user";
+      
+      if (rawRole === "user") {
+        roleLabel = "CANDIDATE";
+      } else if (rawRole === "tac_head") {
+        roleLabel = "TAC_HEAD";
+      } else {
+        roleLabel = rawRole.toUpperCase();  
+      }
+    }
+  }
+
+
+const actionPrefix = isReschedule ? "PRE_RESCHEDULED_BY" : "PRE_SCHEDULED_BY";
+const actionType = `${actionPrefix}_${roleLabel}`;
+const modeText = method === "on" ? "Online" : "Offline";
+const actionNote = isReschedule
+    ? `Pre-Counselling rescheduled to ${date} from ${from} to ${to} (${modeText} mode)`
+    : `Pre-Counselling scheduled from ${from} to ${to} (${modeText} mode)`;
+
+   
+  const scheduledEventDate = date ? new Date(date) : undefined;
+
+  await createLeadLogService(
+    String(leadObjectId),    
+    actionType,            
+    actionNote,            
+    performerId,           
+    scheduledEventDate      
+  );
   return updatedLead;
 };
 
@@ -694,16 +740,30 @@ const leadId = typeof bodyData.leadId === "object" ? bodyData.leadId?._id : body
   if (!lead) {
     throw new ApiError("Lead not found", 404);
   }
+let userObjectId: mongoose.Types.ObjectId | null = null;
+  let roleLabel = "CANDIDATE";
 
-  let userObjectId: mongoose.Types.ObjectId | null = null;
+   
   if (actionBy && mongoose.Types.ObjectId.isValid(actionBy)) {
     userObjectId = new mongoose.Types.ObjectId(actionBy);
-    const userExists = await User.findById(userObjectId);
-    if (!userExists) {
+    const actionUser = await User.findById(userObjectId).select("role").lean();
+
+    if (!actionUser) {
       throw new ApiError("User not found", 404);
+    }
+
+    const rawRole = actionUser.role || "user";
+
+    if (rawRole === "user") {
+      roleLabel = "CANDIDATE";
+    } else if (rawRole === "tac_head") {
+      roleLabel = "TAC_HEAD";
+    } else {
+      roleLabel = rawRole.toUpperCase();  
     }
   }
 
+   
   await Assignment.deleteOne({
     leadId: new mongoose.Types.ObjectId(leadId),
     phase: "pre",
@@ -715,13 +775,31 @@ const leadId = typeof bodyData.leadId === "object" ? bodyData.leadId?._id : body
     });
   }
 
- 
-  const updatedLead = await Lead.findByIdAndUpdate(leadId, {
-    $set: {
-      status: "inquiry_submitted",
-      "inquiryStages.stage3": "pending",
+   
+  const updatedLead = await Lead.findByIdAndUpdate(
+    leadId,
+    {
+      $set: {
+        status: "inquiry_submitted",
+        "inquiryStages.stage3": "pending",
+      },
     },
-  }, { new: true });
+    { new: true }
+  );
+
+   
+  const actionType = `PRE_CANCELLED_BY_${roleLabel}`;
+  const reasonText = cancelReason?.trim() ? ` (Reason: ${cancelReason.trim()})` : "";
+  const actionNote = `Pre-Counselling session cancelled${reasonText}`;
+
+  const performerId = actionBy || String(lead.createdBy?.id || lead.createdBy);
+
+  await createLeadLogService(
+    String(leadId),
+    actionType,
+    actionNote,
+    performerId
+  );
 
   return updatedLead;
-};
+}

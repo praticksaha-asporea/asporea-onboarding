@@ -27,7 +27,7 @@ export default async function handler(
     if (error)
       throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
-    const data = await updateInquiry(req.body);
+    const data = await updateInquiry(req.body, authUser.id);
     return ResponseHandler.sendSuccess(
       res,
       data,
