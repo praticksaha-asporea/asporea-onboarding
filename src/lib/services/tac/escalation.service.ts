@@ -7,6 +7,7 @@ import { Lead } from "@/lib/models/Lead.model";
 import { ApiError } from "@/lib/error/api.error";
 import mongoose from "mongoose";
 import { EscalationModel } from "@/lib/models/Escalation.model";
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 import User from "@/lib/models/User.model";
 
 interface TransferPayload {
@@ -72,6 +73,24 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
     }
   );
 
+const targetUser = await User.findById(toId)
+    .select("firstName lastName")
+    .lean();
+
+  const targetName = targetUser
+    ? `${targetUser.firstName || ""} ${targetUser.lastName || ""}`.trim()
+    : "another TAC";
+
+  const reasonText = reason?.trim() ? ` (Reason: ${reason.trim()})` : "";
+  const actionType = "LEAD_TRANSFERRED_BY_TAC";
+  const actionNote = `Lead transferred to TAC ${targetName}${reasonText}`;
+
+  await createLeadLogService(
+    String(leadId),
+    actionType,
+    actionNote,
+    fromId
+  );
 
   return newTransfer;
 };
