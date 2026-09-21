@@ -73,23 +73,23 @@ const UserDropdown = () => {
     setOpen(false);
   };
 
- 
-const handleUserLogout = async () => {
+
+  const handleUserLogout = async () => {
     try {
-    
+
       const currentUserRole = reduxUser?.role || "";
-       
+
       const remIdentity = localStorage.getItem("asporea_rem_identity");
       const remPass = localStorage.getItem("asporea_rem_pass");
 
-      
+
       localStorage.clear();
 
-   
+
       if (remIdentity) localStorage.setItem("asporea_rem_identity", remIdentity);
       if (remPass) localStorage.setItem("asporea_rem_pass", remPass);
 
-      
+
       const allCookies = Cookies.get();
       Object.keys(allCookies).forEach((cookieName) => {
         if (cookieName !== 'remEmail' && cookieName !== 'remPass') {
@@ -100,7 +100,7 @@ const handleUserLogout = async () => {
 
       await signOut({ redirect: false });
 
-      
+
       if (["tac", "foe", "tac_head"].includes(currentUserRole)) {
         window.location.href = '/tac-login';
       } else {
@@ -127,7 +127,7 @@ const handleUserLogout = async () => {
           src={avatarSrc}
           onClick={handleDropdownOpen}
           className="cursor-pointer bs-[38px] is-[38px] border-[3px] border-divider"
-          
+
         />
       </Badge>
       <Popper
@@ -179,7 +179,7 @@ const handleUserLogout = async () => {
                   <MenuItem
                     className="gap-3"
                     onClick={(e) => {
-                      console.log(reduxUser?.role, 414);
+                      // console.log(reduxUser?.role, 414);
                       if (reduxUser?.role == "user") {
                         handleDropdownClose(e, "/profile");
                       } else if (["tac", "foe"].includes(reduxUser?.role)) {

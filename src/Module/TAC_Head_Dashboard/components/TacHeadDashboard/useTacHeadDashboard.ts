@@ -32,7 +32,7 @@ export const useTacHeadDashboard = () => {
             if (res?.data?.data) setData(res?.data?.data);
 
         } catch (err: any) {
-            console.log(err?.response?.data?.message ?? "Failed to load candidates");
+            // console.log(err?.response?.data?.message ?? "Failed to load candidates");
         }
     }, []);
 

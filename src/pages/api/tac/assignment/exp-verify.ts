@@ -64,7 +64,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return ResponseHandler.sendSuccess(res, updatedLead, "Experience status updated");
     } catch (error: unknown) {
 
-        console.log(error, 444);
+        // console.log(error, 444);
         if (error instanceof ApiError)
             return ResponseHandler.sendError(res, error.message, error.statusCode, error.data);
         return ResponseHandler.sendError(res, "Unknown error occurred", 500);

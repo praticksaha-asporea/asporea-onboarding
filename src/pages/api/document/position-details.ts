@@ -22,7 +22,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const data = await viewPositionForUser(positionId);
     return ResponseHandler.sendSuccess(res, data, "Position details fetched successfully");
   } catch (error: unknown) {
-    console.log(error, 28444);
+    // console.log(error, 28444);
 
     if (error instanceof ApiError)
       return ResponseHandler.sendError(res, error.message, error.statusCode);

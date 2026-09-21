@@ -260,7 +260,7 @@ export const useAllCandidates = () => {
     isReschedule = false,
     phase: "pre" | "assess" = "pre",
   ) => {
-    console.log(candidate, 222);
+    // console.log(candidate, 222);
     setSelectedBranch(candidate?.preferences?.branchId?._id);
     setTargetLead({ name: candidate.fullName, ...candidate });
     setSchedulePhase(phase);

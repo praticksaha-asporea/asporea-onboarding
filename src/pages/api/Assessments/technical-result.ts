@@ -5,9 +5,9 @@ import { ApiError } from "@/lib/error/api.error";
 import { getTokenFromHeader, verifyToken } from "@/lib/middleware/auth.middleware";
 import { getTechnicalResult } from "@/lib/services/Assessments/technical.service";
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-await connectToDatabase();
+  await connectToDatabase();
 
-if (req.method !== "GET") {
+  if (req.method !== "GET") {
     return ResponseHandler.sendError(res, "Method not allowed", 405);
   }
   try {
@@ -27,8 +27,8 @@ if (req.method !== "GET") {
 
     return ResponseHandler.sendSuccess(res, data, "Result fetched successfully");
   } catch (error: unknown) {
-    console.log(error);
-    
+    // console.log(error);
+
     if (error instanceof ApiError) return ResponseHandler.sendError(res, error.message, error.statusCode);
     return ResponseHandler.sendError(res, "Unknown error occurred while fetching data", 500);
   }

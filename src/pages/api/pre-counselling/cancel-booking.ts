@@ -18,7 +18,7 @@ export default async function handler(
     const data = await cancelPreBooking(req.body);
     return ResponseHandler.sendSuccess(res, data, "Cancelled successfully");
   } catch (error: unknown) {
-    console.log(error);
+    // console.log(error);
     if (error instanceof ApiError) {
       return ResponseHandler.sendError(res, error.message, error.statusCode);
     }

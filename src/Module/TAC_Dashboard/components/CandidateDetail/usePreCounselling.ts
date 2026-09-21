@@ -234,9 +234,10 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       } else {
         setPositionData([]);
       }
-      console.log(rawData, candidate?.offeredPosition, 22255552);
 
-      preForm.setFieldValue("positionOffering", candidate?.offeredPosition?._id);
+      // console.log(rawData, candidate?.offeredPosition, 22255552);
+
+      preForm.setFieldValue("positionOffering", candidate?.offeredPosition);
 
     } catch (err) {
       console.error("Position fetch error:", err);
@@ -298,7 +299,7 @@ export const usePreCounselling = (inqAssign: IAssignment, candidatePhone: string
       payload.append("to", selectedRescheduleSlot.to as string);
     }
     payload.append("method", mode === "online" ? "on" : "off");
-    console.log(payload, 5135124);
+    // console.log(payload, 5135124);
 
     // if (cv.resumeFile) payload.append("resumeFile", cv.resumeFile);
     try {

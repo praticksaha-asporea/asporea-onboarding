@@ -96,7 +96,7 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           inqForType: response?.data?.data.lead.inqForType ?? "",
           inqForPosition: response?.data?.data.lead.inqForPosition?._id ?? "",
           user: response?.data?.data?.user ?? "",
-          offeredPosition: response?.data?.data.lead.offeredPosition ?? "",
+          offeredPosition: response?.data?.data.lead.offeredPosition?._id ?? "",
           escalated: response?.data?.data.lead.escalated ?? false,
         });
       })
@@ -121,12 +121,17 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
         id: c._id,
         followUpRequired: checked,
       });
+      // console.log(prev);
+
       setSelectedCandidate((prev: any) => ({
         ...prev,
-        inqForType: prev?.inqForType ?? "",
-        inqForPosition: prev?.inqForPosition ?? "",
+        inqForType: prev?.inqForType?.name ?? "",
+        inqForPosition: prev?.inqForPosition?._id ?? "",
         followUpRequired: checked,
       }));
+      // console.log(prev);
+
+
       toast.success(
         checked
           ? "Candidate successfully flagged for priority follow-up."
