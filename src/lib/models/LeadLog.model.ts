@@ -104,4 +104,7 @@ ACTION TYPES:-
 . LEAD DETAILS MODIFICATION STAGE:
    - LEAD_DETAILS_UPDATED_BY_FOE       -> Lead/Candidate details updated by FOE
    - LEAD_DETAILS_UPDATED_BY_TAC       -> Lead/Candidate details updated by TAC
+. 6. ESCALATIONS:
+    ESCALATE_BY_TAC ->
+    ESCALATE_BY_FOE ->
 */

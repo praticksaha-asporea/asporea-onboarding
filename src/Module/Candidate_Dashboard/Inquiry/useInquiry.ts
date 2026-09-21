@@ -122,6 +122,7 @@ export function useInquiry() {
   const [updatingInquiry, setUpdatingInquiry] = useState(false);
   const [showInquiryPopup, setShowInquiryPopup] = useState(false);
   const [generatedInqNo, setGeneratedInqNo] = useState("");
+  const [isFormDisabled, setIsFormDisabled] = useState<boolean>(false);
 
   const getInitialValues = (): InquiryFormValues => ({
     fullName: `${userData?.firstName || ""} ${userData?.lastName || ""}`.trim(),
@@ -316,7 +317,9 @@ export function useInquiry() {
   const handleUpdateStep = () => formik.handleSubmit();
   const goBackToStep1 = () => progress.setFormStep(0);
 
-  const isFormDisabled = false;
+
+  // console.log(progress, 444);
+
 
   return {
     externalSources: referrals.externalSources,
