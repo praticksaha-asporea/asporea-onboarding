@@ -6,7 +6,7 @@ import { Lead } from "@/lib/models/Lead.model";
 import User from "@/lib/models/User.model";
 import { EmployeeBranchShiftModel } from "@/lib/models/EmployeeBranchShift.model";
 import { updateLeadSchema } from "@/lib/validation/tacLeadValidation";
-
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 export interface IUpdateLeadPayload {
   id?: string;
   followUpRequired?: boolean;
@@ -131,6 +131,12 @@ export const updateLeadService = async (
     { $set: updateUser },
     { new: true, runValidators: true },
   ).lean();
+
+  const roleLabel = authUser.role ? authUser.role.toUpperCase() : "STAFF";
+  const actionType = `LEAD_DETAILS_UPDATED_BY_${roleLabel}`;
+  const actionNote = `Candidate profile and lead details updated`;
+
+  await createLeadLogService(String(id), actionType, actionNote, authUser.id);
 
   return { lead: updatedLead, user: updatedUser };
 };

@@ -97,7 +97,11 @@ ACTION TYPES:-
    - DOCUMENT_SUBMITTED_BY_CANDIDATE -> Documents submitted by Candidate
    - DOCUMENT_SUBMITTED_BY_FOE       -> Documents uploaded/submitted by FOE
 
-. 5. EXPERIENCE SUBMISSION STAGE:
+. EXPERIENCE SUBMISSION STAGE:
    - EXPERIENCE_SUBMITTED_BY_CANDIDATE -> Experience type (Fresher/Domestic/etc.) submitted by Candidate
    - EXPERIENCE_SUBMITTED_BY_FOE       -> Experience type updated by FOE
+
+. LEAD DETAILS MODIFICATION STAGE:
+   - LEAD_DETAILS_UPDATED_BY_FOE       -> Lead/Candidate details updated by FOE
+   - LEAD_DETAILS_UPDATED_BY_TAC       -> Lead/Candidate details updated by TAC
 */
