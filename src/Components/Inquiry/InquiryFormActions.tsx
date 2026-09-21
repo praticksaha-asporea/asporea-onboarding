@@ -49,11 +49,11 @@ export const InquiryFormActions: React.FC<InquiryFormActionsProps> = ({
             disabled={
               formStep === 0
                 ? creatingInquiry ||
-                  step1HasErrors ||
-                  locationPermissionRequired
+                step1HasErrors ||
+                locationPermissionRequired
                 : updatingInquiry ||
-                  step2HasErrors ||
-                  locationPermissionRequired
+                step2HasErrors ||
+                locationPermissionRequired
             }
             className="rounded-xl normal-case text-sm shadow-md"
           >
@@ -62,7 +62,7 @@ export const InquiryFormActions: React.FC<InquiryFormActionsProps> = ({
             ) : formStep === 0 ? (
               "Save and continue"
             ) : (
-              "Submit inquiry"
+              "Update"
             )}
           </Button>
         </Grid>

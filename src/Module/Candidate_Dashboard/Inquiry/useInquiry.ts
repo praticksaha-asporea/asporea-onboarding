@@ -28,7 +28,7 @@ import { useInquiryReferrals } from "./Sub-hooks/useInquiryReferrals";
 import { useInquiryPreferences } from "./Sub-hooks/useInquiryPreferences";
 import { useInquiryProgress } from "./Sub-hooks/useInquiryProgress";
 
- 
+
 export const stepOneValidationSchema = Yup.object({
   fullName: Yup.string().trim().required("Full Name is required"),
   email: Yup.string()

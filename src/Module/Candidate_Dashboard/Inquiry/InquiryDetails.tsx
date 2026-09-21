@@ -87,7 +87,7 @@ const InquiryDetails = () => {
                   : "Additional details update the record"}
               </Typography>
 
-              
+
               {isFormDisabled && <InquiryDisabledBanner userData={userData} />}
 
               {!isFormDisabled && (
@@ -122,7 +122,7 @@ const InquiryDetails = () => {
                   {formStep === 1 && generatedInqNo && (
                     <Chip
                       icon={<i className="ri-check-line" />}
-                      label={`Inquiry created — ID ${generatedInqNo}`}
+                      label={`Inquiry created / updated — ID ${generatedInqNo}`}
                       color="success"
                       variant="outlined"
                       className="mb-5"
@@ -202,13 +202,13 @@ const InquiryDetails = () => {
         </Grid>
       </Grid>
 
-     
+
       <LocationPermissionDialog
         open={locationPermissionRequired}
         getLocation={getLocation}
       />
 
-      
+
       <InquirySuccessDialog
         open={showInquiryPopup}
         generatedInqNo={generatedInqNo}

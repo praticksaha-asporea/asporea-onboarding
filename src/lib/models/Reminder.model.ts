@@ -2,7 +2,7 @@ import { Schema, Document, Types, model, models } from "mongoose";
 
 export interface IReminder extends Document {
   notifyTo: Types.ObjectId;
-  notifyType: "candidate" | "tac";
+  notifyType: "candidate" | "tac" | "foe";
   sentFrom: Types.ObjectId;
   heading: string;
   message: string;
@@ -20,7 +20,7 @@ const ReminderSchema = new Schema<IReminder>(
     },
     notifyType: {
       type: String,
-      enum: ["candidate", "tac"],
+      enum: ["candidate", "tac", "foe"],
       required: true,
     },
     sentFrom: {

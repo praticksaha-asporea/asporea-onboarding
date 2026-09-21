@@ -164,11 +164,11 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setL
                     </MenuItem>
                   ))}
               </Select>
-              {/* {err("inquiryFor") && (
+              {fe("inquiryFor") && (
                 <FormHelperText>
-                  {helperText("inquiryFor")}
+                  {fh("inquiryFor")}
                 </FormHelperText>
-              )} */}
+              )}
             </FormControl>
           </Grid>
           {/* step 2*/}
@@ -208,11 +208,11 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setL
                   Bangladeshi
                 </MenuItem>
               </Select>
-              {/* {err("nationality") && (
+              {fe("nationality") && (
                 <FormHelperText>
-                  {helperText("nationality")}
+                  {fh("nationality")}
                 </FormHelperText>
-              )} */}
+              )}
             </FormControl>
           </Grid>
 
@@ -243,11 +243,11 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setL
                   Post graduate
                 </MenuItem>
               </Select>
-              {/* {err("latestAcademic") && (
+              {fe("latestAcademic") && (
                 <FormHelperText>
-                  {helperText("latestAcademic")}
+                  {fh("latestAcademic")}
                 </FormHelperText>
-              )} */}
+              )}
             </FormControl>
           </Grid>
 
@@ -259,8 +259,8 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setL
               value={inquiryForm.values.latestTechnical}
               onChange={inquiryForm.handleChange}
               onBlur={inquiryForm.handleBlur}
-            // error={err("latestTechnical")}
-            // helperText={helperText("latestTechnical")}
+              error={fe("latestTechnical")}
+              helperText={fh("latestTechnical")}
             />
           </Grid>
 
@@ -273,8 +273,8 @@ const InquiryDetailsForm: React.FC<InquiryDetailsFormProps> = ({ candidate, setL
               value={inquiryForm.values.workExperience}
               onChange={inquiryForm.handleChange}
               onBlur={inquiryForm.handleBlur}
-            // error={err("workExperience")}
-            // helperText={helperText("workExperience")}
+              error={fe("workExperience")}
+              helperText={fh("workExperience")}
             />
           </Grid>
 

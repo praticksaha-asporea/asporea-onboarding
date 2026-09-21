@@ -2,6 +2,7 @@ import User, { IUser } from '@/lib/models/User.model';
 import { generateTokens } from '@/lib/utils/tokenUtil';
 import { comparePassword } from '@/lib/utils/bcryptUtil';
 import { ApiError } from '@/lib/error/api.error';
+import { createLeadLogService } from '../leadActivity/leadLog.service';
 
 interface LoginBody {
   identity: string;
@@ -40,6 +41,16 @@ export const login = async (body: LoginBody) => {
     _id: String(user._id),
     role: String(user.role),
   });
+
+
+  if (user?.candidateProfile?.leadId) {
+    await createLeadLogService(
+      String(user?.candidateProfile?.leadId),
+      "LOGIN",
+      "Logged in",
+      String(user?._id)
+    )
+  }
 
   return {
     user: {

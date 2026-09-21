@@ -29,7 +29,7 @@ export const InquirySuccessDialog: React.FC<InquirySuccessDialogProps> = ({
     >
       <DialogContent className="text-center p-8">
         <Typography variant="h4" className="mt-4">
-          Inquiry submitted
+          Inquiry submitted / updated
         </Typography>
         <Typography variant="h6" className="mt-2 mb-8" color="primary">
           ID: {generatedInqNo}
@@ -37,8 +37,8 @@ export const InquirySuccessDialog: React.FC<InquirySuccessDialogProps> = ({
 
         <Box className="mb-8">
           <Typography variant="body1" className="mt-2 mb-8" color="primary">
-            Please choose your preferred schedule so we can assist you more
-            effectively
+            To get the best assistance, please select your preferred schedule for your
+            inquiry. This will help us serve you better.
           </Typography>
           <Button
             variant="contained"

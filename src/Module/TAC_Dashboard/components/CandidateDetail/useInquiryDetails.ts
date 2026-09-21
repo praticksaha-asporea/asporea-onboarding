@@ -80,6 +80,18 @@ export const useInquiryDetails = (candidate: CandidateLead, setLeadUpdated: Reac
         },
     });
 
+
+    useEffect(() => {
+        if (inquiryForm.submitCount > 0 && Object.keys(inquiryForm.errors).length > 0) {
+            const firstErrorField = Object.keys(inquiryForm.errors)[0];
+            const errorElement = document.getElementsByName(firstErrorField)[0] || document.getElementById(firstErrorField);
+            if (errorElement) {
+                errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+                errorElement.focus();
+            }
+        }
+    }, [inquiryForm.submitCount]);
+
     const fe = (field: string) => !!(inquiryForm.touched[field as keyof typeof inquiryForm.touched] && inquiryForm.errors[field as keyof typeof inquiryForm.errors]);
     const fh = (field: string) => inquiryForm.touched[field as keyof typeof inquiryForm.touched] ? (inquiryForm.errors[field as keyof typeof inquiryForm.errors] as string) : undefined;
 

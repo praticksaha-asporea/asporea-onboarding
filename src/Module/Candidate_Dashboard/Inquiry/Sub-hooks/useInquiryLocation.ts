@@ -40,7 +40,7 @@ export const useInquiryLocation = () => {
             return;
           }
 
-          toast.error("Unable to get your location.");
+          // toast.error("Unable to get your location.");
         },
         {
           enableHighAccuracy: true,

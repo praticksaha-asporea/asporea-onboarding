@@ -31,7 +31,7 @@ export default async function handler(
     return ResponseHandler.sendSuccess(
       res,
       data,
-      "Inquiry registered successfully",
+      "Inquiry registered / updated successfully",
     );
   } catch (error: unknown) {
     // console.log(error);

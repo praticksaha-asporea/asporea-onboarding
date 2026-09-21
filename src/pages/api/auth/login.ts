@@ -5,7 +5,6 @@ import ResponseHandler from '@/lib/utils/responseUtil';
 import { ApiError } from '@/lib/error/api.error';
 import { loginSchema } from '@/lib/validation/authValidation';
 import { applyCors } from '@/lib/cors';
-import { createLeadLogService } from '@/lib/services/leadActivity/leadLog.service';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (applyCors(req, res)) return;
@@ -27,13 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       throw new ApiError(message, 400);
     }
     const userData = await login(req.body);
-
-    userData?.user?.candidateProfile?.leadId && await createLeadLogService(
-      String(userData?.user?.candidateProfile?.leadId),
-      "LOGIN",
-      "Logged in",
-      String(userData?.user?.id)
-    )
 
 
     return ResponseHandler.sendSuccess(
