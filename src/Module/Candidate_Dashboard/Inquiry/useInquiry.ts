@@ -318,7 +318,14 @@ export function useInquiry() {
   const goBackToStep1 = () => progress.setFormStep(0);
 
 
-  // console.log(progress, 444);
+  // console.log(progress.statusofCompletedSteps, 444);
+  useEffect(
+    () => {
+      if (progress.statusofCompletedSteps?.pre) {
+        setIsFormDisabled(true);
+      }
+    },
+    [progress.statusofCompletedSteps])
 
 
   return {

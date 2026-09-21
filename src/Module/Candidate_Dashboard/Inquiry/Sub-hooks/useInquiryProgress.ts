@@ -19,9 +19,19 @@ export const useInquiryProgress = (
   const dispatch = useDispatch();
   const checkedLeadIdRef = useRef<string | null>(null);
 
+
   const [activeStepperStep, setActiveStepperStep] = useState<number>(0);
   const [formStep, setFormStep] = useState<0 | 1>(0);
   const [inquiryId, setInquiryId] = useState<string>("");
+
+
+  const [statusofCompletedSteps, setStatusofCompletedSteps] = useState<{
+    pre: boolean;
+    assess: boolean;
+  }>({
+    pre: false,
+    assess: false
+  });
 
   const formStepRef = useRef<0 | 1>(0);
   useEffect(() => {
@@ -63,6 +73,12 @@ export const useInquiryProgress = (
         const res = await getJourneyTimelineAction({ leadId: existingLeadId });
         if (res?.data?.success && res?.data) {
           setActiveStepperStep(res?.data?.data?.activeStep);
+          if (setStatusofCompletedSteps) {
+            setStatusofCompletedSteps({
+              pre: res?.data?.data?.preCounselling?.status === "Completed" ? true : false,
+              assess: res?.data?.data?.assessment?.status === "Completed" ? true : false
+            });
+          }
         } else {
           setActiveStepperStep(1);
         }
@@ -181,5 +197,6 @@ export const useInquiryProgress = (
     setInquiryId,
     checkedLeadIdRef,
     formStepRef,
+    statusofCompletedSteps
   };
 };

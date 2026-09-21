@@ -10,7 +10,7 @@ interface ProgressSidebarProps {
 }
 
 export const ProgressSidebar = ({ activeStep }: ProgressSidebarProps) => {
-   const steps = [
+  const steps = [
     "Inquiry",
     "Pre-Counselling",
     "Documents",
@@ -20,11 +20,13 @@ export const ProgressSidebar = ({ activeStep }: ProgressSidebarProps) => {
   ];
 
   const totalSteps = steps.length;
- const currentStepNumber = Math.min(Math.max(activeStep || 1, 1), totalSteps);
+  const currentStepNumber = Math.min(Math.max(activeStep || 1, 1), totalSteps);
   const stepIndex = currentStepNumber - 1;
 
   const currentStepName = steps[stepIndex];
   const progressValue = Math.round((currentStepNumber / totalSteps) * 100);
+  // console.log(currentStepNumber, 'currentStepNumber');
+  // console.log(progressValue, 'progressValue');
 
   return (
     <Card className="rounded-[15px] mb-12 shadow-2xl  ">
@@ -41,8 +43,8 @@ export const ProgressSidebar = ({ activeStep }: ProgressSidebarProps) => {
           className="h-2.5 rounded-[5px] mb-4 bg-[#e0e0e0] [&_.MuiLinearProgress-bar]:bg-[#1976d2]"
         />
         <Typography variant="caption" className="text-[#1976d2] font-bold">
-          {progressValue === 100 
-            ? "Application journey completed successfully!" 
+          {progressValue === 100
+            ? "Application journey completed successfully!"
             : "You're almost there! Just a few steps left."}
         </Typography>
       </CardContent>
