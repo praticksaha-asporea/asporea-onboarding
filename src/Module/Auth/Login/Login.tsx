@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react";
 
-import styles from './login-captcha.module.css'
+import styles from "./login-captcha.module.css";
 // MUI Imports
 import { Dialog, DialogContent, Box, CircularProgress } from "@mui/material";
 import Card from "@mui/material/Card";
@@ -23,7 +23,6 @@ import Illustrations from "../../../Components/Illustrations";
 import type { Mode } from "@core/types";
 import { useLogin } from "./useLogin";
 import { LoadCanvasTemplate } from "react-simple-captcha";
-
 
 const Login = ({ mode }: { mode: Mode }) => {
   const {
@@ -50,6 +49,7 @@ const Login = ({ mode }: { mode: Mode }) => {
     setShowNewPassword,
     showConfirmPassword,
     setShowConfirmPassword,
+    handleIdentityChange,
   } = useLogin({ mode });
 
   return (
@@ -82,12 +82,17 @@ const Login = ({ mode }: { mode: Mode }) => {
                 label="Phone Number or Email"
                 value={formik.values.identity}
                 onBlur={formik.handleBlur}
-
-                error={formik.submitCount > 0 && Boolean(formik.errors.identity)}
-                helperText={formik.submitCount > 0 && formik.errors.identity ? (formik.errors.identity as string) : undefined}
+                error={
+                  formik.submitCount > 0 && Boolean(formik.errors.identity)
+                }
+                helperText={
+                  formik.submitCount > 0 && formik.errors.identity
+                    ? (formik.errors.identity as string)
+                    : undefined
+                }
                 onChange={(e) => {
                   formik.handleChange(e);
-                  setIdentity(e.target.value);
+                  handleIdentityChange(e.target.value);
                 }}
               />
 
@@ -100,8 +105,14 @@ const Login = ({ mode }: { mode: Mode }) => {
                   label="Password"
                   value={formik.values.password}
                   onBlur={formik.handleBlur}
-                  error={formik.submitCount > 0 && Boolean(formik.errors.password)}
-                  helperText={formik.submitCount > 0 && formik.errors.password ? (formik.errors.password as string) : undefined}
+                  error={
+                    formik.submitCount > 0 && Boolean(formik.errors.password)
+                  }
+                  helperText={
+                    formik.submitCount > 0 && formik.errors.password
+                      ? (formik.errors.password as string)
+                      : undefined
+                  }
                   onChange={(e) => {
                     formik.handleChange(e);
                     setPassword(e.target.value);
@@ -115,7 +126,13 @@ const Login = ({ mode }: { mode: Mode }) => {
                           edge="end"
                           onClick={handleClickShowPassword}
                         >
-                          <i className={isPasswordShown ? "ri-eye-off-line" : "ri-eye-line"} />
+                          <i
+                            className={
+                              isPasswordShown
+                                ? "ri-eye-off-line"
+                                : "ri-eye-line"
+                            }
+                          />
                         </IconButton>
                       </InputAdornment>
                     ),
@@ -139,10 +156,7 @@ const Login = ({ mode }: { mode: Mode }) => {
               )} */}
               <div className={styles.captchaSection}>
                 <div className={styles.captchaBox}>
-                  <LoadCanvasTemplate
-                    reloadText="↻"
-                    reloadColor="#125da3"
-                  />
+                  <LoadCanvasTemplate reloadText="↻" reloadColor="#125da3" />
                 </div>
 
                 <TextField
@@ -156,8 +170,15 @@ const Login = ({ mode }: { mode: Mode }) => {
                     formik.handleChange(e);
                   }}
                   onBlur={formik.handleBlur}
-                  error={formik.submitCount > 0 && Boolean(formik.errors.captchaValue)}
-                  helperText={formik.submitCount > 0 && formik.errors.captchaValue ? (formik.errors.captchaValue as string) : undefined}
+                  error={
+                    formik.submitCount > 0 &&
+                    Boolean(formik.errors.captchaValue)
+                  }
+                  helperText={
+                    formik.submitCount > 0 && formik.errors.captchaValue
+                      ? (formik.errors.captchaValue as string)
+                      : undefined
+                  }
                   autoComplete="off"
                 />
               </div>
@@ -196,8 +217,6 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-
-
               {authMode === "otp" && (
                 <Button
                   fullWidth
@@ -214,13 +233,20 @@ const Login = ({ mode }: { mode: Mode }) => {
                 </Button>
               )}
 
-
               {authMode === "otp" && sendOtp && (
                 <>
                   <div className="flex justify-between items-center flex-wrap gap-2 mt-2">
-                    <Typography color={countdown > 0 ? "textSecondary" : "error"} className="text-sm font-medium">
+                    <Typography
+                      color={countdown > 0 ? "textSecondary" : "error"}
+                      className="text-sm font-medium"
+                    >
                       {countdown > 0
-                        ? `Resend in ${Math.floor(countdown / 60).toString().padStart(2, "0")}:${(countdown % 60).toString().padStart(2, "0")}`
+                        ? `Resend in ${Math.floor(countdown / 60)
+                            .toString()
+                            .padStart(
+                              2,
+                              "0",
+                            )}:${(countdown % 60).toString().padStart(2, "0")}`
                         : "Ready to resend!"}
                     </Typography>
                     <Button
@@ -261,7 +287,6 @@ const Login = ({ mode }: { mode: Mode }) => {
 
               <Divider className="gap-3">or</Divider>
               <div className="grid grid-cols-1 gap-3">
-
                 <Button
                   className="gsi-material-button"
                   startIcon={
@@ -272,7 +297,9 @@ const Login = ({ mode }: { mode: Mode }) => {
                       height={20}
                     />
                   }
-                  onClick={() => signIn("google", { callbackUrl: "/social-callback" })}
+                  onClick={() =>
+                    signIn("google", { callbackUrl: "/social-callback" })
+                  }
                 >
                   Sign in with Google
                 </Button>
@@ -287,7 +314,9 @@ const Login = ({ mode }: { mode: Mode }) => {
                       height={20}
                     />
                   }
-                  onClick={() => signIn("facebook", { callbackUrl: "/social-callback" })}
+                  onClick={() =>
+                    signIn("facebook", { callbackUrl: "/social-callback" })
+                  }
                 >
                   Sign in with Facebook
                 </Button>
@@ -302,7 +331,9 @@ const Login = ({ mode }: { mode: Mode }) => {
                       height={20}
                     />
                   }
-                  onClick={() => signIn("linkedin", { callbackUrl: "/social-callback" })}
+                  onClick={() =>
+                    signIn("linkedin", { callbackUrl: "/social-callback" })
+                  }
                 >
                   Sign in with LinkedIn
                 </Button>
@@ -340,7 +371,6 @@ const Login = ({ mode }: { mode: Mode }) => {
 
           {/* Form wrapper for popup formik */}
           <form onSubmit={passwordFormik.handleSubmit} className="w-full">
-
             {/* NEW PASSWORD FIELD */}
             <Box className="w-full mb-6">
               <Typography variant="subtitle2" fontWeight="600" className="mb-2">
@@ -355,8 +385,16 @@ const Login = ({ mode }: { mode: Mode }) => {
                 value={passwordFormik.values.newPassword}
                 onChange={passwordFormik.handleChange}
                 onBlur={passwordFormik.handleBlur}
-                error={passwordFormik.submitCount > 0 && Boolean(passwordFormik.errors.newPassword)}
-                helperText={passwordFormik.submitCount > 0 && passwordFormik.errors.newPassword ? (passwordFormik.errors.newPassword as string) : undefined}
+                error={
+                  passwordFormik.submitCount > 0 &&
+                  Boolean(passwordFormik.errors.newPassword)
+                }
+                helperText={
+                  passwordFormik.submitCount > 0 &&
+                  passwordFormik.errors.newPassword
+                    ? (passwordFormik.errors.newPassword as string)
+                    : undefined
+                }
                 sx={{
                   "& input::-ms-reveal, & input::-ms-clear": {
                     display: "none",
@@ -370,8 +408,15 @@ const Login = ({ mode }: { mode: Mode }) => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowNewPassword(!showNewPassword)} edge="end">
-                        <i className={showNewPassword ? "ri-eye-off-line" : "ri-eye-line"} />
+                      <IconButton
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                        edge="end"
+                      >
+                        <i
+                          className={
+                            showNewPassword ? "ri-eye-off-line" : "ri-eye-line"
+                          }
+                        />
                       </IconButton>
                     </InputAdornment>
                   ),
@@ -394,8 +439,16 @@ const Login = ({ mode }: { mode: Mode }) => {
                 value={passwordFormik.values.confirmPassword}
                 onChange={passwordFormik.handleChange}
                 onBlur={passwordFormik.handleBlur}
-                error={passwordFormik.submitCount > 0 && Boolean(passwordFormik.errors.confirmPassword)}
-                helperText={passwordFormik.submitCount > 0 && passwordFormik.errors.confirmPassword ? (passwordFormik.errors.confirmPassword as string) : undefined}
+                error={
+                  passwordFormik.submitCount > 0 &&
+                  Boolean(passwordFormik.errors.confirmPassword)
+                }
+                helperText={
+                  passwordFormik.submitCount > 0 &&
+                  passwordFormik.errors.confirmPassword
+                    ? (passwordFormik.errors.confirmPassword as string)
+                    : undefined
+                }
                 sx={{
                   "& input::-ms-reveal, & input::-ms-clear": {
                     display: "none",
@@ -409,8 +462,19 @@ const Login = ({ mode }: { mode: Mode }) => {
                   ),
                   endAdornment: (
                     <InputAdornment position="end">
-                      <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} edge="end">
-                        <i className={showConfirmPassword ? "ri-eye-off-line" : "ri-eye-line"} />
+                      <IconButton
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
+                        edge="end"
+                      >
+                        <i
+                          className={
+                            showConfirmPassword
+                              ? "ri-eye-off-line"
+                              : "ri-eye-line"
+                          }
+                        />
                       </IconButton>
                     </InputAdornment>
                   ),

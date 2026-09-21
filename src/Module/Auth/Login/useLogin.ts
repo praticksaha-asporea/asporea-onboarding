@@ -12,7 +12,10 @@ import toast from "react-hot-toast";
 import { respectiveDashboard } from "@/Utils/common";
 import { useImageVariant } from "@core/hooks/useImageVariant";
 import { useFormik } from "formik";
-import { getLoginValidationSchema, passwordSetupSchema } from "@/Validations/loginValidation";
+import {
+  getLoginValidationSchema,
+  passwordSetupSchema,
+} from "@/Validations/loginValidation";
 import { Mode } from "@/@core/types";
 import { loadCaptchaEnginge, validateCaptcha } from "react-simple-captcha";
 
@@ -73,7 +76,9 @@ export function useLogin({ mode }: { mode: Mode }) {
 
       if (authMode === "password") {
         setPassword(values.password);
-        const dummyEvent = { preventDefault: () => { } } as React.FormEvent<HTMLFormElement>;
+        const dummyEvent = {
+          preventDefault: () => {},
+        } as React.FormEvent<HTMLFormElement>;
         handlePasswordLogin(dummyEvent);
       } else {
         handleSendOtp();
@@ -94,13 +99,12 @@ export function useLogin({ mode }: { mode: Mode }) {
     },
   });
 
-
   const handleToggleAuthMode = () => {
     formik.resetForm({
       values: {
         identity: formik.values.identity,
         password: "",
-        captchaValue: ""
+        captchaValue: "",
       },
     });
     togglePasswordOTP();
@@ -111,11 +115,12 @@ export function useLogin({ mode }: { mode: Mode }) {
     setShowSetupPassword(false);
   };
 
-
   useEffect(() => {
     const savedExpiry = localStorage.getItem("asporea_user_otp_expiry");
     if (savedExpiry) {
-      const remainingTime = Math.ceil((parseInt(savedExpiry) - Date.now()) / 1000);
+      const remainingTime = Math.ceil(
+        (parseInt(savedExpiry) - Date.now()) / 1000,
+      );
       if (remainingTime > 0) {
         setCountdown(remainingTime);
         setSendOtp(true);
@@ -124,7 +129,6 @@ export function useLogin({ mode }: { mode: Mode }) {
       }
     }
   }, []);
-
 
   useEffect(() => {
     if (countdown <= 0) return;
@@ -176,7 +180,6 @@ export function useLogin({ mode }: { mode: Mode }) {
       }
     } catch (err: any) {
       console.error("Login Error:", err);
-
     } finally {
       setLoading(false);
     }
@@ -213,13 +216,18 @@ export function useLogin({ mode }: { mode: Mode }) {
         toast.success("OTP Verified Successfully!", { duration: 3000 });
         const responseData = res.data.data;
         const isRegistered = responseData.isRegistered;
+        localStorage.removeItem("asporea_user_otp_expiry");
+        setSendOtp(false);
+        setCountdown(0);
+        setOtp("");
 
-
-        dispatch(updateUserData({
-          isRegistered: responseData.isRegistered,
-          verifiedIdentity: responseData.verifiedIdentity,
-          channel: responseData.channel
-        }));
+        dispatch(
+          updateUserData({
+            isRegistered: responseData.isRegistered,
+            verifiedIdentity: responseData.verifiedIdentity,
+            channel: responseData.channel,
+          }),
+        );
 
         if (isRegistered) {
           const { tokens, user } = responseData;
@@ -227,27 +235,35 @@ export function useLogin({ mode }: { mode: Mode }) {
           if (tokens.refreshToken)
             Cookies.set("refreshToken", tokens.refreshToken);
 
-
           if (user) dispatch(setUserData({ userData: user as UserData }));
           respectiveDashboard(user, router);
-
         } else {
-
           setShowSetupPassword(true);
         }
       }
     } catch (err: any) {
       console.error("Verify OTP Error:", err);
-
     } finally {
       setLoading(false);
     }
   };
+const handleIdentityChange = (val: string) => {
+  setIdentity(val);
 
+  
+  if (sendOtp) {
+    setSendOtp(false);
+    setCountdown(0);
+    setOtp("");
+    localStorage.removeItem("asporea_user_otp_expiry");
+  }
+};
   const handleSavePasswordAndRedirect = () => {
-
     localStorage.setItem("temp_register_email", identity);
-
+    localStorage.removeItem("asporea_user_otp_expiry");
+    setSendOtp(false);
+    setCountdown(0);
+    setOtp("");
     setShowSetupPassword(false);
     router.push("/complete-profile");
   };
@@ -281,6 +297,7 @@ export function useLogin({ mode }: { mode: Mode }) {
     showNewPassword,
     setShowNewPassword,
     showConfirmPassword,
+    handleIdentityChange,
     setShowConfirmPassword,
     // captchaValue,
     // setCaptchaValue
