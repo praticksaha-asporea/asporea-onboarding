@@ -8,6 +8,7 @@ import {
 } from "@/lib/middleware/auth.middleware";
 import { createEscalationSchema } from "@/lib/validation/escalateValidation";
 import { createEscalationService } from "@/lib/services/escalate/escalate.service";
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 
 export default async function handler(
     req: NextApiRequest,
@@ -29,6 +30,15 @@ export default async function handler(
             throw new ApiError(error.details.map((d) => d.message).join(", "), 400);
 
         const data = await createEscalationService(req.body);
+
+
+        await createLeadLogService(
+            String(req.body.leadId),
+            "ESCALATE_BY_" + authUser?.role?.toUpperCase(),
+            "Escalated for " + req.body.reason,
+            req.body.fromId
+        );
+
         return ResponseHandler.sendSuccess(
             res,
             data,

@@ -100,4 +100,8 @@ ACTION TYPES:-
 . 5. EXPERIENCE SUBMISSION STAGE:
    - EXPERIENCE_SUBMITTED_BY_CANDIDATE -> Experience type (Fresher/Domestic/etc.) submitted by Candidate
    - EXPERIENCE_SUBMITTED_BY_FOE       -> Experience type updated by FOE
+
+. 6. ESCALATIONS:
+    ESCALATE_BY_TAC ->
+    ESCALATE_BY_FOE ->
 */
