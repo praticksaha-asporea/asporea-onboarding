@@ -31,7 +31,7 @@ const CountrySchema = new Schema<ICountry>(
     }
 );
 
-CountrySchema.index({ name: 1 });
+// CountrySchema.index({ name: 1 });
 
 export const Country =
     (mongoose.models.Country as mongoose.Model<ICountry>) ||

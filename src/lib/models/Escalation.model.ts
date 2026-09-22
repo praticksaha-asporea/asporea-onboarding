@@ -53,7 +53,7 @@ const EscalationSchema = new Schema<IEscalation>(
   { timestamps: true }
 );
 
-EscalationSchema.index({ leadId: 1 });
+// EscalationSchema.index({ leadId: 1 });
 
 export const EscalationModel =
   mongoose.models.Escalation ||
