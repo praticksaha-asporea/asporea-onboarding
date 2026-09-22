@@ -272,6 +272,6 @@ export function proxy(req: NextRequest) {
 
 export const config = {
   matcher: [
-    `/((?!.next|fonts|examples|assets|uploads|images|[\\w-]+\\.\\w+).*)`,
+    "/((?!_next/static|_next/image|favicon.ico|uploads|images|assets|fonts).*)",
   ],
 };

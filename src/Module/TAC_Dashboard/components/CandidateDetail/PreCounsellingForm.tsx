@@ -468,7 +468,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
 
             {/* ---------------- INTERACTIVE STATUS CONTROL BAR ---------------- */}
             <Box className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 p-5 shadow-2xl rounded-2xl bg-[var(--mui-palette-background-default)]">
-              <FormControl>
+              <FormControl className="w-full md:flex-1">
                 <FormLabel className="text-xs font-semibold uppercase tracking-wider text-[var(--mui-palette-text-secondary)] mb-2">
                   Update Status
                 </FormLabel>

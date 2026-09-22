@@ -23,6 +23,10 @@ export const createInquiry = async (body: any, createdById: string) => {
 
 
   const radius = 50 * 1000;
+
+  if (!longitude && !latitude) {
+    throw new ApiError("Your device location unable to detect. Please check if its disabled , enable your location and retry.", 400);
+  }
   const branch = await BranchModel.findOne({
     coordinates: {
       $near: {
@@ -133,7 +137,7 @@ export const createInquiry = async (body: any, createdById: string) => {
   return newInquiry;
 };
 
-export const updateInquiry = async (body: any,updatedById?: string) => {
+export const updateInquiry = async (body: any, updatedById?: string) => {
 
   const {
     referedFrom,
@@ -211,7 +215,7 @@ export const updateInquiry = async (body: any,updatedById?: string) => {
       { new: true }
     );
   }
-await createLeadLogService(
+  await createLeadLogService(
     String(id),
     "LEAD_STEP2_UPDATED",
     "Step_2 Inquiry details (Source & Profile information) submitted",
