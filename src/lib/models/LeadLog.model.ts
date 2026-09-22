@@ -104,7 +104,27 @@ ACTION TYPES:-
 . LEAD DETAILS MODIFICATION STAGE:
    - LEAD_DETAILS_UPDATED_BY_FOE       -> Lead/Candidate details updated by FOE
    - LEAD_DETAILS_UPDATED_BY_TAC       -> Lead/Candidate details updated by TAC
-. 6. ESCALATIONS:
+. ESCALATIONS:
     ESCALATE_BY_TAC ->
     ESCALATE_BY_FOE ->
+
+. LEAD TRANSFER & ESCALATION STAGE:
+   - LEAD_TRANSFERRED_BY_TAC
+
+.  RATING & FEEDBACK STAGE:
+   - RATING_SUBMITTED_BY_CANDIDATE    -> Rating and review submitted by Candidate for completed session
+
+. FOLLOW-UP REQUIREMENT STAGE:
+   - FOLLOWUP_ENABLED_BY_{ROLE}        -> Follow-up required toggled ON (e.g., FOLLOWUP_ENABLED_BY_FOE, FOLLOWUP_ENABLED_BY_TAC)
+   - FOLLOWUP_DISABLED_BY_{ROLE}       -> Follow-up required toggled OFF (e.g., FOLLOWUP_DISABLED_BY_FOE, FOLLOWUP_DISABLED_BY_TAC)
+
+. USER MY-PROFILE & PREFERENCES STAGE:
+   - PROFILE_UPDATED_BY_CANDIDATE                   -> Candidate updated their personal profile details
+   - PROFILE_UPDATED_BY_{ROLE}                      -> Staff member updated their profile details
+   - NOTIFICATION_PREFERENCES_UPDATED_BY_CANDIDATE  -> Candidate updated notification preferences
+   - NOTIFICATION_PREFERENCES_UPDATED_BY_{ROLE}     -> Staff member updated notification preferences
+
+. SECURITY & AUTHENTICATION STAGE:
+   - PASSWORD_CHANGED_BY_CANDIDATE     -> Candidate updated account password
+   - PASSWORD_CHANGED_BY_{ROLE}        -> Staff member updated account password
 */

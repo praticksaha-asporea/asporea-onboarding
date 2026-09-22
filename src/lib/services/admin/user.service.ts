@@ -14,7 +14,7 @@ import { Upload } from "../../models/Upload.model";
 import fs from "fs";
 import path from "path";
 import { handleProfilePicUpload } from "../../utils/uploadUtil";
-import rating from "@/@core/theme/overrides/rating";
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 
 // ─── Valid roles constant ─────────────────────────────────────────────────────
 
@@ -56,17 +56,14 @@ export const userList = async ({
       ? { role }
       : { role: { $in: VALID_ROLES } };
 
-  // Exclude the requesting admin from results and count
   if (excludeId && mongoose.Types.ObjectId.isValid(excludeId)) {
     filter._id = { $ne: new mongoose.Types.ObjectId(excludeId) };
   }
 
-  // Status filter
   if (status && ["active", "inactive", "deleted"].includes(status)) {
     filter.status = status;
   }
 
-  // Keyword search across name + email
   if (keyword && keyword.trim().length > 0) {
     const regex = new RegExp(keyword.trim(), "i");
     filter.$or = [
@@ -164,9 +161,6 @@ export const createUser = async (body: any, createdBy: string) => {
 // ─── View (single user with linked data) ─────────────────────────────────────
 
 export const viewUser = async (userId: string) => {
-  // if (!mongoose.Types.ObjectId.isValid(userId))
-  //   throw new ApiError('Invalid user ID', 400);
-
   const user = await UserModel.findById(userId)
     .select("-password")
     .populate("profilePic", "path")
@@ -176,12 +170,10 @@ export const viewUser = async (userId: string) => {
 
   if (!user) throw new ApiError("User not found", 404);
 
-  // Linked social logins
   const socialLogins = await SocialLogins.find({ userId })
     .select("type providerId scopes expiresAt createdAt")
     .lean();
 
-  // Branch + shift assignments
   const branchShifts = await EmployeeBranchShiftModel.find({
     employeeId: userId,
   })
@@ -190,7 +182,6 @@ export const viewUser = async (userId: string) => {
     .select("-__v")
     .lean();
 
-  // External source link (only relevant for pca / pcra / institute roles)
   const EXTERNAL_ROLES = ["pca", "pcra", "institute"];
   let externalSource = null;
   if (EXTERNAL_ROLES.includes((user as any).role)) {
@@ -341,6 +332,116 @@ export const updateUser = async (userId: string, body: any) => {
   )
     .select("-password")
     .populate("profilePic", "path");
+
+  // ---------------- ⚡ DETAILED LEAD LOG TRIGGER (EXACT DIFF CHECK) ----------------
+  try {
+    const linkedLead = await Lead.findOne({
+      $or: [
+        { _id: user.candidateProfile?.leadId },
+        { "createdBy.id": new mongoose.Types.ObjectId(userId) },
+      ],
+    }).select("_id").lean();
+
+    const targetLeadId = linkedLead?._id || user.candidateProfile?.leadId;
+
+    if (targetLeadId) {
+      const rawRole = user.role || "user";
+      const roleLabel = rawRole === "user" ? "CANDIDATE" : rawRole.toUpperCase();
+
+      // 🔍 Exact Field Value Comparison (Purani value se compare karenge)
+      const changedFields: string[] = [];
+
+      if (
+        (body.firstName && body.firstName !== user.firstName) ||
+        (body.lastName && body.lastName !== user.lastName)
+      ) {
+        changedFields.push("Name");
+      }
+
+      if (body.phoneNumber && body.phoneNumber !== user.phoneNumber) {
+        changedFields.push("Phone Number");
+      }
+
+      if (body.whatsappNumber && body.whatsappNumber !== user.whatsappNumber) {
+        changedFields.push("WhatsApp Number");
+      }
+
+      if (body.email && body.email !== user.email) {
+        changedFields.push("Email");
+      }
+
+      if (body.address !== undefined && body.address !== user.address) {
+        changedFields.push("Address");
+      }
+
+      if (
+        (body.passportStatus !== undefined && body.passportStatus !== user.passportStatus) ||
+        (body.passportNo !== undefined && body.passportNo !== user.passportNo)
+      ) {
+        changedFields.push("Passport Details");
+      }
+
+      if (body.bio !== undefined && body.bio !== user.bio) {
+        changedFields.push("Bio");
+      }
+
+      if (body.profilePicData && body.profilePicData !== "REMOVE") {
+        changedFields.push("Profile Picture");
+      } else if (body.profilePicData === "REMOVE" && user.profilePic) {
+        changedFields.push("Profile Picture Removed");
+      }
+
+      if (body.candidateProfile) {
+        const cp = body.candidateProfile;
+        const oldCp = user.candidateProfile || {};
+        const isCandidateProfileChanged =
+          (cp.academic !== undefined && cp.academic !== oldCp.academic) ||
+          (cp.technicalQualification !== undefined && cp.technicalQualification !== oldCp.technicalQualification) ||
+          (cp.nationality !== undefined && cp.nationality !== oldCp.nationality) ||
+          (cp.workExp !== undefined && cp.workExp !== oldCp.workExp);
+
+        if (isCandidateProfileChanged) {
+          changedFields.push("Academic/Technical Details");
+        }
+      }
+
+      // ⚡ Only log if fields were actually modified
+      if (changedFields.length > 0) {
+        const actionType = `PROFILE_UPDATED_BY_${roleLabel}`;
+        const actionNote = `Profile updated (${changedFields.join(", ")})`;
+
+        await createLeadLogService(
+          String(targetLeadId),
+          actionType,
+          actionNote,
+          userId
+        );
+      }
+
+      // 🔔 Detailed Notification Preferences Tracking
+      if (body.notificationPreference !== undefined) {
+        const prefs = updated?.notificationPreference || body.notificationPreference || {};
+        const enabledChannels: string[] = [];
+
+        if (prefs.email) enabledChannels.push("Email");
+        if (prefs.whatsapp) enabledChannels.push("WhatsApp");
+        if (prefs.sms) enabledChannels.push("SMS");
+
+        const enabledText = enabledChannels.length > 0 ? enabledChannels.join(", ") : "None";
+        const notifActionType = `NOTIFICATION_PREFERENCES_UPDATED_BY_${roleLabel}`;
+        const notifActionNote = `Notification preferences updated (Enabled: ${enabledText})`;
+
+        await createLeadLogService(
+          String(targetLeadId),
+          notifActionType,
+          notifActionNote,
+          userId
+        );
+      }
+    }
+  } catch (logError) {
+    console.error("Profile Update LeadLog Error:", logError);
+  }
 
   return updated;
 };

@@ -133,10 +133,45 @@ export const updateLeadService = async (
   ).lean();
 
   const roleLabel = authUser.role ? authUser.role.toUpperCase() : "STAFF";
-  const actionType = `LEAD_DETAILS_UPDATED_BY_${roleLabel}`;
-  const actionNote = `Candidate profile and lead details updated`;
 
-  await createLeadLogService(String(id), actionType, actionNote, authUser.id);
+  if (followUpRequired !== undefined) {
+    const followUpActionType = followUpRequired
+      ? `FOLLOWUP_ENABLED_BY_${roleLabel}`
+      : `FOLLOWUP_DISABLED_BY_${roleLabel}`;
+
+    const followUpActionNote = followUpRequired
+      ? "Follow-up requirement enabled for this candidate"
+      : "Follow-up requirement disabled for this candidate";
+
+    await createLeadLogService(
+      String(id),
+      followUpActionType,
+      followUpActionNote,
+      authUser.id,
+    );
+  }
+
+  const hasOtherUpdates =
+    fullName !== undefined ||
+    email !== undefined ||
+    phone !== undefined ||
+    whatsapp !== undefined ||
+    address !== undefined ||
+    passportStatus !== undefined ||
+    passportNo !== undefined ||
+    inqForType !== undefined ||
+    inqForPosition !== undefined ||
+    nationality !== undefined ||
+    latestAcademic !== undefined ||
+    latestTechnical !== undefined ||
+    workExperience !== undefined;
+
+  if (hasOtherUpdates) {
+    const actionType = `LEAD_DETAILS_UPDATED_BY_${roleLabel}`;
+    const actionNote = `Candidate profile and lead details updated`;
+
+    await createLeadLogService(String(id), actionType, actionNote, authUser.id);
+  }
 
   return { lead: updatedLead, user: updatedUser };
 };

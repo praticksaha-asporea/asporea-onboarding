@@ -276,19 +276,22 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
                         <Box className="items-center gap-1.5">
                           <Button
                             size="small"
-                            variant="outlined"
+                            
                             onClick={() => setIsRescheduleOpen(true)}
-                            className="rounded-lg normal-case text-xs font-semibold m-3"
+                            className="rounded-lg normal-case text-sm bg-[var(--mui-palette-success-main)]  text-[var(--mui-palette-common-white)]
+
+ font-medium m-3"
                             startIcon={<i className="ri-calendar-2-line text-sm" />}
                           >
                             Reschedule
                           </Button>
                           <Button
                             size="small"
-                            variant="outlined"
-                            color="error"
+                            
                             onClick={() => setIsCancelOpen(true)}
-                            className="rounded-lg normal-case text-xs font-semibold"
+                            className="rounded-lg normal-case text-sm text-[var(--mui-palette-common-white)]
+ bg-[var(--mui-palette-error-main)]
+ font-semibold"
                             startIcon={<i className="ri-close-circle-line text-sm" />}
                           >
                             Cancel
@@ -996,7 +999,7 @@ const PreCounsellingForm: React.FC<PreCounsellingFormProps> = ({
             slotProps={{ input: { className: "rounded-xl text-sm" } }}
           />
           <Box className="flex gap-3 w-full">
-            <Button fullWidth variant="outlined" onClick={() => setIsCancelOpen(false)} className="rounded-xl normal-case font-semibold">
+            <Button fullWidth variant="contained" onClick={() => setIsCancelOpen(false)} className="rounded-xl normal-case font-semibold">
               Keep Appointment
             </Button>
             <Button

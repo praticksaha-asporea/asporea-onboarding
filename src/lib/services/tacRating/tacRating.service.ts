@@ -3,7 +3,7 @@ import { TacRating, ITacRating } from "@/lib/models/TacRating.model";
 import { Assignment } from "@/lib/models/Assignment.model";
 import { ApiError } from "@/lib/error/api.error";
 import User from "@/lib/models/User.model";
-
+import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
 export const createTacRatingService = async (
   leadId: string,
   phase: string,
@@ -95,10 +95,29 @@ export const createTacRatingService = async (
       },
     }
   );
+
+  const phaseTitle =
+    phase === "pre"
+      ? "Pre-Counselling"
+      : phase === "assess"
+      ? "Assessment"
+      : phase.toUpperCase();
+
+  const reviewText = review?.trim() ? ` (Review: "${review.trim()}")` : "";
+  const actionType = "RATING_SUBMITTED_BY_CANDIDATE";
+  const actionNote = `Submitted a ${rating}/5 star rating for ${phaseTitle} session${reviewText}`;
+
+  await createLeadLogService(
+    String(leadId),
+    actionType,
+    actionNote,
+    ratedBy
+  );
+
   return await TacRating.findById(newRating._id)
     .populate("tacId", "firstName lastName email profilePic")
     .populate("ratedBy", "firstName lastName email");
-};
+}
 
 export const getTacRatingsService = async (filters: {
   leadId?: string;
