@@ -72,6 +72,7 @@ export interface userById {
 }
 
 export interface tacData {
+    profilePic: any;
     _id: string,
     firstName: string,
     lastName: string,

@@ -17,7 +17,8 @@ import { InquiryStep1Form } from "../../../Components/Inquiry/InquiryStep1Form";
 import { InquiryStep2Form } from "../../../Components/Inquiry/InquiryStep2Form";
 import { InquiryFormActions } from "../../../Components/Inquiry/InquiryFormActions";
 import { InquiryProgressSidebar } from "../../../Components/Inquiry/InquiryProgressSidebar";
-import { InquiryContactPreferences } from "../../../Components/Inquiry/InquiryContactPreferences";
+import { NotificationChannels } from "@/Components/PreCounselling/NotificationChannels";
+// import { InquiryContactPreferences } from "../../../Components/Inquiry/InquiryContactPreferences";
 import { LocationPermissionDialog } from "../../../Components/Inquiry/LocationPermissionDialog";
 import { InquirySuccessDialog } from "../../../Components/Inquiry/InquirySuccessDialog";
 
@@ -190,14 +191,15 @@ const InquiryDetails = () => {
               />
             </Grid>
 
-            <Grid size={{ xs: 12 }}>
+            {/* <Grid size={{ xs: 12 }}>
               <InquiryContactPreferences
                 preferences={preferences}
                 handlePreferenceToggle={handlePreferenceToggle}
                 isPreferenceError={isPreferenceError}
                 submitCount={formik.submitCount}
               />
-            </Grid>
+            </Grid> */}
+            <NotificationChannels reduxUser={userData} />
           </Grid>
         </Grid>
       </Grid>

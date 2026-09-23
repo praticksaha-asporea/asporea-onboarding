@@ -15,7 +15,13 @@ import {
 import { CamelCase } from "@/Utils/common";
 import { IUser } from "@/lib/models/User.model";
 import { preTACData } from "@/Types/object.types";
-
+const getAvatarUrl = (pic: any) => {
+  if (!pic) return "/images/avatars/avatar.png";  
+  if (typeof pic === "string") return pic;
+  if (typeof pic === "object" && pic?.path) return pic.path;
+  if (typeof pic === "object" && pic?.url) return pic.url;
+  return "/images/avatars/avatar.png";
+};
 interface TacProfileDialogProps {
     open: boolean;
     tac: preTACData | null;
@@ -209,7 +215,7 @@ export const TacProfileDialog: React.FC<TacProfileDialogProps> = ({
                 <Box className="px-6 pb-4">
                     <Box className="flex items-end gap-5 -mt-10">
                         <Avatar
-                            src={tac.profilePic as unknown as string}
+                            src={getAvatarUrl(tac.profilePic)}
                             sx={{
                                 width: 88,
                                 height: 88,
