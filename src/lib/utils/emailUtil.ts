@@ -21,37 +21,36 @@ type SendMailParams = {
   fromName?: string;
   replyTo?: string;
   attachments?: nodemailer.SendMailOptions["attachments"];
-  attachBrochures?: boolean;
 };
 
 
-const getBrochureAttachments = () => {
-  try {
-    const brochureDir = path.join(
-      process.cwd(),
-      "public",
-      "uploads",
-      "Brochures",
-    );
+// const getBrochureAttachments = () => {
+//   try {
+//     const brochureDir = path.join(
+//       process.cwd(),
+//       "public",
+//       "uploads",
+//       "Brochures",
+//     );
 
-    if (!fs.existsSync(brochureDir)) {
-      console.warn(`Brochure directory does not exist at: ${brochureDir}`);
-      return [];
-    }
+//     if (!fs.existsSync(brochureDir)) {
+//       console.warn(`Brochure directory does not exist at: ${brochureDir}`);
+//       return [];
+//     }
 
-    const files = fs.readdirSync(brochureDir);
+//     const files = fs.readdirSync(brochureDir);
 
-    return files
-      .filter((file) => !file.startsWith("."))
-      .map((file) => ({
-        filename: file,
-        path: path.join(brochureDir, file),
-      }));
-  } catch (error) {
-    console.error("Error reading brochure attachments:", error);
-    return [];
-  }
-};
+//     return files
+//       .filter((file) => !file.startsWith("."))
+//       .map((file) => ({
+//         filename: file,
+//         path: path.join(brochureDir, file),
+//       }));
+//   } catch (error) {
+//     console.error("Error reading brochure attachments:", error);
+//     return [];
+//   }
+// };
 
 export async function sendMail({
   to,
@@ -65,12 +64,6 @@ export async function sendMail({
   const displayName = fromName ? `${fromName} - Asporea HR` : "Asporea HR";
 
   let finalAttachments = [...(attachments || [])];
-
-  //  if attachBrochures flag is true, then automatically attach all files from public/uploads/Brochures
-  // if (attachBrochures) {
-  //   const brochureFiles = getBrochureAttachments();
-  //   finalAttachments = [...finalAttachments, ...brochureFiles];
-  // }
 
   const response = await transporter.sendMail({
     from: `"${displayName}" <${process.env.FROM}>`,

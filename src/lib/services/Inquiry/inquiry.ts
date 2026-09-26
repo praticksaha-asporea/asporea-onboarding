@@ -150,7 +150,6 @@ export const createInquiry = async (body: any, createdById: string) => {
     const finalAttachments = await GeneralSettingModel.findOne()
       .populate("inquiryBrochures.uploadId", "path publicId")
       .lean();
-    // console.log(finalAttachments, 54488);
 
     const attachments = [];
     for (const brochure of finalAttachments?.inquiryBrochures) {
@@ -166,7 +165,6 @@ export const createInquiry = async (body: any, createdById: string) => {
       subject: "Thank you for your Inquiry - Asporea HR",
       html: emailHtml,
       attachments: attachments
-      // attachBrochures: true,  
     }).catch(err => console.error("Failed to send brochure email:", err));
 
   } catch (mailError) {
