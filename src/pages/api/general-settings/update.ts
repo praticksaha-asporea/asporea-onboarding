@@ -27,6 +27,7 @@ export default async function handler(
     const updated = await updateGeneralSettingsService(
       req.body,
       authUser?.role,
+      authUser?.id
     );
 
     return ResponseHandler.sendSuccess(

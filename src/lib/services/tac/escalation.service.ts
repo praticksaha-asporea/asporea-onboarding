@@ -15,6 +15,7 @@ interface TransferPayload {
   toId: string;
   leadId: string;
   reason: string;
+  performerRole?: string;
 }
 
 interface NewScheduleInfo {
@@ -23,12 +24,28 @@ interface NewScheduleInfo {
   to: string;
   method?: "on" | "off";
 }
-
 export const createTransferLeadService = async (payload: TransferPayload) => {
-  const { fromId, toId, leadId, reason } = payload;
+  const { fromId, toId, leadId, reason, performerRole } = payload;
 
   if (!leadId || !toId || !reason) {
     throw new ApiError("Lead ID, Transfer TAC, and Reason are required", 400);
+  }
+
+  const currentLead = await Lead.findById(leadId).lean();
+  if (!currentLead) {
+    throw new ApiError("Lead not found", 404);
+  }
+
+   
+  const currentConsultantId =
+    currentLead.preferences?.consultantId?.toString() || fromId;
+
+   
+  if (
+    currentConsultantId &&
+    currentConsultantId.toString() === toId.toString()
+  ) {
+    throw new ApiError("Candidate is already assigned to this TAC.", 400);
   }
 
   const existingTransfer = await TransferLeadModel.findOne({
@@ -46,8 +63,9 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
       throw new ApiError("This candidate has a history of transfer.", 400);
     }
   }
+
   const newTransfer = await TransferLeadModel.create({
-    fromId,
+    fromId: currentConsultantId,
     toId,
     leadId,
     reason,
@@ -62,8 +80,9 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
     },
   });
 
+   
   await Assignment.updateMany(
-    { leadId: leadId, assignedTo: fromId },
+    { leadId: leadId },
     {
       $set: {
         assignedTo: toId,
@@ -73,7 +92,7 @@ export const createTransferLeadService = async (payload: TransferPayload) => {
     }
   );
 
-const targetUser = await User.findById(toId)
+  const targetUser = await User.findById(toId)
     .select("firstName lastName")
     .lean();
 
@@ -82,7 +101,13 @@ const targetUser = await User.findById(toId)
     : "another TAC";
 
   const reasonText = reason?.trim() ? ` (Reason: ${reason.trim()})` : "";
-  const actionType = "LEAD_TRANSFERRED_BY_TAC";
+
+   
+  const isHead = performerRole === "tac_head" || performerRole === "admin";
+  const actionType = isHead
+    ? "LEAD_TRANSFERRED_BY_TAC_HEAD"
+    : "LEAD_TRANSFERRED_BY_TAC";
+
   const actionNote = `Lead transferred to TAC ${targetName}${reasonText}`;
 
   await createLeadLogService(
@@ -94,8 +119,6 @@ const targetUser = await User.findById(toId)
 
   return newTransfer;
 };
-
-
 
 export const getEscalationListService = async (
   page = 1,

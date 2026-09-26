@@ -222,8 +222,9 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
         </Tabs>
       </Box>
 
-      <Grid container spacing={3}>
-        <Grid size={{ xs: 12, lg: isTacHead ? 12 : 9 }}>
+    <Grid container spacing={3}>
+     
+        <Grid size={{ xs: 12, lg: 9 }}>
           {tabValue === "inquiry" && <InquiryDetailsForm candidate={c} setLeadUpdated={setLeadUpdated} />}
 
           {tabValue === "precounselling" && showPreCounselling && (
@@ -257,22 +258,21 @@ const CandidateDetail: React.FC<CandidateDetailProps> = () => {
           {tabValue === "logs" && c._id && <LeadLogsCard leadId={c._id} />}
         </Grid>
 
-        {!isTacHead && (
-          <Grid size={{ xs: 12, lg: 3 }}>
-            <Box className="flex flex-col gap-6 w-full">
-              <ProgressSidebar
-                candidate={c}
-                isFoe={isFoe}
-                branchId={branchId}
-                consultantId={consultantId}
-                tacList={tacList}
-                transferTo={transferTo}
-                setTransferTo={setTransferTo}
-                currentUser={currentUser as UserData}
-              />
-            </Box>
-          </Grid>
-        )}
+        
+        <Grid size={{ xs: 12, lg: 3 }}>
+          <Box className="flex flex-col gap-6 w-full">
+            <ProgressSidebar
+              candidate={c}
+              isFoe={isFoe}
+              branchId={branchId}
+              consultantId={consultantId}
+              tacList={tacList}
+              transferTo={transferTo}
+              setTransferTo={setTransferTo}
+              currentUser={currentUser as UserData}
+            />
+          </Box>
+        </Grid>
       </Grid>
     </Box>
   );

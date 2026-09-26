@@ -47,6 +47,7 @@ interface SavePreCounsellingBookingBody {
   to?: string;
   method?: BookingMethod;
   initialCV?: string;
+  rescheduleReason?: string;
 }
 
 const PRE_CLEAR_STATUSES = [
@@ -208,6 +209,7 @@ export const savePreCounsellingBooking = async (
     to,
     method = "off",
     initialCV,
+    rescheduleReason,
   } = body;
 
   const hasConsultant = Boolean(consultantId);
@@ -553,8 +555,11 @@ const isReschedule = Boolean(
 const actionPrefix = isReschedule ? "PRE_RESCHEDULED_BY" : "PRE_SCHEDULED_BY";
 const actionType = `${actionPrefix}_${roleLabel}`;
 const modeText = method === "on" ? "Online" : "Offline";
+const reasonText = (isReschedule && rescheduleReason?.trim())
+    ? ` (Reason: ${rescheduleReason.trim()})`
+    : "";
 const actionNote = isReschedule
-    ? `Pre-Counselling rescheduled to ${date} from ${from} to ${to} (${modeText} mode)`
+    ? `Pre-Counselling rescheduled to ${date} from ${from} to ${to} (${modeText} mode)${reasonText}`
     : `Pre-Counselling scheduled from ${from} to ${to} (${modeText} mode)`;
 
    

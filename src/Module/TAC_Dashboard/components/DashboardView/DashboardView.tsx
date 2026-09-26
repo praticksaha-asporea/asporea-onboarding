@@ -85,7 +85,9 @@ const DashboardView: React.FC<DashboardProps> = () => {
     selectedBranch,
     setSelectedBranch,
     method,
-    setMethod
+    setMethod,
+    rescheduleReason,      
+    setRescheduleReason    
   } = useDashboardView();
 
   return (
@@ -186,6 +188,8 @@ const DashboardView: React.FC<DashboardProps> = () => {
         setSelectedBranch={setSelectedBranch}
         method={method}
         setMethod={setMethod}
+        rescheduleReason={rescheduleReason}        
+        setRescheduleReason={setRescheduleReason}  
 
       />
 

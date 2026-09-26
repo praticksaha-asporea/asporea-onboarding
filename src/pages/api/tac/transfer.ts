@@ -20,10 +20,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const authUser = await verifyToken(token);
 
 
-    if (authUser.role !== "tac") {
+    const allowedRoles = ["tac", "tac_head", "admin"];
+    if (!allowedRoles.includes(authUser.role)) {
       throw new ApiError("Unauthorized access", 403);
     }
-
     const { leadId, toId, reason } = req.body;
 
 
@@ -32,6 +32,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       toId,
       leadId,
       reason,
+      performerRole: authUser.role,
     });
 
     // 3. Success Response

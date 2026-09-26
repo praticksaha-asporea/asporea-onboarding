@@ -16,10 +16,11 @@ import { branchListingApi } from "@/Services/APIs/branch/branch.actions";
 import { CounsellingMode } from "@/Module/Candidate_Dashboard/Pre-Counselling/usePreCounselling";
 
 export interface kpiTypes {
-  openCases: number, pendingCounselling: number, pendingAssessment: number,
-  // escalationsRaised: number,
-  unassignedInquiries: number
-} //dueToday: number,
+  openCases: number;
+  pendingCounselling: number;
+  pendingAssessment: number;
+  unassignedInquiries: number;
+}
 
 export const useDashboardView = () => {
   const router = useRouter();
@@ -38,7 +39,6 @@ export const useDashboardView = () => {
 
   const [rows, setRows] = useState<CandidateRow[]>([]);
   const [totalPages, setTotalPages] = useState(1);
-  // const [total, setTotal] = useState(0);
   const [kpis, setKpis] = useState<kpiTypes | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,12 +73,15 @@ export const useDashboardView = () => {
   const [selectedBranch, setSelectedBranch] = useState<string>("");
   const [method, setMethod] = useState<string>(targetLead?.visitType as CounsellingMode);
 
+ 
+  const [rescheduleReason, setRescheduleReason] = useState<string>("");
 
   const openCancelModal = (candidate: CandidateRow) => {
     setCancelTargetLead(candidate);
     setCancelReason("");
     setCancelModalOpen(true);
   };
+
   const handleConfirmCancel = async () => {
     if (!cancelTargetLead) return;
 
@@ -109,6 +112,7 @@ export const useDashboardView = () => {
       setCancelLoading(false);
     }
   };
+
   const openCommModal = (candidate: CandidateRow, mode: "chat" | "email") => {
     setCommCandidate(candidate);
     setCommMode(mode);
@@ -137,11 +141,8 @@ export const useDashboardView = () => {
         kpis: kpis === null,
       });
       setRows(res.data?.data?.data);
-      // { time: "10:00 AM", candidate: "Galvin Burton", type: "Pre-Counselling", mode: "In-Person" },
       setTotalPages(res?.data?.data?.pagination.totalPages);
-      setTodaySchedule(res?.data?.data?.todaySchedule)
-      todaySchedule
-      //   setTotal(res?.data?.data?.pagination.total);
+      setTodaySchedule(res?.data?.data?.todaySchedule);
       if (res?.data?.data?.kpis) setKpis(res?.data?.data?.kpis);
     } catch (err: any) {
       setError(err?.response?.data?.message ?? "Failed to load candidates");
@@ -150,21 +151,16 @@ export const useDashboardView = () => {
     }
   }, [page, search, statusFilter, experienceFilter]);
 
-
-  const fetchBranches = useCallback(
-    async () => {
-      //lat: number, lng: number
-      try {
-        const response = await branchListingApi();
-        const list = response?.data?.data?.data || [];
-        setBranches(list);
-      } catch (error) {
-        console.error("Branch fetch error:", error);
-        toast.error("Failed to fetch nearby branches");
-      }
-    },
-    [],
-  );
+  const fetchBranches = useCallback(async () => {
+    try {
+      const response = await branchListingApi();
+      const list = response?.data?.data?.data || [];
+      setBranches(list);
+    } catch (error) {
+      console.error("Branch fetch error:", error);
+      toast.error("Failed to fetch nearby branches");
+    }
+  }, []);
 
   useEffect(() => {
     fetchCandidates();
@@ -179,6 +175,7 @@ export const useDashboardView = () => {
     setTargetLead(candidate);
     setSchedulePhase(phase);
     setModalOpen(true);
+    setRescheduleReason("");  
     let prevId = "";
     if (isReschedule) {
       const rawConsultantId =
@@ -199,14 +196,12 @@ export const useDashboardView = () => {
 
     if (candidate.branchId) {
       const res = await getTacListAction({ branchId: candidate.branchId });
-      //here
       setSelectedBranch(candidate.branchId);
       if (res?.data?.success) setTacList(res?.data?.data);
     }
   };
 
   useEffect(() => {
-
     const loadSlots = async () => {
       if (!selectedTac || !date || !modalOpen) return;
       setSlotsLoading(true);
@@ -232,24 +227,15 @@ export const useDashboardView = () => {
         const res = await getTacListAction({ branchId: selectedBranch });
         if (res?.data?.success) setTacList(res?.data?.data);
       }
-    }
+    };
     loadTacList(selectedBranch);
-  }, [selectedBranch])
+  }, [selectedBranch]);
 
-  const handleBookSlot = async () => {
+ 
+  const handleBookSlot = async (passedReason?: string) => {
     if (!selectedBranch || !method || !targetLead || !selectedTac || !selectedSlot) return;
     setBookingLoading(true);
-    const methodMentioned = (method === "online" ? "on" : "off") as
-      | "on"
-      | "off";
-    // const payload = {
-    //   leadId: targetLead._id,
-    //   consultantId: selectedTac as string,
-    //   date,
-    //   from: selectedSlot.from as keyof Slot,
-    //   to: selectedSlot.to as keyof Slot,
-    //   method: method as "on" | "off",
-    // };
+    const methodMentioned = (method === "online" ? "on" : "off") as "on" | "off";
 
     const payload = new FormData();
     payload.append("leadId", targetLead._id);
@@ -261,6 +247,12 @@ export const useDashboardView = () => {
       payload.append("date", date);
       payload.append("from", selectedSlot?.from as string);
       payload.append("to", selectedSlot?.to as string);
+    }
+
+     
+    const finalReason = passedReason || rescheduleReason;
+    if (finalReason?.trim()) {
+      payload.append("rescheduleReason", finalReason.trim());
     }
 
     let res;
@@ -276,6 +268,7 @@ export const useDashboardView = () => {
         `${schedulePhase === "pre" ? "Pre-Counselling" : "Assessment"} session scheduled successfully!`,
       );
       setModalOpen(false);
+      setRescheduleReason("");  
       fetchCandidates();
     } else {
       toast.error(res?.data?.message || "Failed to book slot");
@@ -285,12 +278,9 @@ export const useDashboardView = () => {
 
   const lastCandidate = rows.length > 0 ? rows[0] : null;
 
-
-
   return {
     isFoe,
     kpis,
-    // total,
     searchInput,
     setSearchInput,
     statusFilter,
@@ -342,6 +332,8 @@ export const useDashboardView = () => {
     selectedBranch,
     setSelectedBranch,
     method,
-    setMethod
+    setMethod,
+    rescheduleReason,      
+    setRescheduleReason,    
   };
 };

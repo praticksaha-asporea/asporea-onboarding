@@ -19,6 +19,10 @@ export interface IGeneralSetting extends Document {
     fullMarks?: number;
     passingMarks?: number;
   };
+  inquiryBrochures?: {
+    name: string;
+    uploadId: mongoose.Types.ObjectId;
+  }[];
 
   createdAt: Date;
   updatedAt: Date;
@@ -81,7 +85,13 @@ const GeneralSettingSchema = new Schema<IGeneralSetting>(
     technical: {
       fullMarks: { type: Number, default: 100 },
       passingMarks: { type: Number, default: 40 }
-    }
+    },
+    inquiryBrochures: [
+      {
+        name: { type: String, trim: true },
+        uploadId: { type: Schema.Types.ObjectId, ref: "Upload" },
+      },
+    ],
   },
   { timestamps: true }
 );

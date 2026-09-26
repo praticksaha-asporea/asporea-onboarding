@@ -9,7 +9,7 @@ import ResponseHandler from "@/lib/utils/responseUtil";
 import {
   deleteReminderService,
   getReminderByIdService,
-} from "@/lib/services/tac_head/reminder.service";
+} from "@/lib/services/tac_head/reminder.service"; 
 
 export default async function handler(
   req: NextApiRequest,
