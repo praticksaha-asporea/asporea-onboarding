@@ -5,7 +5,7 @@ import path from "path";
 export const transporter = nodemailer.createTransport({
   host: process.env.SES_HOST,
   port: Number(process.env.SES_PORT),
-  secure: true,  
+  secure: true,
   auth: {
     user: process.env.SMTP_USERNAME,
     pass: process.env.SMTP_PASSWORD,
@@ -24,7 +24,7 @@ type SendMailParams = {
   attachBrochures?: boolean;
 };
 
- 
+
 const getBrochureAttachments = () => {
   try {
     const brochureDir = path.join(
@@ -60,17 +60,17 @@ export async function sendMail({
   fromName,
   replyTo,
   attachments = [],
-  attachBrochures = false,
+  // attachBrochures = false,
 }: SendMailParams) {
   const displayName = fromName ? `${fromName} - Asporea HR` : "Asporea HR";
 
   let finalAttachments = [...(attachments || [])];
 
   //  if attachBrochures flag is true, then automatically attach all files from public/uploads/Brochures
-  if (attachBrochures) {
-    const brochureFiles = getBrochureAttachments();
-    finalAttachments = [...finalAttachments, ...brochureFiles];
-  }
+  // if (attachBrochures) {
+  //   const brochureFiles = getBrochureAttachments();
+  //   finalAttachments = [...finalAttachments, ...brochureFiles];
+  // }
 
   const response = await transporter.sendMail({
     from: `"${displayName}" <${process.env.FROM}>`,

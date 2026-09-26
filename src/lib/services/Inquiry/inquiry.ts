@@ -134,7 +134,7 @@ export const createInquiry = async (body: any, createdById: string) => {
     `Step_1 Inquiry submitted successfully (${inqNo})`,
     createdById
   );
-try {
+  try {
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
         <h2 style="color: #0056b3;">Welcome to Asporea HR!</h2>
@@ -147,17 +147,31 @@ try {
       </div>
     `;
 
-     
+    const finalAttachments = await GeneralSettingModel.findOne()
+      .populate("inquiryBrochures.uploadId", "path publicId")
+      .lean();
+    // console.log(finalAttachments, 54488);
+
+    const attachments = [];
+    for (const brochure of finalAttachments?.inquiryBrochures) {
+      attachments.push({
+        filename: brochure.name,
+        path: brochure.uploadId.path,
+      })
+    }
+    console.log(attachments, "attachments");
+
     sendMail({
       to: email.toLowerCase().trim(),
       subject: "Thank you for your Inquiry - Asporea HR",
       html: emailHtml,
-      attachBrochures: true,  
+      attachments: attachments
+      // attachBrochures: true,  
     }).catch(err => console.error("Failed to send brochure email:", err));
 
   } catch (mailError) {
     console.error("Mail setup error in inquiry service:", mailError);
-   
+
   }
 
   return newInquiry;
