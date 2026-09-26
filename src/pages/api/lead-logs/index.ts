@@ -8,6 +8,7 @@ import {
     createLeadLogService,
     getLeadLogsService,
     deleteLeadLogService,
+    getLeadLogsByCandidateService,
 } from "@/lib/services/leadActivity/leadLog.service";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
@@ -34,9 +35,22 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
 
         if (req.method === "GET") {
-            const { leadId } = req.query;
-            const result = await getLeadLogsService(leadId as string);
-            return ResponseHandler.sendSuccess(res, result, "Lead logs fetched successfully");
+            const { leadId, bycandidate } = req.query;
+            if (!bycandidate) {
+                const result = await getLeadLogsService(leadId as string);
+                return ResponseHandler.sendSuccess(res, result, "Lead logs fetched successfully");
+            }
+            else {
+                const { leadId, cursor, limit, bycandidate } = req.query;
+
+                const result = await getLeadLogsByCandidateService({
+                    leadId: leadId as string,
+                    cursor: (cursor as string) ?? null,
+                    limit: limit as string,
+                });
+
+                return ResponseHandler.sendSuccess(res, result, "Lead logs fetched successfully");
+            }
         }
 
         if (req.method === "DELETE") {

@@ -79,6 +79,11 @@ export const login = async (body: LoginBody) => {
         mode: user.tacProfile?.mode,
         rating: user.tacProfile?.rating,
         designation: user.tacProfile?.designation,
+      },
+      notificationPreference: {
+        sms: user.notificationPreference?.sms,
+        whatsapp: user.notificationPreference?.whatsapp,
+        email: user.notificationPreference?.email,
       }
     },
     tokens,

@@ -28,7 +28,7 @@ const getActionTypeConfig = (type: string) => {
 interface LeadLogsCardProps {
   leadId: string;
 }
-const extractId = (obj: any): string => {
+export const extractId = (obj: any): string => {
   if (!obj) return "";
   if (typeof obj === "string") return obj;
   if (obj._id) return extractId(obj._id);
@@ -37,12 +37,12 @@ const extractId = (obj: any): string => {
 };
 const LeadLogsCard: React.FC<LeadLogsCardProps> = ({ leadId }) => {
   const { logs, loading } = useLeadLogsCard(leadId);
-const currentUser = useSelector(
+  const currentUser = useSelector(
     (state: any) => state?.userSlice?.userData || state?.user?.userData
   );
   const currentUserId = extractId(currentUser?._id || currentUser?.id || currentUser?.user);
   return (
-    
+
     <Card className="p-5 rounded-xl shadow-2xl relative overflow-hidden bg-[var(--mui-palette-background)]">
       <Typography className="text-[16px] font-medium tracking-wide mb-4 flex text-[var(--mui-palette-primary)]
  items-center gap-2">
@@ -50,7 +50,7 @@ const currentUser = useSelector(
         Activity Logs
       </Typography>
 
-     
+
       <Box className="max-h-[350px] overflow-y-auto overflow-x-hidden pr-2">
         {loading ? (
           <Box className="flex justify-center p-4">
@@ -68,7 +68,7 @@ const currentUser = useSelector(
               const isMe = Boolean(
                 currentUserId && actionUserId && currentUserId === actionUserId
               );
-             const actorName =
+              const actorName =
                 log.triggeredBy === "USER" && log.actionBy
                   ? isMe
                     ? "You"
@@ -76,11 +76,11 @@ const currentUser = useSelector(
                   : "SYSTEM";
               return (
                 <Box key={log._id} className="relative">
-                
+
                   <Box className="absolute -left-[23px] top-2 w-3 h-3 rounded-full bg-[var(--mui-palette-primary-main)] shadow-xl " />
 
                   <Box className="bg-[var(--mui-palette-background-default)] p-6 rounded-lg  ">
-                 <Box className="flex flex-col items-start gap-1 mb-2">
+                    <Box className="flex flex-col items-start gap-1 mb-2">
                       <Chip
                         icon={<i className={`${config.icon} text-[14px]`} />}
                         label={log.actionType.replace(/_/g, " ")}
@@ -101,7 +101,7 @@ const currentUser = useSelector(
                         By: <strong className="font-semibold">{actorName}</strong>
                       </span>
 
-                     {log.eventDate && (
+                      {log.eventDate && (
                         <span className="text-[var(--mui-palette-primary-main)] font-medium">
                           Scheduled: {dayjs(log.eventDate).format("DD MMM YYYY")}
                         </span>

@@ -10,6 +10,7 @@ import { useApplicationTracking } from "@/Module/Candidate_Dashboard/Application
 import { TrackingStepper } from "@/Components/ApplicationTracking/TrackingStepper";
 import { JourneyCard } from "@/Components/ApplicationTracking/JourneyCard";
 import { AssessmentDialog } from "@/Components/ApplicationTracking/AssessmentDialog";
+import ActivityLog from "./ActivityLog";
 
 const formatDescription = (desc?: React.ReactNode) => {
   if (!desc || typeof desc !== "string") return desc;
@@ -46,6 +47,8 @@ const ApplicationTracking = () => {
     assessDescription,
     assessButtonLabel,
     arePrerequisitesMet,
+    activityLogs,
+    activityLogsLoading
   } = useApplicationTracking();
 
   if (!isReduxReady) {
@@ -189,8 +192,8 @@ const ApplicationTracking = () => {
             />
           )}
         </Box>
+        <ActivityLog leadId={leadId} />
       </Card>
-
       <AssessmentDialog
         isOpen={isPopupOpen}
         onClose={() => setIsPopupOpen(false)}

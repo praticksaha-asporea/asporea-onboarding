@@ -31,9 +31,12 @@ export const useApplicationTracking = () => {
   const [expDescription, setExpDescription] = useState("");
   const [preCounsellingDescription, setPreCounsellingDescription] =
     useState("");
-const [assessDescription, setAssessDescription] = useState<React.ReactNode>("");
+  const [assessDescription, setAssessDescription] = useState<React.ReactNode>("");
   const [assessButtonLabel, setAssessButtonLabel] =
     useState<string | null>("");
+
+  const [activityLogs, setActivityLogs] = useState<any[]>([]);
+  const [activityLogsLoading, setActivityLogsLoading] = useState(true);
 
   const [arePrerequisitesMet, setArePrerequisitesMet] = useState(false);
 
@@ -348,5 +351,7 @@ const [assessDescription, setAssessDescription] = useState<React.ReactNode>("");
     assessDescription,
     assessButtonLabel,
     arePrerequisitesMet,
+    activityLogs,
+    activityLogsLoading
   };
 };

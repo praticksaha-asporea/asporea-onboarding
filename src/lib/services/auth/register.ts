@@ -47,7 +47,12 @@ export const register = async (body: RegisterPayload & { profilePicData?: string
     passportStatus,
     passportNo,
     address,
-    role: "user"
+    role: "user",
+    notificationPreference: {
+      sms: phoneNumber ? true : false,
+      whatsapp: whatsappNumber ? true : false,
+      email: email ? true : false,
+    },
   });
   if (profilePicData) {
     const newPicId = await handleProfilePicUpload(newUser._id.toString(), profilePicData);
