@@ -9,6 +9,7 @@ import { GeneralSettingModel } from "../../models/GeneralSetting.model";
 import { generateInquiryNo } from "@/Utils/generateInquiryNo";
 import { currentFy } from "@/Utils/common";
 import { createLeadLogService } from "@/lib/services/leadActivity/leadLog.service";
+import { sendMail } from "@/lib/utils/emailUtil";
 export const createInquiry = async (body: any, createdById: string) => {
   const {
     fullName,
@@ -133,9 +134,35 @@ export const createInquiry = async (body: any, createdById: string) => {
     `Step_1 Inquiry submitted successfully (${inqNo})`,
     createdById
   );
+try {
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2 style="color: #0056b3;">Welcome to Asporea HR!</h2>
+        <p>Dear ${fullName},</p>
+        <p>Thank you for submitting your inquiry. Your Inquiry Number is <strong>${inqNo}</strong>.</p>
+        <p>To help you understand more about our services, we have attached our company brochures to this email.</p>
+        <br/>
+        <p>Best Regards,</p>
+        <p><strong>Asporea HR Team</strong></p>
+      </div>
+    `;
+
+     
+    sendMail({
+      to: email.toLowerCase().trim(),
+      subject: "Thank you for your Inquiry - Asporea HR",
+      html: emailHtml,
+      attachBrochures: true,  
+    }).catch(err => console.error("Failed to send brochure email:", err));
+
+  } catch (mailError) {
+    console.error("Mail setup error in inquiry service:", mailError);
+   
+  }
 
   return newInquiry;
 };
+
 
 export const updateInquiry = async (body: any, updatedById?: string) => {
 

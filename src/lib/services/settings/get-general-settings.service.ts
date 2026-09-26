@@ -1,11 +1,14 @@
 import connectToDatabase from "@/lib/mongodb";
 import { GeneralSettingModel } from "@/lib/models/GeneralSetting.model";
 import { ApiError } from "@/lib/error/api.error";
+import "@/lib/models/Upload.model";
 
 export const getGeneralSettingsService = async () => {
   await connectToDatabase();
 
-  let settings = await GeneralSettingModel.findOne().lean();
+  let settings = await GeneralSettingModel.findOne()
+    .populate("inquiryBrochures.uploadId", "path publicId")
+    .lean();
 
   if (!settings) {
     const created = await GeneralSettingModel.create({});

@@ -42,4 +42,13 @@ export const updateGeneralSettingsSchema = Joi.object({
       .optional()
       .messages({ "number.base": "Passing marks must be a number" }),
   }).optional(),
+  inquiryBrochures: Joi.array()
+    .items(
+      Joi.object({
+        name: Joi.string().allow("").optional(),
+        uploadId: Joi.string().allow("", null).optional(),
+        fileData: Joi.string().allow("", null).optional(),  
+      })
+    )
+    .optional(),
 }).options({ abortEarly: false, allowUnknown: false });

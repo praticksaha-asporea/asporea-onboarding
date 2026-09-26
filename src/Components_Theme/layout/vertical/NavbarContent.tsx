@@ -9,21 +9,22 @@ import classnames from 'classnames'
 import NavToggle from './NavToggle'
 import ModeDropdown from '../../../Components_Theme/layout/shared/ModeDropdown'
 import UserDropdown from '../../../Components_Theme/layout/shared/UserDropdown'
-
+import ReminderDropdown from '../../../Components_Theme/layout/shared/ReminderDropdown'
 // Util Imports
 import { verticalLayoutClasses } from '../../../@layouts/utils/layoutClasses'
 
 const NavbarContent = () => {
   return (
    <div className={classnames(verticalLayoutClasses.navbarContent, 'flex items-center justify-between w-full')}>
-      {/* 🟢 LEFT: Plain Toggle Icon (Mobile Only - No capsule, no bg) */}
+      {/* LEFT: Plain Toggle Icon (Mobile Only - No capsule, no bg) */}
       <div className='flex items-center lg:hidden'>
         <NavToggle />
       </div>
 
-      {/* 🟢 RIGHT: Capsule Pill (Sirf DarkMode + Profile icon ke liye) */}
+      {/* RIGHT: Capsule Pill (Sirf DarkMode + Profile icon ke liye) */}
       <div className='flex items-center gap-1.5 rounded-full px-2.5 py-1.5 ml-auto bg-[var(--mui-palette-background-paper)] border border-[var(--mui-palette-divider)] shadow-md'>
         <ModeDropdown />
+         <ReminderDropdown />
         <UserDropdown />
       </div>
     </div>
